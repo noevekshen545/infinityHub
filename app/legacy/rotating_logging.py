@@ -130,6 +130,9 @@ _PIPER_LOADED_PATH = None  # какая модель реально загруж
 def _get_piper_model_dir():
     """Путь к моделям Piper (поддержка PyInstaller)"""
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        _portable = os.path.join(os.environ.get("INFINITY_ROOT", ""), "models", "piper")
+        if os.path.isdir(_portable):
+            return _portable
         return os.path.join(sys._MEIPASS, "models", "piper")
     else:
         return os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "piper")
@@ -452,7 +455,10 @@ def _get_silero_hub_dir():
     """Определяем путь к Silero hub кэшу (PyInstaller / переносимая сборка)."""
     # При сборке PyInstaller модель будет в _MEIPASS
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-        # PyInstaller — модель внутри сборки
+        _portable = os.path.join(os.environ.get("INFINITY_ROOT", ""),
+                                 "models", "silero", "silero_hub")
+        if os.path.isdir(_portable):
+            return _portable
         return os.path.join(sys._MEIPASS, "models", "silero", "silero_hub")
     # Переносимая сборка: модель лежит в <корень>/models/silero/silero_hub,
     # а не в app/models — иначе на флешке её не будет, и синтез молча

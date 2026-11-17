@@ -14,6 +14,9 @@ _PIPER_VOICE_CACHE_LOCK = threading.Lock()
 
 def _get_piper_model_dir():
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        _portable = os.path.join(os.environ.get("INFINITY_ROOT", ""), "models", "piper")
+        if os.path.isdir(_portable):
+            return _portable
         return os.path.join(sys._MEIPASS, "models", "piper")
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "piper")
 
@@ -140,6 +143,10 @@ _SILERO_LOCK = threading.Lock()
 
 def _get_silero_hub_dir():
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        _portable = os.path.join(os.environ.get("INFINITY_ROOT", ""),
+                                 "models", "silero", "silero_hub")
+        if os.path.isdir(_portable):
+            return _portable
         return os.path.join(sys._MEIPASS, "models", "silero", "silero_hub")
     # Переносимая сборка: кэш Silero лежит в <корень>/models/silero/silero_hub,
     # иначе синтез молча не находит модель и уходит в браузерный webspeech.
