@@ -109,6 +109,7 @@ out/
 *~
 
 release-assets/
+release/
 
 # --- 4. ОС и редакторы ---
 .vscode/
