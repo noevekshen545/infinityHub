@@ -401,7 +401,7 @@ $engineChoice = Ask-Choice "Установить движок llama.cpp для �
 ) 1
 
 if ($engineChoice -eq 2) {
-    $url = Ask-Text "Ссылка на engine.zip" "https://github.com/noevekshen545/infinitygihub/releases/download/v1/engine.zip"
+    $url = Ask-Text "Ссылка на engine.zip" "https://github.com/noevekshen545/infinityHub/releases/download/v1/engine.zip"
     if ($url) {
         $ok = Invoke-Step "Движок llama.cpp" {
             $zip = Join-Path $env:TEMP "infinity-engine.zip"

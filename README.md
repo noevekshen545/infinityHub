@@ -227,8 +227,8 @@ start.bat
 Нужен **Python 3.12+** для Windows и, по желанию, Node.js для окна Electron.
 
 ```bat
-git clone https://github.com/noevekshen545/infinitygihub.git
-cd infinitygihub
+git clone https://github.com/noevekshen545/infinityHub.git
+cd infinityHub
 setup.bat
 ```
 

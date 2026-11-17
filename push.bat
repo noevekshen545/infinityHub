@@ -4,7 +4,7 @@ title Infinity Search - Push to GitHub
 setlocal
 cd /d "%~dp0"
 
-set "REMOTE=https://github.com/noevekshen545/infinitygihub.git"
+set "REMOTE=https://github.com/noevekshen545/infinityHub.git"
 
 echo ===============================================
 echo   Infinity Search - publish to GitHub
@@ -16,7 +16,7 @@ git ls-remote "%REMOTE%" >nul 2>&1
 if errorlevel 1 (
     echo Repository not found or login required.
     echo.
-    echo 1. Create a PUBLIC repository named "infinitygihub":
+    echo 1. Create a PUBLIC repository named "infinityHub":
     echo    https://github.com/new
     echo 2. Do NOT add README, .gitignore or a license.
     echo 3. Return here and press any key.
@@ -42,6 +42,6 @@ if errorlevel 1 (
 )
 
 echo.
-echo [OK] Published: https://github.com/noevekshen545/infinitygihub
+echo [OK] Published: https://github.com/noevekshen545/infinityHub
 pause
 exit /b 0

@@ -65,8 +65,8 @@ start.bat --port 8282
 Самый простой путь — запустить интерактивный мастер:
 
 ```bat
-git clone https://github.com/noevekshen545/infinitygihub.git
-cd infinitygihub
+git clone https://github.com/noevekshen545/infinityHub.git
+cd infinityHub
 setup.bat
 ```
 
@@ -101,8 +101,8 @@ python --version
 ### 2. Склонируйте репозиторий
 
 ```bash
-git clone https://github.com/noevekshen545/infinitygihub.git
-cd infinitygihub
+git clone https://github.com/noevekshen545/infinityHub.git
+cd infinityHub
 ```
 
 Без Git можно скачать ZIP-архив репозитория и распаковать его.

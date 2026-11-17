@@ -182,7 +182,7 @@ release-assets/
 
 ```bash
 ./scripts/bootstrap.sh \
-  --engine-url https://github.com/noevekshen545/infinitygihub/releases/download/v1/engine.zip
+  --engine-url https://github.com/noevekshen545/infinityHub/releases/download/v1/engine.zip
 ```
 
 ---
