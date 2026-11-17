@@ -10,7 +10,7 @@
 ![Offline](https://img.shields.io/badge/офлайн-first-6C5CE7)
 ![License](https://img.shields.io/badge/license-MIT-2ecc71)
 
-[Обзор](README.md) · [Полное описание системы](docs/SYSTEM.md) · [Расширения](docs/EXTENSIONS.md) · [Установка](docs/INSTALL.md) · [Руководство](docs/USER-GUIDE.md) · [FAQ](docs/FAQ.md)
+[Обзор](README.md) · [Полное описание системы](docs/SYSTEM.md) · [Расширения](docs/EXTENSIONS.md) · [Установка](docs/INSTALL.md) · [Руководство](docs/USER-GUIDE.md) · [Модули](docs/MODULES.md) · [FAQ](docs/FAQ.md)
 
 [Скачать](#быстрый-старт) · [Возможности](#возможности) · [Скриншоты](#скриншоты) · [Документация](#документация)
 

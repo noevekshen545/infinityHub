@@ -1,3 +1,5 @@
+[Обзор](../README.md) · [Система](SYSTEM.md) · [Расширения](EXTENSIONS.md) · [Установка](INSTALL.md) · [Руководство](USER-GUIDE.md) · [Модули](MODULES.md) · [FAQ](FAQ.md)
+
 # Разработка
 
 ## Архитектура
