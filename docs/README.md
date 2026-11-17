@@ -1,4 +1,4 @@
-[Обзор](../README.md) · [Система](SYSTEM.md) · [Расширения](EXTENSIONS.md) · [Установка](INSTALL.md) · [Руководство](USER-GUIDE.md) · [Модули](MODULES.md) · [FAQ](FAQ.md)
+[English](en/README.md) · [Обзор](../README.md) · [Система](SYSTEM.md) · [Расширения](EXTENSIONS.md) · [Установка](INSTALL.md) · [Руководство](USER-GUIDE.md) · [Модули](MODULES.md) · [FAQ](FAQ.md)
 
 # Документация Infinity Search
 
@@ -14,6 +14,10 @@
 | [EXTERNAL.md](EXTERNAL.md) | Движки, модели и внешние компоненты |
 | [FAQ.md](FAQ.md) | Частые вопросы и решения проблем |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Структура проекта, тесты и сборка |
+| [REPOSITORY.md](REPOSITORY.md) | Описание, темы, social preview и релизы |
+| [CONTRIBUTING.md](../CONTRIBUTING.md) | Как помочь проекту |
+| [SECURITY.md](../SECURITY.md) | Политика безопасности |
+| [CHANGELOG.md](../CHANGELOG.md) | История версий |
 
 ## С чего начать
 

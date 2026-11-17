@@ -1,4 +1,4 @@
-[Обзор](../README.md) · [Система](SYSTEM.md) · [Расширения](EXTENSIONS.md) · [Установка](INSTALL.md) · [Руководство](USER-GUIDE.md) · [Модули](MODULES.md) · [FAQ](FAQ.md)
+[English](en/README.md) · [Обзор](../README.md) · [Система](SYSTEM.md) · [Расширения](EXTENSIONS.md) · [Установка](INSTALL.md) · [Руководство](USER-GUIDE.md) · [Модули](MODULES.md) · [FAQ](FAQ.md)
 
 # Внешние компоненты
 

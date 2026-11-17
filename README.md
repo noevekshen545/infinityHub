@@ -10,7 +10,7 @@
 ![Offline](https://img.shields.io/badge/офлайн-first-6C5CE7)
 ![License](https://img.shields.io/badge/license-MIT-2ecc71)
 
-[Обзор](README.md) · [Полное описание системы](docs/SYSTEM.md) · [Расширения](docs/EXTENSIONS.md) · [Установка](docs/INSTALL.md) · [Руководство](docs/USER-GUIDE.md) · [Модули](docs/MODULES.md) · [FAQ](docs/FAQ.md)
+[English](README.en.md) · [Обзор](README.md) · [Полное описание системы](docs/SYSTEM.md) · [Расширения](docs/EXTENSIONS.md) · [Установка](docs/INSTALL.md) · [Руководство](docs/USER-GUIDE.md) · [Модули](docs/MODULES.md) · [FAQ](docs/FAQ.md) · [Репозиторий](docs/REPOSITORY.md)
 
 [Скачать](#быстрый-старт) · [Возможности](#возможности) · [Скриншоты](#скриншоты) · [Документация](#документация)
 
@@ -300,6 +300,10 @@ run-dev.bat
 - [`docs/EXTERNAL.md`](docs/EXTERNAL.md) — движки, модели и внешние компоненты.
 - [`docs/FAQ.md`](docs/FAQ.md) — частые вопросы и решения проблем.
 - [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) — структура проекта и сборка.
+- [`docs/REPOSITORY.md`](docs/REPOSITORY.md) — описание, темы и social preview.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — как помочь проекту.
+- [`SECURITY.md`](SECURITY.md) — политика безопасности.
+- [`CHANGELOG.md`](CHANGELOG.md) — история версий.
 
 ---
 
@@ -311,6 +315,20 @@ run-dev.bat
 
 Проект не требует облака, подписок и постоянного подключения к интернету. Всё, что
 нужно для работы, лежит рядом с приложением.
+
+---
+
+## Темы и теги
+
+`#local-first` `#offline` `#windows` `#fastapi` `#electron` `#llama-cpp`
+`#personal-search` `#knowledge-base` `#notes` `#books` `#media` `#self-hosted`
+`#privacy` `#mit`
+
+Рекомендуемые GitHub Topics: `local-first`, `offline`, `windows`, `fastapi`,
+`electron`, `llama-cpp`, `personal-search`, `knowledge-base`, `notes`, `books`,
+`media`, `self-hosted`, `privacy`, `mit`.
+
+Как настроить карточку репозитория, темы и social preview: [`docs/REPOSITORY.md`](docs/REPOSITORY.md).
 
 ---
 
