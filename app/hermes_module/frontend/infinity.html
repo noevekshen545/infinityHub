@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Агент</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="/assets/css/01-base.css">
+<link rel="stylesheet" href="/assets/css/02-start-screen.css">
+<link rel="stylesheet" href="/assets/css/03-layout.css">
+<link rel="stylesheet" href="/assets/css/04-panels.css">
+<link rel="stylesheet" href="/assets/css/05-composer.css">
+<link rel="stylesheet" href="/assets/css/06-settings.css">
+<link rel="stylesheet" href="/assets/css/07-overlays.css">
+<link rel="stylesheet" href="/assets/css/08-responsive.css">
+<link rel="stylesheet" href="/assets/css/09-theme-files.css">
+<link rel="stylesheet" href="/assets/css/10-plugins.css">
+</head>
+<body>
+
+<div class="file-warn" id="fileWarn">
+  <i class="fa-solid fa-triangle-exclamation"></i> Файл открыт через file:// — некоторые функции могут не работать. Запустите через веб-сервер.
+</div>
+
+<div class="bg" aria-hidden="true">
+  <span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span>
+  <div class="mesh"></div>
+</div>
+
+<div class="drop-overlay" id="dropOverlay">
+  <div class="drop-inner">
+    <i class="fa-solid fa-cloud-arrow-up"></i>
+    <b>Отпустите файлы</b>
+    <span>Они будут прикреплены к текущей сессии</span>
+  </div>
+</div>
+
+<div class="img-preview" id="imgPreview"><img id="imgPreviewImg"></div>
+
+<main class="stage" id="stage">
+  <div class="brand">
+    <div class="halo"></div>
+    <svg class="infinity" viewBox="0 0 160 80">
+      <defs>
+        <linearGradient id="infGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#6366f1"/>
+          <stop offset="50%" stop-color="#818cf8"/>
+          <stop offset="100%" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+      <path class="infinity-path-bg" d="M40,40 C40,20 60,20 80,40 C100,60 120,60 120,40 C120,20 100,20 80,40 C60,60 40,60 40,40 Z"/>
+      <path class="infinity-glow" d="M40,40 C40,20 60,20 80,40 C100,60 120,60 120,40 C120,20 100,20 80,40 C60,60 40,60 40,40 Z"/>
+      <path class="infinity-path" d="M40,40 C40,20 60,20 80,40 C100,60 120,60 120,40 C120,20 100,20 80,40 C60,60 40,60 40,40 Z"/>
+    </svg>
+  </div>
+  <div class="say-slot">
+    <div class="status" id="statusRow"><span class="dot"></span><span id="statusText">Готов к работе</span></div>
+    <div class="stagesay" id="stageSay" data-who=""></div>
+  </div>
+  <div class="dock">
+    <button class="dock-btn" id="btnChat" data-tip="Открыть рабочую область"><i class="fa-regular fa-comments"></i></button>
+    <svg class="jm-defs" aria-hidden="true"><defs>
+      <filter id="jmGooF" x="-70%" y="-70%" width="240%" height="240%" color-interpolation-filters="sRGB">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b"/>
+        <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="g"/>
+        <feBlend in="SourceGraphic" in2="g"/>
+      </filter>
+    </defs></svg>
+    <div class="micWrap" id="jmWrap">
+      <span class="micGlow"></span>
+      <span class="ring"></span><span class="ring"></span><span class="ring"></span>
+      <button class="mic" id="btnMic" data-tip="Голос · пробел — говорить, клик во время работы — стоп" aria-label="Голосовой ввод" aria-pressed="false">
+        <span class="goo" id="jmGoo">
+          <span class="core" id="jmCore"></span>
+          <span class="orb-s" style="--ang:0deg"><span class="sat" style="--dur:2.6s;--del:0s"></span></span>
+          <span class="orb-s" style="--ang:58deg"><span class="sat" style="--dur:3.1s;--del:-.4s"></span></span>
+          <span class="orb-s" style="--ang:122deg"><span class="sat" style="--dur:2.3s;--del:-.9s"></span></span>
+          <span class="orb-s" style="--ang:186deg"><span class="sat" style="--dur:2.9s;--del:-1.4s"></span></span>
+          <span class="orb-s" style="--ang:244deg"><span class="sat" style="--dur:2.5s;--del:-1.9s"></span></span>
+          <span class="orb-s" style="--ang:305deg"><span class="sat" style="--dur:3.3s;--del:-2.4s"></span></span>
+        </span>
+        <span class="face" id="jmFace">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/>
+          </svg>
+          <span class="wave" id="jmWave"><i></i><i></i><i></i><i></i><i></i></span>
+        </span>
+      </button>
+    </div>
+    <button class="dock-btn" id="btnMore" data-tip="Действия и сессии"><i class="fa-solid fa-ellipsis"></i></button>
+  </div>
+  <div class="hint">
+    <b><kbd>Пробел</kbd> говорить</b>
+    <b><kbd>Ctrl</kbd>+<kbd>K</kbd> чат</b>
+    <b><kbd>Ctrl</kbd>+<kbd>F</kbd> поиск</b>
+    <b><kbd>Ctrl</kbd>+<kbd>H</kbd> история</b>
+  </div>
+</main>
+
+<!-- ЧАТ -->
+<div class="overlay" id="chatOverlay">
+  <div class="modal">
+    <header class="m-head">
+      <div class="m-title"><i class="fa-solid fa-infinity"></i><h2>Рабочая область</h2></div>
+      <span class="pill" id="connPill"><i class="fa-solid fa-circle"></i><span>Локальный режим</span></span>
+      <div class="spacer"></div>
+      <button class="btn sm hiddenss" id="hdNewSession"><i class="fa-solid fa-plus"></i> Сессия</button>
+      <button class="btn sm hiddenss" id="hdNewProject"><i class="fa-solid fa-diagram-project"></i> Проект</button>
+      <button class="btn sm hiddenss" id="hdTemplates"><i class="fa-solid fa-bookmark"></i></button>
+<button class="icon-btn hiddenss" id="hdTheme" title="Тема"><i class="fa-solid fa-moon"></i></button>
+<button class="icon-btn cronbell" id="hdCron" title="Задания по расписанию"><i class="fa-solid fa-bell"></i><span class="bdg" id="cronBdg">0</span></button>
+<button class="icon-btn" id="hdPomo" title="Pomodoro"><i class="fa-solid fa-stopwatch"></i></button>
+      <div class="cronpop" id="cronPop">
+        <div class="ch"><span>Задания по расписанию</span><button type="button" id="cronPopOpen">Все задачи</button></div>
+        <div id="cronPopList"></div>
+      </div>
+<button class="icon-btn" id="hdFullscreen" title="На весь экран"><i class="fa-solid fa-expand"></i></button>
+  <button class="icon-btn" id="palBtn" title="Палитра команд (Ctrl+K)"><i class="fa-solid fa-magnifying-glass"></i></button>
+<button class="icon-btn hiddenss" id="hdSettings" title="Ctrl+,"><i class="fa-solid fa-gear"></i></button>
+<button class="icon-btn" id="chatClose" title="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+      <div class="pomo-pop" id="pomoPop">
+        <b>Pomodoro</b>
+        <div class="pomo-time" id="pomoTime">25:00<span class="lbl" id="pomoLbl">Фокус</span></div>
+        <div class="pomo-acts">
+          <button class="btn sm primary" id="pomoStart"><i class="fa-solid fa-play"></i> Старт</button>
+          <button class="btn sm" id="pomoPause"><i class="fa-solid fa-pause"></i></button>
+          <button class="btn sm" id="pomoReset"><i class="fa-solid fa-rotate-left"></i></button>
+        </div>
+        <div class="pomo-stats">
+          <div>Сегодня<br><b id="pomoToday">0</b></div>
+          <div>Всего<br><b id="pomoTotal">0</b></div>
+          <div>Часов фокуса<br><b id="pomoHours">0.0</b></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="m-body chat-wrap">
+<aside class="side" id="side">
+<div class="side-collapse-btn" id="sideCollapseBtn" role="button" tabindex="0" aria-label="Свернуть панель" aria-expanded="true" title="Свернуть панель">
+<i class="fa-solid fa-chevron-left"></i>
+</div>
+<div class="rail-head">
+  <div class="rail-brand">
+    <span class="rail-logo"><i class="fa-solid fa-infinity"></i></span>
+    <span class="rail-name"><b>Агент</b><small>Рабочая область</small></span>
+  </div>
+</div>
+<div class="side-top">
+          <div class="search" id="searchWrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Поиск по сессиям" autocomplete="off">
+            <button class="clr" id="searchClear"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="side-cap">Фильтры</div>
+          <div class="filters" id="filters">
+            <button data-f="all" class="on">Все</button>
+            <button data-f="pinned">Избранное</button>
+            <button data-f="bookmarked">Закладки</button>
+            <button data-f="archived">Архив</button>
+            <button data-f="today">Сегодня</button>
+          </div>
+          <div class="side-cap">Создать</div>
+          <div class="quick">
+            <button id="qSession" title="Новая сессия"><i class="fa-solid fa-comment-dots"></i><span>Сессия</span></button>
+            <button id="qProject" title="Новый проект"><i class="fa-solid fa-diagram-project"></i><span>Проект</span></button>
+            <button id="qFolder" title="Новая папка"><i class="fa-solid fa-folder-plus"></i><span>Папка</span></button>
+          </div>
+          <div class="side-actions">
+            <button class="btn sm" id="bulkBtn" title="Выбор нескольких сессий"><i class="fa-solid fa-check-double"></i><span>Выбор</span></button>
+            <button class="btn sm" id="undoBtn" title="Ctrl+Z"><i class="fa-solid fa-rotate-left"></i></button>
+            <button class="btn sm" id="redoBtn" title="Ctrl+Shift+Z"><i class="fa-solid fa-rotate-right"></i></button>
+          </div>
+        </div>
+        <div class="bulk-bar" id="bulkBar">
+          <span id="bulkCount">0</span> выбрано
+          <div class="spacer"></div>
+          <button class="btn sm danger" id="bulkDel"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn sm" id="bulkFolder" title="Переместить выбранные в папку"><i class="fa-solid fa-folder b-ico"></i></button>
+<button class="btn sm" id="bulkArchive"><i class="fa-solid fa-box-archive"></i></button>
+          <button class="btn sm" id="bulkCancel"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="tree" id="tree"></div>
+      </aside>
+      <div class="scrim" id="sideScrim"></div>
+
+      <section class="chat" id="chat">
+        <div class="chat-head">
+          <button class="icon-btn burger" id="burger"><i class="fa-solid fa-bars"></i></button>
+          <div class="ttl">
+            <h2 id="sessTitle" title="Двойной клик — переименовать">Новая сессия</h2>
+            <div class="sub">
+              <span class="pill" id="sessState"><i class="fa-solid fa-circle-check"></i> Ожидание</span>
+              <span class="chip" id="sessProject" style="display:none"><i class="fa-solid fa-folder-open"></i><span></span></span>
+              <span class="pill" id="sessCount"><i class="fa-regular fa-message"></i> 0</span>
+              <span class="pill" id="sessArchive" style="display:none"><i class="fa-solid fa-box-archive"></i></span>
+              <span class="pill pomo" id="pomoPill" style="display:none"><i class="fa-solid fa-stopwatch"></i> <span id="pomoPillTime">25:00</span></span>
+              <span class="pill focus" id="focusPill" style="display:none"><i class="fa-solid fa-bullseye"></i> Фокус</span>
+            </div>
+ </div>
+<div class="spacer" style="flex:1"></div>
+<button class="icon-btn" id="hdFocus" title="Фокус-режим"><i class="fa-solid fa-bullseye"></i></button>
+<button class="icon-btn" id="hdSpeak" title="Автоозвучка"><i class="fa-solid fa-volume-high"></i></button>
+<button class="icon-btn" id="hdCompact" title="Компактный режим"><i class="fa-solid fa-compress"></i></button>
+<button class="icon-btn" id="hdTerm" title="Терминал (Ctrl+`)"><i class="fa-solid fa-terminal"></i></button>
+<button class="icon-btn" id="hdTools" title="Вызовы инструментов"><i class="fa-solid fa-screwdriver-wrench"></i></button>
+<button class="icon-btn" id="hdDetails" title="Детали"><i class="fa-solid fa-circle-info"></i></button>
+<button class="icon-btn" id="hdSessMore" title="Ещё"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+ </div>
+
+        <div class="sess-search" id="sessSearch">
+          <i class="fa-solid fa-magnifying-glass" style="color:var(--text-3);font-size:12px"></i>
+          <input type="text" id="sessSearchInput" placeholder="Найти в текущей сессии...">
+          <span class="cnt" id="sessSearchCnt">0 / 0</span>
+          <button class="icon-btn sm" id="sessSearchPrev" title="Предыдущее"><i class="fa-solid fa-chevron-up"></i></button>
+          <button class="icon-btn sm" id="sessSearchNext" title="Следующее"><i class="fa-solid fa-chevron-down"></i></button>
+          <button class="icon-btn sm" id="sessSearchClose" title="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="stream-wrap">
+          <div class="stream" id="stream"></div>
+          <button class="scroll-bottom" id="scrollBottom" title="Вниз" aria-label="Прокрутить вниз"><i class="fa-solid fa-arrow-down"></i></button>
+        </div>
+
+        <div class="bookmarks-panel" id="bookmarksPanel">
+          <div class="bp-head">
+            <i class="fa-solid fa-bookmark" style="color:var(--accent)"></i>
+            <b>Закладки</b>
+            <div class="spacer"></div>
+            <button class="icon-btn" id="bmClose"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="bp-body" id="bmBody"></div>
+        </div>
+
+        <div class="composer">
+          <div class="suggest" id="suggest"></div>
+          <div class="snip-pop" id="snipPop">
+            <b>Сохранённые сниппеты</b>
+            <div id="snipList"></div>
+            <div style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+              <button class="btn sm" id="snipAdd"><i class="fa-solid fa-plus"></i> Добавить текущий</button>
+            </div>
+          </div>
+          <div class="draft-pill" id="draftPill">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>Сохранён черновик</span>
+            <div class="spacer"></div>
+            <button id="draftRestore">Восстановить</button>
+            <button id="draftDismiss">Убрать</button>
+          </div>
+          <div class="reply-bar" id="replyBar">
+            <i class="fa-solid fa-reply ri"></i>
+            <div class="txt">
+              <b>Ответ на сообщение</b>
+              <p id="replyText"></p>
+            </div>
+            <button class="close" id="replyClose"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="atts" id="atts"></div>
+
+          <div class="queue-strip" id="queueStrip"
+               title="Порядок строк = порядок отправки. Строку можно перетащить, отредактировать, убрать или отправить сейчас — это перебьёт текущий ход.">
+            <div class="qs-head">
+              <i class="fa-solid fa-inbox"></i>
+              <b id="qsTitle">Очередь: 0</b>
+              <div class="spacer"></div>
+              <button type="button" class="qs-btn all" id="qsClear" title="Убрать все сообщения из очереди">
+                <i class="fa-solid fa-broom"></i> Очистить</button>
+            </div>
+            <div class="qs-list" id="qsList"></div>
+          </div>
+
+          <div class="cbox" id="cbox">
+            <textarea id="input" rows="1" placeholder="Опишите задачу агенту…  ( / — команды, @ — контекст )"></textarea>
+            <div class="crow">
+              <button class="cbtn" id="cFile" title="Файл"><i class="fa-solid fa-paperclip"></i></button>
+              <button class="cbtn" id="cImage" title="Изображение"><i class="fa-regular fa-image"></i></button>
+              <button class="cbtn" id="cFolder" title="Папка"><i class="fa-solid fa-folder-plus"></i></button>
+              <button class="cbtn" id="cCmd" title="Команды"><i class="fa-solid fa-terminal"></i></button>
+              <button class="cbtn" id="cSnip" title="Сниппеты"><i class="fa-solid fa-book-open"></i></button>
+              <div class="spacer"></div>
+              <button class="cbtn" id="cSpeak" title="Озвучивать"><i class="fa-solid fa-volume-high"></i></button>
+              <div class="cmicWrap" id="cmWrap">
+                <canvas class="sendOrb" id="cOrbMic" aria-hidden="true"></canvas>
+                <button class="cbtn" id="cMic" title="Микрофон"><i class="fa-solid fa-microphone"></i></button>
+              </div>
+              <div class="sendWrap" id="sendWrap">
+                <canvas class="sendOrb" id="cOrb" aria-hidden="true"></canvas>
+                <button class="cbtn send" id="cSend" title="Отправить"><i class="fa-solid fa-paper-plane"></i></button>
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="pop" id="cmdPop">
+            <b>Команды</b>
+            <button data-cmd="/plan "><i class="fa-solid fa-list-check"></i>/plan <span style="color:var(--text-3);font-size:10.5px">— составить план</span></button>
+            <button data-cmd="/code "><i class="fa-solid fa-code"></i>/code <span style="color:var(--text-3);font-size:10.5px">— работа с кодом</span></button>
+            <button data-cmd="/files "><i class="fa-solid fa-folder-tree"></i>/files <span style="color:var(--text-3);font-size:10.5px">— обзор папки</span></button>
+            <button data-cmd="/search "><i class="fa-solid fa-magnifying-glass"></i>/search <span style="color:var(--text-3);font-size:10.5px">— поиск в сети</span></button>
+            <button data-cmd="/run "><i class="fa-solid fa-terminal"></i>/run <span style="color:var(--text-3);font-size:10.5px">— выполнить команду</span></button>
+            <button data-cmd="/clear"><i class="fa-solid fa-broom"></i>/clear <span style="color:var(--text-3);font-size:10.5px">— очистить диалог</span></button>
+          </div>
+          <div class="cfoot">
+            <select id="fModel" title="Модель"></select>
+            <select id="fMode" title="Режим">
+              <option value="agent">Агент</option>
+              <option value="chat">Диалог</option>
+            </select>
+<span class="chip" id="fPath" style="display:none"><i class="fa-solid fa-location-dot"></i><span></span></span>
+<span class="chip" id="queueChip" style="display:none" title="Сообщения, которые отправятся после текущего хода"><i class="fa-solid fa-inbox"></i><span id="queueEta">Очередь: 0</span></span>
+<div class="spacer"></div>
+<span class="tok" title="Потраченные токены, скорость генерации и заполнение контекста">
+<i class="fa-solid fa-coins"></i><span id="fTokens">0 ток.</span>
+<span style="opacity:.5;margin:0 4px">·</span>
+<i class="fa-solid fa-gauge-high"></i><span id="fSpeed">— tok/s</span>
+<span style="opacity:.5;margin:0 4px">·</span>
+<i class="fa-solid fa-database"></i><span id="fContext">0%</span>
+ </span>
+ </div>
+ </div>
+  <!-- ЖИВОЙ ТЕРМИНАЛ (xterm.js) — выдвижная панель снизу -->
+  <div class="term-drawer" id="termDrawer">
+    <div class="term-bar">
+      <h3><i class="fa-solid fa-terminal"></i> Терминал <span class="n" id="termCount">0</span></h3>
+      <span class="term-cwd" id="termCwd"></span>
+      <div class="spacer"></div>
+      <button class="btn sm" id="termClear" title="Очистить вывод"><i class="fa-solid fa-broom"></i></button>
+      <button class="icon-btn sm" id="termMax" title="Развернуть / свернуть"><i class="fa-solid fa-maximize"></i></button>
+      <button class="icon-btn sm" id="termClose" title="Закрыть (Ctrl+`)"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="term-host" id="termHost"></div>
+  </div>
+</section>
+
+
+ <!-- Панель вызовов инструментов -->
+<aside class="tools-panel" id="toolsPanel">
+<div class="tools-panel-head">
+<h3><i class="fa-solid fa-screwdriver-wrench"></i> Вызовы инструментов <span class="n" id="toolsCount" title="Вызовов в сессии">0</span></h3>
+<button class="icon-btn sm" id="toolsExpandAll" title="Развернуть все"><i class="fa-solid fa-expand"></i></button>
+<button class="icon-btn sm" id="toolsDiff" title="Сравнить с версией в Git"><i class="fa-solid fa-code-compare"></i></button>
+<button class="icon-btn sm" id="toolsClear" title="Очистить список вызовов"><i class="fa-solid fa-broom"></i></button>
+<button class="icon-btn sm" id="toolsPanelClose" title="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+ </div>
+<div class="think-pin collapsed" id="thinkPin" style="display:none">
+<div class="think-pin-head" id="thinkPinHead">
+<span class="t"><i class="fa-solid fa-brain"></i><span>Рассуждения</span></span>
+<span class="badge" id="thinkPinBadge" style="display:none"><i class="fa-solid fa-circle-notch fa-spin"></i>думаю</span>
+<i class="fa-solid fa-chevron-down chev"></i>
+</div>
+<div class="think-pin-body" id="thinkPinBody"></div>
+</div>
+<!-- Субагенты: работают отдельно от инструментов, поэтому свой блок -->
+<div class="think-pin collapsed" id="subPin" style="display:none">
+<div class="think-pin-head" id="subPinHead">
+<span class="t"><i class="fa-solid fa-users"></i><span>Субагенты</span></span>
+<span class="badge" id="subPinBadge" style="display:none"><i class="fa-solid fa-circle-notch fa-spin"></i>работают</span>
+<i class="fa-solid fa-chevron-down chev"></i>
+</div>
+<div class="think-pin-body" id="subPinBody"></div>
+</div>
+<div class="tools-panel-body" id="toolsPanelBody">
+<div class="empty"><i class="fa-solid fa-screwdriver-wrench"></i><p>Нет вызовов инструментов в этой сессии</p></div>
+ </div>
+ </aside>
+
+<aside class="details" id="details">
+<div class="details-collapse-btn" id="detailsCollapseBtn" role="button" tabindex="0" aria-label="Свернуть панель" aria-expanded="true" title="Свернуть панель">
+<i class="fa-solid fa-chevron-right"></i>
+</div>
+<div class="details-body" id="detailsBody"></div>
+</aside>
+ </div>
+
+    <footer class="m-foot">
+      <span class="pill" id="footHint"><i class="fa-solid fa-keyboard"></i> Enter — отправить, Ctrl+F — поиск, Ctrl+H — история</span>
+      <div class="spacer"></div>
+      <button class="btn ghost sm" id="exportSession"><i class="fa-solid fa-file-export"></i> Экспорт</button>
+      <button class="btn ghost sm" id="clearSession"><i class="fa-solid fa-broom"></i> Очистить</button>
+    </footer>
+  </div>
+</div>
+
+<!-- НАСТРОЙКИ -->
+<div class="overlay" id="setOverlay">
+  <div class="modal">
+    <header class="m-head">
+      <div class="m-title"><i class="fa-solid fa-sliders"></i><h2>Настройки</h2></div>
+      <div class="spacer"></div>
+      <select class="field" id="profileSelect" style="width:160px" title="Профиль"></select>
+      <button class="btn sm" id="profileSave" title="Сохранить текущий профиль"><i class="fa-solid fa-floppy-disk"></i></button>
+      <button class="btn sm" id="profileNew" title="Новый профиль"><i class="fa-solid fa-plus"></i></button>
+      <span class="pill" id="savePill" style="opacity:0;transition:.3s"><i class="fa-solid fa-check"></i> Сохранено</span>
+      <button class="icon-btn" id="setClose"><i class="fa-solid fa-xmark"></i></button>
+    </header>
+
+    <div class="m-body">
+      <nav class="set-nav" id="setNav">
+        <button data-p="general" class="on"><i class="fa-solid fa-gear"></i><span>Общие</span></button>
+        <button data-p="appearance"><i class="fa-solid fa-palette"></i><span>Внешний вид</span></button>
+        <button data-p="voice"><i class="fa-solid fa-microphone-lines"></i><span>Голос</span></button>
+        <button data-p="agent"><i class="fa-solid fa-infinity"></i><span>Агент</span></button>
+        <button data-p="tools"><i class="fa-solid fa-screwdriver-wrench"></i><span>Инструменты</span></button>
+        <button data-p="plugins"><i class="fa-solid fa-plug"></i><span>Плагины</span></button>
+        <button data-p="projects"><i class="fa-solid fa-diagram-project"></i><span>Проекты</span></button>
+        <button data-p="cron"><i class="fa-solid fa-clock-rotate-left"></i><span>Крон-задачи</span></button>
+        <button data-p="templates"><i class="fa-solid fa-bookmark"></i><span>Шаблоны</span></button>
+        <button data-p="commands"><i class="fa-solid fa-terminal"></i><span>Команды</span></button>
+        <button data-p="pricing"><i class="fa-solid fa-coins"></i><span>Цены</span></button>
+        <hr>
+        <button data-p="connection"><i class="fa-solid fa-plug"></i><span>Подключение</span></button>
+        <button data-p="data"><i class="fa-solid fa-database"></i><span>Данные</span></button>
+        <button data-p="hotkeys"><i class="fa-regular fa-keyboard"></i><span>Горячие клавиши</span></button>
+        <button data-p="about"><i class="fa-solid fa-circle-info"></i><span>О программе</span></button>
+      </nav>
+
+      <div class="set-panels" id="setPanels">
+
+        <section class="panel on" data-p="general">
+          <h3>Общие</h3>
+          <p class="sub">Базовое поведение интерфейса, язык и визуальные эффекты.</p>
+          <div class="group">
+            <h5>Интерфейс</h5>
+            <div class="srow"><div class="txt"><b>Язык интерфейса</b></div>
+              <div class="ctl"><select class="field" data-set="general.lang">
+                <option value="ru">Русский</option><option value="en">English</option></select></div></div>
+            <div class="srow"><div class="txt"><b>Тема оформления</b></div>
+              <div class="ctl"><div class="seg" data-seg="general.theme">
+                <button data-val="light" class="on">Светлая</button>
+                <button data-val="dark">Тёмная</button>
+                <button data-val="auto">Авто</button></div></div></div>
+            <div class="srow"><div class="txt"><b>Анимации</b></div>
+              <div class="ctl"><div class="toggle on" data-set="general.animations"></div></div></div>
+            <div class="srow"><div class="txt"><b>Звуковые сигналы</b></div>
+              <div class="ctl"><div class="toggle on" data-set="general.sounds"></div></div></div>
+            <div class="srow"><div class="txt"><b>Громкость</b></div>
+              <div class="ctl"><div class="rng"><input type="range" min="0" max="1" step=".05" data-set="general.volume"><output data-out="general.volume">60%</output></div></div></div>
+          </div>
+          <div class="group">
+            <h5>Поведение</h5>
+            <div class="srow"><div class="txt"><b>Открывать чат при запуске</b></div>
+              <div class="ctl"><div class="toggle" data-set="general.autostartChat"></div></div></div>
+            <div class="srow"><div class="txt"><b>Автосохранение черновиков</b></div>
+              <div class="ctl"><div class="toggle on" data-set="general.autoDraft"></div></div></div>
+            <div class="srow"><div class="txt"><b>Автосохранение сниппетов</b><small>Предлагать сохранить часто используемые промпты</small></div>
+              <div class="ctl"><div class="toggle on" data-set="general.autoSnipSuggest"></div></div></div>
+          </div>
+          <div class="group">
+            <h5>Список сессий</h5>
+            <div class="srow"><div class="txt"><b>Показывать последних сессий</b><small>Сколько последних сессий оставлять в списке. «Все» — без ограничения. Избранное и проекты не затрагиваются</small></div>
+              <div class="ctl"><div class="seg" data-seg="general.recentSessions">
+                <button data-val="0">Все</button>
+                <button data-val="3">3</button>
+                <button data-val="5">5</button>
+                <button data-val="10">10</button>
+                <button data-val="20">20</button></div></div></div>
+          </div>
+        </section>
+
+        
+        <section class="panel" data-p="appearance">
+          <h3>Внешний вид</h3>
+          <p class="sub">Цвет, типографика и плотность интерфейса. Применяется мгновенно и сохраняется локально.</p>
+          <div class="group">
+            <h5>Цвет</h5>
+            <div class="srow"><div class="txt"><b>Акцентный цвет</b><small>Кнопки, ссылки, выделения, пузыри</small></div>
+              <div class="ctl"><div class="swatches" id="accentSwatches">
+                <button class="swatch" data-accent="#4f46e5" style="background:#4f46e5" title="Индиго"></button>
+                <button class="swatch" data-accent="#0ea5e9" style="background:#0ea5e9" title="Голубой"></button>
+                <button class="swatch" data-accent="#0f9d6c" style="background:#0f9d6c" title="Зелёный"></button>
+                <button class="swatch" data-accent="#d946ef" style="background:#d946ef" title="Фиолетовый"></button>
+                <button class="swatch" data-accent="#f59e0b" style="background:#f59e0b" title="Янтарный"></button>
+                <button class="swatch" data-accent="#ef4444" style="background:#ef4444" title="Красный"></button>
+                <input type="color" id="accentCustom" value="#4f46e5" title="Свой цвет">
+              </div></div></div>
+          </div>
+          <div class="group">
+            <h5>Типографика</h5>
+            <div class="srow"><div class="txt"><b>Шрифт</b></div>
+              <div class="ctl"><select class="field" data-set="appearance.font">
+                <option value="system">Системный</option><option value="serif">С засечками</option><option value="mono">Моноширинный</option></select></div></div>
+            <div class="srow"><div class="txt"><b>Размер текста</b></div>
+              <div class="ctl"><div class="seg" data-seg="appearance.fontSize">
+                <button data-val="sm">S</button><button data-val="md" class="on">M</button><button data-val="lg">L</button></div></div></div>
+          </div>
+          <div class="group">
+            <h5>Компоновка</h5>
+            <div class="srow"><div class="txt"><b>Плотность интерфейса</b></div>
+              <div class="ctl"><div class="seg" data-seg="appearance.density">
+                <button data-val="compact">Компактно</button><button data-val="cozy" class="on">Уютно</button></div></div></div>
+            <div class="srow"><div class="txt"><b>Скругление углов</b></div>
+              <div class="ctl"><div class="seg" data-seg="appearance.radius">
+                <button data-val="sharp">Минимум</button><button data-val="md" class="on">Среднее</button><button data-val="round">Максимум</button></div></div></div>
+            <div class="srow"><div class="txt"><b>Ширина сообщений</b></div>
+              <div class="ctl"><div class="seg" data-seg="appearance.msgWidth">
+                <button data-val="sm">Узкая</button><button data-val="md" class="on">Средняя</button><button data-val="lg">Широкая</button></div></div></div>
+            <div class="srow"><div class="txt"><b>Фон стартового экрана</b></div>
+              <div class="ctl"><div class="seg" data-seg="appearance.backdrop">
+                <button data-val="grid" class="on">Сетка</button><button data-val="plain">Пустой</button></div></div></div>
+          </div>
+        </section>
+
+        <section class="panel" data-p="voice">
+          <h3>Голос</h3>
+          <p class="sub">Распознавание речи и синтез ответов.</p>
+          <div class="group">
+            <h5><i class="fa-solid fa-microphone"></i> Ввод</h5>
+            <div class="srow"><div class="txt"><b>Движок распознавания</b><small>Whisper — локально на CPU, без интернета</small></div>
+              <div class="ctl"><div class="seg" data-seg="voice.sttEngine">
+                <button data-val="whisper">Whisper</button>
+                <button data-val="browser">Браузер</button></div></div></div>
+            <div class="srow"><div class="txt"><b>Модель Whisper</b><small>Больше — точнее, но медленнее (CPU). На замере фразы 3.4 c: base 0.7 c, small 2.2 c, turbo 7.6 c</small></div>
+              <div class="ctl"><select class="field" data-set="voice.sttModel">
+                <option value="">Авто — по профилю и железу</option>
+                <option value="base">base — быстрая</option>
+                <option value="small">small — баланс</option>
+                <option value="medium">medium — точнее</option>
+                <option value="large-v3-turbo">large-v3-turbo — максимум</option></select>
+                <button class="btn sm" id="sttCheck" title="Проверить локальные модели Whisper"><i class="fa-solid fa-stethoscope"></i></button></div></div>
+            <div class="srow"><div class="txt"><b>Пауза внутри фразы</b><small>Секунд тишины, после которых фраза считается законченной</small></div>
+              <div class="ctl"><div class="rng"><input type="range" min=".35" max="1.6" step=".05" data-set="voice.silence"><output data-out="voice.silence">0.80</output></div></div></div>
+            <div class="srow"><div class="txt"><b>Чувствительность микрофона</b><small>Ниже порог срабатывания — выше значение</small></div>
+              <div class="ctl"><div class="rng"><input type="range" min=".05" max="1" step=".05" data-set="voice.sensitivity"><output data-out="voice.sensitivity">0.60</output></div></div></div>
+            <div class="srow"><div class="txt"><b>Устройство записи</b><small id="micHint">Требуется разрешение</small></div>
+              <div class="ctl"><select class="field" data-set="voice.inputDevice" id="devSelect"><option value="default">По умолчанию</option></select>
+              <button class="btn sm" id="reqMic"><i class="fa-solid fa-unlock"></i></button></div></div>
+            <div class="srow"><div class="txt"><b>Язык распознавания</b></div>
+              <div class="ctl"><select class="field" data-set="voice.recLang">
+                <option value="ru-RU">Русский</option><option value="en-US">English (US)</option>
+                <option value="de-DE">Deutsch</option><option value="fr-FR">Français</option>
+                <option value="es-ES">Español</option><option value="zh-CN">中文</option></select></div></div>
+            <div class="srow"><div class="txt"><b>Непрерывное распознавание</b></div>
+              <div class="ctl"><div class="toggle on" data-set="voice.continuous"></div></div></div>
+            <div class="srow"><div class="txt"><b>Автоотправка после паузы</b></div>
+              <div class="ctl"><div class="toggle on" data-set="voice.autoSend"></div></div></div>
+            <div class="srow"><div class="txt"><b>Режим рации (Пробел)</b></div>
+              <div class="ctl"><div class="toggle on" data-set="voice.pushToTalk"></div></div></div>
+            <div class="srow"><div class="txt"><b>Слово-будильник</b><small>Главный экран ждёт это слово и начинает слушать</small></div>
+              <div class="ctl"><div class="toggle on" data-set="voice.wakeWord"></div></div></div>
+            <div class="srow"><div class="txt"><b>Фраза-будильник</b><small>Скажите «Финик» — дальше говорите фразу</small></div>
+              <div class="ctl"><input class="field" type="text" data-set="voice.wakePhrase" placeholder="финик" style="width:150px"></div></div>
+            <div class="srow"><div class="txt"><b>Сон без речи</b><small>Секунд до возврата в режим ожидания</small></div>
+              <div class="ctl"><div class="rng"><input type="range" min="3" max="60" step="1" data-set="voice.wakeIdle"><output data-out="voice.wakeIdle">10</output></div></div></div>
+            <div class="srow"><div class="txt"><b>Пауза автоотправки</b><small>Секунд тишины перед отправкой фразы</small></div>
+              <div class="ctl"><div class="rng"><input type="range" min=".6" max="5" step=".1" data-set="voice.silenceSend"><output data-out="voice.silenceSend">2.00</output></div></div></div>
+            <div class="srow"><div class="txt"><b>Слово «стоп»</b><small>Прерывает работу агента во время ответа</small></div>
+              <div class="ctl"><div class="toggle on" data-set="voice.stopWord"></div></div></div>
+          </div>
+          <div class="group">
+            <h5><i class="fa-solid fa-volume-high"></i> Вывод</h5>
+            <div class="srow"><div class="txt"><b>Голосовой вывод</b></div>
+              <div class="ctl"><div class="toggle on" data-set="voice.outputEnabled"></div></div></div>
+            <div class="srow"><div class="txt"><b>Озвучивать ответы</b><small>Агент отвечает голосом (Silero, xenia)</small></div>
+              <div class="ctl"><div class="toggle on" data-set="voice.autoSpeak"></div></div></div>
+            <div class="srow"><div class="txt"><b>Озвучивать на лету</b><small>Голос идёт по ходу генерации, по предложениям. Блок рассуждений не озвучивается</small></div>
+              <div class="ctl"><div class="toggle" data-set="voice.liveSpeak"></div></div></div>
+            <div class="srow"><div class="txt"><b>Голос</b></div>
+              <div class="ctl"><select class="field" data-set="voice.voiceURI" id="voiceSelect"><option value="">По умолчанию</option></select></div></div>
+            <div class="srow"><div class="txt"><b>Скорость речи</b></div>
+              <div class="ctl"><div class="rng"><input type="range" min=".5" max="2" step=".05" data-set="voice.rate"><output data-out="voice.rate">1.00</output></div></div></div>
+            <div class="srow"><div class="txt"><b>Проверка</b></div>
+              <div class="ctl"><button class="btn sm" id="testVoice"><i class="fa-solid fa-play"></i> Прослушать</button></div></div>
+          </div>
+          <div class="group">
+            <h5><i class="fa-solid fa-plug-circle-bolt"></i> Пользовательские движки</h5>
+            <p class="sub">Свой сервис распознавания и синтеза вместо локальных. Ключ хранится
+              только в браузере и уходит на сервер вместе с запросом — на диск он не попадает.</p>
+            <div id="engSttBox"></div>
+            <div id="engTtsBox"></div>
+            <button class="btn sm" id="engAdd" style="margin-top:10px"><i class="fa-solid fa-plus"></i> Добавить движок</button>
+          </div>
+        </section>
+
+        <section class="panel" data-p="agent">
+          <h3>Агент</h3>
+          <p class="sub">Модель, режим работы и системные инструкции.</p>
+          <div class="group">
+            <h5>Модель</h5>
+            <div class="srow"><div class="txt"><b>Модель по умолчанию</b></div>
+              <div class="ctl"><select class="field" data-set="agent.model" id="modelSelect"></select></div></div>
+            <div class="srow"><div class="txt"><b>Режим работы</b></div>
+              <div class="ctl"><div class="seg" data-seg="agent.mode">
+                <button data-val="agent" class="on">Агент</button>
+                <button data-val="chat">Диалог</button></div></div></div>
+            <div class="srow"><div class="txt"><b>URL модели для «Диалога»</b><small>Режим «Диалог» обращается к модели напрямую, минуя агента. Пусто — берётся из config.yaml шлюза</small></div>
+              <div class="ctl"><input class="field" type="text" data-set="agent.directUrl" placeholder="http://127.0.0.1:8080/v1" style="width:250px"></div></div>
+            <div class="srow"><div class="txt"><b>Ключ модели</b><small>Если сервер модели требует ключ</small></div>
+              <div class="ctl"><input class="field" type="text" data-set="agent.directKey" placeholder="не обязателен" style="width:190px"></div></div>
+            <div class="srow"><div class="txt"><b>Проверка соединения</b></div>
+              <div class="ctl"><button class="btn sm" id="directTest"><i class="fa-solid fa-plug-circle-check"></i> Проверить</button></div></div>
+            <div class="srow"><div class="txt"><b>Температура</b></div>
+              <div class="ctl"><div class="rng"><input type="range" min="0" max="2" step=".05" data-set="agent.temperature"><output data-out="agent.temperature">0.70</output></div></div></div>
+            <div class="srow"><div class="txt"><b>Максимум токенов</b></div>
+              <div class="ctl"><input type="number" class="field" min="256" max="128000" step="256" data-set="agent.maxTokens"></div></div>
+          </div>
+          <div class="group">
+            <h5>Поведение при занятом агенте</h5>
+            <p class="sub">Что делать с новым сообщением, пока агент ещё работает над предыдущим.</p>
+            <div class="srow"><div class="txt"><b>Режим отправки</b></div>
+              <div class="ctl"><div class="seg" data-seg="agent.busyMode">
+                <button data-val="queue">Очередь</button>
+                <button data-val="interrupt">Перебивать</button></div></div></div>
+            <div class="srow col"><div class="txt"><small>«Очередь» — сообщения накапливаются и отправляются сразу после завершения текущего хода агента. «Перебивать» — текущий ход останавливается и агент немедленно начинает работать над новым сообщением.</small></div></div>
+          </div>
+          <div class="group">
+            <h5>Отображение в чате</h5>
+            <p class="sub">Что показывать в ленте сообщений. По умолчанию всё скрыто: вызовы инструментов видны в панели «Инструменты», рассуждения — в панели справа.</p>
+            <div class="srow"><div class="txt"><b>Вызовы инструментов</b><small>Карточки вызовов инструментов прямо в чате</small></div>
+              <div class="ctl"><div class="toggle" data-set="agent.showToolCalls"></div></div></div>
+            <div class="srow"><div class="txt"><b>Рассуждения модели</b><small>Блоки «Рассуждение» перед ответом агента</small></div>
+              <div class="ctl"><div class="toggle" data-set="agent.showReasoning"></div></div></div>
+          </div>
+          <div class="group">
+            <h5>Настройки шлюза</h5>
+            <p class="sub">Параметры Hermes из файла <code>config.yaml</code>. Изменения вступают в силу после перезапуска шлюза.</p>
+            <div id="acfBox">
+              <div class="empty" style="padding:18px"><i class="fa-solid fa-spinner fa-spin"></i><p>Загрузка параметров шлюза…</p></div>
+            </div>
+            <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn sm primary" id="acfSave" disabled><i class="fa-solid fa-floppy-disk"></i> Сохранить в шлюз</button>
+              <button class="btn sm" id="acfReload"><i class="fa-solid fa-rotate"></i> Обновить</button>
+              <button class="btn sm" id="acfRestart"><i class="fa-solid fa-power-off"></i> Перезапустить шлюз</button>
+            </div>
+            <div id="acfDiff"></div>
+            <p class="sub" style="margin-top:8px"><i class="fa-solid fa-shield-halved"></i> Перед записью создаётся копия <code>config.yaml.bak</code>.</p>
+          </div>
+          <div class="group" id="acfPfGroup" style="display:none">
+            <h5>Профили шлюза</h5>
+            <p class="sub">Наборы параметров. «Применить» подставляет значения в форму — запись в <code>config.yaml</code> происходит только по кнопке «Сохранить».</p>
+            <div id="acfPfList"></div>
+            <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px">
+              <button class="btn sm" id="acfPfNew"><i class="fa-solid fa-plus"></i> Новый профиль</button>
+              <button class="btn sm ghost" id="acfPfUpd"><i class="fa-solid fa-rotate"></i> Обновить из формы</button>
+            </div>
+          </div>          <div class="group">
+            <h5>Инструкции и память</h5>
+            <div class="srow col"><div class="txt"><b>Системные инструкции</b>
+              <small>Хранятся на сервере в файле, поэтому переживают перезапуск. Путь: <code id="agentPromptPath">…</code></small></div>
+              <div class="ctl"><textarea class="field" data-set="agent.systemPrompt" placeholder="Например: ты инженер-ассистент, отвечай кратко…"></textarea></div></div>
+            <div class="srow"><div class="txt"><b>Память между сессиями</b></div>
+              <div class="ctl"><div class="toggle on" data-set="agent.memory"></div></div></div>
+          </div>
+          <div class="group">
+            <h5>Файлы инструкций агента</h5>
+            <p class="sub">Правятся прямо на диске. Изменения подхватываются агентом при следующем запуске. Перед записью создаётся копия <code>.bak</code>.</p>
+            <div id="agentFilesBox">
+              <div class="empty" style="padding:18px"><i class="fa-solid fa-spinner fa-spin"></i><p>Загрузка…</p></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" data-p="tools">
+          <h3>Инструменты и разрешения</h3>
+          <p class="sub">Возможности агента. Список берётся у шлюза, а если он его
+          не отдал — с диска (<code>backend/tools</code> и <code>backend/skills</code>).</p>
+          <div class="group">
+            <h5>Набор</h5>
+            <div class="srow" style="margin-bottom:10px">
+              <div class="txt"><b>Свои записи</b><small>Личный справочник: сохраняется в настройках, шлюзу о ней неизвестно</small></div>
+              <div class="ctl">
+                <button class="btn sm" id="toolAddCustom"><i class="fa-solid fa-plus"></i> Инструмент</button>
+                <button class="btn sm" id="skillAddCustom"><i class="fa-solid fa-plus"></i> Навык</button>
+                <button class="btn sm ghost" id="toolsReload"><i class="fa-solid fa-rotate"></i> Обновить</button>
+              </div>
+            </div>
+            <div id="toolsList"></div>
+          </div>
+          <div class="group">
+            <h5>Безопасность</h5>
+            <div class="srow"><div class="txt"><b>Подтверждение действий</b></div>
+              <div class="ctl"><div class="seg" data-seg="tools.confirm">
+                <button data-val="always">Всегда</button>
+                <button data-val="dangerous" class="on">Только опасные</button>
+                <button data-val="never">Никогда</button></div></div></div>
+            <div class="srow"><div class="txt"><b>Песочница</b></div>
+              <div class="ctl"><div class="toggle on" data-set="tools.sandbox"></div></div></div>
+            <div class="srow"><div class="txt"><b>Команды в чате</b><small>Префикс «!» — выполнить консольную команду без обращения к модели</small></div>
+              <div class="ctl"><div class="toggle on" data-set="tools.shellCmd"></div></div></div>
+            <div class="srow"><div class="txt"><b>Префикс команды</b><small>Например ! или $</small></div>
+              <div class="ctl"><input class="field" type="text" data-set="tools.shellPrefix" placeholder="!" style="width:70px"></div></div>
+            <div class="srow"><div class="txt"><b>Таймаут команды</b><small>Секунд до принудительной остановки</small></div>
+              <div class="ctl"><div class="rng"><input type="range" min="5" max="600" step="5" data-set="tools.shellTimeout"><output data-out="tools.shellTimeout">60</output></div></div></div>
+          </div>
+          <div class="group">
+            <h5>Просмотр файлов и терминал</h5>
+            <div class="srow"><div class="txt"><b>Сравнение с Git</b><small>Кнопка «Diff» у файлов, записанных агентом</small></div>
+              <div class="ctl"><div class="toggle on" data-set="tools.diffEditor"></div></div></div>
+            <div class="srow"><div class="txt"><b>Терминал при запуске</b><small>Открывать панель терминала сразу после старта</small></div>
+              <div class="ctl"><div class="toggle" data-set="tools.liveTerminal"></div></div></div>
+          </div>
+        </section>
+
+        
+        <section class="panel" data-p="plugins">
+          <h3>Плагины</h3>
+          <p class="sub">Расширения на JavaScript внутри приложения — без серверов.<br>
+          API: <code class="inline">api.on('send'|'reply'|'ready'|'session', fn)</code>, <code class="inline">api.registerCommand({name, desc, run})</code>,
+          <code class="inline">api.toast(msg)</code>, <code class="inline">api.storeGet(k, def)</code>, <code class="inline">api.storeSet(k, v)</code>,
+          <code class="inline">api.setInterval(fn, ms)</code>, <code class="inline">api.onDispose(fn)</code>, <code class="inline">api.session()</code>.</p>
+
+          <div class="group">
+            <h5>Папка плагинов</h5>
+            <div id="plugDirBox">
+              <div class="plugdir">
+                <i class="fa-solid fa-folder"></i>
+                <code id="plugDirPath">…</code>
+                <button class="icon-btn sm" id="plugDirPick" data-tip="Указать другую папку"><i class="fa-solid fa-folder-open"></i></button>
+                <button class="icon-btn sm" id="plugDirBrowse" data-tip="Выбрать папку в системном диалоге"><i class="fa-solid fa-ellipsis"></i></button>
+                <span class="badge wait" id="plugWatchPill"><i class="fa-solid fa-plug-circle-xmark"></i> наблюдение недоступно</span>
+              </div>
+              <div class="srow" style="margin-top:11px">
+                <div class="txt"><b>Активация новых плагинов</b>
+                  <small>Автоматически — новый .js подключается сразу. Вручную — система спросит, активировать ли его.</small></div>
+                <div class="ctl"><div class="seg" id="plugModeSeg">
+                  <button data-val="auto">Автоматически</button>
+                  <button data-val="manual">Вручную</button></div></div>
+              </div>
+              <p class="plughint">Попросите агента создать <code class="inline">.js</code> в этой папке — файл подхватится на лету, перезагрузка страницы не нужна.
+                Заголовок файла: <code class="inline">// @name: … @desc: … @version: … @author: …</code></p>
+              <div style="margin-top:10px">
+                <button class="btn sm" id="pluginReadme"><i class="fa-solid fa-book"></i> Документация для агента</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="group">
+            <h5>Установленные</h5>
+            <div class="srow" style="margin-bottom:10px">
+              <div class="txt"><b>Что показывать</b><small>JavaScript и Python лежат в одной папке, но работают по-разному</small></div>
+              <div class="ctl"><div class="seg" id="plugViewSeg">
+                <button data-val="all" class="on">Все</button>
+                <button data-val="js">JavaScript</button>
+                <button data-val="py">Python</button></div></div>
+            </div>
+            <div class="srow" style="margin-bottom:12px">
+              <div class="txt"><b>Поиск</b><small>По названию, описанию, автору и имени файла</small></div>
+              <div class="ctl">
+                <input class="field" id="plugSearch" type="search" placeholder="например: счётчик" style="width:230px">
+                <span class="chip" id="plugCount" style="margin-left:8px">0</span>
+              </div>
+            </div>
+            <div id="pluginList"></div>
+            <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn primary sm" id="pluginNew"><i class="fa-solid fa-plus"></i> Новый плагин</button>
+              <button class="btn sm" id="pluginSample"><i class="fa-solid fa-wand-magic-sparkles"></i> Добавить примеры</button>
+              <button class="btn sm" id="pluginRescan"><i class="fa-solid fa-rotate"></i> Пересканировать</button>
+              <button class="btn sm" id="pluginOpenDir"><i class="fa-solid fa-folder-open"></i> Открыть папку</button>
+            </div>
+          </div>
+
+          <div class="group" id="pyPluginGroup">
+            <h5>Python-плагины</h5>
+            <p class="sub">Файлы <code class="inline">.py</code> в той же папке. Код исполняется
+            на сервере, поэтому такие плагины работают только при запуске через веб-сервер и только с этой машины.
+            API: <code class="inline">api.on('ready'|'message'|'message_done'|'session_start'|'tool_call', fn)</code>,
+            <code class="inline">api.register_command('имя', fn, 'описание')</code>,
+            <code class="inline">api.toast('текст')</code>,
+            <code class="inline">api.log('текст')</code>,
+            <code class="inline">api.store_get(k, default)</code>,
+            <code class="inline">api.store_set(k, v)</code>,
+            <code class="inline">api.register_route('путь', fn)</code> →
+            <code class="inline">/api/pyplugins/run/путь</code>.<br>
+            Заголовок как у .js: <code class="inline"># @name: … @desc: … @version: …</code>.
+            Точка входа — <code class="inline">def register(api):</code>.</p>
+            <div id="pyPluginList">
+              <div class="empty" style="padding:18px"><i class="fa-solid fa-spinner fa-spin"></i><p>Загрузка…</p></div>
+            </div>
+            <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn primary sm" id="pyPluginNew"><i class="fa-solid fa-plus"></i> Новый .py</button>
+              <button class="btn sm" id="pyPluginSample"><i class="fa-solid fa-wand-magic-sparkles"></i> Пример</button>
+              <button class="btn sm" id="pyPluginReload"><i class="fa-solid fa-rotate"></i> Перезагрузить</button>
+              <button class="btn sm ghost" id="pyPluginLogs"><i class="fa-solid fa-scroll"></i> Журнал</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" data-p="projects">
+          <h3>Проекты</h3>
+          <p class="sub">Рабочие папки агента.</p>
+          <div class="group">
+            <h5>Список</h5>
+            <div id="projList"></div>
+            <div class="srow" style="margin-top:10px"><div class="txt"><b>Проект по умолчанию</b><small>Подключается к новым сессиям</small></div>
+              <div class="ctl"><select class="field" id="defProject"></select></div></div>
+            <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn primary sm" id="stAddProject"><i class="fa-solid fa-folder-plus"></i> Добавить проект</button>
+              <button class="btn sm" id="stManualProject"><i class="fa-solid fa-keyboard"></i> Указать путь вручную</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" data-p="cron">
+          <h3>Крон-задачи</h3>
+          <p class="sub">Задания, которые агент выполняет по расписанию. Работает только при запущенном шлюзе.</p>
+          <div class="group">
+            <h5>Сводка</h5>
+            <div class="srow"><div class="txt"><b>Состояние планировщика</b><small>Показывает, запущен ли шлюз — без него задания не выполняются</small></div>
+              <div class="ctl"><span class="pill" id="cronGwPill"><i class="fa-solid fa-circle"></i><span>проверка…</span></span></div></div>
+            <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn sm" id="cronAdd"><i class="fa-solid fa-plus"></i> Создать задачу</button>
+              <button class="btn sm ghost" id="cronReload"><i class="fa-solid fa-rotate"></i> Обновить</button>
+            </div>
+          </div>
+          <div class="group">
+            <h5>Уведомления</h5>
+            <p class="sub">Оповещать о завершении и сбоях фоновых заданий, даже когда вкладка «Крон» закрыта.</p>
+            <div class="srow"><div class="txt"><b>Уведомления о запусках</b><small>Колокольчик в шапке: список последних запусков с цветовой индикацией</small></div>
+              <div class="ctl"><div class="toggle on" data-set="cron.notify"></div></div></div>
+            <div class="srow"><div class="txt"><b>Ошибки отдельным звуком</b><small>Короткий сигнал, когда задание завершилось неудачей</small></div>
+              <div class="ctl"><div class="toggle" data-set="cron.notifySound"></div></div></div>
+            <div class="srow"><div class="txt"><b>Автообновление списка</b><small>Пока вкладка «Крон» открыта, задачи и история подтягиваются сами</small></div>
+              <div class="ctl"><div class="toggle on" data-set="cron.autoRefresh"></div></div></div>
+            <div class="srow"><div class="txt"><b>Интервал проверки</b><small>Как часто опрашивать шлюз. Меньше значение — быстрее реакция, выше нагрузка</small></div>
+              <div class="ctl"><div class="seg" data-seg="cron.interval">
+                <button data-val="15">15 с</button>
+                <button data-val="30">30 с</button>
+                <button data-val="60">1 мин</button>
+                <button data-val="300">5 мин</button></div></div></div>
+            <div class="srow col"><div class="txt"><small>На главной странице виден только колокольчик — сами задачи и история всегда в этой вкладке, чтобы не терять управление ими.</small></div></div>
+          </div>
+          <div class="group">
+            <h5>Активные задачи</h5>
+            <div id="cronJobs"><div class="empty" style="padding:22px"><i class="fa-solid fa-spinner fa-spin"></i><p>Загрузка…</p></div></div>
+          </div>
+          <div class="group">
+            <h5>Последние запуски</h5>
+            <div id="cronRuns"><div class="empty" style="padding:22px"><i class="fa-solid fa-clock-rotate-left"></i><p>История появится после первого запуска</p></div></div>
+          </div>
+          <div class="group" id="cronIncGroup" style="display:none">
+            <h5>Сбои</h5>
+            <div id="cronIncidents"></div>
+          </div>
+        </section>
+        <section class="panel" data-p="templates">
+          <h3>Шаблоны сессий</h3>
+          <p class="sub">Предустановленные задачи.</p>
+          <div class="group"><h5>Встроенные</h5><div id="tmplList"></div></div>
+          <div class="group">
+            <h5>Свои</h5>
+            <div id="customTmplList"></div>
+            <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">
+              <button class="btn primary sm" id="newTmpl"><i class="fa-solid fa-plus"></i> Новый шаблон</button>
+              <button class="btn sm" id="saveCurrentTmpl"><i class="fa-solid fa-floppy-disk"></i> Сохранить текущую сессию</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- НОВОЕ: КАСТОМНЫЕ КОМАНДЫ -->
+        <section class="panel" data-p="commands">
+          <h3>Кастомные slash-команды</h3>
+          <p class="sub">Свои <code class="inline">/команды</code> с переменными <code class="inline">{{input}}</code>, <code class="inline">{{project}}</code>, <code class="inline">{{date}}</code>.</p>
+          <div class="group">
+            <h5>Встроенные</h5>
+            <div class="cmdrow"><span class="cmd-name">/plan</span><span class="cmd-desc">составить план</span></div>
+            <div class="cmdrow"><span class="cmd-name">/code</span><span class="cmd-desc">работа с кодом</span></div>
+            <div class="cmdrow"><span class="cmd-name">/files</span><span class="cmd-desc">обзор папки</span></div>
+            <div class="cmdrow"><span class="cmd-name">/search</span><span class="cmd-desc">поиск в сети</span></div>
+            <div class="cmdrow"><span class="cmd-name">/run</span><span class="cmd-desc">выполнить команду</span></div>
+            <div class="cmdrow"><span class="cmd-name">/clear</span><span class="cmd-desc">очистить диалог</span></div>
+          </div>
+          <div class="group">
+            <h5>Свои команды</h5>
+            <div id="cmdList"></div>
+            <button class="btn primary sm" id="cmdNew" style="margin-top:12px"><i class="fa-solid fa-plus"></i> Создать команду</button>
+          </div>
+          <div class="group">
+            <h5>Перехват сообщений (без ИИ)</h5>
+            <p class="sub">Фраза ловится <b>до</b> отправки агенту и выполняет заранее написанный скрипт.
+              Модель, агент и «Диалог» при этом не вызываются вообще. Скрипт на <code class="inline">js</code>
+              выполняется в браузере, на <code class="inline">python</code> — на сервере отдельным процессом.</p>
+            <div id="icList"></div>
+            <button class="btn primary sm" id="icNew" style="margin-top:12px"><i class="fa-solid fa-plus"></i> Создать перехватчик</button>
+          </div>
+        </section>
+
+        <!-- НОВОЕ: ЦЕНЫ -->
+        <section class="panel" data-p="pricing">
+          <h3>Цены моделей</h3>
+          <p class="sub">Стоимость за 1M токенов для подсчёта расходов. Настройки на сессию влияют через поле «модель».</p>
+          <div class="group">
+            <h5>Цена за 1M токенов (USD)</h5>
+            <div id="pricingList"></div>
+            <div class="srow" style="margin-top:12px">
+              <div class="txt"><b>Валюта отображения</b></div>
+              <div class="ctl"><div class="seg" data-seg="pricing.currency">
+                <button data-val="USD" class="on">USD</button>
+                <button data-val="EUR">EUR</button>
+                <button data-val="RUB">₽</button></div></div>
+            </div>
+            <div class="srow">
+              <div class="txt"><b>Бюджет на сессию</b><small>Предупреждать при превышении</small></div>
+              <div class="ctl"><input type="number" class="field" min="0" step="0.1" data-set="pricing.budget" placeholder="1.00"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" data-p="connection">
+          <h3>Подключение</h3>
+          <p class="sub">Транспорт для обмена с бэкендом.</p>
+          <div class="group">
+            <h5>Канал связи</h5>
+            <div class="srow"><div class="txt"><b>Использовать шлюз</b></div>
+              <div class="ctl"><div class="toggle" data-set="connection.enabled"></div></div></div>
+            <div class="srow"><div class="txt"><b>Адрес</b></div>
+              <div class="ctl"><input type="text" class="field" data-set="connection.url" placeholder="ws://localhost:8080/ws"></div></div>
+            <div class="srow"><div class="txt"><b>Протокол</b></div>
+              <div class="ctl"><select class="field" data-set="connection.protocol">
+                <option value="ws">WebSocket</option><option value="sse">SSE</option><option value="http">HTTP</option></select></div></div>
+            <div class="srow"><div class="txt"><b>Ключ доступа</b></div>
+              <div class="ctl"><div class="eye"><input type="password" class="field" data-set="connection.key" placeholder="••••••••">
+                <button id="eyeBtn"><i class="fa-regular fa-eye"></i></button></div></div></div>
+          </div>
+        </section>
+
+        <section class="panel" data-p="data">
+          <h3>Данные</h3>
+          <p class="sub">Локальное хранилище.</p>
+          <div class="group">
+            <h5>Хранение</h5>
+            <div class="srow"><div class="txt"><b>Движок</b></div>
+              <div class="ctl"><div class="seg" data-seg="data.engine">
+                <button data-val="idb" class="on">IndexedDB</button><button data-val="ls">localStorage</button></div></div></div>
+            <div class="srow"><div class="txt"><b>Сохранять историю</b></div>
+              <div class="ctl"><div class="toggle on" data-set="data.history"></div></div></div>
+            <div class="srow"><div class="txt"><b>Занято</b><small id="storeSize">—</small></div>
+              <div class="ctl"><span class="badge wait" id="storeCount">0 сессий</span></div></div>
+          </div>
+          <div class="group">
+            <h5>Перенос</h5>
+            <div style="display:flex;gap:9px;flex-wrap:wrap">
+              <button class="btn sm" id="expAll"><i class="fa-solid fa-file-export"></i> Экспорт JSON</button>
+              <button class="btn sm" id="expMd"><i class="fa-brands fa-markdown"></i> Экспорт Markdown</button>
+              <button class="btn sm" id="impAll"><i class="fa-solid fa-file-import"></i> Импорт</button>
+              <button class="btn danger sm" id="wipe"><i class="fa-regular fa-trash-can"></i> Удалить всё</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" data-p="hotkeys">
+          <h3>Горячие клавиши</h3>
+          <p class="sub">Работают во всём приложении.</p>
+          <div class="group">
+            <h5>Основные</h5>
+            <div class="dcard" style="padding:4px 14px">
+              <div class="kbdrow"><span>Говорить</span><div><kbd>Space</kbd></div></div>
+              <div class="kbdrow"><span>Рабочая область</span><div><kbd>Ctrl</kbd><kbd>K</kbd></div></div>
+              <div class="kbdrow"><span>Новая сессия</span><div><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>N</kbd></div></div>
+              <div class="kbdrow"><span>Поиск в сессии</span><div><kbd>Ctrl</kbd><kbd>F</kbd></div></div>
+              <div class="kbdrow"><span>История промптов</span><div><kbd>Ctrl</kbd><kbd>H</kbd></div></div>
+              <div class="kbdrow"><span>Отправить</span><div><kbd>Enter</kbd></div></div>
+              <div class="kbdrow"><span>Отмена</span><div><kbd>Ctrl</kbd><kbd>Z</kbd></div></div>
+              <div class="kbdrow"><span>Повтор</span><div><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>Z</kbd></div></div>
+              <div class="kbdrow"><span>Сменить тему</span><div><kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>L</kbd></div></div>
+              <div class="kbdrow"><span>Терминал</span><div><kbd>Ctrl</kbd><kbd>`</kbd></div></div>
+              <div class="kbdrow"><span>Сохранить файл</span><div><kbd>Ctrl</kbd><kbd>S</kbd></div></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" data-p="about">
+          <h3>О программе</h3>
+          <p class="sub">Голосовой агент v1.2.0.</p>
+          <div class="about-hero">
+            <svg viewBox="0 0 160 80">
+              <defs><linearGradient id="abg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1"/><stop offset="50%" stop-color="#818cf8"/><stop offset="100%" stop-color="#a78bfa"/></linearGradient></defs>
+              <path d="M40,40 C40,20 60,20 80,40 C100,60 120,60 120,40 C120,20 100,20 80,40 C60,60 40,60 40,40 Z"
+                    fill="none" stroke="url(#abg)" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <div><h3>Агент</h3><p>Версия 1.2.0 · Голосовой ввод и вывод, проекты, планирование, инструменты, поиск, теги, экспорт, pomodoro, сниппеты, кастомные команды, закладки, реакции, фокус-режим.</p></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <footer class="m-foot">
+      <span class="pill"><i class="fa-solid fa-shield-halved"></i> Данные локально</span>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="resetSettings"><i class="fa-solid fa-rotate-left"></i> Сбросить</button>
+      <button class="btn primary" id="setDone"><i class="fa-solid fa-check"></i> Готово</button>
+    </footer>
+  </div>
+</div>
+
+<!-- ИСТОРИЯ ПРОМПТОВ -->
+<div class="hist-pop" id="histPop">
+  <div class="hh">
+    <i class="fa-solid fa-clock-rotate-left" style="color:var(--accent)"></i>
+    <b>История промптов</b>
+    <div class="spacer"></div>
+    <input type="text" id="histSearch" placeholder="Поиск...">
+    <button class="icon-btn sm" id="histClose"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="hist-list" id="histList"></div>
+</div>
+
+<!-- ФОРМА -->
+<div class="overlay" id="formOverlay" style="z-index:300">
+  <div class="modal mini">
+    <header class="m-head"><div class="m-title"><i class="fa-solid fa-pen" id="formIcon"></i><h2 id="formTitle">Ввод</h2></div>
+      <div class="spacer"></div><button class="icon-btn" id="formX"><i class="fa-solid fa-xmark"></i></button></header>
+    <div class="m-body" id="formBody"></div>
+    <footer class="m-foot"><div class="spacer"></div>
+      <button class="btn ghost" id="formCancel">Отмена</button>
+      <button class="btn primary" id="formOk"><i class="fa-solid fa-check"></i> Подтвердить</button></footer>
+  </div>
+</div>
+
+<!-- ПОДТВЕРЖДЕНИЕ НОВОГО ПЛАГИНА (режим «Вручную») -->
+<div class="overlay" id="plugAsk" style="z-index:340">
+  <div class="modal mini">
+    <header class="m-head"><div class="m-title"><i class="fa-solid fa-plug" style="color:var(--accent)"></i><h2>Новый плагин обнаружен</h2></div>
+      <div class="spacer"></div></header>
+    <div class="m-body" style="padding:18px 22px">
+      <p style="font-size:12.5px;color:var(--text-2);margin-bottom:12px">
+        В папке плагинов появился файл <b id="plugAskName">—</b> <span id="plugAskCount" style="color:var(--text-3)"></span>.
+        Активировать его?
+      </p>
+      <pre id="plugAskPrev"></pre>
+    </div>
+    <footer class="m-foot"><div class="spacer"></div>
+      <button class="btn ghost" id="plugAskNo">Не сейчас</button>
+      <button class="btn primary" id="plugAskYes"><i class="fa-solid fa-check"></i> Активировать</button></footer>
+  </div>
+</div>
+
+<!-- PIN -->
+<div class="overlay" id="pinOverlay" style="z-index:350">
+  <div class="modal mini">
+    <header class="m-head"><div class="m-title"><i class="fa-solid fa-lock"></i><h2 id="pinTitle">Введите PIN</h2></div>
+      <div class="spacer"></div><button class="icon-btn" id="pinX"><i class="fa-solid fa-xmark"></i></button></header>
+    <div class="m-body" style="padding:18px 22px">
+      <p id="pinHint" style="text-align:center;font-size:12.5px;color:var(--text-2);margin-bottom:10px">Введите 4 цифры</p>
+      <div class="pin-dots" id="pinDots"><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span></div>
+      <div class="pin-grid" id="pinGrid">
+        <button data-d="1">1</button><button data-d="2">2</button><button data-d="3">3</button>
+        <button data-d="4">4</button><button data-d="5">5</button><button data-d="6">6</button>
+        <button data-d="7">7</button><button data-d="8">8</button><button data-d="9">9</button>
+        <button data-d="clr"><i class="fa-solid fa-delete-left"></i></button>
+        <button data-d="0">0</button><button data-d="ok"><i class="fa-solid fa-check"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ПАЛИТРА КОМАНД: Ctrl+K / Cmd+K -->
+<div class="pal-ov" id="palOv">
+  <div class="pal-shell">
+    <div class="pal-top">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input class="pal-input" id="palInput" type="text" spellcheck="false"
+             placeholder="Команда или раздел…" autocomplete="off">
+      <span class="chip" id="palCount"></span>
+      <button class="icon-btn sm" id="palClose" title="Закрыть (Esc)"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="pal-body" id="palBody"></div>
+    <div class="pal-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> выбрать</span>
+      <span><kbd>Enter</kbd> выполнить</span>
+      <span><kbd>Esc</kbd> закрыть</span>
+    </div>
+  </div>
+</div>
+
+<!-- ТУР -->
+<div class="tour" id="tour">
+  <div class="tour-highlight" id="tourHighlight"></div>
+  <div class="tour-pop" id="tourPop"></div>
+</div>
+
+<div class="preview-ov" id="previewOv">
+  <div class="pv-shell">
+    <div class="pv-bar">
+      <span class="pv-badge">Предпросмотр</span>
+      <b id="pvTitle">file.html</b>
+      <div class="spacer"></div>
+      <button class="btn sm" id="pvDownload"><i class="fa-solid fa-download"></i> Скачать</button>
+      <button class="btn sm" id="pvCopy"><i class="fa-regular fa-copy"></i> Копировать</button>
+      <button class="icon-btn sm" id="pvClose" title="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="pv-body" id="pvBody"></div>
+  </div>
+</div>
+
+<!-- ПРОСМОТР / ПРАВКА / DIFF ФАЙЛА (Monaco) -->
+<div class="diff-ov" id="diffOv">
+  <div class="df-shell">
+    <div class="df-bar">
+      <span class="df-badge ro" id="dfBadge">Просмотр</span>
+      <b id="dfTitle">file.txt</b>
+      <span class="df-path" id="dfPath"></span>
+      <div class="spacer"></div>
+      <div class="df-tabs" id="dfTabs" style="display:none">
+        <button class="df-tab on" data-dfview="side">Рядом</button>
+        <button class="df-tab" data-dfview="inline">В строке</button>
+      </div>
+      <button class="btn sm" id="dfCopy" title="Скопировать содержимое"><i class="fa-regular fa-copy"></i></button>
+      <button class="icon-btn sm" id="dfDock" title="Панель справа (чат можно закрыть)"><i class="fa-solid fa-table-columns"></i></button>
+      <button class="icon-btn sm" id="dfFull" title="Во весь экран"><i class="fa-solid fa-expand"></i></button>
+      <button class="btn sm" id="dfDownload"><i class="fa-solid fa-download"></i> Скачать</button>
+      <button class="btn sm primary" id="dfSave" style="display:none"><i class="fa-solid fa-floppy-disk"></i> Сохранить</button>
+      <button class="btn sm primary" id="dfAccept" style="display:none"><i class="fa-solid fa-check"></i> Принять изменения</button>
+      <button class="btn sm" id="dfReject" style="display:none"><i class="fa-solid fa-xmark"></i> Отклонить</button>
+      <button class="icon-btn sm" id="dfClose" title="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="df-body" id="dfBody">
+      <div class="df-host" id="dfHost" style="display:none"></div>
+      <div class="df-note" id="dfNote"><i class="fa-solid fa-spinner fa-spin"></i><b>Загрузка…</b></div>
+    </div>
+    <div class="df-msg" id="dfMsg"></div>
+  </div>
+</div>
+
+<div class="ctx" id="ctx"></div>
+<div class="toasts" id="toasts"></div>
+<input type="file" id="filePick" multiple hidden>
+<input type="file" id="imgPick" accept="image/*" hidden>
+<input type="file" id="jsonPick" accept="application/json" hidden>
+<button class="focus-exit" id="focusExit"><i class="fa-solid fa-xmark"></i> Выйти из фокуса (Esc)</button>
+
+
+<script src="/assets/js/01-util-state.js"></script>
+<script src="/assets/js/02-voice.js"></script>
+<script src="/assets/js/03-projects-files.js"></script>
+<script src="/assets/js/04-render.js"></script>
+<script src="/assets/js/05-chat.js"></script>
+<script src="/assets/js/06-plugins.js"></script>
+<script src="/assets/js/07-settings.js"></script>
+<script src="/assets/js/08-gateway.js"></script>
+<script src="/assets/js/09-init-api.js"></script>
+<script src="/assets/js/10-files-terminal.js"></script>
+<script src="/assets/js/11-intercepts.js"></script>
+<script src="/assets/js/12-voice-engines.js"></script>
+<script src="/assets/js/13-subagents.js"></script>
+<script src="/assets/js/14-agent-files.js"></script>
+<script src="/assets/js/15-py-plugins.js"></script>
+<script src="/assets/js/16-palette.js"></script>
+<!-- Озвучка на лету. Подключается последним: он обращается к LiveTTS по имени
+     только из потока и из ttsStop, а к моменту вызова уже загружен. -->
+<script src="/assets/js/17-live-tts.js"></script>
+<!-- Синхронизация с мини-окном и с шлюзом: импорт сессий, догон ответа после
+     перезагрузки, переподключение к незавершённому прогону. Загружается
+     последним — ему нужны state, API, Gateway и обёртки openSession. -->
+<script src="/assets/js/18-agent-sync.js"></script>
+
+<!-- Кнопки окна: слой фиксированный, поэтому видны поверх любого экрана
+     (главный, чат, настройки). В браузере блок остаётся скрытым. -->
+<div class="win-btns" id="winBtns" hidden>
+  <button class="wb wb-browser" id="wbBrowser" data-win="browser" title="Браузер (с вкладками)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.2 9h17.6M3.2 15h17.6M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg></button>
+  <button class="wb" data-win="minimize" title="Свернуть" aria-label="Свернуть"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.2 6h7.6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+  <button class="wb" data-win="maximize" title="Развернуть" aria-label="Развернуть"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2.6" y="2.6" width="6.8" height="6.8" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/></svg></button>
+  <button class="wb wb-close" data-win="close" title="Закрыть" aria-label="Закрыть"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3.2 3.2l5.6 5.6M8.8 3.2l-5.6 5.6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+</div>
+</body>
+</html>

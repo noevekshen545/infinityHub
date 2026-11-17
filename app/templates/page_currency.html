@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Курсы валют — Infinity</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box }
+:root {
+  --bg: #fafbfc; --bg2: #ffffff; --bg3: #f3f4f6; --bg4: #e5e7eb;
+  --border: rgba(0,0,0,.06); --border2: rgba(0,0,0,.1);
+  --text: #111827; --text2: #4b5563; --text3: #9ca3af;
+  --accent: #4f46e5; --accent2: #4338ca; --accent-light: rgba(79,70,229,.1);
+  --hover: rgba(0,0,0,.03); --red: #dc2626; --green: #059669; --blue: #2563eb;
+  --shadow: 0 4px 20px rgba(0,0,0,.06); --radius: 16px; --radius-sm: 10px;
+  --tr: all .2s cubic-bezier(.4,0,.2,1); --font: 'Inter', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+body.dark {
+  --bg: #0f1419; --bg2: #151b23; --bg3: #1c242f; --bg4: #232d3a;
+  --border: rgba(255,255,255,.08); --border2: rgba(255,255,255,.12);
+  --text: #e4e8ef; --text2: #a0aec0; --text3: #6b7280;
+  --accent: #6366f1; --accent2: #4f46e5; --accent-light: rgba(99,102,241,.15);
+  --hover: rgba(255,255,255,.05); --red: #ef4444; --green: #10b981; --blue: #3b82f6;
+  --shadow: 0 4px 20px rgba(0,0,0,.3);
+}
+body.sepia {
+  --bg: #f5f0e8; --bg2: #ede5d8; --bg3: #e2d8c9; --bg4: #d4c9b5;
+  --border: rgba(91,70,54,.1); --border2: rgba(91,70,54,.15);
+  --text: #3d2f21; --text2: #5c4a3a; --text3: #8b7560;
+  --accent: #8b5e3c; --accent2: #6d4a2e; --accent-light: rgba(139,94,60,.12);
+  --hover: rgba(91,70,54,.05); --red: #9b2c2c; --green: #276749; --blue: #2c5282;
+  --shadow: 0 4px 20px rgba(91,70,54,.08);
+}
+body {
+  font-family: var(--font); background: var(--bg); color: var(--text);
+  min-height: 100vh; line-height: 1.5; -webkit-font-smoothing: antialiased;
+  transition: background .3s, color .3s;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 80% 55% at 50% -20%, var(--accent-light), transparent);
+}
+a { color: var(--accent); text-decoration: none }
+button { font-family: inherit; cursor: pointer }
+::-webkit-scrollbar { width: 9px; height: 9px }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 5px }
+
+.topbar {
+  position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px; background: color-mix(in srgb, var(--bg2) 92%, transparent);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);
+}
+.tb-link {
+  display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px;
+  border-radius: var(--radius-sm); color: var(--text2); font-size: 13px; font-weight: 600;
+  transition: var(--tr);
+}
+.tb-link:hover { background: var(--hover); color: var(--text) }
+.spacer { flex: 1 }
+.ico-btn {
+  width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg2);
+  color: var(--text2); font-size: 14px; transition: var(--tr);
+}
+.ico-btn:hover { color: var(--accent); border-color: var(--accent) }
+
+main { position: relative; z-index: 1; max-width: 1160px; margin: 0 auto; padding: 22px 20px 60px }
+.card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.card + .card { margin-top: 18px }
+.head { display: flex; align-items: center; gap: 12px; padding: 18px 18px 0; flex-wrap: wrap }
+.head h1 { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px }
+.head h1 i { color: var(--accent) }
+.head .meta { margin-left: auto; font-size: 12px; color: var(--text3) }
+.note { font-size: 12px; color: var(--text3) }
+.refresh { margin-left: auto }
+
+.converter { display: grid; grid-template-columns: 1fr 44px 1fr; gap: 12px; align-items: end; padding: 16px 18px 6px }
+.fld label { display: block; font-size: 11px; color: var(--text3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em }
+.fld-row { display: flex; gap: 8px }
+.fld input, .fld select {
+  height: 42px; border-radius: var(--radius-sm); border: 1px solid var(--border2);
+  background: var(--bg3); color: var(--text); padding: 0 11px; font-family: inherit; font-size: 14px;
+  min-width: 0;
+}
+.fld input { flex: 1 }
+.fld select { width: 112px; font-weight: 600 }
+.swap {
+  width: 44px; height: 42px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text2); font-size: 14px;
+}
+.swap:hover { color: var(--accent); border-color: var(--accent) }
+.result { padding: 4px 18px 18px; font-size: 13px; color: var(--text2) }
+.result b { color: var(--text) }
+
+.chart-head { display: flex; align-items: center; gap: 12px; padding: 16px 18px 0; flex-wrap: wrap }
+.chart-head b { font-size: 14px }
+.chart-head .range { color: var(--text3); font-size: 12px }
+.chart-head .seg { margin-left: auto }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden }
+.seg button {
+  border: none; background: var(--bg3); color: var(--text2); height: 32px; padding: 0 12px;
+  font-size: 12px; font-weight: 600; transition: var(--tr);
+}
+.seg button + button { border-left: 1px solid var(--border) }
+.seg button:hover { color: var(--accent) }
+.seg button.on { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff }
+.chart { padding: 10px 14px 0 }
+.chart svg { width: 100%; height: 190px; display: block }
+.chart-note { padding: 6px 18px 14px; font-size: 12px; color: var(--text3); min-height: 18px }
+
+.tools { padding: 14px 18px 0 }
+.filter {
+  width: 100%; height: 38px; border-radius: var(--radius-sm); border: 1px solid var(--border2);
+  background: var(--bg3); color: var(--text); padding: 0 12px; font-family: inherit; font-size: 13px;
+  outline: none;
+}
+.filter:focus { border-color: var(--accent) }
+.list { padding: 12px 12px 16px; max-height: 520px; overflow-y: auto }
+.row {
+  display: grid; grid-template-columns: 34px 1fr 150px 96px; gap: 12px; align-items: center;
+  padding: 9px 10px; border-radius: var(--radius-sm); cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+.row:hover { background: var(--hover) }
+.row.sel { background: var(--accent-light); border-radius: var(--radius-sm) }
+.cur-flag { font-size: 20px; text-align: center }
+.cur-code { font-weight: 700; font-size: 13px; font-family: var(--mono) }
+.cur-name { font-size: 11px; color: var(--text3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.cur-val { text-align: right; font-size: 14px; font-weight: 700 }
+.cur-val small { display: block; font-size: 10px; font-weight: 400; color: var(--text3) }
+.cur-chg { text-align: right; font-size: 12px; font-weight: 600; font-family: var(--mono) }
+.cur-chg.up { color: var(--green) }
+.cur-chg.down { color: var(--red) }
+.cur-chg.flat { color: var(--text3) }
+
+.settings { padding: 6px 18px 18px; display: grid; gap: 10px }
+.set-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px dashed var(--border) }
+.set-row:last-child { border-bottom: none }
+.set-row > label { font-size: 13px; color: var(--text2); min-width: 230px }
+.set-row input[type=number] {
+  width: 90px; height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text); padding: 0 9px; font-family: inherit;
+}
+.set-row select {
+  height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text); padding: 0 9px; font-family: inherit;
+}
+.switch { width: 42px; height: 23px; border-radius: 12px; background: var(--bg4); position: relative; cursor: pointer; transition: var(--tr); flex: 0 0 auto }
+.switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 17px; height: 17px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: var(--tr) }
+.switch.on { background: var(--accent) }
+.switch.on::after { left: 22px }
+.btn {
+  height: 36px; padding: 0 16px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text); font-weight: 600; font-size: 13px;
+}
+.btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: transparent; color: #fff }
+.btn:hover { filter: brightness(1.06) }
+.set-actions { display: flex; gap: 10px; align-items: center; padding-top: 12px; flex-wrap: wrap }
+
+.loading { padding: 26px; text-align: center; color: var(--text3); font-size: 13px }
+.loading i { margin-right: 6px }
+.error { padding: 20px; color: var(--red); font-size: 13px }
+
+#toast { position: fixed; right: 18px; bottom: 18px; z-index: 99; display: flex; flex-direction: column; gap: 8px }
+.toast {
+  background: var(--bg2); border: 1px solid var(--border2); border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow); padding: 10px 14px;
+  font-size: 13px; max-width: 360px;
+}
+.toast.error { border-left-color: var(--red) }
+.toast.success { border-left-color: var(--green) }
+
+@media (max-width: 820px) {
+  main { padding: 14px 12px 50px }
+  .converter { grid-template-columns: 1fr; }
+  .swap { justify-self: center; height: 34px; }
+  .row { grid-template-columns: 28px 1fr 110px 78px; gap: 8px; padding: 8px 6px }
+  .cur-name { display: none }
+  .chart svg { height: 170px }
+  .tb-link span { display: none }
+  .topbar { padding: 8px 10px }
+  .set-row > label { min-width: 100% }
+}
+</style>
+<link rel="stylesheet" href="/static/fonts/site-fonts.css">
+</head>
+<body>
+<div class="topbar">
+  <a class="tb-link" href="/"><i class="fa-solid fa-arrow-left"></i><span>Домой</span></a>
+  <a class="tb-link" href="/news"><i class="fa-solid fa-newspaper"></i><span>Новости</span></a>
+  <div class="spacer"></div>
+  <a class="tb-link" href="/weather"><i class="fa-solid fa-cloud-sun"></i><span>Погода</span></a>
+  <button class="ico-btn" id="themeBtn" title="Сменить тему"><i class="fa-solid fa-moon"></i></button>
+</div>
+
+<main>
+  <section class="card">
+    <div class="head">
+      <h1><i class="fa-solid fa-coins"></i> Курсы валют</h1>
+      <span class="meta" id="ratesMeta">Загрузка…</span>
+      <button class="ico-btn refresh" id="refreshBtn" title="Обновить курсы"><i class="fa-solid fa-rotate"></i></button>
+    </div>
+    <div class="converter">
+      <div class="fld">
+        <label>Отдаю</label>
+        <div class="fld-row">
+          <input type="number" id="amount" value="100" min="0" step="any">
+          <select id="from"></select>
+        </div>
+      </div>
+      <button class="swap" id="swapBtn" title="Поменять местами"><i class="fa-solid fa-right-left"></i></button>
+      <div class="fld">
+        <label>Получаю</label>
+        <div class="fld-row">
+          <input type="text" id="resultOut" readonly value="—">
+          <select id="to"></select>
+        </div>
+      </div>
+    </div>
+    <div class="result" id="rateHint"></div>
+  </section>
+
+  <section class="card">
+    <div class="chart-head">
+      <b id="chartTitle">—</b>
+      <span class="range" id="chartRange"></span>
+      <div class="seg" id="rangeSeg">
+        <button type="button" data-days="7">7 дн</button>
+        <button type="button" data-days="14" class="on">14 дн</button>
+        <button type="button" data-days="30">30 дн</button>
+        <button type="button" data-days="90">90 дн</button>
+      </div>
+    </div>
+    <div class="chart" id="chart"></div>
+    <div class="chart-note" id="chartNote"></div>
+  </section>
+
+  <section class="card">
+    <div class="tools">
+      <input type="text" class="filter" id="filter" placeholder="Фильтр: доллар, USD, юань…">
+    </div>
+    <div class="list" id="rateList">
+      <div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Загрузка курсов…</div>
+    </div>
+    <div class="chart-note" id="sourceNote"></div>
+  </section>
+
+  <section class="card">
+    <div class="head"><h1 style="font-size:16px"><i class="fa-solid fa-gear"></i> Автопроверка и хранение истории</h1></div>
+    <div class="settings" id="settingsBox">
+      <div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Загрузка настроек…</div>
+    </div>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+const CUR_FLAGS = {
+  USD: '🇺🇸', EUR: '🇪🇺', CNY: '🇨🇳', GBP: '🇬🇧', CHF: '🇨🇭', JPY: '🇯🇵',
+  TRY: '🇹🇷', KZT: '🇰🇿', BYN: '🇧🇾', UAH: '🇺🇦', AUD: '🇦🇺', CAD: '🇨🇦',
+  HKD: '🇭🇰', KRW: '🇰🇷', SGD: '🇸🇬', INR: '🇮🇳', BRL: '🇧🇷', ZAR: '🇿🇦',
+  PLN: '🇵🇱', SEK: '🇸🇪', NOK: '🇳🇴', DKK: '🇩🇰', CZK: '🇨🇿', HUF: '🇭🇺',
+  ILS: '🇮🇱', AMD: '🇦🇲', KGS: '🇰🇬', UZS: '🇺🇿', GEL: '🇬🇪', MDL: '🇲🇩',
+  TMT: '🇹🇲', AZN: '🇦🇿', TJS: '🇹🇯', RUB: '🇷🇺', XDR: '🏛️'
+};
+let curData = null;
+let curSel = null;
+let chartDays = 14;
+let chartPoints = [];
+let settings = null;
+
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function toast(msg, type) {
+  const box = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type || '');
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(() => el.remove(), 3600);
+}
+
+function theme() { return localStorage.getItem('news_theme') || 'light'; }
+function setTheme(t) {
+  document.body.className = t === 'dark' ? 'dark' : (t === 'sepia' ? 'sepia' : '');
+  document.getElementById('themeBtn').innerHTML = t === 'dark'
+    ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+  localStorage.setItem('news_theme', t);
+}
+document.getElementById('themeBtn').addEventListener('click', () => {
+  const list = ['light', 'dark', 'sepia'];
+  setTheme(list[(list.indexOf(theme()) + 1) % list.length]);
+  drawChart();
+});
+
+function fmt(v) {
+  const a = Math.abs(v);
+  let d = 2;
+  if (a < 1) d = 4;
+  if (a < 0.01) d = 6;
+  try {
+    return Number(v).toLocaleString('ru-RU', { minimumFractionDigits: d, maximumFractionDigits: d });
+  } catch (e) { return String(v); }
+}
+function allCodes() {
+  if (!curData) return ['RUB', 'USD', 'EUR'];
+  const codes = ['RUB'];
+  (curData.rates || []).forEach(x => { if (codes.indexOf(x.code) < 0) codes.push(x.code); });
+  return codes;
+}
+function rateOf(code) {
+  if (code === 'RUB') return 1;
+  if (!curData) return null;
+  const x = (curData.rates || []).find(r => r.code === code);
+  return x ? x.value : null;
+}
+function fillSelects() {
+  const codes = allCodes();
+  const from = document.getElementById('from');
+  const to = document.getElementById('to');
+  const prevF = from.value || 'USD';
+  const prevT = to.value || 'RUB';
+  const opts = codes.map(c => '<option value="' + c + '">' + (CUR_FLAGS[c] || '💱') + ' ' + c + '</option>').join('');
+  from.innerHTML = opts;
+  to.innerHTML = opts;
+  from.value = codes.indexOf(prevF) >= 0 ? prevF : (codes.indexOf('USD') >= 0 ? 'USD' : codes[0]);
+  to.value = codes.indexOf(prevT) >= 0 ? prevT : 'RUB';
+}
+function convert() {
+  const amount = parseFloat(document.getElementById('amount').value);
+  const out = document.getElementById('resultOut');
+  const hint = document.getElementById('rateHint');
+  const f = document.getElementById('from').value;
+  const t = document.getElementById('to').value;
+  if (isNaN(amount) || !curData) { out.value = '—'; hint.textContent = ''; return; }
+  const rf = rateOf(f), rt = rateOf(t);
+  if (rf == null || rt == null || !rt) {
+    out.value = '—';
+    hint.textContent = 'Нет курса для ' + f + ' или ' + t;
+    return;
+  }
+  const one = rf / rt;
+  out.value = fmt(amount * one);
+  hint.innerHTML = '1 ' + f + ' = <b>' + fmt(one) + '</b> ' + t +
+    ' · 1 ' + t + ' = <b>' + fmt(1 / one) + '</b> ' + f +
+    ' · курсы на ' + esc(curData.date || '—');
+}
+document.getElementById('amount').addEventListener('input', convert);
+document.getElementById('from').addEventListener('change', convert);
+document.getElementById('to').addEventListener('change', convert);
+document.getElementById('swapBtn').addEventListener('click', () => {
+  const f = document.getElementById('from');
+  const t = document.getElementById('to');
+  const tmp = f.value;
+  f.value = t.value;
+  t.value = tmp;
+  convert();
+});
+
+function renderList() {
+  if (!curData) return;
+  const list = document.getElementById('rateList');
+  const q = (document.getElementById('filter').value || '').trim().toLowerCase();
+  const rows = (curData.rates || []).filter(x =>
+    !q || x.code.toLowerCase().indexOf(q) >= 0 ||
+    String(x.name || '').toLowerCase().indexOf(q) >= 0);
+  if (!rows.length) {
+    list.innerHTML = '<div class="loading">По запросу «' + esc(q) + '» ничего не найдено</div>';
+    return;
+  }
+  list.innerHTML = rows.map(x => {
+    const chg = x.change_pct;
+    const cls = chg == null ? 'flat' : (chg > 0 ? 'up' : (chg < 0 ? 'down' : 'flat'));
+    const arrow = chg == null ? '·' : (chg > 0 ? '▲' : (chg < 0 ? '▼' : '—'));
+    const chgText = chg == null ? '—' : arrow + ' ' + (chg > 0 ? '+' : '') + chg.toFixed(2) + '%';
+    const nominal = x.nominal || 1;
+    const shown = x.value * nominal;
+    const sub = nominal === 1 ? 'за 1 ' + x.code : 'за ' + nominal + ' ' + x.code;
+    return '<div class="row' + (curSel === x.code ? ' sel' : '') + '" data-code="' + esc(x.code) + '" title="Курс на ' + esc(x.date || '—') + '">' +
+      '<div class="cur-flag">' + (CUR_FLAGS[x.code] || '💱') + '</div>' +
+      '<div><div class="cur-code">' + esc(x.code) + '</div><div class="cur-name">' + esc(x.name || '') + '</div></div>' +
+      '<div class="cur-val"><b>' + fmt(shown) + '</b><small>' + esc(sub) + '</small></div>' +
+      '<div class="cur-chg ' + cls + '">' + chgText + '</div></div>';
+  }).join('');
+}
+document.getElementById('filter').addEventListener('input', renderList);
+document.getElementById('rateList').addEventListener('click', e => {
+  const row = e.target.closest('[data-code]');
+  if (!row) return;
+  select(row.dataset.code);
+});
+
+async function select(code) {
+  if (!code) return;
+  curSel = code;
+  renderList();
+  document.getElementById('chartTitle').textContent =
+    (CUR_FLAGS[code] || '💱') + ' ' + code + ' → RUB (за 1 ' + code + ')';
+  await loadChart();
+}
+
+function drawChart() {
+  const box = document.getElementById('chart');
+  const pts = chartPoints.filter(p => p.value != null);
+  if (pts.length < 2) {
+    box.innerHTML = '<div class="loading">Нет данных для графика</div>';
+    return;
+  }
+  const W = 800, H = 190, P = 44, T = 14, B = 24;
+  const vals = pts.map(p => p.value);
+  let min = Math.min(...vals), max = Math.max(...vals);
+  if (max - min < 1e-9) max = min + Math.max(Math.abs(min) * 0.01, 0.1);
+  const X = i => P + (W - P - 12) * (i / (pts.length - 1));
+  const Y = v => T + (H - T - B) * (1 - (v - min) / (max - min));
+  let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img">';
+  for (let g = 0; g <= 2; g++) {
+    const v = min + (max - min) * g / 2;
+    svg += '<line x1="' + P + '" x2="' + (W - 12) + '" y1="' + Y(v).toFixed(1) +
+           '" y2="' + Y(v).toFixed(1) + '" stroke="var(--border)" stroke-width="1"/>' +
+           '<text x="' + (P - 6) + '" y="' + (Y(v) + 3).toFixed(1) +
+           '" fill="var(--text3)" font-size="10" text-anchor="end">' + fmt(v) + '</text>';
+  }
+  const line = pts.map((p, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(p.value).toFixed(1)).join(' ');
+  const bottom = H - B;
+  svg += '<path d="' + line + ' L' + X(pts.length - 1).toFixed(1) + ' ' + bottom +
+         ' L' + X(0).toFixed(1) + ' ' + bottom + ' Z" fill="var(--accent)" opacity=".12"/>';
+  svg += '<path d="' + line + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>';
+  const step = Math.max(1, Math.ceil(pts.length / 7));
+  for (let i = 0; i < pts.length; i += step) {
+    svg += '<text x="' + X(i).toFixed(1) + '" y="' + (H - 7) +
+           '" fill="var(--text3)" font-size="10" text-anchor="middle">' +
+           esc(String(pts[i].date || '').slice(5)) + '</text>';
+  }
+  const lastI = pts.length - 1;
+  svg += '<circle cx="' + X(lastI).toFixed(1) + '" cy="' + Y(pts[lastI].value).toFixed(1) +
+         '" r="3.5" fill="var(--accent)"/>';
+  box.innerHTML = svg + '</svg>';
+}
+async function loadChart() {
+  const note = document.getElementById('chartNote');
+  const range = document.getElementById('chartRange');
+  if (!curSel) { document.getElementById('chart').innerHTML = ''; return; }
+  note.textContent = 'Загрузка истории…';
+  range.textContent = '';
+  chartPoints = [];
+  try {
+    const r = await fetch('/api/currency/history?code=' + encodeURIComponent(curSel) + '&days=' + chartDays);
+    const d = await r.json();
+    if (!r.ok || !d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    chartPoints = d.points || [];
+    if (!chartPoints.length) throw new Error('нет данных');
+    range.textContent = chartPoints[0].date + ' — ' + chartPoints[chartPoints.length - 1].date;
+    note.textContent = '';
+  } catch (e) {
+    note.textContent = 'История недоступна: ' + (e.message || 'ошибка');
+  }
+  drawChart();
+}
+document.getElementById('rangeSeg').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-days]');
+  if (!btn) return;
+  chartDays = parseInt(btn.dataset.days, 10);
+  document.querySelectorAll('#rangeSeg button').forEach(b =>
+    b.classList.toggle('on', parseInt(b.dataset.days, 10) === chartDays));
+  loadChart();
+});
+
+async function loadRates(force) {
+  const list = document.getElementById('rateList');
+  list.innerHTML = '<div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Загрузка курсов…</div>';
+  try {
+    const r = await fetch('/api/currency/rates' + (force ? '?_=' + Date.now() : ''));
+    const d = await r.json();
+    if (!r.ok || !d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    curData = d;
+    document.getElementById('ratesMeta').innerHTML = 'Курсы ' + esc(d.source_label || '') +
+      ' на <b>' + esc(d.date || '—') + '</b>';
+    document.getElementById('sourceNote').textContent = 'Источник: ' + (d.source_label || '—') +
+      (d.fetched_at ? ' · получено ' + new Date(d.fetched_at * 1000)
+        .toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '') +
+      ' · изменение к предыдущему дню';
+    fillSelects();
+    renderList();
+    convert();
+    if (!curSel) {
+      const hasUsd = (d.rates || []).some(x => x.code === 'USD');
+      select(hasUsd ? 'USD' : ((d.rates || [{}])[0].code || null));
+    } else {
+      select(curSel);
+    }
+  } catch (e) {
+    list.innerHTML = '<div class="error"><i class="fa-solid fa-triangle-exclamation"></i> ' +
+      esc(e.message || 'Ошибка загрузки курсов') + '</div>';
+    toast('Курсы валют: ' + (e.message || 'ошибка'), 'error');
+  }
+}
+document.getElementById('refreshBtn').addEventListener('click', () => {
+  loadRates(true);
+  toast('Обновляю курсы…');
+});
+
+// ---- настройки (общие с погодой) ----
+function switchHtml(id, on) {
+  return '<div class="switch' + (on ? ' on' : '') + '" id="' + id + '"></div>';
+}
+function renderSettings() {
+  const s = settings || {};
+  document.getElementById('settingsBox').innerHTML =
+    '<div class="set-row"><label>Проверять автоматически</label>' + switchHtml('setAuto', s.auto_check_enabled) + '</div>' +
+    '<div class="set-row"><label>Интервал проверки, минут</label>' +
+      '<input type="number" id="setInterval" min="5" max="1440" value="' + (s.check_interval_minutes || 60) + '"></div>' +
+    '<div class="set-row"><label>Резкое изменение курса — уведомлять</label>' + switchHtml('setNotifyCur', s.notify_currency) + '</div>' +
+    '<div class="set-row"><label>Порог изменения курса, %</label>' +
+      '<input type="number" id="setCurPct" min="0.1" max="50" step="0.1" value="' + (s.currency_pct_threshold != null ? s.currency_pct_threshold : 1.5) + '"></div>' +
+    '<div class="set-row"><label>Хранение истории</label>' +
+      '<select id="setRetMode">' +
+        '<option value="keep"' + (s.retention_mode !== 'purge' ? ' selected' : '') + '>не удалять</option>' +
+        '<option value="purge"' + (s.retention_mode === 'purge' ? ' selected' : '') + '>удалять старше</option>' +
+      '</select><input type="number" id="setRetDays" min="1" max="36500" value="' + (s.retention_days || 365) + '"> дней</div>' +
+    '<div class="set-actions">' +
+      '<button class="btn primary" id="setSaveBtn"><i class="fa-solid fa-floppy-disk"></i> Сохранить</button>' +
+      '<button class="btn" id="setPurgeBtn"><i class="fa-solid fa-trash-can"></i> Очистить старую историю</button>' +
+      '<span class="note" id="setStatus"></span>' +
+    '</div>' +
+    '<div class="note">Город для автопроверки задаётся на странице <a href="/weather">Погода</a>.</div>';
+  document.querySelectorAll('#settingsBox .switch').forEach(el => {
+    el.addEventListener('click', () => el.classList.toggle('on'));
+  });
+  document.getElementById('setSaveBtn').addEventListener('click', saveSettings);
+  document.getElementById('setPurgeBtn').addEventListener('click', purgeHistory);
+}
+async function loadSettings() {
+  try {
+    const r = await fetch('/api/weather/settings');
+    const d = await r.json();
+    if (!r.ok || !d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    settings = d.settings || {};
+    renderSettings();
+  } catch (e) {
+    document.getElementById('settingsBox').innerHTML =
+      '<div class="error"><i class="fa-solid fa-triangle-exclamation"></i> ' + esc(e.message) + '</div>';
+  }
+}
+function numVal(id, def) {
+  const el = document.getElementById(id);
+  const v = parseFloat(el && el.value);
+  return isNaN(v) ? def : v;
+}
+async function saveSettings() {
+  const isOn = id => { const el = document.getElementById(id); return !!(el && el.classList.contains('on')); };
+  const body = {
+    auto_check_enabled: isOn('setAuto'),
+    check_interval_minutes: Math.round(numVal('setInterval', 60)),
+    notify_currency: isOn('setNotifyCur'),
+    currency_pct_threshold: numVal('setCurPct', 1.5),
+    retention_mode: (document.getElementById('setRetMode') || {}).value || 'keep',
+    retention_days: Math.round(numVal('setRetDays', 365))
+  };
+  try {
+    const r = await fetch('/api/weather/settings', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (!r.ok || !d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    settings = d.settings || settings;
+    document.getElementById('setStatus').textContent = 'Сохранено';
+    setTimeout(() => {
+      const el = document.getElementById('setStatus');
+      if (el) el.textContent = '';
+    }, 2500);
+    toast('Настройки сохранены', 'success');
+  } catch (e) { toast('Не удалось сохранить: ' + e.message, 'error'); }
+}
+async function purgeHistory() {
+  if (!confirm('Удалить историю старше срока хранения из настроек?')) return;
+  try {
+    const r = await fetch('/api/weather/history/purge', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    toast('Удалено записей: ' + (d.removed || 0), 'success');
+  } catch (e) { toast('Ошибка: ' + e.message, 'error'); }
+}
+
+setTheme(theme());
+loadRates();
+loadSettings();
+window.addEventListener('resize', drawChart);
+</script>
+</body>
+</html>

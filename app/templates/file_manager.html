@@ -1,0 +1,263 @@
+﻿<!DOCTYPE html>
+<html class="pg-file_manager" lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Файловый менеджер — Infinity AI</title>
+  <link rel="stylesheet" href="/static/vendor/fa-all.min.css">
+  <!-- Порядок загрузки стилей задаётся здесь, а не по умолчанию.
+       webui_assets.inject() дописывает design.css в <head> сам, но пропускает
+       то, что уже подключено. design.css — это дизайн-система приложения: он
+       объявляет те же --bg/--text/--accent и содержит общие правила для
+       button/input/select/a/table. Если он подключается ПОСЛЕ стилей файлового
+       менеджера (так было по умолчанию), он перекрывает собственную палитру и
+       оформление его элементов. Файловый менеджер рисует себя сам, поэтому
+       здесь он подключен первым, а свои стили — после. -->
+  <link rel="stylesheet" href="/static/css/design.css">
+  <link rel="stylesheet" href="/static/css/file_manager.css">
+  <!-- Палитра файлового менеджера привязана к data-fm-theme на <html>
+       (см. file_manager.css). Ставим его до отрисовки: иначе первые кадры
+       страница успевает прожить в палитре design.css и заметно мигает.
+       Ключ тот же, что у static/js/theme.js, включая старый html_theme. -->
+  <script>
+    (function () {
+      try {
+        var ALL = ['light','dark','sepia','warm','paper','ocean','forest','midnight','rose'];
+        var t = null;
+        try {
+          t = localStorage.getItem('infinity_theme') || localStorage.getItem('html_theme')
+              || localStorage.getItem('fm_theme');
+        } catch (e) { /* приватный режим */ }
+if (!t || ALL.indexOf(t) === -1) t = 'light';
+        document.documentElement.setAttribute('data-fm-theme', t);
+        document.documentElement.setAttribute('data-theme', t);
+        /* Страница подключает theme.js сама, поэтому инъекция webui_assets
+           её пропускает (иначе был бы дубль) — а значит, класс темы на
+           <body> нужно поставить здесь. Именно по нему выбирается палитра
+           (body.dark, body.midnight, ...). Скрипт в <head>, поэтому тела
+           документа на момент выполнения ещё нет — ждём DOMContentLoaded. */
+        var setBodyTheme = function () {
+          var b = document.body;
+          if (!b) return;
+          for (var i = 0; i < ALL.length; i++) b.classList.remove(ALL[i]);
+          b.classList.add(t);
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', setBodyTheme, { once: true });
+        } else {
+          setBodyTheme();
+        }
+      } catch (e) { /* тема — украшение, отрисовка важнее */ }
+    })();
+  </script>
+  <script src="/static/js/i18n.js"></script>
+  <link rel="stylesheet" href="/static/css/mobile.css">
+  <script src="/static/js/mobile.js" defer></script>
+  <!-- WinBox: окна для .inf-приложений и мини-окна установщика.
+       Подключаем здесь, а не просим рабочий стол: файловый менеджер открыт и
+       сам по себе, и в iframe на рабочем столе — окно должно появляться в обоих
+       случаях, не завися от родительской страницы. -->
+  <link rel="stylesheet" href="/static/libs/winbox.min.css">
+  <script src="/static/libs/winbox.bundle.min.js"></script>
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body class="dark">
+  <div class="fm-progress" id="progressBar" style="display:none"><div class="fm-progress-bar" style="width:100%"></div></div>
+
+  <div class="fm-container">
+    <!-- Title Bar (standalone mode only) -->
+    <div class="fm-titlebar" data-embed-hide>
+      <div class="fm-titlebar-tabs" id="titlebarTabs" data-pane="1"></div>
+    </div>
+
+    <!-- Address Row -->
+    <div class="fm-address-row">
+      <div class="fm-toolbar-group fm-nav">
+        <button class="fm-btn" id="backBtn" title="Назад (Alt+←)"><i class="fas fa-arrow-left"></i></button>
+        <button class="fm-btn" id="forwardBtn" title="Вперёд (Alt+→)"><i class="fas fa-arrow-right"></i></button>
+        <button class="fm-btn" id="upBtn" title="Вверх (Backspace)"><i class="fas fa-arrow-up"></i></button>
+        <button class="fm-btn" id="refreshBtn" title="Обновить (F5)"><i class="fas fa-rotate-right"></i></button>
+      </div>
+      <div class="fm-breadcrumbs" id="breadcrumbs1" data-pane="1"></div>
+      <div class="fm-search-bar">
+        <select id="searchMode" class="fm-select" style="font-size:11px;padding:2px 4px;width:auto" title="Режим поиска">
+          <option value="name">По имени</option>
+          <option value="content">По содержимому</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="Поиск файлов..." title="Ctrl+F">
+        <button class="fm-btn" id="searchBtn"><i class="fas fa-search"></i></button>
+      </div>
+      <div class="fm-toolbar-group fm-viewtoggles">
+        <button class="fm-btn fm-incoming-btn" id="incomingBtnTop" title="Доступы, которыми со мной поделились"><i class="fas fa-inbox"></i><span class="fm-badge" id="incomingBadgeTop" hidden>0</span></button>
+        <button class="fm-btn" id="aiTasksBtnTop" title="Задания AI-агента по расписанию"><i class="fas fa-robot"></i></button>
+        <button class="fm-btn" id="ribbonToggle" title="Панель инструментов"><i class="fas fa-ellipsis-v"></i></button>
+        <button class="fm-btn" id="treeToggle" title="Дерево папок"><i class="fas fa-folder-tree"></i></button>
+        <button class="fm-btn" id="layoutToggle" title="Переключить панели"><i class="fas fa-columns"></i></button>
+        <button class="fm-btn" id="dualSyncToggle" title="Синхронизация панелей"><i class="fas fa-link"></i></button>
+      </div>
+    </div>
+
+    <!-- Command Bar (Ribbon) -->
+    <div class="fm-ribbon collapsed" data-embed-hide>
+      <div class="fm-ribbon-bar">
+        <div class="fm-ribbon-group">
+          <span class="fm-ribbon-label">Буфер обмена</span>
+          <div class="fm-ribbon-btns">
+            <button class="fm-btn" id="copyBtn" title="Копировать (Ctrl+C)"><i class="fas fa-copy"></i><span>Копировать</span></button>
+            <button class="fm-btn" id="cutBtn" title="Вырезать (Ctrl+X)"><i class="fas fa-cut"></i><span>Вырезать</span></button>
+            <button class="fm-btn" id="pasteBtn" title="Вставить (Ctrl+V)"><i class="fas fa-paste"></i><span>Вставить</span></button>
+            <button class="fm-btn" id="deleteBtn" title="Удалить (Del)"><i class="fas fa-trash"></i><span>Удалить</span></button>
+            <button class="fm-btn" id="renameBtn" title="Переименовать (F2)"><i class="fas fa-pen"></i><span>Переим.</span></button>
+          </div>
+        </div>
+        <div class="fm-ribbon-group">
+          <span class="fm-ribbon-label">Создать</span>
+          <div class="fm-ribbon-btns">
+            <button class="fm-btn" id="newFolderBtn" title="Новая папка (Ctrl+N)"><i class="fas fa-folder-plus"></i><span>Папка</span></button>
+            <button class="fm-btn" id="newFileBtn" title="Новый файл"><i class="fas fa-file"></i><span>Файл</span></button>
+            <button class="fm-btn" id="batchRenameBtn" title="Пакетное переименование"><i class="fas fa-i-cursor"></i><span>Массово</span></button>
+          </div>
+        </div>
+        <div class="fm-ribbon-group">
+          <span class="fm-ribbon-label">Открыть</span>
+          <div class="fm-ribbon-btns">
+            <button class="fm-btn" id="uploadBtn" title="Загрузить"><i class="fas fa-upload"></i><span>Загрузить</span></button>
+            <button class="fm-btn" id="downloadBtn" title="Скачать"><i class="fas fa-download"></i><span>Скачать</span></button>
+            <button class="fm-btn" id="shareBtn" title="Поделиться файлом или папкой: доступ, копия или ссылка"><i class="fas fa-share-alt"></i><span>Поделиться</span></button>
+            <button class="fm-btn fm-incoming-btn" id="incomingBtn" title="Доступы, которыми со мной поделились"><i class="fas fa-inbox"></i><span>Доступы</span><span class="fm-badge" id="incomingBadge" hidden>0</span></button>
+          </div>
+        </div>
+        <div class="fm-ribbon-group">
+          <span class="fm-ribbon-label">Фильтры</span>
+          <div class="fm-ribbon-btns">
+            <button class="fm-btn active" id="filterAll" title="Все файлы"><i class="fas fa-th"></i></button>
+            <button class="fm-btn" id="filterImages" title="Изображения"><i class="fas fa-file-image"></i></button>
+            <button class="fm-btn" id="filterDocuments" title="Документы"><i class="fas fa-file-alt"></i></button>
+            <button class="fm-btn" id="filterAudio" title="Аудио"><i class="fas fa-file-audio"></i></button>
+            <button class="fm-btn" id="filterVideo" title="Видео"><i class="fas fa-file-video"></i></button>
+            <button class="fm-btn" id="filterArchives" title="Архивы"><i class="fas fa-file-archive"></i></button>
+          </div>
+        </div>
+        <div class="fm-ribbon-group">
+          <span class="fm-ribbon-label">Представление</span>
+          <div class="fm-ribbon-btns">
+            <button class="fm-btn" id="checkboxToggle" title="Режим чекбоксов"><i class="fas fa-check-square"></i></button>
+            <button class="fm-btn" id="invertBtn" title="Инвертировать выделение"><i class="fas fa-object-ungroup"></i></button>
+            <button class="fm-btn" id="previewToggle" title="Предпросмотр"><i class="fas fa-eye"></i></button>
+            <button class="fm-btn" id="hiddenToggle" title="Скрытые файлы"><i class="fas fa-eye-slash"></i></button>
+          </div>
+        </div>
+        <div class="fm-ribbon-group">
+          <span class="fm-ribbon-label">Сервис</span>
+          <div class="fm-ribbon-btns">
+            <button class="fm-btn" id="aiTasksBtn" title="Задания AI-агента по расписанию"><i class="fas fa-robot"></i><span>AI-задачи</span></button>
+            <button class="fm-btn" id="terminalBtn" title="Терминал"><i class="fas fa-terminal"></i></button>
+            <!-- Необязательная опция: шифрование файлов на диске. -->
+            <button class="fm-btn" id="encryptionBtn" title="Шифрование файлов выключено (нажмите, чтобы включить)"><i class="fas fa-lock-open"></i><span>Шифр.</span></button>
+            <button class="fm-btn" id="settingsBtn" title="Настройки"><i class="fas fa-cog"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main area -->
+    <div class="fm-main">
+      <!-- Tree sidebar -->
+      <div class="fm-tree" id="fmTree">
+        <div class="fm-tree-header">
+          <span><i class="fas fa-folder" style="color:var(--folder-grad-2)"></i> Проводник</span>
+          <button class="fm-close-btn" id="treeCloseBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="fmDrives" class="fm-drive-indicator"></div>
+        <div class="fm-tree-content" id="fmTreeContent"></div>
+      </div>
+
+      <!-- Files panes -->
+      <div class="fm-files">
+        <div class="fm-panes" id="fmPanes">
+          <!-- Pane 1 -->
+          <div class="fm-pane" data-pane="1">
+            <div class="fm-pane-header" data-pane="1">
+              <div class="fm-pane-tabs" data-pane="1"></div>
+              <span class="fm-pane-info"></span>
+              <div class="fm-view-controls">
+                <button class="fm-btn" onclick="FM.toggleViewMode(1,'grid')" title="Сетка"><i class="fas fa-th"></i></button>
+                <button class="fm-btn" onclick="FM.toggleViewMode(1,'list')" title="Список"><i class="fas fa-list"></i></button>
+                <button class="fm-btn" onclick="FM.toggleViewMode(1,'details')" title="Детали"><i class="fas fa-bars"></i></button>
+              </div>
+            </div>
+            <div class="fm-file-list" id="fileList1" data-pane="1">
+              <div class="fm-empty"><div class="fm-empty-icon"><i class="fas fa-folder-open"></i></div><div class="fm-empty-text">Загрузка...</div></div>
+            </div>
+          </div>
+
+          <!-- Pane 2 (dual) -->
+          <div class="fm-pane" data-pane="2" style="display:none">
+            <div class="fm-pane-header" data-pane="2">
+              <div class="fm-pane-tabs" data-pane="2"></div>
+              <span class="fm-pane-info"></span>
+              <div class="fm-view-controls">
+                <button class="fm-btn" onclick="FM.toggleViewMode(2,'grid')" title="Сетка"><i class="fas fa-th"></i></button>
+                <button class="fm-btn" onclick="FM.toggleViewMode(2,'list')" title="Список"><i class="fas fa-list"></i></button>
+                <button class="fm-btn" onclick="FM.toggleViewMode(2,'details')" title="Детали"><i class="fas fa-bars"></i></button>
+              </div>
+            </div>
+            <div class="fm-file-list" id="fileList2" data-pane="2">
+              <div class="fm-empty"><div class="fm-empty-icon"><i class="fas fa-columns"></i></div><div class="fm-empty-text">Вторая панель</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview panel -->
+      <div class="fm-preview collapsed" id="previewPanel">
+        <div class="fm-preview-header">
+          <span id="previewTitle">Предпросмотр</span>
+          <button class="fm-close-btn" id="closePreviewBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="fm-preview-content" id="previewContent">
+          <div style="color:var(--text3);text-align:center;padding:20px">
+            <div style="font-size:36px;margin-bottom:10px;opacity:0.3"><i class="fas fa-image"></i></div>
+            Выберите файл для предпросмотра
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="fm-statusbar">
+      <div class="fm-statusbar-left"></div>
+      <div class="fm-statusbar-right-prepend" style="color:var(--text3);font-size:11px"></div>
+      <div class="fm-statusbar-right">
+        <span title="Нажмите для смены темы" id="themeSwitcher" style="cursor:pointer"><i class="fas fa-palette"></i></span>
+        <select id="themeSelect" class="fm-select" style="font-size:11px;padding:2px 6px" data-fm-theme-select
+                title="Тема — общая с остальным приложением">
+          <option value="light">Светлая</option>
+          <option value="dark">Тёмная</option>
+        </select>
+        <span title="Размер иконок"><i class="fas fa-search-minus"></i> <input type="range" id="iconSizeSlider" min="40" max="160" value="80" style="width:60px;vertical-align:middle"> <i class="fas fa-search-plus"></i> <span id="iconSizeSliderVal">80px</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen modal -->
+  <div class="fm-modal-overlay" id="fullscreenModal" style="display:none">
+    <div class="fm-modal fm-modal-full">
+      <div class="fm-modal-header">
+        <h3 id="fullscreenTitle">Просмотр</h3>
+        <div style="display:flex;gap:8px">
+          <button class="fm-btn primary" id="fullscreenSaveBtn" style="display:none"><i class="fas fa-save"></i> Сохранить</button>
+          <button class="fm-close-btn" id="closeFullscreenBtn"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+      <div class="fm-modal-body" id="fullscreenBody" style="padding:0;overflow:hidden"></div>
+    </div>
+  </div>
+
+  <script src="/static/monaco/min/vs/loader.js"></script>
+  <!-- Общая тема приложения. Должна грузиться до file_manager.js:
+       тот при инициализации читает infinity_theme, а не свой fm_theme. -->
+  <script src="/static/js/theme.js"></script>
+  <script src="/static/js/file_manager.js"></script>
+</body>
+</html>

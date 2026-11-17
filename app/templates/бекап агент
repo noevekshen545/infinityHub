@@ -1,0 +1,2294 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ASIO Agent</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;--text:#c9d1d9;--text2:#8b949e;--text3:#484f58;--accent:#58a6ff;--accent2:#1f6feb;--green:#238636;--red:#da3633;--purple:#8b5cf6;--orange:#f97316;--gradient:linear-gradient(135deg,#58a6ff,#8b5cf6)}
+body.light{--bg:#ffffff;--bg2:#f6f8fa;--bg3:#f0f3f6;--border:#d0d7de;--text:#1f2328;--text2:#656d76;--text3:#8b949e;--accent:#0969da;--accent2:#0969da;--green:#1a7f37;--red:#cf222e;--purple:#7c3aed;--orange:#ea580c;--gradient:linear-gradient(135deg,#0969da,#7c3aed)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;transition:background .3s,color .3s}
+a{color:var(--accent);text-decoration:none}
+
+.topnav{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.topnav .logo{font-size:18px;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-right:8px;white-space:nowrap}
+.topnav .nav-links{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+.topnav .nav-link{padding:6px 12px;border-radius:8px;color:var(--text2);font-size:12px;transition:all .2s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.topnav .nav-link:hover{background:var(--bg3);color:var(--text)}
+.topnav .actions{display:flex;gap:6px;align-items:center}
+.topnav .icon-btn{background:var(--bg);border:1px solid var(--border);color:var(--text);width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .2s;text-decoration:none}
+.topnav .icon-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.main{flex:1;display:flex;gap:0;overflow:hidden;height:calc(100vh - 52px)}
+.sidebar{width:280px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.sidebar-header{padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:6px;flex-shrink:0}
+.sidebar-header h3{font-size:13px;color:var(--text);margin:0}
+.sidebar-header button{padding:6px 10px;background:var(--accent);border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px}
+.sidebar-header button:hover{opacity:.85}
+.sidebar-header button.del{background:var(--red)}
+.sidebar-content{flex:1;overflow-y:auto;padding:8px;min-height:0}
+.sidebar .new-btn{padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:12px;font-weight:600}
+
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* Config Bar */
+.config-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.config-bar label{font-size:11px;color:var(--text2);font-weight:600}
+.config-bar select,.config-bar input{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;outline:none}
+.config-bar select:focus{border-color:var(--accent)}
+.mode-tabs{display:flex;gap:4px}
+.mode-tab{padding:8px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--bg);color:var(--text2);transition:all .2s;display:flex;align-items:center;gap:5px}
+.mode-tab:hover{border-color:var(--accent)}
+.mode-tab.active{background:var(--gradient);border-color:transparent;color:#fff}
+.exec-mode{padding:4px 10px;border-radius:12px;font-size:10px;font-weight:700;text-transform:uppercase}
+.exec-mode.advisory{background:var(--orange);color:#fff}
+.exec-mode.autonomy{background:var(--green);color:#fff}
+
+/* Folder Picker */
+.folder-picker{display:none;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:8px;width:100%}
+.folder-picker.open{display:block}
+.folder-picker h4{font-size:12px;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.folder-picker .folder-list{max-height:150px;overflow-y:auto}
+.folder-picker .folder-item{padding:8px 10px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12px;transition:all .15s}
+.folder-picker .folder-item:hover{background:var(--bg3)}
+.folder-picker .folder-item.selected{background:var(--accent);color:#fff}
+
+/* Chat */
+.chat-box{flex:1;overflow-y:auto;padding:16px;min-height:0}
+.chat-box::-webkit-scrollbar{width:6px}
+.chat-box::-webkit-scrollbar-track{background:transparent}
+.chat-box::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.chat-box::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+.msg{margin-bottom:16px;max-width:95%;position:relative}
+.msg.user{margin-left:auto}
+.msg.ai{margin-right:auto}
+.msg-bubble{padding:14px 18px;border-radius:14px;line-height:1.6;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.msg.user .msg-bubble{background:var(--gradient);color:#fff;border-bottom-right-radius:4px}
+.msg.ai .msg-bubble{background:var(--bg2);border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg .label{font-weight:600;font-size:11px;margin-bottom:6px;opacity:.8;display:flex;align-items:center;gap:6px}
+.msg .text{font-size:13px;white-space:pre-wrap;word-wrap:break-word}
+.msg .text code{background:var(--bg3);padding:1px 5px;border-radius:3px;font-family:'Fira Code',monospace;font-size:12px}
+.msg .text pre{background:var(--bg);padding:10px;border-radius:6px;overflow-x:auto;margin:8px 0;font-family:'Fira Code',monospace;font-size:12px;line-height:1.5;position:relative;border:1px solid var(--border)}
+.msg .text pre code{background:none;padding:0}
+
+/* Action Steps */
+.action-steps{margin:10px 0}
+.action-step{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border)}
+.action-step:last-child{border-bottom:none}
+.step-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.step-icon.analysis{background:var(--purple);color:#fff}
+.step-icon.plan{background:var(--accent);color:#fff}
+.step-icon.memory{background:var(--green);color:#fff}
+.step-icon.code{background:var(--orange);color:#fff}
+.step-icon.exec{background:var(--green);color:#fff}
+.step-icon.error{background:var(--red);color:#fff}
+.step-icon.result{background:var(--accent2);color:#fff}
+.step-icon.spawn{background:var(--purple);color:#fff}
+.step-icon.tool{background:var(--orange);color:#fff}
+.step-content{flex:1;min-width:0}
+.step-content .step-title{font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;margin-bottom:2px}
+.step-content .step-text{font-size:12px;color:var(--text2);white-space:pre-wrap;word-break:break-word}
+
+/* Code Execution Panel */
+.code-panel{background:var(--bg);border:1px solid var(--border);border-radius:10px;margin:10px 0;overflow:hidden}
+.code-panel .header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--border)}
+.code-panel .lang{font-size:11px;color:var(--accent);font-weight:700;text-transform:uppercase}
+.code-panel .status{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600}
+.code-panel .status.pending{background:var(--bg);color:var(--text2)}
+.code-panel .status.running{background:var(--orange);color:#fff}
+.code-panel .status.success{background:var(--green);color:#fff}
+.code-panel .status.error{background:var(--red);color:#fff}
+.code-panel .status.advisory{background:var(--purple);color:#fff}
+.code-panel pre{padding:10px;overflow-x:auto;font-family:'Fira Code',monospace;font-size:12px;line-height:1.5;max-height:300px;overflow-y:auto}
+.code-panel .output{padding:10px;background:var(--bg2);border-top:1px solid var(--border);font-family:'Fira Code',monospace;font-size:12px;white-space:pre-wrap;max-height:200px;overflow-y:auto}
+.code-panel .actions{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px}
+.code-panel .actions button{padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--bg);color:var(--text);transition:all .2s}
+.code-panel .actions button:hover{border-color:var(--accent)}
+.code-panel .actions button.execute{background:var(--green);border-color:var(--green);color:#fff}
+.code-panel .actions button.execute:hover{opacity:.85}
+.code-panel .actions button.skip{background:var(--red);border-color:var(--red);color:#fff}
+
+/* Sub-Agent */
+.subagent-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;background:var(--purple);color:#fff;margin-bottom:4px}
+
+/* Welcome */
+.welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;text-align:center}
+.welcome .icon{font-size:64px;margin-bottom:16px;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.welcome h2{font-size:24px;font-weight:700;margin-bottom:8px;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.welcome p{font-size:13px;color:var(--text2);max-width:500px;margin-bottom:16px}
+.welcome .capabilities{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;max-width:700px;width:100%;margin-top:20px}
+.welcome .cap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:left}
+.welcome .cap .ci{font-size:20px;margin-bottom:6px}
+.welcome .cap h4{font-size:12px;color:var(--text);margin-bottom:3px}
+.welcome .cap p{font-size:11px;color:var(--text2);margin:0}
+
+/* Input */
+.input-area{padding:14px 16px;border-top:1px solid var(--border);background:var(--bg2)}
+.input-row{display:flex;gap:8px;align-items:flex-end}
+.input-row textarea{flex:1;padding:12px 14px;background:var(--bg);border:2px solid var(--border);border-radius:12px;color:var(--text);font-size:13px;resize:none;outline:none;font-family:inherit;min-height:44px;max-height:120px;transition:border-color .2s}
+.input-row textarea:focus{border-color:var(--accent)}
+.input-row .send{width:44px;height:44px;background:var(--gradient);border:none;border-radius:12px;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.input-row .send:hover{transform:scale(1.05)}
+.input-row .send:disabled{opacity:.4;transform:none}
+.input-hint{font-size:10px;color:var(--text3);margin-top:6px;text-align:center}
+
+/* Session */
+.session-item{padding:10px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:all .15s;border:1px solid transparent}
+.session-item:hover{background:var(--bg3)}
+.session-item.active{background:var(--bg3);border-color:var(--accent)}
+.session-item .title{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.session-item .preview{font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+
+/* Loading */
+.loading{display:flex;align-items:center;gap:10px;padding:12px;color:var(--text2);font-size:12px}
+.loading .spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Cancel & Reason Buttons */
+.action-buttons-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.action-btn{padding:6px 14px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--bg);color:var(--text);transition:all .2s;display:flex;align-items:center;gap:5px}
+.action-btn:hover{border-color:var(--accent);background:var(--bg3)}
+.action-btn.cancel{border-color:var(--red);color:var(--red)}
+.action-btn.cancel:hover{background:var(--red);color:#fff}
+.action-btn.reason{border-color:var(--purple);color:var(--purple)}
+.action-btn.reason:hover{background:var(--purple);color:#fff}
+.action-btn.skill{border-color:var(--orange);color:var(--orange)}
+.action-btn.skill:hover{background:var(--orange);color:#fff}
+.action-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* Glassmorphism */
+.glass{background:rgba(22,27,34,0.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(48,54,61,0.5)}
+.glass-card{background:rgba(22,27,34,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(88,166,255,0.15);border-radius:12px;padding:16px;transition:all .3s}
+.glass-card:hover{border-color:rgba(88,166,255,0.4);box-shadow:0 4px 20px rgba(88,166,255,0.1)}
+.glass-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(88,166,255,0.15);border:1px solid rgba(88,166,255,0.3);color:var(--accent)}
+
+/* Reasoning Panel */
+.reasoning-box{background:var(--bg);border:1px solid var(--purple);border-radius:10px;margin:10px 0;overflow:hidden}
+.reasoning-box .header{padding:8px 12px;background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(88,166,255,0.1));border-bottom:1px solid var(--purple);display:flex;align-items:center;justify-content:space-between}
+.reasoning-box .header .title{font-size:12px;font-weight:700;color:var(--purple);display:flex;align-items:center;gap:6px}
+.reasoning-box .content{padding:12px;font-size:12px;color:var(--text2);white-space:pre-wrap;line-height:1.6;max-height:400px;overflow-y:auto}
+
+/* Skill Creation Badge */
+.skill-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;background:linear-gradient(135deg,var(--orange),var(--purple));color:#fff}
+
+/* Knowledge Graph Badge
+.kg-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;background:linear-gradient(135deg,var(--green),var(--accent));color:#fff}
+
+/* Progress Bar for tasks */
+.task-progress{height:3px;background:var(--bg3);border-radius:2px;margin:8px 0;overflow:hidden}
+.task-progress .bar{height:100%;background:var(--gradient);border-radius:2px;transition:width .3s}
+
+/* Scheduler Status */
+.scheduler-status{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px;margin:8px 0;font-size:11px}
+.scheduler-status .dot{width:8px;height:8px;border-radius:50%}
+.scheduler-status .dot.thinking{background:var(--purple);animation:pulse 1.5s infinite}
+.scheduler-status .dot.executing{background:var(--orange);animation:pulse 1s infinite}
+.scheduler-status .dot.completed{background:var(--green)}
+.scheduler-status .dot.cancelled{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* Reasoning Iteration Counter */
+.reasoning-counter{font-size:10px;color:var(--purple);font-weight:600;padding:2px 8px;background:rgba(139,92,246,0.1);border-radius:10px}
+
+.copy-btn{position:absolute;top:6px;right:6px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text2);cursor:pointer;font-size:10px;opacity:0;transition:opacity .2s}
+pre:hover .copy-btn{opacity:1}
+
+@media(max-width:768px){
+  .sidebar{width:100%;max-height:250px;border-right:none;border-bottom:1px solid var(--border)}
+  .main{flex-direction:column}
+  .topnav .nav-links{display:none}
+}
+
+/* Side Panels */
+.side-panel{position:fixed;top:0;right:-450px;width:450px;height:100vh;background:var(--bg2);border-left:1px solid var(--border);z-index:200;transition:right .3s;overflow-y:auto;display:flex;flex-direction:column}
+.side-panel.open{right:0}
+.side-panel .panel-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1}
+.side-panel .panel-header h3{font-size:16px;color:var(--text);margin:0;display:flex;align-items:center;gap:8px}
+.side-panel .close-btn{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer}
+.side-panel .panel-body{flex:1;padding:16px;overflow-y:auto}
+
+/* Memory Panel */
+.memory-section{margin-bottom:16px}
+.memory-section h4{font-size:13px;color:var(--text);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.memory-section h4 button{padding:4px 8px;border-radius:4px;cursor:pointer;font-size:10px;border:1px solid var(--border);background:var(--bg);color:var(--text2)}
+.memory-section h4 button:hover{border-color:var(--accent)}
+.memory-item{padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;position:relative}
+.memory-item .text{font-size:12px;color:var(--text);white-space:pre-wrap;word-break:break-word}
+.memory-item .text[contenteditable="true"]{outline:1px solid var(--accent);padding:4px}
+.memory-item .meta{font-size:10px;color:var(--text3);margin-top:4px}
+.memory-item .actions{position:absolute;top:6px;right:6px;display:flex;gap:4px;opacity:0;transition:opacity .2s}
+.memory-item:hover .actions{opacity:1}
+.memory-item .actions button{padding:3px 6px;border-radius:4px;cursor:pointer;font-size:10px;border:1px solid var(--border);background:var(--bg3);color:var(--text2)}
+.memory-item .actions button:hover{border-color:var(--accent)}
+.memory-item .actions button.del:hover{border-color:var(--red);color:var(--red)}
+
+/* Tools Panel */
+.tool-item{padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:8px}
+
+/* Dreams Panel */
+.dream-item.expanded .dream-details{display:block !important}
+.dream-item:hover{border-color:var(--accent) !important}
+
+/* Toggle Switch */
+.switch{position:relative;display:inline-block;width:44px;height:24px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--bg3);border:1px solid var(--border);border-radius:24px;transition:.3s}
+.slider:before{position:absolute;content:"";height:18px;width:18px;left:2px;bottom:2px;background:var(--text2);border-radius:50%;transition:.3s}
+input:checked+.slider{background:var(--accent);border-color:var(--accent)}
+input:checked+.slider:before{transform:translateX(20px);background:#fff}
+.tool-item .name{font-size:13px;font-weight:600;color:var(--accent)}
+.tool-item .desc{font-size:11px;color:var(--text2);margin-top:4px}
+.tool-item .path{font-size:10px;color:var(--text3);margin-top:2px;font-family:monospace}
+.tool-item .actions{margin-top:8px;display:flex;gap:4px}
+.tool-item .actions button{padding:4px 10px;border-radius:6px;cursor:pointer;font-size:10px;border:1px solid var(--border);background:var(--bg3);color:var(--text2)}
+.tool-item .actions button:hover{border-color:var(--accent)}
+.tool-item .actions button.del:hover{border-color:var(--red);color:var(--red)}
+.import-zone{margin-top:12px;padding:12px;background:var(--bg);border:2px dashed var(--border);border-radius:8px;text-align:center}
+.import-zone textarea{width:100%;min-height:80px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px;font-size:12px;font-family:monospace;resize:vertical;margin-top:8px}
+.import-zone button{margin-top:8px;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:12px;border:1px solid var(--accent);background:var(--accent);color:#fff}
+
+.overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:199}
+.overlay.open{display:block}
+</style></head><body>
+
+<div class="topnav">
+  <div class="logo">🤖 ASIO Agent</div>
+  <div class="nav-links">
+    <a class="nav-link" href="/ask"><i class="fas fa-comments"></i> AI Чат</a>
+    <a class="nav-link" href="/notes"><i class="fas fa-sticky-note"></i> Заметки</a>
+    <a class="nav-link" href="/books"><i class="fas fa-book"></i> Книги</a>
+    <a class="nav-link" href="/zim"><i class="fas fa-book-open"></i> ZIM</a>
+    <a class="nav-link" href="/api/agent/team"><i class="fas fa-users"></i> Команды</a>
+    <a class="nav-link" href="/api/agent/analytics"><i class="fas fa-chart-bar"></i> Аналитика</a>
+    <a class="nav-link" href="/api/agent/memory-graph"><i class="fas fa-project-diagram"></i> Граф</a>
+    <a class="nav-link" href="/api/agent/plugins-marketplace"><i class="fas fa-puzzle-piece"></i> Плагины</a>
+    <a class="nav-link" href="/api/agent/server-settings"><i class="fas fa-cog"></i> Настройки</a>
+    <a class="nav-link" href="/"><i class="fas fa-home"></i> Главная</a>
+  </div>
+  <div class="actions">
+    <button class="icon-btn" onclick="showMemoryPanel()" title="Память"><i class="fas fa-brain"></i></button>
+    <button class="icon-btn" onclick="showToolsPanel()" title="Инструменты"><i class="fas fa-toolbox"></i></button>
+    <button class="icon-btn" onclick="showTodosPanel()" title="TODO список"><i class="fas fa-list-check"></i></button>
+    <button class="icon-btn" onclick="showBrowserPanel()" title="Browser Settings"><i class="fas fa-globe"></i></button>
+    <button class="icon-btn" onclick="showScheduledTasksPanel()" title="Scheduled Tasks"><i class="fas fa-clock"></i></button>
+    <button class="icon-btn" onclick="showAnalyticsPanel()" title="Analytics"><i class="fas fa-chart-bar"></i></button>
+    <button class="icon-btn" onclick="showIntelligencePanel()" title="Intelligence"><i class="fas fa-brain"></i></button>
+    <button class="icon-btn" onclick="showDreamsPanel()" title="Сны агента" id="dreamsBtn"><i class="fas fa-moon"></i></button>
+    <button class="icon-btn" onclick="showFilesPanel()" title="Файлы"><i class="fas fa-folder-open"></i></button>
+    <button class="icon-btn" onclick="showSudoPanel()" title="Sudo доступ" id="sudoBtn"><i class="fas fa-key"></i></button>
+    <button class="icon-btn" onclick="showPromptEngPanel()" title="Prompt Engineer" id="peBtn" style="position:relative"><i class="fas fa-wand-magic-sparkles"></i><span id="peBadge" style="display:none;position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--green);border-radius:50%;border:2px solid var(--bg2)"></span></button>
+    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Тема"><i class="fas fa-moon"></i></button>
+    <a class="icon-btn" href="/ask" title="Назад к чату"><i class="fas fa-arrow-left"></i></a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h3><i class="fas fa-history"></i> Сессии</h3>
+      <button onclick="createNewSession()"><i class="fas fa-plus"></i></button>
+      <button class="del" onclick="deleteAllSessions()" title="Удалить все"><i class="fas fa-trash"></i></button>
+    </div>
+    <div class="sidebar-content" id="sessionList"></div>
+  </div>
+
+  <div class="content">
+    <!-- Config Bar -->
+    <div class="config-bar">
+      <!-- Provider Toggle - БОЛЬШОЙ И ЗАМЕТНЫЙ -->
+      <div id="providerToggle" style="display:flex;gap:4px;padding:3px;background:var(--bg);border-radius:10px;border:2px solid var(--border)">
+        <button id="toggleLocalBtn" onclick="quickSwitchProvider('local')" style="padding:6px 12px;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px">
+          🏠 Локальная
+        </button>
+        <button id="toggleCloudBtn" onclick="quickSwitchProvider('openai_compatible')" style="padding:6px 12px;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px">
+          🌐 Облако
+        </button>
+      </div>
+      <div style="width:1px;height:24px;background:var(--border)"></div>
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="general" onclick="setMode('general')"><i class="fas fa-brain"></i> Общий</button>
+        <button class="mode-tab" data-mode="coding" onclick="setMode('coding')"><i class="fas fa-code"></i> Программирование</button>
+      </div>
+      <div style="width:1px;height:24px;background:var(--border)"></div>
+      <label>Модель:</label>
+      <select id="modelSelect" onchange="saveConfig();updateModelDisplay()"><option>Загрузка...</option></select>
+      <div style="width:1px;height:24px;background:var(--border)"></div>
+      <label>Режим:</label>
+      <select id="execMode" onchange="saveConfig()">
+        <option value="advisory">🟡 Advisory (подтверждение)</option>
+        <option value="autonomy">🟢 Autonomy (автономно)</option>
+      </select>
+      <div style="width:1px;height:24px;background:var(--border)"></div>
+      <label>Итерации:</label>
+      <select id="maxIter" onchange="saveConfig(); updateMaxIterInputVisibility()" style="width:70px">
+        <option value="0">♾️ Авто</option>
+        <option value="3">3</option>
+        <option value="5" selected>5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+        <option value="custom">✏️ Свой</option>
+      </select>
+      <input type="number" id="maxIterCustom" min="1" max="500" placeholder="..." style="width:60px;padding:4px 6px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;display:none" onchange="saveConfig()">
+      <div style="flex:1"></div>
+      <span id="statusText" style="font-size:11px;color:var(--text2)">● Готов</span>
+      <span id="modelDisplay" style="font-size:10px;color:var(--accent);font-family:monospace"></span>
+      <button class="icon-btn" onclick="showProviderPanel()" title="Настройки провайдера"><i class="fas fa-server"></i></button>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-box" id="chatBox">
+      <div class="welcome" id="welcomeScreen">
+        <div class="icon">🤖</div>
+        <h2>A.S.I.O. Agent</h2>
+        <p>Autonomous System Interactive Orchestrator — полноценный автономный агент с памятью, инструментами и суб-агентами</p>
+        <div class="capabilities">
+          <div class="cap"><div class="ci">🧠</div><h4>Долгосрочная память</h4><p>Помнит уроки, навыки и контекст между сессиями</p></div>
+          <div class="cap"><div class="ci">🔧</div><h4>Инструменты</h4><p>Создаёт и переиспользует .py модули в /tools/</p></div>
+          <div class="cap"><div class="ci">🐝</div><h4>Суб-агенты</h4><p>Порождает специализированных агентов для параллельных задач</p></div>
+          <div class="cap"><div class="ci">💻</div><h4>Выполнение кода</h4><p>Пишет, запускает и тестирует код на сервере</p></div>
+          <div class="cap"><div class="ci">📁</div><h4>Файловая система</h4><p>Создаёт файлы и папки в выбранной директории</p></div>
+          <div class="cap"><div class="ci">🔄</div><h4>Self-Correction</h4><p>Исправляет ошибки до 3 итераций автономно</p></div>
+        </div>
+      </div>
+      <div id="messagesContainer" style="display:none"></div>
+    </div>
+
+    <!-- Folder Picker -->
+    <div class="folder-picker open" id="folderPicker">
+      <h4><i class="fas fa-folder-open"></i> Рабочая папка проекта</h4>
+      <!-- Custom path input -->
+      <div style="padding:8px;margin-bottom:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px">
+        <div style="display:flex;gap:6px">
+          <input type="text" id="customFolderPath" placeholder="/home/infinity/my_project" style="flex:1;padding:6px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px">
+          <button onclick="selectCustomFolder()" style="padding:6px 10px;background:var(--accent);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:11px;white-space:nowrap"><i class="fas fa-check"></i> Выбрать</button>
+        </div>
+        <div style="font-size:9px;color:var(--text3);margin-top:4px">Введите полный путь или используйте кнопку 📂 для сканирования</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button onclick="refreshFolders()" style="flex:1;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer;font-size:10px"><i class="fas fa-sync"></i> Сканировать</button>
+        <button onclick="selectHomeFolder()" style="flex:1;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer;font-size:10px"><i class="fas fa-home"></i> Домой</button>
+      </div>
+      <div class="folder-list" id="folderList"></div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-area">
+      <!-- Team Selector -->
+      <div id="teamSelector" style="margin-bottom:8px;display:none;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--text2)">👥 Команда:</span>
+          <select id="teamSelect" style="flex:1;padding:4px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px"></select>
+          <button onclick="attachSelectedTeam()" style="padding:4px 10px;background:var(--green);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:11px;font-weight:600">Прикрепить</button>
+          <button onclick="detachTeam()" style="padding:4px 6px;background:var(--red);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:11px">✕</button>
+        </div>
+        <div id="attachedTeamInfo" style="display:none;margin-top:6px;padding:6px 8px;background:rgba(35,134,54,0.1);border:1px solid var(--green);border-radius:4px;font-size:11px;color:var(--green)"></div>
+      </div>
+      <div class="input-row">
+        <button onclick="toggleTeamSelector()" title="Выбрать команду" style="width:44px;height:44px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;color:var(--text);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">👥</button>
+        <textarea id="agentInput" rows="1" placeholder="Опишите задачу агенту..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}" oninput="autoResize(this)"></textarea>
+        <button class="send" onclick="sendMsg()" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+      </div>
+      <!-- Ask DB Toggle -->
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+        <label class="switch">
+          <input type="checkbox" id="askDbToggle" onchange="toggleAskDb(this.checked)">
+          <span class="slider"></span>
+        </label>
+        <span style="font-size:11px;color:var(--text2);cursor:pointer" onclick="document.getElementById('askDbToggle').click()">
+          <i class="fas fa-database" style="color:var(--accent)"></i> <b>Ask DB</b> — использовать базу знаний
+        </span>
+        <span id="askDbStatus" style="font-size:10px;color:var(--text3)">Выключено</span>
+      </div>
+      <!-- Action Buttons: Cancel & Reason -->
+      <div class="action-buttons-row" id="actionButtons" style="display:none">
+        <button class="action-btn cancel" onclick="cancelAgentTask()" id="cancelBtn">
+          <i class="fas fa-stop"></i> Отменить
+        </button>
+        <button class="action-btn reason" onclick="triggerReasoning()" id="reasonBtn">
+          <i class="fas fa-lightbulb"></i> Рассуждать
+        </button>
+        <span class="reasoning-counter" id="reasoningCounter"></span>
+      </div>
+      <div class="input-hint">Enter — отправить · Shift+Enter — новая строка</div>
+    </div>
+  </div>
+</div>
+
+<!-- Memory Panel -->
+<div class="overlay" id="memOverlay" onclick="closePanels()"></div>
+<div class="side-panel" id="memPanel">
+  <div class="panel-header"><h3><i class="fas fa-brain"></i> Память</h3><button class="close-btn" onclick="closePanels()">×</button></div>
+  <div class="panel-body" id="memBody"></div>
+</div>
+
+<!-- Tools Panel -->
+<div class="side-panel" id="toolsPanel">
+  <div class="panel-header"><h3><i class="fas fa-toolbox"></i> Инструменты</h3><button class="close-btn" onclick="closePanels()">×</button></div>
+  <div class="panel-body" id="toolsBody"></div>
+</div>
+
+<!-- Sudo Panel -->
+<div class="side-panel" id="sudoPanel">
+  <div class="panel-header"><h3><i class="fas fa-key"></i> Sudo доступ</h3><button class="close-btn" onclick="closePanels()">×</button></div>
+  <div class="panel-body">
+    <div id="sudoStatus" style="padding:16px;text-align:center">
+      <div style="font-size:32px;margin-bottom:12px">🔐</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Введите пароль sudo для предоставления агенту прав суперпользователя</p>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:16px">Пароль сохраняется в base64 и используется автоматически для команд <code>sudo</code></p>
+      <input type="password" id="sudoPassword" placeholder="Введите пароль sudo..." style="width:100%;padding:10px 14px;background:var(--bg);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;margin-bottom:12px">
+      <button onclick="setSudoPassword()" style="width:100%;padding:10px;background:var(--green);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;font-weight:600;margin-bottom:8px"><i class="fas fa-lock"></i> Сохранить пароль</button>
+      <button onclick="clearSudoPassword()" style="width:100%;padding:10px;background:var(--red);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;font-weight:600"><i class="fas fa-unlock"></i> Удалить пароль</button>
+    </div>
+  </div>
+</div>
+
+<!-- Files Panel -->
+<div class="side-panel" id="filesPanel">
+  <div class="panel-header"><h3><i class="fas fa-folder-open"></i> Файлы проекта</h3><button class="close-btn" onclick="closePanels()">×</button></div>
+  <div class="panel-body" id="filesBody"></div>
+</div>
+
+<!-- Dreams Panel -->
+<div class="side-panel" id="dreamsPanel">
+  <div class="panel-header"><h3><i class="fas fa-moon"></i> Сны агента</h3><button class="close-btn" onclick="closePanels()">×</button></div>
+  <div class="panel-body" id="dreamsBody"></div>
+</div>
+
+<!-- Provider Panel -->
+<div class="side-panel" id="providerPanel">
+  <div class="panel-header"><h3><i class="fas fa-server"></i> LLM Провайдер</h3><button class="close-btn" onclick="closePanels()">×</button></div>
+  <div class="panel-body" style="padding:16px">
+    <!-- Provider Type Selector -->
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;color:var(--text);font-weight:600;display:block;margin-bottom:8px">Тип провайдера:</label>
+      <div style="display:flex;gap:8px">
+        <button id="btnLocalProvider" onclick="selectProviderType('local')" style="flex:1;padding:10px;background:var(--bg);border:2px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:12px;font-weight:600;text-align:center">
+          🏠 Локальные модели
+        </button>
+        <button id="btnCloudProvider" onclick="selectProviderType('openai_compatible')" style="flex:1;padding:10px;background:var(--bg);border:2px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:12px;font-weight:600;text-align:center">
+          🌐 Облачный API
+        </button>
+      </div>
+    </div>
+
+    <!-- Local Provider Settings -->
+    <div id="localProviderSettings" style="display:none">
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">URL LM Studio:</label>
+        <input type="text" id="localUrl" value="http://localhost:1234" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">Модель:</label>
+        <input type="text" id="localModel" placeholder="gemma-4-e2b-it" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">API Key (если есть):</label>
+        <input type="password" id="localApiKey" placeholder="sk-lm-..." style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+      </div>
+    </div>
+
+    <!-- Cloud Provider Settings -->
+    <div id="cloudProviderSettings" style="display:none">
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">Base URL:</label>
+        <input type="text" id="cloudBaseUrl" placeholder="https://openrouter.ai/api/v1" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">API Key:</label>
+        <input type="password" id="cloudApiKey" placeholder="sk-or-..." style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">Модель:</label>
+        <input type="text" id="cloudModel" placeholder="minimax/minimax-m2.5:free" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+      </div>
+      <div style="margin-bottom:12px;display:flex;gap:8px">
+        <div style="flex:1">
+          <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">Temperature:</label>
+          <input type="number" id="cloudTemperature" value="0.7" min="0" max="2" step="0.1" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">Max Tokens:</label>
+          <input type="number" id="cloudMaxTokens" value="8192" min="256" max="128000" step="256" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+        </div>
+      </div>
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="cloudReasoning">
+        <label for="cloudReasoning" style="font-size:11px;color:var(--text)">Reasoning (если поддерживается)</label>
+      </div>
+    </div>
+
+    <!-- Test Button -->
+    <div style="margin-bottom:12px">
+      <button onclick="testProviderConnection()" id="testProviderBtn" style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:12px;font-weight:600">
+        <i class="fas fa-plug"></i> Тест подключения
+      </button>
+      <div id="testProviderResult" style="margin-top:8px;font-size:11px;text-align:center"></div>
+    </div>
+
+    <!-- Save Button -->
+    <button onclick="saveProviderConfig()" style="width:100%;padding:10px;background:var(--green);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:12px;font-weight:600;margin-bottom:8px">
+      <i class="fas fa-save"></i> Сохранить
+    </button>
+
+    <!-- Status -->
+    <div id="providerStatus" style="padding:8px;background:var(--bg);border-radius:6px;font-size:10px;color:var(--text2);margin-top:8px;text-align:center">
+      Загрузка...
+    </div>
+  </div>
+</div>
+
+<!-- TODO Panel -->
+<div class="side-panel" id="todosPanel">
+  <div class="panel-header"><h3><i class="fas fa-list-check"></i> TODO список</h3><button class="close-btn" onclick="closePanels()">×</button></div>
+  <div class="panel-body" id="todosBody" style="padding:16px"></div>
+</div>
+
+<!-- Browser Settings Panel -->
+<div class="side-panel" id="browserPanel">
+  <div class="panel-header"><h3><i class="fas fa-globe"></i> Browser Settings</h3><button class="close-btn" onclick="closePanels()">×</button></div>
+  <div class="panel-body" id="browserBody" style="padding:16px"></div>
+</div>
+
+<!-- Scheduled Tasks Panel -->
+<div class="side-panel" id="scheduledTasksPanel">
+  <div class="panel-header"><h3><i class="fas fa-clock"></i> Scheduled Tasks</h3><button class="close-btn" onclick="closePanels()">×</button></div>
+  <div class="panel-body" id="scheduledTasksBody" style="padding:16px"></div>
+</div>
+
+<!-- Analytics Panel -->
+<div class="side-panel" id="analyticsPanel">
+  <div class="panel-header"><h3><i class="fas fa-chart-bar"></i> Analytics</h3><button class="close-btn" onclick="closePanels()">×</button></div>
+  <div class="panel-body" id="analyticsBody" style="padding:16px"></div>
+</div>
+
+<!-- Intelligence Panel -->
+<div class="side-panel" id="intelligencePanel">
+  <div class="panel-header"><h3><i class="fas fa-brain"></i> Intelligence</h3><button class="close-btn" onclick="closePanels()">×</button></div>
+  <div class="panel-body" id="intelligenceBody" style="padding:16px"></div>
+</div>
+
+<!-- Prompt Engineer Panel -->
+<div class="side-panel" id="promptEngPanel">
+  <div class="panel-header"><h3><i class="fas fa-wand-magic-sparkles"></i> Prompt Engineer</h3><button class="close-btn" onclick="closePanels()">×</button></div>
+  <div class="panel-body" id="promptEngBody" style="padding:16px"></div>
+</div>
+
+<!-- File Viewer Modal -->
+<div class="overlay" id="fileOverlay" onclick="closeFileViewer()" style="z-index:300"></div>
+<div id="fileViewer" style="display:none;position:fixed;top:5%;left:5%;right:5%;bottom:5%;background:var(--bg2);border:1px solid var(--border);border-radius:12px;z-index:301;overflow:hidden;display:none;flex-direction:column">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+    <h3 id="fileViewerTitle" style="font-size:14px;margin:0;color:var(--text)"></h3>
+    <div style="display:flex;gap:8px">
+      <button onclick="copyFileContent()" style="padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;border:1px solid var(--border);background:var(--bg);color:var(--text)"><i class="fas fa-copy"></i> Копировать</button>
+      <button onclick="closeFileViewer()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer">×</button>
+    </div>
+  </div>
+  <pre id="fileViewerContent" style="flex:1;overflow:auto;padding:16px;font-size:13px;font-family:'Fira Code',monospace;line-height:1.5;color:var(--text);white-space:pre-wrap;word-break:break-word"></pre>
+</div>
+
+<script>
+// State
+let currentMode='general', currentSession=null, sessions=[], selectedFolder=null, processing=false;
+let config=JSON.parse(localStorage.getItem('asio_config')||'{}');
+
+// Theme
+function getTheme(){return localStorage.getItem('infinity_theme')||'dark'}
+function setTheme(t){document.body.className=t==='light'?'light':'';document.getElementById('themeBtn').innerHTML=t==='light'?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>';localStorage.setItem('infinity_theme',t)}
+function toggleTheme(){setTheme(getTheme()==='dark'?'light':'dark')}
+setTheme(getTheme());
+
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'}
+
+// Config
+function updateMaxIterInputVisibility() {
+    const sel = document.getElementById('maxIter');
+    const customInput = document.getElementById('maxIterCustom');
+    customInput.style.display = sel.value === 'custom' ? 'inline-block' : 'none';
+}
+
+function getEffectiveMaxIterations() {
+    const sel = document.getElementById('maxIter');
+    if (sel.value === 'custom') {
+        return parseInt(document.getElementById('maxIterCustom').value) || 50;
+    }
+    return parseInt(sel.value) || 0;
+}
+
+function saveConfig(){config.model=document.getElementById('modelSelect').value;config.execMode=document.getElementById('execMode').value;config.mode=currentMode;config.folder=selectedFolder;config.maxIter=document.getElementById('maxIter').value;config.maxIterCustom=document.getElementById('maxIterCustom').value;localStorage.setItem('asio_config',JSON.stringify(config))}
+function loadConfig(){
+  if(config.model)document.getElementById('modelSelect').value=config.model;
+  if(config.execMode)document.getElementById('execMode').value=config.execMode;
+  if(config.maxIter!==undefined)document.getElementById('maxIter').value=config.maxIter;
+  if(config.maxIterCustom!==undefined)document.getElementById('maxIterCustom').value=config.maxIterCustom;
+  updateMaxIterInputVisibility();
+  if(config.mode)setMode(config.mode);
+  if(config.folder){selectedFolder=config.folder}
+  updateModelDisplay();
+}
+function updateModelDisplay(){
+  const m=document.getElementById('modelSelect').value;
+  document.getElementById('modelDisplay').textContent='🤖 '+m;
+}
+
+// Load models
+async function loadModels(){
+  try{
+    const r=await fetch('/api/agent/models');
+    const d=await r.json();
+    const sel=document.getElementById('modelSelect');
+    if(d.models&&d.models.length){
+      sel.innerHTML=d.models.map(m=>`<option value="${m}">${m}</option>`).join('');
+    }
+    if(config.model&&d.models.includes(config.model))sel.value=config.model;
+    else if(d.defaultModel)sel.value=d.defaultModel;
+  }catch(e){console.error('loadModels:',e)}
+}
+
+// Mode
+function setMode(m){
+  currentMode=m;
+  document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`.mode-tab[data-mode="${m}"]`).classList.add('active');
+  // Always show folder picker in both modes
+  document.getElementById('folderPicker').classList.add('open');
+  if(!selectedFolder)refreshFolders();
+  saveConfig();
+}
+
+// Folders
+async function refreshFolders(){
+  try{
+    const r=await fetch('/api/agent/folders');
+    const d=await r.json();
+    document.getElementById('folderList').innerHTML=(d.folders||[]).map(f=>
+      `<div class="folder-item ${f.path===selectedFolder?'selected':''}" onclick="selectFolder('${f.path.replace(/'/g,"\\'")}')"><i class="fas fa-folder"></i><span>${f.name}</span><span style="margin-left:auto;font-size:10px;color:var(--text3)">${f.path}</span></div>`
+    ).join('');
+  }catch(e){console.error(e)}
+}
+function selectFolder(p){selectedFolder=p;document.querySelectorAll('.folder-item').forEach(f=>f.classList.remove('selected'));event.currentTarget.classList.add('selected');saveConfig()}
+
+function selectCustomFolder(){
+  const path=document.getElementById('customFolderPath').value.trim();
+  if(!path){alert('Введите путь');return}
+  selectedFolder=path;
+  document.querySelectorAll('.folder-item').forEach(f=>f.classList.remove('selected'));
+  saveConfig();
+  showTempNotification('✅ Выбрана папка: '+path);
+}
+
+function selectHomeFolder(){
+  selectedFolder='/home/infinity';
+  document.getElementById('customFolderPath').value='/home/infinity';
+  document.querySelectorAll('.folder-item').forEach(f=>f.classList.remove('selected'));
+  saveConfig();
+  showTempNotification('✅ Выбрана домашняя папка: /home/infinity');
+}
+
+// Ask DB Toggle
+let askDbEnabled = false;
+
+function toggleAskDb(enabled){
+  askDbEnabled = enabled;
+  document.getElementById('askDbStatus').textContent = enabled ? '✅ Включено' : 'Выключено';
+  document.getElementById('askDbStatus').style.color = enabled ? 'var(--green)' : 'var(--text3)';
+  saveConfig();
+  showTempNotification(enabled ? '🗄️ Ask DB включено — агент будет использовать базу знаний' : 'Ask DB выключено');
+}
+
+// Sessions
+async function loadSessions(){
+  try{
+    const r=await fetch('/api/agent/sessions');
+    const d=await r.json();
+    sessions=d.sessions||[];
+    const el=document.getElementById('sessionList');
+    if(!sessions.length){el.innerHTML='<div style="padding:30px 16px;text-align:center;color:var(--text3);font-size:12px">Нет сессий</div>';return}
+    el.innerHTML=sessions.map(s=>`<div class="session-item ${s.id===currentSession?'active':''}">
+      <div style="display:flex;align-items:center;gap:4px" onclick="switchSession('${s.id}')">
+        <div style="flex:1;min-width:0">
+          <div class="title">${esc((s.title||'Сессия').substring(0,35))}</div>
+          <div class="preview">${esc((s.preview||'').substring(0,50))}</div>
+        </div>
+      </div>
+      <button onclick="event.stopPropagation();deleteSession('${s.id}')" style="float:right;padding:2px 6px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;border-radius:4px" title="Удалить"><i class="fas fa-times"></i></button>
+    </div>`).join('');
+  }catch(e){console.error(e)}
+}
+
+async function deleteSession(id){
+  if(!confirm('Удалить сессию?'))return;
+  try{
+    await fetch(`/api/agent/sessions/${id}`,{method:'DELETE'});
+    if(currentSession===id){currentSession=null;document.getElementById('messagesContainer').innerHTML='';document.getElementById('messagesContainer').style.display='none';document.getElementById('welcomeScreen').style.display='flex'}
+    await loadSessions();
+  }catch(e){console.error(e)}
+}
+
+async function deleteAllSessions(){
+  if(!confirm('Удалить ВСЕ сессии? Это действие необратимо.'))return;
+  try{
+    await fetch('/api/agent/sessions/clear',{method:'DELETE'});
+    currentSession=null;
+    document.getElementById('messagesContainer').innerHTML='';
+    document.getElementById('messagesContainer').style.display='none';
+    document.getElementById('welcomeScreen').style.display='flex';
+    await loadSessions();
+  }catch(e){console.error(e)}
+}
+
+async function createNewSession(){
+  try{
+    const r=await fetch('/api/agent/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:currentMode,folder:selectedFolder,model:document.getElementById('modelSelect').value})});
+    const d=await r.json();
+    if(d.id){currentSession=d.id;document.getElementById('welcomeScreen').style.display='none';document.getElementById('messagesContainer').style.display='block';document.getElementById('messagesContainer').innerHTML='';addMsg('ai','Сессия создана. Опишите задачу. Я использую память, инструменты и могу создавать суб-агентов.');await loadSessions()}
+  }catch(e){console.error(e)}
+}
+
+async function switchSession(id){
+  currentSession=id;await loadSessions();
+  try{
+    const r=await fetch('/api/agent/sessions/'+id+'.json');
+    const d=await r.json();
+    document.getElementById('welcomeScreen').style.display='none';
+    const mc=document.getElementById('messagesContainer');mc.style.display='block';mc.innerHTML='';
+    (d.messages||[]).forEach(m=>addMsg(m.role==='user'?'user':'ai',m.content,m.action_steps,m.code_blocks,m.sub_agents));
+  }catch(e){console.error(e)}
+
+  // Load teams
+  loadTeamsList();
+}
+
+// === TEAM MANAGEMENT IN CHAT ===
+let availableTeams = [];
+let attachedTeamId = null;
+
+async function loadTeamsList() {
+  try {
+    const res = await fetch('/api/agent/teams/list');
+    const data = await res.json();
+    availableTeams = data.teams || [];
+
+    const select = document.getElementById('teamSelect');
+    select.innerHTML = availableTeams.map(t =>
+      `<option value="${t.team_id}">${t.name} (${t.agent_count} agents)</option>`
+    ).join('');
+  } catch(e) {
+    console.error('Load teams error:', e);
+  }
+}
+
+function toggleTeamSelector() {
+  const selector = document.getElementById('teamSelector');
+  if (selector.style.display === 'none') {
+    selector.style.display = 'block';
+    loadTeamsList();
+  } else {
+    selector.style.display = 'none';
+  }
+}
+
+async function attachSelectedTeam() {
+  const teamId = document.getElementById('teamSelect').value;
+  if (!teamId) {
+    alert('Выберите команду');
+    return;
+  }
+  if (!currentSession) {
+    alert('Сначала создайте сессию');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/agent/teams/${teamId}/attach`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: currentSession })
+    });
+    const result = await res.json();
+
+    if (result.ok) {
+      attachedTeamId = teamId;
+      const team = availableTeams.find(t => t.team_id === teamId);
+      const info = document.getElementById('attachedTeamInfo');
+      info.style.display = 'block';
+      info.innerHTML = `✅ Команда "<b>${team.name}</b>" (${team.agent_count} агентов) прикреплена к сессии`;
+      document.getElementById('teamSelector').style.display = 'none';
+      addMsg('ai', `👥 Команда "${team.name}" активирована!\n\nУчастники: ${team.agent_count} агентов\nСтратегия: ${team.strategy}\n\nАгент будет распределять задачи между членами команды.`);
+    } else {
+      alert('Ошибка: ' + (result.error || 'Неизвестная'));
+    }
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+function detachTeam() {
+  attachedTeamId = null;
+  document.getElementById('attachedTeamInfo').style.display = 'none';
+  document.getElementById('teamSelector').style.display = 'none';
+  addMsg('ai', '👥 Команда отключена. Агент работает один.');
+}
+
+// Send
+async function sendMsg(){
+  const inp=document.getElementById('agentInput');
+  const text=inp.value.trim();
+  if(!text||processing)return;
+  if(!currentSession)await createNewSession();
+  if(!currentSession)return;
+
+  processing=true;
+  document.getElementById('sendBtn').disabled=true;
+  document.getElementById('statusText').innerHTML='<span style="color:var(--orange)">● Думаю...</span>';
+  showActionButtons();  // Show cancel/reason buttons
+
+  addMsg('user',text);
+  inp.value='';inp.style.height='auto';
+
+  // Create streaming message element
+  const mc=document.getElementById('messagesContainer');
+  const aiDiv=document.createElement('div');
+  aiDiv.className='msg ai';
+  const loaderId='streamingLoader_'+Date.now();
+  const streamId='streamingText_'+Date.now();
+  aiDiv.innerHTML=`<div class="msg-bubble"><div class="label"><i class="fas fa-robot"></i> ASIO</div><div class="text" id="${streamId}"></div><div class="loading" id="${loaderId}"><div class="spinner"></div> Генерация...</div></div>`;
+  mc.appendChild(aiDiv);
+  mc.scrollTop=mc.scrollHeight;
+
+  const streamEl=document.getElementById(streamId);
+  const loaderEl=document.getElementById(loaderId);
+  let fullAnswer='';
+
+  try{
+    const resp=await fetch('/api/agent/chat-stream',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        session:currentSession,
+        message:text,
+        mode:currentMode,
+        folder:selectedFolder,
+        model:document.getElementById('modelSelect').value,
+        execMode:document.getElementById('execMode').value,
+        maxIterations:getEffectiveMaxIterations(),
+        askDb:askDbEnabled
+      })
+    });
+
+    const reader=resp.body.getReader();
+    const decoder=new TextDecoder();
+    let buffer='';
+
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split('\n');
+      buffer=lines.pop()||'';
+
+      for(const line of lines){
+        if(!line.startsWith('data: '))continue;
+        try{
+          const d=JSON.parse(line.slice(6));
+          if(d.done){
+            fullAnswer=d.full_answer||fullAnswer;
+            loaderEl.style.display='none';
+            streamEl.removeAttribute('id');
+
+            // Show reasoning iterations count
+            if(d.reasoning_iterations){
+              const rc=document.getElementById('reasoningCounter');
+              if(rc)rc.textContent=`💡 ${d.reasoning_iterations} рассуждений`;
+            }
+
+            // Show action results
+            if(d.action_results&&d.action_results.length){
+              for(const ar of d.action_results){
+                let actionHtml=`<div class="code-panel"><div class="header"><span class="lang">${ar.tool||ar.action||'?'}</span><span class="status ${ar.success?'success':'error'}">${ar.success?'✅ Успех':'❌ Ошибка'}</span></div>`;
+                if(ar.output)actionHtml+=`<pre style="white-space:pre-wrap;font-size:11px">${esc(ar.output)}</pre>`;
+                actionHtml+='</div>';
+                aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',actionHtml);
+              }
+            }
+            await loadSessions();
+          }else if(d.delta){
+            fullAnswer+=d.delta;
+            streamEl.textContent=fullAnswer;
+            mc.scrollTop=mc.scrollHeight;
+          }
+          // New events
+          if(d.prompt_improved){
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div style="font-size:10px;color:var(--green);padding:4px 8px;background:rgba(35,134,54,0.1);border-radius:6px;margin:4px 0">✨ Prompt Engineer улучшил промт</div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.reasoning){
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div class="reasoning-box" title="${esc(d.reasoning)}"><div class="header"><span class="title">💡 Рассуждение (наведи для просмотра)</span></div><div class="content" style="font-size:11px">${esc(d.reasoning.substring(0,300))}${d.reasoning.length>300?'...':''}</div></div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.graph_update){
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div style="font-size:10px;color:var(--green);padding:4px 8px;background:rgba(35,134,54,0.1);border-radius:6px;margin:4px 0">${esc(d.graph_update)}</div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.auto_retry){
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div style="font-size:10px;color:var(--orange);padding:4px 8px">🔄 Авто-retry #${d.auto_retry}...</div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.tool_start){
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div style="font-size:10px;color:var(--accent);padding:4px 8px">🔧 [${esc(d.tool_start.tool)}] ${esc(d.tool_start.args)}</div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.tool_result){
+            const status=d.tool_result.success?'✅':'❌';
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div style="font-size:10px;padding:4px 8px;background:var(--bg);border-radius:6px;margin:2px 0">${status} <b>${esc(d.tool_result.tool)}</b>: ${esc(String(d.tool_result.output).substring(0,300))}</div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.auto_fix){
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div style="font-size:10px;color:var(--purple);padding:4px 8px">${esc(d.auto_fix)}</div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.auto_skill_detect){
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div style="font-size:10px;color:var(--orange);padding:4px 8px">${esc(d.auto_skill_detect)}</div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.skill_created){
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div style="font-size:10px;color:var(--green);padding:4px 8px;background:rgba(35,134,54,0.1);border-radius:6px;margin:2px 0">${esc(d.skill_created)}</div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.skill_info){
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div style="font-size:10px;color:var(--text2);padding:4px 8px">${esc(d.skill_info)}</div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.subagent_start){
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div style="font-size:10px;color:var(--purple);padding:6px 10px;background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(88,166,255,0.1));border:1px solid var(--purple);border-radius:8px;margin:4px 0">🐝 <b>Sub-Agent:</b> ${esc(d.subagent_start.role||'')} — ${esc(d.subagent_start.task||'').substring(0,100)}</div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.subagent_done){
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div style="font-size:10px;color:var(--green);padding:4px 8px">✅ Sub-Agent завершил: ${esc(d.subagent_done.role||'')}</div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.dual_model){
+            aiDiv.querySelector('.msg-bubble').insertAdjacentHTML('beforeend',`<div style="font-size:10px;color:var(--accent);padding:4px 8px">🔄 Dual Model: ${esc(d.dual_model.small||'')} + ${esc(d.dual_model.large||'')}</div>`);
+            mc.scrollTop=mc.scrollHeight;
+          }
+          if(d.cancelled){
+            loaderEl.style.display='none';
+            streamEl.textContent=fullAnswer||'Задача отменена.';
+            streamEl.removeAttribute('id');
+          }
+          if(d.error){
+            loaderEl.style.display='none';
+            streamEl.textContent='⚠️ '+d.error;
+          }
+        }catch(e){}
+      }
+    }
+    // Гарантированно скрываем лоадер после завершения stream
+    if(loaderEl) loaderEl.style.display='none';
+    if(streamEl) streamEl.removeAttribute('id');
+  }catch(e){
+    if(loaderEl)loaderEl.style.display='none';
+    if(streamEl){streamEl.textContent='⚠️ Ошибка: '+e.message;streamEl.removeAttribute('id')}
+  }
+  processing=false;
+  document.getElementById('sendBtn').disabled=false;
+  document.getElementById('statusText').innerHTML='● Готов';
+  document.getElementById('actionButtons').style.display='none';
+}
+
+// === CANCEL & REASONING BUTTONS ===
+async function cancelAgentTask(){
+  if(!currentSession)return;
+  if(!confirm('Отменить текущую задачу агента?'))return;
+
+  try{
+    const resp=await fetch('/api/agent/cancel',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({session:currentSession})
+    });
+    const data=await resp.json();
+    if(data.ok){
+      addMsg('ai','⛔ Задача отменена пользователем.');
+      document.getElementById('statusText').innerHTML='<span style="color:var(--red)">● Отменено</span>';
+    }
+  }catch(e){
+    alert('Ошибка отмены: '+e.message);
+  }
+}
+
+async function triggerReasoning(){
+  if(!currentSession)return;
+
+  document.getElementById('statusText').innerHTML='<span style="color:var(--purple)">● Рассуждаю...</span>';
+  const reasonBtn=document.getElementById('reasonBtn');
+  reasonBtn.disabled=true;
+  reasonBtn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Думаю...';
+
+  try{
+    const resp=await fetch('/api/agent/reason',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({session:currentSession})
+    });
+    const data=await resp.json();
+
+    if(data.success){
+      // Show reasoning in a special box
+      const mc=document.getElementById('messagesContainer');
+      const reasonDiv=document.createElement('div');
+      reasonDiv.className='msg ai';
+      reasonDiv.innerHTML=`<div class="reasoning-box">
+        <div class="header"><span class="title">💡 Рассуждение агента</span><span style="font-size:10px;color:var(--text2)">${data.nodes_added||0} узлов в граф знаний</span></div>
+        <div class="content">${formatText(data.reasoning)}</div>
+      </div>`;
+      mc.appendChild(reasonDiv);
+      mc.scrollTop=mc.scrollHeight;
+    }else{
+      addMsg('ai','⚠️ Ошибка рассуждения: '+(data.error||'Неизвестная'));
+    }
+  }catch(e){
+    addMsg('ai','⚠️ Ошибка: '+e.message);
+  }
+
+  reasonBtn.disabled=false;
+  reasonBtn.innerHTML='<i class="fas fa-lightbulb"></i> Рассуждать';
+  document.getElementById('statusText').innerHTML='● Готов';
+}
+
+// Show action buttons during processing
+function showActionButtons(){
+  document.getElementById('actionButtons').style.display='flex';
+}
+
+// Messages
+function addMsg(type,text,steps,codeBlocks,subAgents){
+  const mc=document.getElementById('messagesContainer');
+  const div=document.createElement('div');
+  div.className='msg '+type;
+  const label=type==='user'?'<i class="fas fa-user"></i> Вы':'<i class="fas fa-robot"></i> ASIO';
+  let html=`<div class="msg-bubble"><div class="label">${label}</div>`;
+
+  // Action steps
+  if(steps&&steps.length){
+    html+='<div class="action-steps">';
+    steps.forEach(s=>{
+      const icons={analysis:'🔍',plan:'📋',memory:'🧠',code:'💻',exec:'▶️',error:'❌',result:'✅',spawn:'🐝',tool:'🔧'};
+      html+=`<div class="action-step"><div class="step-icon ${s.type}">${icons[s.type]||'•'}</div><div class="step-content"><div class="step-title">${esc(s.title)}</div><div class="step-text">${esc(s.text)}</div></div></div>`;
+    });
+    html+='</div>';
+  }
+
+  // Text
+  if(text)html+=`<div class="text">${formatText(text)}</div>`;
+
+  // Sub-agents
+  if(subAgents&&subAgents.length){
+    html+='<div style="margin-top:8px">';
+    subAgents.forEach(sa=>{html+=`<div class="subagent-badge">🐝 ${esc(sa.role)}</div><div style="font-size:12px;color:var(--text2);margin-bottom:8px">${esc(sa.result||'')}</div>`});
+    html+='</div>';
+  }
+
+  // Code blocks
+  if(codeBlocks&&codeBlocks.length){
+    codeBlocks.forEach((cb,i)=>{
+      html+=`<div class="code-panel" data-cb-idx="${i}"><div class="header"><span class="lang">${esc(cb.lang||'python')}</span><span class="status ${cb.status||'pending'}">${cb.status==='executed'?'✅ Выполнен':cb.status==='error'?'❌ Ошибка':cb.status==='advisory'?'🟡 Ожидание':'⏳ Ожидание'}</span></div>`;
+      html+=`<pre><code>${esc(cb.code)}</code><button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button></pre>`;
+      if(cb.output!==undefined&&cb.output!==null)html+=`<div class="output">${esc(cb.output)}</div>`;
+      if(cb.status==='advisory'){
+        html+=`<div class="actions"><button class="execute" onclick="executeCode('${currentSession}',${i})"><i class="fas fa-play"></i> Выполнить</button><button class="skip" onclick="skipCode('${currentSession}',${i})"><i class="fas fa-forward"></i> Пропустить</button></div>`;
+      }
+      html+=`</div>`;
+    });
+  }
+
+  html+='</div>';
+  div.innerHTML=html;mc.appendChild(div);mc.scrollTop=mc.scrollHeight;
+}
+
+async function executeCode(sessionId,cbIdx){
+  try{
+    const r=await fetch('/api/agent/code/execute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session:sessionId,code_idx:cbIdx,folder:selectedFolder})});
+    const d=await r.json();
+    if(d.ok)switchSession(sessionId);
+  }catch(e){console.error(e)}
+}
+async function skipCode(sessionId,cbIdx){
+  try{
+    await fetch('/api/agent/code/skip',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session:sessionId,code_idx:cbIdx})});
+    switchSession(sessionId);
+  }catch(e){console.error(e)}
+}
+
+function formatText(t){if(!t)return'';let h=esc(t);h=h.replace(/```(\w+)?\n([\s\S]*?)```/g,'<pre><code>$2</code><button class="copy-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button></pre>');h=h.replace(/`([^`]+)`/g,'<code>$1</code>');h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');return h}
+function esc(t){if(!t)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function copyCode(btn){navigator.clipboard.writeText(btn.parentElement.querySelector('code').textContent);btn.innerHTML='<i class="fas fa-check"></i>';setTimeout(()=>btn.innerHTML='<i class="fas fa-copy"></i>',1500)}
+
+// Panels
+function closePanels(){
+  document.getElementById('memPanel').classList.remove('open');
+  document.getElementById('toolsPanel').classList.remove('open');
+  document.getElementById('todosPanel').classList.remove('open');
+  document.getElementById('browserPanel').classList.remove('open');
+  document.getElementById('scheduledTasksPanel').classList.remove('open');
+  document.getElementById('analyticsPanel').classList.remove('open');
+  document.getElementById('intelligencePanel').classList.remove('open');
+  document.getElementById('sudoPanel').classList.remove('open');
+  document.getElementById('filesPanel').classList.remove('open');
+  document.getElementById('dreamsPanel').classList.remove('open');
+  document.getElementById('providerPanel').classList.remove('open');
+  document.getElementById('promptEngPanel').classList.remove('open');
+  document.getElementById('memOverlay').classList.remove('open')
+}
+
+// Sudo Panel
+// === TODO PANEL ===
+async function showTodosPanel(){
+  try{
+    const res = await fetch('/api/agent/todos');
+    const data = await res.json();
+    const statsRes = await fetch('/api/agent/todos/stats');
+    const stats = await statsRes.json();
+
+    let html = `
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button onclick="showTodoAddForm()" style="flex:1;padding:8px;background:var(--accent);border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:11px;font-weight:600"><i class="fas fa-plus"></i> Добавить</button>
+        <button onclick="loadTodos()" style="padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;font-size:11px"><i class="fas fa-sync"></i></button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px">
+        <div style="padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;text-align:center;font-size:11px">
+          <div style="font-size:18px;font-weight:700;color:var(--accent)">${stats.pending||0}</div>
+          <div style="color:var(--text3)">Ожидает</div>
+        </div>
+        <div style="padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;text-align:center;font-size:11px">
+          <div style="font-size:18px;font-weight:700;color:var(--orange)">${stats.in_progress||0}</div>
+          <div style="color:var(--text3)">В работе</div>
+        </div>
+        <div style="padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;text-align:center;font-size:11px">
+          <div style="font-size:18px;font-weight:700;color:var(--green)">${stats.completed||0}</div>
+          <div style="color:var(--text3)">Готово</div>
+        </div>
+      </div>
+      <div id="todoAddForm" style="display:none;margin-bottom:12px;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px">
+        <input type="text" id="newTodoTitle" placeholder="Задача..." style="width:100%;padding:6px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;margin-bottom:6px">
+        <select id="newTodoPriority" style="width:100%;padding:6px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;margin-bottom:6px">
+          <option value="low">🟢 Низкий</option>
+          <option value="normal" selected>🟡 Обычный</option>
+          <option value="high">🔴 Высокий</option>
+        </select>
+        <div style="display:flex;gap:6px">
+          <button onclick="addTodo()" style="flex:1;padding:6px;background:var(--green);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:11px">Создать</button>
+          <button onclick="document.getElementById('todoAddForm').style.display='none'" style="flex:1;padding:6px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer;font-size:11px">Отмена</button>
+        </div>
+      </div>
+    `;
+
+    const todos = data.todos || [];
+    if(!todos.length){
+      html += '<div style="padding:20px;color:var(--text3);font-size:12px;text-align:center">Нет задач</div>';
+    } else {
+      html += '<div style="display:flex;flex-direction:column;gap:6px">';
+      todos.forEach(t => {
+        const statusIcon = t.status === 'completed' ? '✅' : t.status === 'in_progress' ? '🔄' : t.status === 'cancelled' ? '❌' : '⏳';
+        const priorityBadge = t.priority === 'high' ? '<span style="color:var(--red);font-size:9px">🔴</span>' : t.priority === 'low' ? '<span style="color:var(--green);font-size:9px">🟢</span>' : '';
+        const textDecoration = t.status === 'completed' ? 'line-through;color:var(--text3)' : '';
+        html += `<div style="padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:11px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="cursor:pointer;font-size:14px" onclick="toggleTodoStatus('${t.id}','${t.status === 'completed' ? 'pending' : 'completed'}')">${statusIcon}</span>
+            <span style="flex:1;${textDecoration}">${esc(t.title)}</span>
+            ${priorityBadge}
+          </div>
+          <div style="display:flex;gap:4px;margin-top:6px">
+            ${t.status !== 'in_progress' ? `<button onclick="toggleTodoStatus('${t.id}','in_progress')" style="padding:3px 8px;background:var(--orange);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:9px">▶️ В работу</button>` : ''}
+            ${t.status !== 'completed' ? `<button onclick="toggleTodoStatus('${t.id}','completed')" style="padding:3px 8px;background:var(--green);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:9px">✅ Готово</button>` : ''}
+            <button onclick="deleteTodo('${t.id}')" style="padding:3px 8px;background:var(--red);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:9px">🗑️</button>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+
+    document.getElementById('todosBody').innerHTML = html;
+    document.getElementById('todosPanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }catch(e){console.error(e)}
+}
+
+function showTodoAddForm(){
+  document.getElementById('todoAddForm').style.display = 'block';
+}
+
+async function addTodo(){
+  const title = document.getElementById('newTodoTitle').value.trim();
+  const priority = document.getElementById('newTodoPriority').value;
+  if(!title){alert('Введите название задачи');return}
+  try{
+    await fetch('/api/agent/todos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,priority})});
+    loadTodos();
+  }catch(e){console.error(e)}
+}
+
+async function toggleTodoStatus(id, status){
+  try{
+    await fetch(`/api/agent/todos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
+    loadTodos();
+  }catch(e){console.error(e)}
+}
+
+async function deleteTodo(id){
+  try{
+    await fetch(`/api/agent/todos/${id}`,{method:'DELETE'});
+    loadTodos();
+  }catch(e){console.error(e)}
+}
+
+async function loadTodos(){showTodosPanel()}
+
+// === BROWSER SETTINGS PANEL ===
+async function showBrowserPanel(){
+  try{
+    const res = await fetch('/api/agent/browser/config');
+    const cfg = await res.json();
+
+    // Detect chrome
+    const detectRes = await fetch('/api/agent/browser/detect');
+    const detect = await detectRes.json();
+
+    let html = `
+      <div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px">🌐 Настройки браузера</div>
+        <p style="font-size:11px;color:var(--text2);margin-bottom:12px">
+          <b>requests + BS4</b> — работает всегда (pure Python, ~2MB)<br>
+          <b>Playwright</b> — полный браузер (требует Chromium)
+        </p>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <span style="font-size:12px;color:var(--text)">Включить Playwright</span>
+          <label class="switch">
+            <input type="checkbox" id="browserToggle" ${cfg.enabled ? 'checked' : ''} onchange="toggleBrowserEngine(this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">Путь к Chromium:</label>
+          <input type="text" id="chromePath" value="${cfg.playwright_chrome_path || ''}" placeholder="/usr/bin/chromium-browser" style="width:100%;padding:8px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px">
+          <div style="font-size:9px;color:var(--text3);margin-top:4px">Оставь пустым для автопоиска</div>
+        </div>
+
+        <button onclick="saveBrowserConfig()" style="width:100%;padding:8px;background:var(--accent);border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:11px;font-weight:600;margin-bottom:8px">
+          <i class="fas fa-save"></i> Сохранить
+        </button>
+      </div>
+
+      <div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">🔍 Статус</div>
+        <div style="font-size:11px;color:var(--text2)">
+          <div>requests: ${detect.has_requests ? '✅' : '❌'}</div>
+          <div>BeautifulSoup: ${detect.has_bs4 ? '✅' : '❌'}</div>
+          <div>Playwright: ${detect.has_playwright ? '✅' : '❌'}</div>
+          <div>Chromium: ${detect.chrome_path ? '✅ ' + detect.chrome_path : '❌ не найден'}</div>
+          <div style="margin-top:8px;padding:6px;background:var(--bg2);border-radius:4px">
+            Текущий режим: <b style="color:var(--accent)">${cfg.enabled && detect.chrome_path ? 'Playwright' : 'requests + BS4'}</b>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('browserBody').innerHTML = html;
+    document.getElementById('browserPanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }catch(e){
+    console.error(e);
+    document.getElementById('browserBody').innerHTML = `<div style="padding:20px;color:var(--red);font-size:12px;text-align:center">❌ ${e.message}</div>`;
+    document.getElementById('browserPanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }
+}
+
+async function toggleBrowserEngine(enabled){
+  try{
+    await fetch('/api/agent/browser/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled})});
+    showTempNotification(enabled ? '🌐 Playwright включён' : '📄 Режим: requests + BS4');
+  }catch(e){console.error(e)}
+}
+
+async function saveBrowserConfig(){
+  const cfg = {
+    enabled: document.getElementById('browserToggle').checked,
+    playwright_chrome_path: document.getElementById('chromePath').value.trim()
+  };
+  try{
+    await fetch('/api/agent/browser/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+    showTempNotification('✅ Настройки браузера сохранены');
+  }catch(e){alert('Ошибка: '+e.message)}
+}
+
+// === SCHEDULED TASKS PANEL ===
+async function showScheduledTasksPanel(){
+  try{
+    const res = await fetch('/api/agent/scheduled-tasks');
+    const data = await res.json();
+
+    let html = `<div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+        <div style="text-align:center;padding:8px"><div style="font-size:18px;font-weight:700;color:var(--accent)">${data.summary.total||0}</div><div style="font-size:10px;color:var(--text3)">Всего</div></div>
+        <div style="text-align:center;padding:8px"><div style="font-size:18px;font-weight:700;color:var(--orange)">${data.summary.pending||0}</div><div style="font-size:10px;color:var(--text3)">Ожидает</div></div>
+        <div style="text-align:center;padding:8px"><div style="font-size:18px;font-weight:700;color:var(--green)">${data.summary.completed||0}</div><div style="font-size:10px;color:var(--text3)">Готово</div></div>
+      </div>
+    </div>`;
+
+    const tasks = data.tasks || [];
+    if(!tasks.length){
+      html += '<div style="padding:20px;color:var(--text3);font-size:12px;text-align:center">Нет запланированных задач</div>';
+    } else {
+      tasks.forEach(t => {
+        const statusIcon = t.status === 'completed' ? '✅' : t.status === 'failed' ? '❌' : t.status === 'running' ? '🔄' : '⏳';
+        const time = new Date(t.run_at * 1000).toLocaleString('ru-RU');
+        html += `<div style="padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:11px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span>${statusIcon}</span>
+            <span style="flex:1">${esc(t.prompt.substring(0,80))}${t.prompt.length>80?'...':''}</span>
+            <span style="font-size:9px;color:var(--text3)">${time}</span>
+          </div>
+          <div style="font-size:9px;color:var(--text2);margin-top:4px">
+            Модель: ${t.model||'default'} | Запусков: ${t.run_count}/${t.max_runs} | Тип: ${t.run_type}
+            ${t.next_run ? ' | Следующий: ' + new Date(t.next_run * 1000).toLocaleString('ru-RU') : ''}
+          </div>
+          <div style="display:flex;gap:4px;margin-top:6px">
+            <button onclick="deleteScheduledTask('${t.id}')" style="padding:3px 8px;background:var(--red);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:9px">🗑️ Удалить</button>
+          </div>
+        </div>`;
+      });
+    }
+
+    document.getElementById('scheduledTasksBody').innerHTML = html;
+    document.getElementById('scheduledTasksPanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }catch(e){console.error(e)}
+}
+
+async function deleteScheduledTask(id){
+  try{
+    await fetch(`/api/agent/scheduled-tasks/${id}`,{method:'DELETE'});
+    showScheduledTasksPanel();
+  }catch(e){console.error(e)}
+}
+
+// === ANALYTICS PANEL ===
+async function showAnalyticsPanel(){
+  try{
+    const res = await fetch('/api/agent/analytics/data');
+    const data = await res.json();
+
+    let html = `<div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px">📊 Общая статистика</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px">
+        <div style="padding:8px;background:var(--bg2);border-radius:6px;text-align:center">
+          <div style="font-size:16px;font-weight:700;color:var(--accent)">${data.overview?.total_sessions||0}</div>
+          <div style="color:var(--text3)">Сессий</div>
+        </div>
+        <div style="padding:8px;background:var(--bg2);border-radius:6px;text-align:center">
+          <div style="font-size:16px;font-weight:700;color:var(--green)">${data.overview?.total_actions||0}</div>
+          <div style="color:var(--text3)">Действий</div>
+        </div>
+        <div style="padding:8px;background:var(--bg2);border-radius:6px;text-align:center">
+          <div style="font-size:16px;font-weight:700;color:var(--orange)">${data.overview?.total_llm_calls||0}</div>
+          <div style="color:var(--text3)">LLM вызовов</div>
+        </div>
+        <div style="padding:8px;background:var(--bg2);border-radius:6px;text-align:center">
+          <div style="font-size:16px;font-weight:700;color:var(--purple)">${data.overview?.success_rate||0}%</div>
+          <div style="color:var(--text3)">Успешность</div>
+        </div>
+      </div>
+    </div>`;
+
+    if(data.actions_by_type){
+      html += '<div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:12px">';
+      html += '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">🔧 Инструменты</div>';
+      for(const [name, stats] of Object.entries(data.actions_by_type)){
+        html += `<div style="display:flex;justify-content:space-between;font-size:10px;padding:4px 0;border-bottom:1px solid var(--border)">
+          <span>${name}</span>
+          <span>${stats.total} (${stats.success_rate}%)</span>
+        </div>`;
+      }
+      html += '</div>';
+    }
+
+    document.getElementById('analyticsBody').innerHTML = html;
+    document.getElementById('analyticsPanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }catch(e){
+    document.getElementById('analyticsBody').innerHTML = `<div style="padding:20px;color:var(--text3);font-size:12px;text-align:center">Нет данных аналитики</div>`;
+    document.getElementById('analyticsPanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }
+}
+
+// === INTELLIGENCE PANEL ===
+async function showIntelligencePanel(){
+  try{
+    const [envRes, fbRes, templatesRes] = await Promise.all([
+      fetch('/api/agent/intelligence/environment'),
+      fetch('/api/agent/intelligence/feedback/stats'),
+      fetch('/api/agent/intelligence/templates')
+    ]);
+    const env = await envRes.json();
+    const fb = await fbRes.json();
+    const templates = await templatesRes.json();
+
+    let html = `
+      <div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px">🔍 Окружение</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:10px">
+          <div style="padding:6px;background:var(--bg2);border-radius:6px;text-align:center">
+            <div style="font-size:14px;font-weight:700;color:var(--green)">${env.tools_available?.length||0}</div>
+            <div style="color:var(--text3)">Доступно</div>
+          </div>
+          <div style="padding:6px;background:var(--bg2);border-radius:6px;text-align:center">
+            <div style="font-size:14px;font-weight:700;color:var(--red)">${env.tools_missing?.length||0}</div>
+            <div style="color:var(--text3)">Отсутствует</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px">⭐ Отзывы</div>
+        <div style="text-align:center;font-size:24px;font-weight:700;color:var(--orange)">${fb.avg_rating||0}/5</div>
+        <div style="font-size:10px;color:var(--text3);text-align:center">${fb.total||0} оценок</div>
+      </div>
+
+      <div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px">📋 Шаблоны задач</div>
+        ${Object.entries(templates.templates||{}).map(([k,v])=>`<div style="font-size:10px;padding:4px 0;border-bottom:1px solid var(--border)"><b>${v.name}</b> (${v.steps?.length||0} шагов)</div>`).join('')}
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button onclick="runEnhancedDreams()" style="padding:10px;background:var(--purple);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:11px;font-weight:600">
+          <i class="fas fa-moon"></i> Запустить улучшенные сны
+        </button>
+        <button onclick="detectEnvironment()" style="padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:11px;font-weight:600">
+          <i class="fas fa-search"></i> Сканировать окружение
+        </button>
+      </div>
+    `;
+
+    document.getElementById('intelligenceBody').innerHTML = html;
+    document.getElementById('intelligencePanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }catch(e){
+    console.error(e);
+    document.getElementById('intelligenceBody').innerHTML = `<div style="padding:20px;color:var(--red);font-size:12px;text-align:center">❌ ${e.message}</div>`;
+    document.getElementById('intelligencePanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }
+}
+
+async function runEnhancedDreams(){
+  showTempNotification('🌙 Запускаю улучшенные сны...');
+  try{
+    const res = await fetch('/api/agent/dreams/enhanced',{method:'POST'});
+    const data = await res.json();
+    if(data.success){
+      const d = data.dreams;
+      let msg = `✅ Сны завершены!\n`;
+      msg += `📚 Уроков: ${(d.lessons||[]).length}\n`;
+      msg += `🛠️ Навыков: ${(d.skills||[]).length}\n`;
+      msg += `🧹 Память: ${(d.memory_consolidation||{}).deduplicated||0} дубликатов\n`;
+      msg += `💡 Инсайтов: ${(d.insights||[]).length}\n`;
+      msg += `🚀 Эволюция: ${d.evolution?.version||''}`;
+      showTempNotification(msg);
+    }
+  }catch(e){console.error(e)}
+}
+
+async function detectEnvironment(){
+  showTempNotification('🔍 Сканирую окружение...');
+  try{
+    const res = await fetch('/api/agent/intelligence/environment');
+    const data = await res.json();
+    showTempNotification(`✅ Найдено: ${data.tools_available?.length||0} инструментов, ${data.tools_missing?.length||0} отсутствует`);
+  }catch(e){console.error(e)}
+}
+
+// === DREAMS PANEL WITH MODEL SELECT ===
+async function showPromptEngPanel(){
+  try{
+    const res=await fetch('/api/agent/prompt-engineer/config');
+    const cfg=await res.json();
+    document.getElementById('promptEngBody').innerHTML=`
+      <div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <span style="font-size:13px;font-weight:600;color:var(--text)">Prompt Engineer</span>
+          <label class="switch"><input type="checkbox" id="peToggle" ${cfg.enabled?'checked':''} onchange="togglePromptEngineer(this.checked)"><span class="slider"></span></label>
+        </div>
+        <p style="font-size:11px;color:var(--text2);margin-bottom:16px">Улучшает промты перед отправкой агенту. Использует отдельную модель для экономии ресурсов основной.</p>
+
+        <div style="margin-bottom:12px">
+          <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">Модель:</label>
+          <input type="text" id="peModel" value="${cfg.model||'gemma-3-4b-it'}" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">URL:</label>
+          <input type="text" id="peUrl" value="${cfg.url||'http://localhost:1234'}" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label style="font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px">Стиль:</label>
+          <select id="peStyle" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+            <option value="detailed" ${cfg.style==='detailed'?'selected':''}>📝 Подробный — детализирует промт</option>
+            <option value="structured" ${cfg.style==='structured'?'selected':''}>📋 Структурированный — GOAL/CONTEXT/STEPS</option>
+            <option value="concise" ${cfg.style==='concise'?'selected':''}>✂️ Краткий — убирает лишнее</option>
+          </select>
+        </div>
+
+        <button onclick="savePromptEngineerConfig()" style="width:100%;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:12px;font-weight:600;margin-bottom:8px">
+          <i class="fas fa-save"></i> Сохранить
+        </button>
+      </div>
+
+      <div style="margin-top:16px">
+        <h4 style="font-size:12px;color:var(--text);margin-bottom:8px">История улучшений</h4>
+        <div id="peHistory" style="max-height:300px;overflow-y:auto"></div>
+      </div>
+    `;
+
+    // Load history
+    loadPromptEngHistory();
+
+    // Update badge
+    document.getElementById('peBadge').style.display=cfg.enabled?'block':'none';
+
+    document.getElementById('promptEngPanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }catch(e){
+    console.error('Prompt Eng panel error:',e);
+  }
+}
+
+async function loadPromptEngHistory(){
+  try{
+    const res=await fetch('/api/agent/prompt-engineer/history');
+    const history=await res.json();
+    const container=document.getElementById('peHistory');
+    if(!history.length){container.innerHTML='<div style="font-size:11px;color:var(--text3)">Пока нет записей</div>';return}
+    container.innerHTML=history.reverse().map(h=>`
+      <div style="padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:10px">
+        <div style="color:var(--accent);font-weight:600">${h.model_used||'?'} · ${new Date(h.timestamp*1000).toLocaleTimeString()}</div>
+        <div style="color:var(--text2);margin-top:4px"><b>Было:</b> ${esc(h.original.substring(0,80))}...</div>
+        <div style="color:var(--text);margin-top:2px"><b>Стало:</b> ${esc(h.improved.substring(0,120))}...</div>
+      </div>
+    `).join('');
+  }catch(e){}
+}
+
+async function togglePromptEngEngineer(enabled){
+  try{
+    const res=await fetch('/api/agent/prompt-engineer/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled})});
+    const data=await res.json();
+    if(data.ok){
+      document.getElementById('peBadge').style.display=enabled?'block':'none';
+    }
+  }catch(e){console.error(e)}
+}
+
+async function savePromptEngineerConfig(){
+  const cfg={
+    enabled:document.getElementById('peToggle').checked,
+    model:document.getElementById('peModel').value,
+    url:document.getElementById('peUrl').value,
+    style:document.getElementById('peStyle').value
+  };
+  try{
+    const res=await fetch('/api/agent/prompt-engineer/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+    const data=await res.json();
+    if(data.ok){
+      document.getElementById('peBadge').style.display=cfg.enabled?'block':'none';
+      alert('✅ Сохранено');
+    }
+  }catch(e){alert('Ошибка: '+e.message)}
+}
+
+async function showSudoPanel(){
+  try{
+    const r=await fetch('/api/agent/sudo/status');
+    const d=await r.json();
+    const status=document.getElementById('sudoStatus');
+    if(d.has_password){
+      status.innerHTML=`<div style="font-size:32px;margin-bottom:12px">🔓</div>
+        <p style="font-size:13px;color:var(--green);margin-bottom:16px;font-weight:600">Пароль сохранён</p>
+        <p style="font-size:11px;color:var(--text3);margin-bottom:16px">Агент может использовать команды <code>sudo</code></p>
+        <input type="password" id="sudoPassword" placeholder="Изменить пароль..." style="width:100%;padding:10px 14px;background:var(--bg);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;margin-bottom:12px">
+        <button onclick="setSudoPassword()" style="width:100%;padding:10px;background:var(--green);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;font-weight:600;margin-bottom:8px"><i class="fas fa-sync"></i> Обновить пароль</button>
+        <button onclick="clearSudoPassword()" style="width:100%;padding:10px;background:var(--red);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:13px;font-weight:600"><i class="fas fa-trash"></i> Удалить пароль</button>`;
+    }
+    document.getElementById('sudoPanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }catch(e){console.error(e)}
+}
+
+async function setSudoPassword(){
+  const pwd=document.getElementById('sudoPassword').value;
+  if(!pwd){alert('Введите пароль');return}
+  try{
+    const r=await fetch('/api/agent/sudo/password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pwd})});
+    const d=await r.json();
+    if(d.ok){alert('✅ Пароль сохранён');showSudoPanel()}
+    else alert('❌ Ошибка: '+d.error);
+  }catch(e){alert('❌ Ошибка: '+e.message)}
+}
+
+async function clearSudoPassword(){
+  if(!confirm('Удалить сохранённый пароль sudo?'))return;
+  try{
+    await fetch('/api/agent/sudo/password',{method:'DELETE'});
+    showSudoPanel();
+  }catch(e){console.error(e)}
+}
+
+// Memory Panel
+async function showMemoryPanel(){
+  try{
+    const r=await fetch('/api/agent/memory');
+    const d=await r.json();
+    const body=document.getElementById('memBody');
+    let html='';
+
+    const sections=[
+      {key:'facts',icon:'📌',label:'Факты',color:'var(--accent)'},
+      {key:'preferences',icon:'⚙️',label:'Предпочтения',color:'var(--purple)'},
+      {key:'lessons_learned',icon:'📝',label:'Уроки',color:'var(--green)'},
+      {key:'created_tools',icon:'🔧',label:'Созданные инструменты',color:'var(--orange)'}
+    ];
+
+    for(const sec of sections){
+      const items=d[sec.key]||[];
+      html+=`<div class="memory-section"><h4>${sec.icon} ${sec.label} (${items.length}) <button onclick="addMemoryItem('${sec.key}')"><i class="fas fa-plus"></i></button></h4>`;
+      items.forEach((item,i)=>{
+        html+=`<div class="memory-item" data-key="${sec.key}" data-idx="${i}">
+          <div class="actions">
+            <button onclick="editMemoryItem(this)"><i class="fas fa-edit"></i></button>
+            <button class="del" onclick="deleteMemoryItem('${sec.key}',${i})"><i class="fas fa-trash"></i></button>
+          </div>
+          <div class="text">${esc(typeof item==='object'?JSON.stringify(item):item)}</div>
+          <div class="meta">${sec.key}</div>
+        </div>`;
+      });
+      if(!items.length)html+=`<div style="padding:8px;color:var(--text3);font-size:11px;text-align:center">Пусто</div>`;
+      html+=`</div>`;
+    }
+
+    html+=`<div style="padding:12px;border-top:1px solid var(--border);margin-top:12px;display:flex;gap:8px">
+      <button onclick="clearAllMemory()" style="flex:1;padding:8px;background:var(--red);border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:11px"><i class="fas fa-trash"></i> Очистить всё</button>
+    </div>`;
+
+    body.innerHTML=html;
+    document.getElementById('memPanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }catch(e){console.error(e)}
+}
+
+function editMemoryItem(btn){
+  const textEl=btn.closest('.memory-item').querySelector('.text');
+  if(textEl.contentEditable==='true'){
+    // Save
+    textEl.contentEditable='false';
+    const item=textEl.closest('.memory-item');
+    const key=item.dataset.key;
+    const idx=parseInt(item.dataset.idx);
+    updateMemoryItem(key,idx,textEl.textContent);
+  }else{
+    textEl.contentEditable='true';
+    textEl.focus();
+  }
+}
+
+async function updateMemoryItem(key,idx,value){
+  try{
+    await fetch('/api/agent/memory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'update',key,idx,value})});
+    showMemoryPanel();
+  }catch(e){console.error(e)}
+}
+
+async function deleteMemoryItem(key,idx){
+  if(!confirm('Удалить?'))return;
+  try{
+    await fetch('/api/agent/memory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'delete',key,idx})});
+    showMemoryPanel();
+  }catch(e){console.error(e)}
+}
+
+async function addMemoryItem(key){
+  const val=prompt('Добавить запись:');
+  if(!val)return;
+  try{
+    await fetch('/api/agent/memory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'add',key,value:val})});
+    showMemoryPanel();
+  }catch(e){console.error(e)}
+}
+
+async function clearAllMemory(){
+  if(!confirm('Очистить ВСЮ память?'))return;
+  try{
+    await fetch('/api/agent/memory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'clear'})});
+    showMemoryPanel();
+  }catch(e){console.error(e)}
+}
+
+// Tools Panel
+async function showToolsPanel(){
+  try{
+    const r=await fetch('/api/agent/tools');
+    const d=await r.json();
+    const body=document.getElementById('toolsBody');
+    let html='';
+
+    (d.tools||[]).forEach((t,i)=>{
+      html+=`<div class="tool-item">
+        <div class="name">${esc(t.name)}</div>
+        <div class="desc">${esc(t.description||'')}</div>
+        <div class="path">${esc(t.file||'')}</div>
+        <div class="actions">
+          <button onclick="viewToolCode('${i}')"><i class="fas fa-eye"></i> Код</button>
+          <button onclick="exportTool('${i}')"><i class="fas fa-download"></i> Экспорт</button>
+          <button class="del" onclick="deleteTool('${i}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>`;
+    });
+
+    if(!d.tools?.length)html+='<div style="padding:20px;color:var(--text3);font-size:12px;text-align:center">Нет инструментов</div>';
+
+    html+=`<div class="import-zone">
+      <div style="font-size:12px;color:var(--text);font-weight:600"><i class="fas fa-file-import"></i> Импорт инструмента</div>
+      <textarea id="importCode" placeholder="Вставьте Python код инструмента..."></textarea>
+      <input type="text" id="importName" placeholder="Имя файла (напр. calculator.py)" style="width:100%;margin-top:6px;padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">
+      <br><button onclick="importTool()"><i class="fas fa-upload"></i> Импортировать</button>
+    </div>`;
+
+    body.innerHTML=html;
+    document.getElementById('toolsPanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }catch(e){console.error(e)}
+}
+
+async function viewToolCode(idx){
+  try{
+    const r=await fetch(`/api/agent/tools/${idx}/code`);
+    const d=await r.json();
+    if(d.code){
+      document.getElementById('fileViewerTitle').textContent=d.name||'Инструмент';
+      document.getElementById('fileViewerContent').textContent=d.code;
+      document.getElementById('fileViewer').style.display='flex';
+      document.getElementById('fileOverlay').classList.add('open');
+    }
+  }catch(e){
+    try{
+      const r2=await fetch(`/api/agent/tools/${idx}/code`);
+      const d2=await r2.json();
+      alert(d2.code||'Не удалось загрузить код');
+    }catch(e2){alert('Ошибка: '+e2.message)}
+  }
+}
+
+async function exportTool(idx){
+  try{
+    const r=await fetch(`/api/agent/tools/${idx}/export`);
+    const d=await r.json();
+    const blob=new Blob([d.code],{type:'text/x-python'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=d.name||'tool.py';
+    a.click();
+  }catch(e){console.error(e)}
+}
+
+async function deleteTool(idx){
+  if(!confirm('Удалить инструмент?'))return;
+  try{
+    await fetch(`/api/agent/tools/${idx}`,{method:'DELETE'});
+    showToolsPanel();
+  }catch(e){console.error(e)}
+}
+
+async function importTool(){
+  const code=document.getElementById('importCode').value;
+  const name=document.getElementById('importName').value||'tool.py';
+  if(!code){alert('Вставьте код');return}
+  try{
+    await fetch('/api/agent/tools/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,code})});
+    showToolsPanel();
+  }catch(e){console.error(e)}
+}
+
+// Files Panel
+async function showFilesPanel(){
+  if(!selectedFolder){alert('Выберите папку проекта в режиме Программирование');return}
+  try{
+    const r=await fetch(`/api/agent/files?folder=${encodeURIComponent(selectedFolder)}`);
+    const d=await r.json();
+    const body=document.getElementById('filesBody');
+    if(!d.files?.length){body.innerHTML='<div style="padding:20px;color:var(--text3);font-size:12px;text-align:center">Нет файлов</div>';
+    }else{
+      let html=`<div style="padding:8px;font-size:11px;color:var(--text3);margin-bottom:8px">📁 ${esc(selectedFolder)} (${d.files.length} файлов)</div>`;
+      d.files.forEach(f=>{
+        const icon=f.is_dir?'📁':{'.py':'🐍','.js':'🟨','.html':'🌐','.css':'🎨','.json':'📋','.txt':'📄','.md':'📝','.sh':'⚙️'}[f.ext]||'📄';
+        const size=f.is_dir?'':f.size<1024?f.size+'B':f.size<1048576?(f.size/1024).toFixed(1)+'KB':(f.size/1048576).toFixed(1)+'MB';
+        html+=`<div class="file-item" onclick="${f.is_dir?'':`viewFile('${f.path.replace(/'/g,"\\'")}')`}" style="padding:8px 10px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12px;transition:all .15s;${f.is_dir?'':'cursor:default'}">
+          <span>${icon}</span>
+          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</span>
+          ${size?`<span style="color:var(--text3);font-size:10px">${size}</span>`:''}
+        </div>`;
+      });
+      body.innerHTML=html;
+    }
+    document.getElementById('filesPanel').classList.add('open');
+    document.getElementById('memOverlay').classList.add('open');
+  }catch(e){console.error(e)}
+}
+
+async function viewFile(path){
+  try{
+    const r=await fetch(`/api/agent/files/read?path=${encodeURIComponent(path)}`);
+    const d=await r.json();
+    if(d.error){alert('❌ '+d.error);return}
+    document.getElementById('fileViewerTitle').textContent=path.split('/').pop();
+    document.getElementById('fileViewerContent').textContent=d.content;
+    document.getElementById('fileViewer').style.display='flex';
+    document.getElementById('fileOverlay').style.display='block';
+  }catch(e){alert('❌ '+e.message)}
+}
+
+function closeFileViewer(){
+  document.getElementById('fileViewer').style.display='none';
+  document.getElementById('fileOverlay').style.display='none';
+}
+
+function copyFileContent(){
+  navigator.clipboard.writeText(document.getElementById('fileViewerContent').textContent);
+  alert('✅ Скопировано');
+}
+
+// Init
+loadConfig();loadModels();loadSessions();loadProviderConfig();loadDreamsSettings();
+
+// === DREAMS PANEL ===
+async function showDreamsPanel(){
+  document.getElementById('dreamsPanel').classList.add('open');
+  document.getElementById('memOverlay').classList.add('open');
+  await loadDreamsHistory();
+}
+
+async function loadDreamsHistory(){
+  const body = document.getElementById('dreamsBody');
+  body.innerHTML = '<div class="loading"><div class="spinner"></div>Загрузка истории...</div>';
+
+  try{
+    const r = await fetch('/api/agent/dreams/history?limit=10');
+    const d = await r.json();
+
+    if(!d.success){
+      body.innerHTML = `<div style="padding:20px;color:var(--red);font-size:12px;text-align:center">❌ ${d.error}</div>`;
+      return;
+    }
+
+    let html = '';
+
+    // Статистика
+    html += `<div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px">🌙 Статистика снов</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:11px">
+        <div style="text-align:center;padding:8px;background:var(--bg2);border-radius:6px">
+          <div style="font-size:20px;margin-bottom:4px">💭</div>
+          <div style="color:var(--text)">${d.total_dreams}</div>
+          <div style="color:var(--text3)">снов</div>
+        </div>
+        <div style="text-align:center;padding:8px;background:var(--bg2);border-radius:6px">
+          <div style="font-size:20px;margin-bottom:4px">💡</div>
+          <div style="color:var(--text)">${d.total_insights}</div>
+          <div style="color:var(--text3)">инсайтов</div>
+        </div>
+        <div style="text-align:center;padding:8px;background:var(--bg2);border-radius:6px">
+          <div style="font-size:20px;margin-bottom:4px">🚀</div>
+          <div style="color:var(--text)">${d.total_evolutions}</div>
+          <div style="color:var(--text3)">эволюций</div>
+        </div>
+      </div>
+      ${d.skills_count ? `<div style="margin-top:8px;font-size:11px;color:var(--text2);text-align:center">🛠️ Навыков изучено: ${d.skills_count}</div>` : ''}
+    </div>`;
+
+    // Переключатель режима сна
+    const settingsR = await fetch('/api/agent/dreams/settings');
+    const settings = await settingsR.json();
+    const dreamsEnabled = settings.success ? settings.dreams_enabled : true;
+
+    html += `<div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:12px;color:var(--text);font-weight:600">💤 Режим сна</div>
+      <label class="switch">
+        <input type="checkbox" id="dreamsToggle" ${dreamsEnabled ? 'checked' : ''} onchange="toggleDreamsMode(this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div>`;
+
+    // Кнопка входа в сон
+    html += `<button onclick="enterDreamsNow()" style="width:100%;padding:10px;background:var(--purple);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:12px;font-weight:600;margin-bottom:12px">
+      <i class="fas fa-moon"></i> Войти в сон сейчас
+    </button>`;
+
+    // История снов
+    if(d.dreams.length){
+      html += '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">📜 История снов (нажми для просмотра)</div>';
+      d.dreams.forEach(dream => {
+        const time = new Date(dream.time * 1000).toLocaleString('ru-RU');
+        const phases = dream.results ? dream.results.length : 0;
+        // Show dream content
+        let details = '';
+        if(dream.results){
+          dream.results.forEach(r => {
+            if(r.phase === 'unfinished_tasks' && r.results?.solutions){
+              r.results.solutions.forEach(s => {
+                if(s.llm_solution){
+                  details += `<div style="margin-top:6px;padding:6px;background:var(--bg2);border-radius:4px;font-size:10px;color:var(--text2)"><b>💡 Решение:</b> ${esc(s.llm_solution.substring(0,300))}${s.llm_solution.length>300?'...':''}</div>`;
+                }
+              });
+            }
+            if(r.phase === 'learning' && r.lessons){
+              details += `<div style="margin-top:4px;font-size:10px;color:var(--accent)">📚 ${r.lessons.length} уроков извлечено</div>`;
+            }
+            if(r.phase === 'skill_creation' && r.skills){
+              details += `<div style="margin-top:4px;font-size:10px;color:var(--green)">🛠️ ${r.skills.length} навыков создано</div>`;
+            }
+          });
+        }
+        html += `<div class="dream-item" style="padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:6px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:12px;color:var(--accent);font-weight:600">💭 ${time}</div>
+            <div style="font-size:10px;color:var(--text3)">${phases} фаз</div>
+          </div>
+          ${details ? details : '<div style="font-size:10px;color:var(--text3);margin-top:4px">Нет детальных данных</div>'}
+        </div>`;
+      });
+    }
+
+    // Выбор модели для снов
+    html += `<div style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-top:12px">
+      <div style="font-size:12px;color:var(--text);font-weight:600;margin-bottom:8px">🧠 Модель для снов</div>
+      <select id="dreamsModel" onchange="saveDreamsModel(this.value)" style="width:100%;padding:8px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px">
+        <option value="gemma-3-4b-it">gemma-3-4b-it (быстрая)</option>
+        <option value="gemma-4-e2b-it">gemma-4-e2b-it (средняя)</option>
+        <option value="qwen/qwen3.5-9b">qwen3.5-9b (качественная)</option>
+      </select>
+    </div>`;
+
+    body.innerHTML = html;
+
+    // Load saved model
+    try{
+      const mr = await fetch('/api/agent/dreams/settings');
+      const md = await mr.json();
+      if(md.success && md.dreams_model){
+        const sel = document.getElementById('dreamsModel');
+        if(sel) sel.value = md.dreams_model;
+      }
+    }catch(e){}
+  }catch(e){
+    body.innerHTML = `<div style="padding:20px;color:var(--red);font-size:12px;text-align:center">❌ ${e.message}</div>`;
+  }
+}
+
+async function saveDreamsModel(model){
+  try{
+    await fetch('/api/agent/dreams/model',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model})});
+    showTempNotification('🧠 Модель для снов: '+model);
+  }catch(e){console.error(e)}
+}
+
+async function toggleDreamsMode(enabled){
+  try{
+    const r = await fetch('/api/agent/dreams/toggle', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({enabled})
+    });
+    const d = await r.json();
+    if(d.success){
+      const btn = document.getElementById('dreamsBtn');
+      if(btn){
+        btn.style.opacity = enabled ? '1' : '0.4';
+        btn.title = enabled ? 'Сны включены' : 'Сны отключены';
+      }
+      showTempNotification(d.message);
+    } else {
+      showTempNotification('❌ Ошибка: ' + (d.error || 'Неизвестная'));
+    }
+  }catch(e){
+    console.error('Toggle dreams error:', e);
+    showTempNotification('❌ Ошибка сети: ' + e.message);
+  }
+}
+
+async function enterDreamsNow(){
+  showTempNotification('💤 Агент входит в сон...');
+  try{
+    const r = await fetch('/api/agent/dreams/enter', {method: 'POST'});
+    const d = await r.json();
+    if(d.status === 'dreaming_started'){
+      showTempNotification('💭 Агент думает над задачами...');
+      setTimeout(() => loadDreamsHistory(), 5000);
+    }
+  }catch(e){
+    console.error('Enter dreams error:', e);
+  }
+}
+
+async function loadDreamsSettings(){
+  try{
+    const r = await fetch('/api/agent/dreams/settings');
+    const d = await r.json();
+    if(d.success){
+      const btn = document.getElementById('dreamsBtn');
+      if(btn){
+        btn.style.opacity = d.dreams_enabled ? '1' : '0.4';
+        btn.title = d.dreams_enabled ? 'Сны включены' : 'Сны отключены';
+      }
+    }
+  }catch(e){}
+}
+
+// === QUICK SWITCH PROVIDER ===
+async function quickSwitchProvider(type){
+  const localBtn=document.getElementById('toggleLocalBtn');
+  const cloudBtn=document.getElementById('toggleCloudBtn');
+  const toggle=document.getElementById('providerToggle');
+
+  // Анимация переключения
+  if(type==='local'){
+    localBtn.style.background='var(--green)';
+    localBtn.style.color='#fff';
+    localBtn.style.boxShadow='0 0 12px var(--green)';
+    cloudBtn.style.background='transparent';
+    cloudBtn.style.color='var(--text2)';
+    cloudBtn.style.boxShadow='none';
+    toggle.style.borderColor='var(--green)';
+  }else{
+    cloudBtn.style.background='var(--accent)';
+    cloudBtn.style.color='#fff';
+    cloudBtn.style.boxShadow='0 0 12px var(--accent)';
+    localBtn.style.background='transparent';
+    localBtn.style.color='var(--text2)';
+    localBtn.style.boxShadow='none';
+    toggle.style.borderColor='var(--accent)';
+  }
+
+  // Сохраняем в конфиг
+  try{
+    const r=await fetch('/api/agent/provider/config',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type})
+    });
+    const d=await r.json();
+
+    if(d.ok){
+      // Показываем уведомление
+      const msg=type==='local'?'🏠 Локальная модель активна':'🌐 Облачный API активен';
+      showTempNotification(msg);
+
+      // Обновляем панель провайдера если открыта
+      selectProviderType(type);
+    }
+  }catch(e){
+    console.error('Provider switch error:',e);
+  }
+}
+
+function showTempNotification(msg){
+  // Создаём временное уведомление
+  const div=document.createElement('div');
+  div.style.cssText=`
+    position:fixed;top:20px;right:20px;padding:12px 20px;
+    background:var(--green);color:#fff;border-radius:10px;
+    font-size:13px;font-weight:600;z-index:9999;
+    animation:slideIn .3s ease;box-shadow:0 4px 12px rgba(0,0,0,.3);
+  `;
+  div.textContent=msg;
+  document.body.appendChild(div);
+
+  setTimeout(()=>{
+    div.style.animation='slideOut .3s ease';
+    setTimeout(()=>div.remove(),300);
+  },2000);
+}
+
+// Добавляем CSS анимации
+const style=document.createElement('style');
+style.textContent=`
+  @keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100px);opacity:0}}
+`;
+document.head.appendChild(style);
+
+// === PROVIDER PANEL FUNCTIONS ===
+async function loadProviderConfig(){
+  try{
+    const r=await fetch('/api/agent/provider/config');
+    const d=await r.json();
+
+    // Set provider type
+    const type=d.type||'local';
+
+    // Обновляем toggle кнопки
+    quickSwitchProvider(type);
+
+    // Fill local provider settings
+    if(d.local){
+      document.getElementById('localUrl').value=d.local.url||'http://localhost:1234';
+      document.getElementById('localModel').value=d.local.model||'';
+      document.getElementById('localApiKey').value=d.local.api_key||'';
+    }
+
+    // Fill cloud provider settings
+    if(d.openai_compatible){
+      document.getElementById('cloudBaseUrl').value=d.openai_compatible.base_url||'';
+      // НЕ показываем "***" - показываем пустое поле или реальный ключ если есть в конфиге
+      const apiKey=d.openai_compatible.api_key;
+      if(apiKey && apiKey!=='***'){
+        document.getElementById('cloudApiKey').value=apiKey;
+      }else{
+        // Проверяем есть ли ключ в config.json напрямую
+        document.getElementById('cloudApiKey').value='';
+      }
+      document.getElementById('cloudModel').value=d.openai_compatible.model||'';
+      document.getElementById('cloudTemperature').value=d.openai_compatible.temperature||0.7;
+      document.getElementById('cloudMaxTokens').value=d.openai_compatible.max_tokens||8192;
+      document.getElementById('cloudReasoning').checked=d.openai_compatible.reasoning_enabled||false;
+    }
+
+    // Update status
+    updateProviderStatus(type);
+  }catch(e){console.error('Load provider config error:',e)}
+}
+
+function selectProviderType(type){
+  const localBtn=document.getElementById('btnLocalProvider');
+  const cloudBtn=document.getElementById('btnCloudProvider');
+  const localSettings=document.getElementById('localProviderSettings');
+  const cloudSettings=document.getElementById('cloudProviderSettings');
+
+  if(type==='local'){
+    localBtn.style.borderColor='var(--accent)';
+    localBtn.style.background='var(--accent)';
+    localBtn.style.color='#fff';
+    cloudBtn.style.borderColor='var(--border)';
+    cloudBtn.style.background='var(--bg)';
+    cloudBtn.style.color='var(--text)';
+    localSettings.style.display='block';
+    cloudSettings.style.display='none';
+  }else{
+    cloudBtn.style.borderColor='var(--accent)';
+    cloudBtn.style.background='var(--accent)';
+    cloudBtn.style.color='#fff';
+    localBtn.style.borderColor='var(--border)';
+    localBtn.style.background='var(--bg)';
+    localBtn.style.color='var(--text)';
+    cloudSettings.style.display='block';
+    localSettings.style.display='none';
+  }
+}
+
+async function saveProviderConfig(){
+  const isLocal=document.getElementById('localProviderSettings').style.display!=='none';
+  const type=isLocal?'local':'openai_compatible';
+
+  const data={type};
+
+  if(isLocal){
+    data.url=document.getElementById('localUrl').value;
+    data.model=document.getElementById('localModel').value;
+    data.api_key=document.getElementById('localApiKey').value;
+  }else{
+    data.base_url=document.getElementById('cloudBaseUrl').value;
+    // ВСЕГДА отправляем API ключ из поля (пользователь ввёл его вручную или он загрузился)
+    const apiKey=document.getElementById('cloudApiKey').value;
+    if(apiKey && apiKey.trim() && apiKey.trim() !== '***'){
+      data.api_key=apiKey.trim();
+    }
+    data.model=document.getElementById('cloudModel').value;
+    data.temperature=parseFloat(document.getElementById('cloudTemperature').value);
+    data.max_tokens=parseInt(document.getElementById('cloudMaxTokens').value);
+    data.reasoning_enabled=document.getElementById('cloudReasoning').checked;
+
+    // Проверка что все поля заполнены
+    if(!data.base_url || !data.api_key || !data.model){
+      alert('⚠️ Заполните все поля: Base URL, API Key и Model');
+      return;
+    }
+  }
+
+  try{
+    const r=await fetch('/api/agent/provider/config',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+    const d=await r.json();
+    if(d.ok){
+      alert('✅ Конфигурация провайдера сохранена!');
+      updateProviderStatus(type);
+      // Обновляем toggle кнопки
+      quickSwitchProvider(type);
+    }else{
+      alert('❌ Ошибка: '+JSON.stringify(d));
+    }
+  }catch(e){
+    alert('❌ Ошибка сохранения: '+e.message);
+  }
+}
+
+async function testProviderConnection(){
+  const btn=document.getElementById('testProviderBtn');
+  const result=document.getElementById('testProviderResult');
+
+  btn.disabled=true;
+  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Тестирование...';
+  result.innerHTML='';
+
+  try{
+    const r=await fetch('/api/agent/provider/test',{method:'POST'});
+    const d=await r.json();
+
+    if(d.success){
+      result.innerHTML=`<span style="color:var(--green)">✅ Подключение успешно!</span>`;
+      if(d.provider){
+        result.innerHTML+=`<br><span style="font-size:10px;color:var(--text3)">${d.provider} | ${d.base_url||''} | ${d.model||''}</span>`;
+      }
+      if(d.response){
+        result.innerHTML+=`<br><span style="font-size:10px;color:var(--text2)">"${d.response}"</span>`;
+      }
+    }else{
+      result.innerHTML=`<span style="color:var(--red)">❌ Ошибка: ${d.error}</span>`;
+    }
+  }catch(e){
+    result.innerHTML=`<span style="color:var(--red)">❌ Ошибка: ${e.message}</span>`;
+  }
+
+  btn.disabled=false;
+  btn.innerHTML='<i class="fas fa-plug"></i> Тест подключения';
+}
+
+function showProviderPanel(){
+  document.getElementById('providerPanel').classList.add('open');
+  document.getElementById('memOverlay').classList.add('open');
+  loadProviderConfig();
+}
+
+function updateProviderStatus(type){
+  const status=document.getElementById('providerStatus');
+  if(type==='local'){
+    status.innerHTML=`🏠 <b>Локальные модели</b><br><span style="font-size:9px">LM Studio | http://localhost:1234</span>`;
+  }else{
+    status.innerHTML=`🌐 <b>Облачный API</b><br><span style="font-size:9px">OpenAI Compatible</span>`;
+  }
+}
+</script></body></html>

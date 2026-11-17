@@ -1,0 +1,452 @@
+/* Панель личностей агента.
+
+Цвета берутся из двух источников сразу: мост темы (bridge.py) отдаёт агентовские
+имена --surface/--text-3/--accent-soft, а theme.js — привычные --bg2/--text3.
+Нигде не определена только --muted, поэтому для приглушённого текста ниже
+цепочка фолбэков, а не одно имя: с одним именем панель в светлых темах
+(сепия/бумага/тёплая) рисовала серым по серому. */
+
+.ip-root {
+  --p-bg: var(--bg, #10151c);
+  --p-1: var(--surface, var(--bg2, #171d26));
+  --p-2: var(--surface-2, var(--bg3, #1e2732));
+  --p-3: var(--surface-3, var(--bg4, #263241));
+  --p-line: var(--border, #2a3240);
+  --p-line-2: var(--border-2, var(--border2, #3b4757));
+  --p-text: var(--text, #e8eef2);
+  --p-2nd: var(--text-2, var(--text2, #b9c3ce));
+  --p-dim: var(--text-3, var(--text3, #93a1b1));
+  --p-acc: var(--accent, #5aa9ff);
+  --p-acc-soft: var(--accent-soft, rgba(90, 169, 255, .16));
+  /* Текст на плашке акцента = фон страницы: в тёмных темах он тёмный,
+     в светлых — белый, контраст держится в обеих. */
+  --p-on-acc: var(--bg, #10151c);
+  --p-ok: var(--ok, #34d399);
+  --p-warn: var(--warn, #fbbf24);
+  --p-err: var(--err, #f87171);
+  --p-sh: var(--sh-3, 0 24px 70px rgba(0, 0, 0, .55));
+  --p-sh-2: var(--sh-2, 0 10px 30px -12px rgba(0, 0, 0, .55));
+
+  position: fixed;
+  inset: 0;
+  /* Поверх всего: страница агента сама поднимает панели до 250000, и при
+     меньшем z-index кнопка и меню уезжали под них. */
+  z-index: 900000;
+  pointer-events: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--p-text);
+}
+
+/* Кнопка вызова панели */
+.ip-fab {
+  position: absolute;
+  right: 18px;
+  bottom: 96px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--p-line);
+  background: var(--p-1);
+  color: var(--p-acc);
+  font-size: 16px;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: var(--p-sh-2);
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+}
+.ip-fab:hover {
+  transform: translateY(-2px);
+  background: var(--p-2);
+  border-color: var(--p-acc);
+}
+.ip-root.open .ip-fab { opacity: 0; pointer-events: none; }
+
+/* Затемнение и окно */
+.ip-modal {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 9, 14, .62);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .18s ease, visibility .18s ease;
+  pointer-events: none;
+}
+[data-theme="light"] .ip-modal { background: rgba(18, 24, 32, .34); }
+.ip-root.open .ip-modal {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.ip-panel {
+  width: min(880px, calc(100vw - 48px));
+  height: min(640px, calc(100vh - 96px));
+  display: flex;
+  flex-direction: column;
+  background: var(--p-bg);
+  border: 1px solid var(--p-line);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--p-sh);
+}
+
+.ip-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--p-line);
+  background: var(--p-1);
+}
+.ip-title {
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ip-title > i { color: var(--p-acc); }
+.ip-spacer { flex: 1; }
+.ip-x {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--p-dim);
+  cursor: pointer;
+}
+.ip-x:hover { background: var(--p-2); color: var(--p-text); }
+
+.ip-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* Список личностей */
+.ip-side {
+  width: 252px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--p-line);
+  background: var(--p-1);
+}
+.ip-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-3) transparent;
+}
+.ip-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background .12s ease, border-color .12s ease;
+}
+.ip-row:hover { background: var(--p-2); }
+.ip-row.on {
+  background: var(--p-acc-soft);
+  border-color: var(--p-line-2);
+}
+.ip-row.on .ip-rname { color: var(--p-acc); }
+
+/* Аватар: иконка Font Awesome, а не эмодзи — только так её красит тема */
+.ip-ava {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid var(--p-line);
+  background: var(--p-2);
+  color: var(--p-acc);
+  font-size: 14px;
+}
+.ip-ava.big {
+  width: 46px;
+  height: 46px;
+  font-size: 20px;
+  border-radius: 13px;
+}
+.ip-rown { min-width: 0; }
+.ip-rname {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ip-rdesc {
+  display: block;
+  font-size: 11.5px;
+  color: var(--p-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ip-add {
+  margin: 8px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px dashed var(--p-line-2);
+  background: transparent;
+  color: var(--p-2nd);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.ip-add:hover { border-color: var(--p-acc); color: var(--p-acc); }
+
+/* Правая часть */
+.ip-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ip-detail {
+  padding: 16px;
+  border-bottom: 1px solid var(--p-line);
+  max-height: 46%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-3) transparent;
+}
+.ip-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ip-card-n { min-width: 0; }
+.ip-card-t { font-size: 15px; font-weight: 650; }
+.ip-card-s {
+  font-size: 12px;
+  color: var(--p-dim);
+  margin-top: 2px;
+}
+.ip-card-soul {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--p-1);
+  border: 1px solid var(--p-line);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--p-2nd);
+  white-space: pre-wrap;
+  max-height: 120px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-3) transparent;
+}
+.ip-card-a {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+/* Форма */
+.ip-form label {
+  display: block;
+  font-size: 12px;
+  color: var(--p-2nd);
+  margin-bottom: 12px;
+}
+.ip-form input,
+.ip-form textarea {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--p-line);
+  background: var(--p-1);
+  color: var(--p-text);
+  font: inherit;
+  font-size: 13px;
+  resize: vertical;
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.ip-form input:focus,
+.ip-form textarea:focus {
+  outline: none;
+  border-color: var(--p-acc);
+  box-shadow: 0 0 0 3px var(--p-acc-soft);
+}
+.ip-form small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--p-dim);
+}
+.ip-req { color: var(--p-err); margin-left: 4px; }
+.ip-form-a { display: flex; gap: 8px; margin-top: 4px; }
+
+/* Кнопки */
+.ip-mini {
+  padding: 7px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--p-line);
+  background: var(--p-1);
+  color: var(--p-text);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color .12s ease, background .12s ease;
+}
+.ip-mini:hover { border-color: var(--p-acc); background: var(--p-2); }
+.ip-mini.primary {
+  background: var(--p-acc);
+  border-color: transparent;
+  color: var(--p-on-acc);
+  font-weight: 600;
+}
+.ip-mini.primary:hover { filter: brightness(1.06); }
+.ip-mini.danger { color: var(--p-err); }
+.ip-mini.danger:hover { border-color: var(--p-err); background: var(--p-bg); }
+.ip-mini:disabled { opacity: .55; cursor: default; }
+
+/* Чат */
+.ip-chat {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ip-chat-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-3) transparent;
+}
+.ip-msg {
+  max-width: 84%;
+  padding: 8px 12px;
+  border-radius: 13px;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.ip-msg.me {
+  align-self: flex-end;
+  background: var(--p-acc);
+  color: var(--p-on-acc);
+  border-bottom-right-radius: 5px;
+}
+.ip-msg.ag {
+  align-self: flex-start;
+  background: var(--p-1);
+  border: 1px solid var(--p-line);
+  border-bottom-left-radius: 5px;
+}
+.ip-empty {
+  padding: 24px 8px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--p-dim);
+}
+
+.ip-chat-input {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding: 10px 12px;
+  border-top: 1px solid var(--p-line);
+  background: var(--p-1);
+}
+.ip-chat-input textarea {
+  flex: 1;
+  resize: none;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--p-line);
+  background: var(--p-bg);
+  color: var(--p-text);
+  font: inherit;
+  font-size: 13px;
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.ip-chat-input textarea:focus {
+  outline: none;
+  border-color: var(--p-acc);
+  box-shadow: 0 0 0 3px var(--p-acc-soft);
+}
+.ip-send {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 0;
+  background: var(--p-acc);
+  color: var(--p-on-acc);
+  cursor: pointer;
+}
+.ip-send:hover { filter: brightness(1.06); }
+
+/* Фокус с клавиатуры */
+.ip-root :is(button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--p-acc);
+  outline-offset: 1px;
+}
+
+/* Всплывашка живёт на document.body, вне .ip-root: локальные переменные до
+   неё не доходят, поэтому здесь полные цепочки имён темы, а не --p-*. */
+.ip-toast {
+  position: fixed;
+  right: 18px;
+  top: 78px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  background: var(--surface-2, var(--bg3, #1e2732));
+  border: 1px solid var(--border, #2a3240);
+  color: var(--text, #e8eef2);
+  z-index: 950000;
+  transition: opacity .3s ease;
+  box-shadow: var(--sh-2, 0 10px 30px -12px rgba(0, 0, 0, .55));
+}
+.ip-toast.ok { border-color: var(--ok, #34d399); }
+.ip-toast.error { border-color: var(--err, #f87171); }
+.ip-toast.warn { border-color: var(--warn, #fbbf24); }
+
+/* Узкий экран: список и карточка друг под другом */
+@media (max-width: 720px) {
+  .ip-body { flex-direction: column; }
+  .ip-side {
+    width: 100%;
+    max-height: 40%;
+    border-right: 0;
+    border-bottom: 1px solid var(--p-line);
+  }
+}

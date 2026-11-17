@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html class="pg-tldraw" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tldraw - Бесконечный холст</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #f0f0f0; }
+  #root { width: 100%; height: 100%; }
+  .tl-container { width: 100%; height: 100%; position: relative; }
+  .tl-header {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+    padding: 8px 16px; border-radius: 10px; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1); font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tl-header .save-indicator { color: #2da44e; font-size: 11px; }
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh; flex-direction: column; gap: 16px; color: #666;
+  }
+  .spinner {
+    width: 40px; height: 40px; border: 3px solid #e0e0e0;
+    border-top-color: #4f6ef7; border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/tldraw@3.15.1/dist/tldraw.js" crossorigin></script>
+<link rel="stylesheet" href="https://unpkg.com/tldraw@3.15.1/dist/tldraw.css">
+<script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+</head>
+<body>
+<div id="root">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div>Загрузка tldraw...</div>
+  </div>
+</div>
+
+<script type="module">
+const { Tldraw, DefaultToolbar, useEditor } = window.tldraw || {};
+
+if(!window.tldraw || !Tldraw){
+  document.getElementById('root').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:20px;font-family:system-ui;color:#333;text-align:center;padding:40px">
+      <div style="font-size:64px">🎨</div>
+      <h2 style="margin:0">tldraw - Бесконечный холст</h2>
+      <p style="color:#666;max-width:400px">Загрузка из CDN не удалась. Проверьте подключение к интернету.</p>
+      <button onclick="location.reload()" style="padding:12px 24px;background:#4f6ef7;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;gap:8px"><i class="fa-solid fa-rotate" style="margin-right:6px"></i>Попробовать снова</button>
+    </div>
+  `;
+} else {
+  const STORAGE_KEY = 'tldraw_infinity_data';
+  
+  // Пользовательский компонент для автосохранения
+  function AutoSave(){
+    const editor = useEditor();
+    
+    React.useEffect(() => {
+      const handle = () => {
+        try {
+          const snapshot = editor.store.getSnapshot();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+          const indicator = document.getElementById('saveIndicator');
+          if(indicator){
+            indicator.textContent = '✓ Сохранено';
+            indicator.style.opacity = '1';
+            setTimeout(() => indicator.style.opacity = '0', 2000);
+          }
+        } catch(e) {
+          console.warn('Auto-save error:', e);
+        }
+      };
+      
+      const cleanup = editor.store.listen(handle, { scope: 'document', source: 'user' });
+      return () => cleanup();
+    }, [editor]);
+    
+    return null;
+  }
+  
+  function App(){
+    return React.createElement('div', { className: 'tl-container' },
+      React.createElement('div', { className: 'tl-header' },
+        React.createElement('span', null, '🎨 tldraw'),
+        React.createElement('span', { id: 'saveIndicator', className: 'save-indicator', style: 'opacity:0;transition:opacity .3s' }, '')
+      ),
+      React.createElement(Tldraw, {
+        persistenceKey: 'infinity-tldraw',
+        onMount: (editor) => {
+          console.log('tldraw mounted', editor);
+          // Загрузка сохранённых данных
+          try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if(saved){
+              const data = JSON.parse(saved);
+              editor.store.loadSnapshot(data);
+            }
+          } catch(e) {
+            console.warn('Load error:', e);
+          }
+        }
+      }),
+      React.createElement(AutoSave)
+    );
+  }
+  
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(React.createElement(App));
+}
+</script>
+</body>
+</html>

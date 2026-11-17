@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html class="pg-page_social_botfather" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Боты — Infinity Social</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/fonts/google-fonts.css">
+<link rel="stylesheet" href="/static/css/social-theme.css?v=9">
+<link rel="stylesheet" href="/static/css/mobile.css">
+<style>
+body{padding-top:72px;max-width:960px;margin:0 auto;padding-left:16px;padding-right:16px}
+h1{font-size:20px;margin:8px 0 4px}
+.sub{color:var(--text3);font-size:13px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px}
+.fg input,.fg textarea,.fg select{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:inherit}
+.fg input:focus,.fg textarea:focus{outline:none;border-color:var(--accent)}
+.btn-primary{padding:9px 16px;border-radius:9px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{padding:9px 16px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:13px;cursor:pointer}
+.bot-row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:11px;margin-bottom:8px}
+.bot-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;overflow:hidden}
+.bot-av img{width:100%;height:100%;object-fit:cover}
+.bot-info{flex:1;min-width:0}
+.bot-name{font-weight:600;font-size:13px}
+.bot-status{font-size:11px;color:var(--text3);margin-top:2px}
+.bot-status.err{color:var(--red)}
+.token-box{background:var(--bg);border:1px dashed var(--accent);border-radius:10px;padding:12px;margin-top:12px}
+.token-val{font-family:ui-monospace,Consolas,monospace;font-size:12px;word-break:break-all;background:var(--bg2);padding:9px;border-radius:7px;margin:8px 0}
+.warn{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);border-radius:9px;padding:10px;font-size:12px;color:var(--text2);margin-bottom:14px}
+.snippet{background:var(--bg2);border-radius:9px;padding:11px;margin-top:9px;font-family:ui-monospace,Consolas,monospace;font-size:11.5px;overflow-x:auto;white-space:pre;line-height:1.5}
+.tabs{display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px}
+.tabs button{padding:6px 13px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.empty{color:var(--text3);font-size:13px;text-align:center;padding:24px}
+</style>
+<script src="/static/js/i18n.js"></script>
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+<script>document.body.className='';const t=localStorage.getItem('infinity_theme')||'dark';if(t!=='dark')document.body.classList.add(t);</script>
+
+<div class="toolbar">
+  <a class="brand" href="/social/messages"><i class="fas fa-users"></i> Social</a>
+  <div class="sep"></div>
+  <a class="btn" href="/social/feed"><i class="fas fa-newspaper"></i><span>Лента</span></a>
+  <a class="btn" href="/social/profile"><i class="fas fa-user"></i><span>Профиль</span></a>
+  <a class="btn" href="/social/friends"><i class="fas fa-user-friends"></i><span>Друзья</span></a>
+  <a class="btn" href="/social/messages"><i class="fas fa-envelope"></i><span>Сообщения</span></a>
+  <div class="sep"></div>
+  <button class="btn-icon" onclick="location.href='/social/messages'" title="Тема"><i class="fas fa-palette"></i></button>
+  <a class="btn-icon" href="/" title="На главную"><i class="fas fa-home"></i></a>
+</div>
+
+<h1><i class="fas fa-robot"></i> Боты</h1>
+<div class="sub">Внешние боты подключаются к вашим чатам по токену, как в Telegram. Совместимы с aiogram и python-telegram-bot.</div>
+
+<div class="card">
+  <h2><i class="fas fa-plus-circle"></i> Создать бота</h2>
+  <div class="fg"><label>Username (латиница, цифры, _)</label><input id="bfUsername" placeholder="weather_bot"></div>
+  <div class="fg"><label>Отображаемое имя</label><input id="bfName" placeholder="Погода"></div>
+  <div class="fg"><label>Описание (что делает бот)</label><textarea id="bfDesc" rows="2" placeholder="Отвечает на вопросы о погоде"></textarea></div>
+  <button class="btn-primary" id="bfCreateBtn" onclick="createBot()"><i class="fas fa-robot"></i> Создать и получить токен</button>
+</div>
+
+<div class="card" id="tokenCard" style="display:none">
+  <h2><i class="fas fa-key"></i> Токен выдан</h2>
+  <div class="warn">
+    <b>Токен показывается один раз.</b> В базе хранится только его хэш —
+    восстановить токен нельзя, можно лишь перевыпустить. Сохраните его сейчас.
+  </div>
+  <div class="token-val" id="tokenVal"></div>
+  <div class="tabs" style="border:none;padding:0;margin:12px 0 8px">
+    <button class="on" onclick="showSnippet('aiogram',this)">aiogram 3</button>
+    <button onclick="showSnippet('ptb',this)">python-telegram-bot</button>
+  </div>
+  <div class="snippet" id="snippet"></div>
+  <div style="margin-top:12px;display:flex;gap:8px">
+    <button class="btn-primary" onclick="copyToken()"><i class="fas fa-copy"></i> Копировать токен</button>
+    <button class="btn-secondary" onclick="document.getElementById('tokenCard').style.display='none'">Скрыть</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2><i class="fas fa-list"></i> Ваши боты</h2>
+  <div id="botList"><div class="empty"><i class="fas fa-spinner fa-spin"></i></div></div>
+</div>
+
+<script>
+const API='/api/social';
+let currentToken='';
+
+// Базовый URL берём из адресной строки: сервер может слушать не на 8281,
+// и тогда пример из документации вводил бы в заблуждение.
+function apiBase(){ return location.origin+'/bot'; }
+function fileBase(){ return apiBase()+'/file/bot'; }
+
+async function api(url,opts){
+  const r=await fetch(url,{headers:{'Content-Type':'application/json'},...opts});
+  let data={};
+  try{data=await r.json()}catch(e){}
+  if(!r.ok||data.ok===false)throw new Error(data.detail||data.description||r.statusText);
+  return data;
+}
+
+function snippet(kind,token){
+  const base=apiBase(), file=fileBase();
+  if(kind==='ptb'){
+    return `from telegram.ext import ApplicationBuilder, CommandHandler
+
+# Единственное изменение против обычного Telegram — базовый адрес.
+app = ApplicationBuilder() \\
+    .token("${token}") \\
+    .base_url("${base}") \\
+    .base_file_url("${file}") \\
+    .build()
+
+async def ping(update, context):
+    await update.message.reply_text("pong из внешнего бота")
+
+app.add_handler(CommandHandler("ping", ping))
+app.run_polling()`;
+  }
+  return `from aiogram import Bot, Dispatcher
+from aiogram.client.session.aiohttp import AiohttpSession
+from aiogram.filters import Command
+from aiogram.types import Message
+
+# Единственное изменение против обычного Telegram — базовый адрес.
+session = AiohttpSession(base_url="${base}")
+bot = Bot(token="${token}", session=session)
+dp = Dispatcher()
+
+@dp.message(Command("ping"))
+async def ping(m: Message):
+    await m.answer("pong из внешнего бота")
+
+dp.run_polling(bot)`;
+}
+
+function showSnippet(kind,btn){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  document.getElementById('snippet').textContent=snippet(kind,currentToken);
+}
+
+async function createBot(){
+  const btn=document.getElementById('bfCreateBtn');
+  const uname=document.getElementById('bfUsername').value.trim();
+  if(!uname){alert('Укажите username');return;}
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Создаю...';
+  try{
+    const r=await api(API+'/botfather/bots',{method:'POST',body:JSON.stringify({
+      username:uname,
+      display_name:document.getElementById('bfName').value.trim(),
+      description:document.getElementById('bfDesc').value.trim()
+    })});
+    currentToken=r.bot.token;
+    document.getElementById('tokenVal').textContent=currentToken;
+    document.getElementById('tokenCard').style.display='block';
+    showSnippet('aiogram');
+    document.getElementById('bfUsername').value='';
+    document.getElementById('bfName').value='';
+    document.getElementById('bfDesc').value='';
+    loadBots();
+  }catch(e){
+    alert('Не удалось создать бота: '+e.message);
+  }finally{
+    btn.disabled=false;btn.innerHTML='<i class="fas fa-robot"></i> Создать и получить токен';
+  }
+}
+
+function copyToken(){
+  if(!currentToken)return;
+  navigator.clipboard.writeText(currentToken)
+    .then(()=>alert('Токен скопирован'))
+    .catch(()=>alert('Скопируйте токен вручную'));
+}
+
+function ago(ts){
+  if(!ts)return 'ещё не подключался';
+  const d=Math.floor((Date.now()/1000-ts)/60);
+  if(d<1)return 'только что';
+  if(d<60)return d+' мин назад';
+  return Math.floor(d/60)+' ч назад';
+}
+
+async function loadBots(){
+  const box=document.getElementById('botList');
+  try{
+    const r=await api(API+'/botfather/bots');
+    const bots=r.bots||[];
+    if(!bots.length){box.innerHTML='<div class="empty">Ботов пока нет</div>';return;}
+    box.innerHTML=bots.map(b=>{
+      const ch=(b.display_name||b.username||'?')[0].toUpperCase();
+      const av=b.avatar_path?`<img src="${b.avatar_path}">`:ch;
+      const err=b.last_error?`<div class="bot-status err"><i class="fas fa-exclamation-triangle"></i> ${escapeHtml(b.last_error)}</div>`:'';
+      return `<div class="bot-row">
+        <div class="bot-av">${av}</div>
+        <div class="bot-info">
+          <div class="bot-name">@${escapeHtml(b.username)}</div>
+          <div class="bot-status">${escapeHtml(b.display_name||'')} · ${b.transport==='webhook'?'webhook':'long polling'} · ${ago(b.last_seen_at)}</div>
+          ${err}
+        </div>
+        <button class="btn-secondary" onclick="reissueToken('${b.id}')"><i class="fas fa-redo"></i> Новый токен</button>
+      </div>`;
+    }).join('');
+  }catch(e){
+    box.innerHTML='<div class="empty">Не удалось загрузить список: '+escapeHtml(e.message)+'</div>';
+  }
+}
+
+async function reissueToken(id){
+  if(!confirm('Старый токен перестанет работать. Перевыпустить новый?'))return;
+  try{
+    const r=await api(API+'/botfather/bots/'+encodeURIComponent(id)+'/token',{method:'POST'});
+    currentToken=r.token;
+    document.getElementById('tokenVal').textContent=currentToken;
+    document.getElementById('tokenCard').style.display='block';
+    showSnippet('aiogram');
+  }catch(e){
+    alert('Не удалось перевыпустить: '+e.message);
+  }
+}
+
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+loadBots();
+</script>
+</body>
+</html>

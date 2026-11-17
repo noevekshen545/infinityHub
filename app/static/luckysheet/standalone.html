@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="renderer" content="webkit" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+  <title>Luckysheet - Таблицы</title>
+  <link rel='stylesheet' href='./plugins/css/pluginsCss.css' />
+  <link rel='stylesheet' href='./plugins/plugins.css' />
+  <link rel='stylesheet' href='./css/luckysheet.css' />
+  <link rel='stylesheet' href='./assets/iconfont/iconfont.css' />
+  <script src="./plugins/js/plugin.js"></script>
+  <script src="./luckysheet.umd.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+    #luckysheet { margin: 0; padding: 0; width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="luckysheet"></div>
+  <script>
+    // Инициализация Luckysheet
+    var options = {
+      container: 'luckysheet',
+      showinfobar: true,
+      lang: 'en',
+      allowEdit: true,
+      data: [{
+        name: "Лист 1",
+        status: 1,
+        order: 0,
+        celldata: [],
+        config: {}
+      }]
+    };
+
+    luckysheet.create(options);
+
+    // Слушаем сообщения от родительского окна
+    window.addEventListener('message', function(event) {
+      // Загрузка данных — пересоздаём с новыми данными
+      if (event.data && event.data.type === 'luckysheet_load' && event.data.data) {
+        try {
+          luckysheet.destroy();
+          luckysheet.create({
+            container: 'luckysheet',
+            showinfobar: true,
+            lang: 'en',
+            data: event.data.data
+          });
+        } catch(e) {
+          console.error('Error loading Luckysheet data:', e);
+        }
+      }
+      // Запрос на сохранение — отправляем данные обратно
+      if (event.data && event.data.type === 'luckysheet_save_request') {
+        try {
+          var sheets = luckysheet.getAllSheets();
+          window.parent.postMessage({
+            type: 'luckysheet_save_response',
+            data: sheets
+          }, '*');
+        } catch(e) {
+          console.error('Error getting Luckysheet data:', e);
+        }
+      }
+    });
+
+    // Отправляем данные при изменении (для автосохранения)
+    function sendAutoSave() {
+      try {
+        var sheets = luckysheet.getAllSheets();
+        window.parent.postMessage({
+          type: 'luckysheet_save_response',
+          data: sheets,
+          auto: true
+        }, '*');
+      } catch(e) {}
+    }
+
+    document.getElementById('luckysheet').addEventListener('input', function() {
+      sendAutoSave();
+    });
+
+    window.addEventListener('focus', function() {
+      sendAutoSave();
+    });
+  </script>
+</body>
+</html>

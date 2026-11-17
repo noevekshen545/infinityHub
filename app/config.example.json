@@ -1,0 +1,96 @@
+{
+  "_comment": "Конфигурация Infinity AI Search System",
+  "_comment_paths": "Пути к данным — измените под свою систему",
+
+  "data_dirs": [
+    "/home/infinity/pars/output",
+    "/home/infinity/pars/reddit/output",
+    "/home/infinity/pars/habr/output",
+    "/home/infinity/pars/food/output",
+    "/home/infinity/pars/habr/output2",
+    "/home/infinity/pars/backup/output_all",
+    "/home/infinity/pars/backup/reddit/output",
+    "/home/infinity/pars/backup/habr/output",
+    "/home/infinity/pars/backup/habr/output2"
+  ],
+  "books_dir": "~/pars/boock",
+  "notes_dir": "~/pars/notes",
+  "ai_dir": "~/pars/notes/_ai_answers",
+  "memory_dir": "~/pars/notes/_memory",
+  "attachments_dir": "~/pars/notes/_attachments",
+  "plugins_dir": "~/pars/notes/_plugins",
+  "chat_dir": "~/pars/notes/_chat_sessions",
+  "zim_dirs": [
+    "~/pars/zim"
+  ],
+
+  "_comment_lm_studio": "Настройки подключения к LM Studio",
+  "lm_studio": {
+    "url": "http://192.168.0.18:1234",
+    "model": "gemma-3-1b-it@q8_0",
+    "embed_model": "nomic-ai/nomic-embed-text-v1.5-GGUF",
+    "api_key_env": "LM_STUDIO_API_KEY",
+    "timeout": 120,
+    "max_tokens_default": 4096,
+    "temperature_default": 0.7
+  },
+
+  "_comment_server": "Настройки сервера",
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8080,
+    "workers": 1
+  },
+
+  "_comment_auth": "Аутентификация (false = отключена для домашней сети)",
+  "auth": {
+    "enabled": false,
+    "username": "admin",
+    "password_hash": "",
+    "token": ""
+  },
+
+  "_comment_search": "Настройки поиска по умолчанию",
+  "search": {
+    "limit": 15,
+    "use_embeddings": true,
+    "bm25_limit": 50,
+    "faiss_limit": 50,
+    "cross_encoder_enabled": true,
+    "spell_correction_enabled": true,
+    "recency_boost_enabled": true
+  },
+
+  "_comment_index": "Настройки индексации",
+  "index": {
+    "dir": "~/.infinity/index",
+    "faiss_index_path": "~/.infinity/index/faiss.index",
+    "embedding_db_path": "~/.infinity/index/embeddings.db",
+    "dimension": 768
+  },
+
+  "_comment_ui": "Настройки интерфейса по умолчанию",
+  "ui": {
+    "theme": "dark",
+    "font_size": 17,
+    "line_height": 1.85,
+    "max_width": 780
+  },
+
+  "_comment_research": "Настройки research mode",
+  "research": {
+    "iterations": 15,
+    "research_model": "gemma-3-4b-it",
+    "final_model": "qwen3.5-30b-a3b",
+    "max_final_tokens": 20000,
+    "small_model": "gemma-3-1b-it@q8_0"
+  },
+
+  "_comment_logging": "Настройки логирования",
+  "logging": {
+    "level": "INFO",
+    "file": "~/.infinity/server.log",
+    "max_bytes": 10485760,
+    "backup_count": 5
+  }
+}

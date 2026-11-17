@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Новая вкладка — Infinity</title>
+<style>
+:root{
+  --bg:#0b0e14;--bg2:#121722;--bg3:#1a2130;--border:#263042;
+  --text:#e6edf3;--text2:#9aa7b8;--text3:#6b7889;--accent:#58a6ff;--accent2:#8b5cf6;
+  --radius:14px;--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: light){
+  :root{--bg:#f6f8fb;--bg2:#ffffff;--bg3:#eef2f8;--border:#d9e0ea;
+        --text:#111827;--text2:#4b5563;--text3:#8b95a5;--accent:#2563eb;--accent2:#7c3aed;}
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:
+   radial-gradient(1100px 520px at 18% -10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 65%),
+   radial-gradient(900px 480px at 92% 8%, color-mix(in srgb, var(--accent2) 16%, transparent), transparent 62%),
+   var(--bg);
+  color:var(--text);font-family:var(--font);display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-start;padding:max(28px,6vh) 20px 40px;min-height:100%}
+.clock{font-size:15px;color:var(--text2);letter-spacing:.02em;margin-bottom:26px;text-align:center}
+.clock b{font-size:44px;font-weight:650;color:var(--text);display:block;line-height:1.1;font-variant-numeric:tabular-nums}
+.brand{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--text2);margin-bottom:22px}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:0 0 16px color-mix(in srgb, var(--accent) 65%, transparent)}
+.search{width:min(680px,100%);display:flex;align-items:center;gap:8px;background:var(--bg2);
+  border:1px solid var(--border);border-radius:999px;padding:8px 10px 8px 18px;
+  box-shadow:0 12px 40px rgba(0,0,0,.28);transition:border-color .2s, box-shadow .2s}
+.search:focus-within{border-color:var(--accent);box-shadow:0 12px 44px rgba(0,0,0,.34),0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.search svg{flex:0 0 auto;color:var(--text3)}
+.search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font-size:16px;padding:9px 0}
+.search input::placeholder{color:var(--text3)}
+.search select{background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:999px;
+  font-size:12px;padding:7px 10px;outline:none;cursor:pointer}
+.search button{border:0;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600;color:#fff;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));cursor:pointer}
+
+/* ---------- Закладки и частые сайты ---------- */
+.section{width:min(860px,100%);margin-top:28px}
+.section[hidden]{display:none}
+.section-head{display:flex;align-items:baseline;gap:10px;margin:0 2px 10px}
+.section-head h2{margin:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2)}
+.section-head .count{font-size:11px;color:var(--text3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:10px}
+.bm{display:flex;align-items:center;gap:10px;min-width:0;padding:10px 12px;text-decoration:none;
+  color:var(--text);background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  transition:transform .16s, border-color .16s, background .16s}
+.bm:hover{transform:translateY(-2px);border-color:var(--accent);background:var(--bg3)}
+.bm .fav{position:relative;width:30px;height:30px;flex:0 0 30px;border-radius:9px;display:grid;place-items:center;
+  background:var(--bg3);border:1px solid var(--border);overflow:hidden;font-size:13px;font-weight:700;color:var(--text2)}
+.bm .fav img{width:18px;height:18px;display:block}
+.bm .fav .lt{position:absolute;inset:0;display:grid;place-items:center}
+.bm .meta{min-width:0;display:flex;flex-direction:column;gap:2px}
+.bm .t{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bm .u{font-size:10.5px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{padding:18px;border:1px dashed var(--border);border-radius:12px;color:var(--text3);
+  font-size:12px;text-align:center;background:color-mix(in srgb, var(--bg2) 60%, transparent)}
+
+.tiles{width:100%;display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));
+  gap:10px;margin-top:0}
+.tile{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:var(--text);
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px;transition:transform .16s, border-color .16s, background .16s}
+.tile:hover{transform:translateY(-2px);border-color:var(--accent);background:var(--bg3)}
+.tile .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;background:var(--bg3);border:1px solid var(--border)}
+.tile .nm{font-size:12.5px;font-weight:600}
+.tile .ds{font-size:10.5px;color:var(--text3);line-height:1.35}
+.hint{margin-top:26px;font-size:11.5px;color:var(--text3);text-align:center}
+kbd{font-family:inherit;background:var(--bg3);border:1px solid var(--border);border-bottom-width:2px;
+  border-radius:5px;padding:1px 6px;font-size:10.5px;color:var(--text2)}
+@media (max-width:520px){.clock b{font-size:34px}.tiles{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="brand"><span class="dot"></span> Infinity Browser</div>
+<div class="clock"><b id="clock">--:--</b><span id="date"></span></div>
+
+<form class="search" id="searchForm" autocomplete="off">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+  <input id="q" type="text" placeholder="Поиск в интернете или адрес сайта" spellcheck="false" autofocus>
+  <select id="engine" title="Поисковая система">
+    <option value="ddg">DuckDuckGo</option>
+    <option value="google">Google</option>
+    <option value="bing">Bing</option>
+    <option value="yandex">Яндекс</option>
+  </select>
+  <button type="submit">Найти</button>
+</form>
+
+<section class="section" id="bmSection" hidden>
+  <div class="section-head"><h2>Закладки</h2><span class="count" id="bmCount"></span></div>
+  <div class="grid" id="bmGrid"></div>
+</section>
+
+<section class="section" id="recentSection" hidden>
+  <div class="section-head"><h2>Частые сайты</h2></div>
+  <div class="grid" id="recentGrid"></div>
+</section>
+
+<section class="section">
+  <div class="section-head"><h2>Приложения</h2></div>
+  <div class="tiles" id="tiles">
+    <a class="tile" href="/"><span class="ic">⌂</span><span class="nm">Главная</span><span class="ds">Рабочий стол</span></a>
+    <a class="tile" href="/news"><span class="ic">◷</span><span class="nm">Новости</span><span class="ds">Лента и погода</span></a>
+    <a class="tile" href="/social"><span class="ic">◎</span><span class="nm">Соцсеть</span><span class="ds">Лента и чаты</span></a>
+    <a class="tile" href="/messages"><span class="ic">✉</span><span class="nm">Мессенджер</span><span class="ds">Диалоги</span></a>
+    <a class="tile" href="/books"><span class="ic">▤</span><span class="nm">Книги</span><span class="ds">Читалка</span></a>
+    <a class="tile" href="/notes"><span class="ic">✎</span><span class="nm">Заметки</span><span class="ds">Записи и граф</span></a>
+    <a class="tile" href="/media"><span class="ic">▶</span><span class="nm">Медиа</span><span class="ds">Музыка и видео</span></a>
+    <a class="tile" href="/agentai"><span class="ic">✦</span><span class="nm">Агент</span><span class="ds">Спросить ИИ</span></a>
+    <a class="tile" href="/filemanager"><span class="ic">▣</span><span class="nm">Файлы</span><span class="ds">Менеджер</span></a>
+    <a class="tile" href="/settings"><span class="ic">⚙</span><span class="nm">Настройки</span><span class="ds">Профиль и темы</span></a>
+  </div>
+</section>
+
+<div class="hint">Введите адрес — откроется сайт. <kbd>/</kbd> — фокус в поиск, <kbd>Ctrl+L</kbd> — адресная строка браузера.</div>
+
+<script>
+(function () {
+  var engines = {
+    ddg:    'https://duckduckgo.com/?q=',
+    google: 'https://www.google.com/search?q=',
+    bing:   'https://www.bing.com/search?q=',
+    yandex: 'https://yandex.ru/search/?text='
+  };
+  var q = document.getElementById('q');
+  var sel = document.getElementById('engine');
+  try {
+    var saved = localStorage.getItem('infinity_browser_engine');
+    if (saved && engines[saved]) sel.value = saved;
+  } catch (e) {}
+  sel.addEventListener('change', function () {
+    try { localStorage.setItem('infinity_browser_engine', sel.value); } catch (e) {}
+  });
+
+  document.getElementById('searchForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = q.value.trim();
+    if (!v) return;
+    // Похоже на адрес/домен — открываем напрямую, иначе ищем.
+    var isUrl = /^[a-z][a-z0-9+.-]*:\/\//i.test(v) ||
+                /^localhost(:\d+)?(\/|$)/i.test(v) ||
+                /^[\w-]+(\.[\w-]+)+(:\d+)?(\/|$)/.test(v);
+    if (isUrl) {
+      location.href = /^[a-z][a-z0-9+.-]*:\/\//i.test(v) ? v : 'https://' + v;
+    } else {
+      location.href = engines[sel.value] + encodeURIComponent(v);
+    }
+  });
+
+  // «/» фокусирует поиск, если пользователь не печатает в поле.
+  document.addEventListener('keydown', function (e) {
+    if (e.key === '/' && document.activeElement !== q && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      q.focus();
+    }
+  });
+
+  function pad(n) { return n < 10 ? '0' + n : String(n); }
+  function tick() {
+    var d = new Date();
+    document.getElementById('clock').textContent = pad(d.getHours()) + ':' + pad(d.getMinutes());
+    try {
+      document.getElementById('date').textContent = d.toLocaleDateString('ru-RU',
+        { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    } catch (e) {
+      document.getElementById('date').textContent = d.toLocaleDateString();
+    }
+  }
+  tick();
+  setInterval(tick, 15000);
+
+  /* ---------- Закладки и частые сайты ----------
+     Браузер хранит дерево закладок и историю в localStorage этого же
+     origin (ключи из browser.js), поэтому стартовая страница читает их
+     напрямую — без сервера и без дублирования данных. */
+  function loadLS(key, def) {
+    try {
+      var v = JSON.parse(localStorage.getItem(key));
+      return v == null ? def : v;
+    } catch (e) { return def; }
+  }
+  function hostOf(u) {
+    try {
+      return new URL(u, location.href).hostname.replace(/^www\./i, '');
+    } catch (e) { return ''; }
+  }
+  function flattenBookmarks(list, folder, out) {
+    (Array.isArray(list) ? list : []).forEach(function (b) {
+      if (!b || typeof b !== 'object') return;
+      if (Array.isArray(b.children)) {
+        flattenBookmarks(b.children, b.title || folder, out);
+      } else if (b.url) {
+        out.push({
+          url: String(b.url),
+          title: String(b.title || hostOf(b.url) || b.url),
+          folder: folder || ''
+        });
+      }
+    });
+    return out;
+  }
+  function makeCard(item, subtitle) {
+    var a = document.createElement('a');
+    a.className = 'bm';
+    a.href = item.url;
+    a.title = item.title + (item.folder ? ' — ' + item.folder : '');
+    var fav = document.createElement('span');
+    fav.className = 'fav';
+    var letter = document.createElement('span');
+    letter.className = 'lt';
+    letter.textContent = (item.title || hostOf(item.url) || '?').trim().charAt(0).toUpperCase() || '?';
+    fav.appendChild(letter);
+    var host = hostOf(item.url);
+    if (host) {
+      var img = document.createElement('img');
+      img.alt = '';
+      img.loading = 'lazy';
+      img.addEventListener('load', function () {
+        letter.style.display = 'none';
+        fav.appendChild(img);
+      });
+      img.src = 'https://icons.duckduckgo.com/ip3/' + encodeURIComponent(host) + '.ico';
+    }
+    var meta = document.createElement('span');
+    meta.className = 'meta';
+    var t = document.createElement('span');
+    t.className = 't';
+    t.textContent = item.title || item.url;
+    var u = document.createElement('span');
+    u.className = 'u';
+    u.textContent = subtitle || item.folder || host || item.url;
+    meta.appendChild(t);
+    meta.appendChild(u);
+    a.appendChild(fav);
+    a.appendChild(meta);
+    return a;
+  }
+
+  var bookmarks = flattenBookmarks(loadLS('infinity_browser_bookmarks', []), '', []);
+  if (bookmarks.length) {
+    var bmGrid = document.getElementById('bmGrid');
+    bookmarks.slice(0, 24).forEach(function (b) { bmGrid.appendChild(makeCard(b, b.folder)); });
+    document.getElementById('bmCount').textContent = bookmarks.length;
+    document.getElementById('bmSection').hidden = false;
+  }
+
+  var seenHosts = {};
+  var recent = [];
+  loadLS('infinity_browser_history', []).forEach(function (h) {
+    if (!h || !h.url) return;
+    var host = hostOf(h.url);
+    if (!host || host === '127.0.0.1' || host === 'localhost') return;
+    if (seenHosts[host]) return;
+    seenHosts[host] = 1;
+    recent.push({ url: h.url, title: h.title || host });
+  });
+  if (recent.length) {
+    var rcGrid = document.getElementById('recentGrid');
+    recent.slice(0, 8).forEach(function (r) { rcGrid.appendChild(makeCard(r, hostOf(r.url))); });
+    document.getElementById('recentSection').hidden = false;
+  }
+})();
+</script>
+</body>
+</html>

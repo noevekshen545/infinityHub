@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Заметки</title>
+<style>
+:root{
+  --bg:#f8f9fb;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e8eaed;
+  --border:#e0e3e8;--border2:#d0d4da;
+  --text:#1a1a2e;--text2:#5a5f72;--text3:#8b91a0;
+  --accent:#4f6ef7;--accent2:#3b5de7;--accent-light:#eef1fe;
+  --green:#2da44e;--green-light:#dafbe1;
+  --red:#cf222e;--red-light:#ffebe9;
+  --orange:#d29922;--orange-light:#fff8c5;
+  --purple:#8957e5;--purple-light:#fbefff;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg:0 4px 14px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.04);
+  --radius:10px;--radius-sm:6px;
+  --transition:all .2s cubic-bezier(.4,0,.2,1);
+}
+body.dark{
+  --bg:#0f1117;--bg2:#181b23;--bg3:#1e2230;--bg4:#262a38;
+  --border:#2a2f40;--border2:#353b50;
+  --text:#e4e6eb;--text2:#a0a5b8;--text3:#6b7089;
+  --accent:#6b8aff;--accent2:#5a78f0;--accent-light:#1a2244;
+  --green:#3fb950;--green-light:#1a3528;
+  --red:#f85149;--red-light:#3d1f20;
+  --orange:#d29922;--orange-light:#3d3018;
+  --purple:#a371f7;--purple-light:#2d1f4e;
+  --shadow:0 1px 3px rgba(0,0,0,.3);--shadow-lg:0 4px 14px rgba(0,0,0,.4);
+}
+body.sepia{
+  --bg:#f5eed6;--bg2:#faf6e8;--bg3:#f0e9cf;--bg4:#e8dfc2;
+  --border:#d8ceaf;--border2:#c9be9e;
+  --text:#4a3c28;--text2:#6b5d48;--text3:#8a7d68;
+  --accent:#7c5c20;--accent2:#6b4d18;--accent-light:#f0e8c8;
+  --green:#5a7c20;--green-light:#e8f0c8;
+  --red:#a03020;--red-light:#f0d8d0;
+  --shadow:0 1px 3px rgba(100,80,40,.1);--shadow-lg:0 4px 14px rgba(100,80,40,.15);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;transition:var(--transition);line-height:1.5}
+a{color:var(--accent);text-decoration:none}
+
+.sidebar{width:260px;background:var(--bg2);border-right:1px solid var(--border);padding:0;flex-shrink:0;height:100vh;position:sticky;top:0;display:flex;flex-direction:column;overflow:hidden;transition:var(--transition)}
+.sidebar-header{padding:20px 18px 14px;border-bottom:1px solid var(--border)}
+.sidebar-header h2{font-size:16px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.sidebar-header h2 span{font-size:20px}
+.sidebar-nav{padding:10px 10px;flex:1;overflow-y:auto}
+.sidebar-section{margin-bottom:6px}
+.sidebar-section-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;padding:10px 10px 6px;display:flex;align-items:center;justify-content:space-between}
+.folder{padding:8px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;margin-bottom:2px;transition:var(--transition);color:var(--text2);font-weight:500;position:relative}
+.folder:hover{background:var(--bg3);color:var(--text)}
+.folder.on{background:var(--accent);color:#fff}
+.folder .icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.folder .cnt{font-size:10px;margin-left:auto;background:var(--bg3);padding:1px 7px;border-radius:10px;font-weight:600;color:var(--text3)}
+.folder.on .cnt{background:rgba(255,255,255,.2);color:rgba(255,255,255,.85)}
+.folder .folder-acts{margin-left:auto;display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.folder:hover .folder-acts{opacity:1}
+.folder-add{padding:8px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;color:var(--green);display:flex;align-items:center;gap:6px;transition:var(--transition)}
+.folder-add:hover{background:var(--green-light)}
+.sidebar-footer{padding:10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:2px}
+.nav-link{padding:8px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text2);transition:var(--transition);font-weight:500}
+.nav-link:hover{background:var(--bg3);color:var(--text)}
+.nav-link .icon{font-size:15px;width:20px;text-align:center}
+
+.main{flex:1;padding:24px 32px;overflow-y:auto;max-width:1000px}
+.top-bar{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.top-bar h1{font-size:22px;font-weight:700;color:var(--text);flex:1}
+.top-bar h1 span{color:var(--text3);font-weight:400;font-size:14px;margin-left:8px}
+.btn{padding:8px 16px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;border:1px solid var(--border);background:var(--bg2);color:var(--text);transition:var(--transition);font-weight:500;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.btn:hover{background:var(--bg3);border-color:var(--border2);box-shadow:var(--shadow)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent2);box-shadow:0 2px 8px rgba(79,110,247,.3)}
+.btn-icon{padding:7px 10px;border-radius:var(--radius-sm);cursor:pointer;font-size:14px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);transition:var(--transition)}
+.btn-icon:hover{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+
+.search-bar{display:flex;gap:8px;margin-bottom:16px}
+.search-bar input{flex:1;padding:10px 14px 10px 38px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px;outline:none;transition:var(--transition);font-family:inherit}
+.search-bar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.search-bar{position:relative}
+.search-bar::before{content:"🔍";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;z-index:1;pointer-events:none}
+.search-bar input::placeholder{color:var(--text3)}
+
+.toolbar-row{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.chip{padding:5px 12px;border-radius:20px;cursor:pointer;font-size:12px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);transition:var(--transition);font-weight:500}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.stats{font-size:12px;color:var(--text3);margin-bottom:14px;font-weight:500}
+
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden}
+.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.card-img{width:100%;height:120px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:10px;border:1px solid var(--border)}
+.card .title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .preview{color:var(--text2);font-size:12px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px}
+.card .meta{font-size:11px;color:var(--text3);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.card .tag{background:var(--bg3);padding:2px 8px;border-radius:4px;font-weight:500}
+.card .dot{width:4px;height:4px;border-radius:50%;background:var(--text3)}
+
+.empty{text-align:center;padding:80px 20px;color:var(--text2)}
+.empty .icon{font-size:48px;margin-bottom:12px;opacity:.5}
+.empty p{font-size:14px}
+
+.mobile-menu-btn{display:none;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg2);cursor:pointer;font-size:16px}
+.sidebar-overlay{display:none}
+
+@media(max-width:768px){
+  .sidebar{position:fixed;left:-280px;z-index:1000;transition:left .3s}
+  .sidebar.open{left:0}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999}
+  .sidebar-overlay.show{display:block}
+  .mobile-menu-btn{display:block}
+  .main{padding:16px}
+  .notes-grid{grid-template-columns:1fr}
+  .top-bar h1{font-size:18px}
+}
+
+/* === МОДАЛЬНЫЕ ОКНА === */
+.modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;justify-content:center;align-items:center;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex!important;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal-bg .modal{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:500px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.3);animation:modalIn .3s ease}
+.modal-bg .modal h3{font-size:18px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.modal-bg .modal .close-btn,.modal-bg .modal button.close-btn{background:var(--accent);border:none;color:#fff;padding:10px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;margin-top:12px;width:100%;transition:all .2s}
+.modal-bg .modal .close-btn:hover,.modal-bg .modal button.close-btn:hover{background:var(--accent2)}
+
+/* === ГАЛЕРЕЯ ВЛОЖЕНИЙ === */
+.att-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-top:16px;margin-bottom:16px}
+.att-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:var(--transition);position:relative}
+.att-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.att-card img{width:100%;height:130px;object-fit:cover;display:block}
+.att-card .att-placeholder{width:100%;height:130px;display:flex;align-items:center;justify-content:center;font-size:48px;background:var(--bg3)}
+.att-card .info{padding:10px}
+.att-card .name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.att-card .meta{font-size:10px;color:var(--text3);margin-top:4px}
+
+/* === КНОПКА ВЛОЖЕНИЙ В TOP-BAR === */
+.btn.attachment-btn{background:linear-gradient(135deg,var(--orange-light),var(--bg2));border-color:var(--orange)}
+.btn.attachment-btn:hover{background:var(--orange);color:#fff;border-color:var(--orange)}
+
+/* === FULLSCREEN IMAGE === */
+.img-fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeIn .2s ease}
+.img-fullscreen img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+
+/* === FOLDER TREE COLLAPSIBLE === */
+.folder-tree-children{max-height:0;overflow:hidden;transition:max-height .3s ease,opacity .2s;opacity:0}
+.folder-tree-children.open{max-height:2000px;opacity:1}
+.folder-toggle{cursor:pointer;user-select:none;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;margin-right:4px;font-size:10px;transition:transform .2s}
+.folder-toggle.expanded{transform:rotate(90deg)}
+.folder{position:relative}
+
+/* === ATTACHMENTS SIDEBAR === */
+.attachments-sidebar{position:fixed;top:0;right:0;width:340px;height:100vh;background:var(--bg2);border-left:1px solid var(--border);box-shadow:-4px 0 20px rgba(0,0,0,.15);z-index:250;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column;overflow:hidden}
+.attachments-sidebar.open{transform:translateX(0)}
+.att-sidebar-header{padding:18px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--bg3)}
+.att-sidebar-header h3{font-size:16px;font-weight:700;color:var(--text);margin:0;display:flex;align-items:center;gap:8px}
+.att-sidebar-close{background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all .2s;line-height:1}
+.att-sidebar-close:hover{background:var(--bg4);color:var(--text)}
+.att-sidebar-body{flex:1;overflow-y:auto;padding:12px}
+.att-sidebar-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;transition:all .2s}
+.att-sidebar-item:hover{border-color:var(--accent);background:var(--accent-light);transform:translateX(-2px);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.att-sidebar-item img{width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block}
+.att-sidebar-item .att-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;margin-bottom:4px}
+.att-sidebar-item .att-meta{font-size:10px;color:var(--text3);line-height:1.4}
+
+@media(max-width:768px){
+  .attachments-sidebar{width:100%}
+}
+</style>
+<link rel="stylesheet" href="/static/vendor/google-fonts.css">
+<script src="/static/js/i18n.js"></script>
+</head><body>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2><span>📝</span> Заметки</h2>
+  </div>
+  <div class="sidebar-nav">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Папки</div>
+      <div id="folders"></div>
+      <div class="folder-add" onclick="addFolder()">
+        <span style="font-size:14px">+</span> Новая папка
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Теги</div>
+      <div id="tagsList"></div>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <a href="/notes/graph" class="nav-link" style="background:var(--accent-light);color:var(--accent);border-radius:var(--radius-sm);margin:4px"><span class="icon">🕸</span> Граф связей</a>
+    <a href="/" class="nav-link"><span class="icon">🏠</span> Главная</a>
+    <a href="/ai" class="nav-link"><span class="icon">🧠</span> AI ответы</a>
+    <a href="/books" class="nav-link"><span class="icon">📖</span> Книги</a>
+  </div>
+</div>
+<div class="main">
+  <div class="top-bar">
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+    <h1 id="folderTitle">Все заметки <span id="noteCount"></span></h1>
+    <button class="btn-icon" onclick="cycleTheme()" id="themeBtn" title="Сменить тему">🌙</button>
+    <button class="btn" onclick="openAttachmentsGallery()" title="Все вложения"><i class="fas fa-paperclip"></i> Вложения</button>
+    <button class="btn primary" onclick="createNote()">✦ Новая заметка</button>
+    <button class="btn" onclick="autoLinkFromList()" title="AI автосвязи" id="autoLinkListBtn">🔗</button>
+  </div>
+  <div class="search-bar">
+    <input id="sq" placeholder="Поиск по заметкам..." onkeydown="if(event.key==='Enter')doSearch()">
+  </div>
+  <div class="toolbar-row">
+    <button class="chip on" data-sort="date" onclick="setSort('date')">🕐 По дате</button>
+    <button class="chip" data-sort="title" onclick="setSort('title')">🔤 По названию</button>
+    <button class="chip" data-sort="folder" onclick="setSort('folder')">📁 По папкам</button>
+  </div>
+  <div class="notes-grid" id="list"></div>
+</div>
+<script>
+let currentFolder='all',currentSort='date',currentTag='';
+function esc(t){if(!t)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function fmtDate(ts){if(!ts)return'';const d=new Date(ts*1000);const now=new Date();const diff=(now-d)/1000;if(diff<60)return'только что';if(diff<3600)return Math.floor(diff/60)+' мин назад';if(diff<86400)return Math.floor(diff/3600)+' ч назад';return d.toLocaleDateString('ru',{day:'numeric',month:'short',year:d.getFullYear()!==now.getFullYear()?'numeric':undefined})}
+function getTheme(){return localStorage.getItem('infinity_theme')||'light'}
+function setTheme(t){
+  document.body.className=t==='light'?'':(t==='sepia'?'sepia':'dark');
+  document.getElementById('themeBtn').textContent=t==='light'?'🌙':(t==='sepia'?'☀️':'☀️');
+  localStorage.setItem('infinity_theme',t);
+}
+function cycleTheme(){const th=['light','dark','sepia'];setTheme(th[(th.indexOf(getTheme())+1)%th.length])}
+setTheme(getTheme());
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('show')}
+
+async function loadFolders(){
+  try{
+    const r=await fetch('/api/notes/tree');
+    const d=await r.json();
+    if(!d.tree||!d.tree.length)throw new Error('Empty tree');
+    function renderTree(nodes,depth=0){
+      return nodes.map(n=>{
+        const isCurrent=n.id===currentFolder?'on':'';
+        const label=n.name||n.id;
+        const icon=n.icon||(n.id==='inbox'?'📥':'📁');
+        const pad=depth*16;
+        const count=n.count||0;
+        const isSystem=n.id==='inbox'||n.id==='all';
+        const hasChildren=n.children&&n.children.length;
+        const collapsedClass=hasChildren?'folder-collapsed':'';
+        
+        let html=`<div class="folder ${isCurrent} ${collapsedClass}" onclick="selectFolder('${n.id}')" style="padding-left:${12+pad}px">`;
+        
+        // Добавляем кнопку сворачивания/разворачивания если есть дети
+        if(hasChildren){
+          html+=`<span class="folder-toggle" onclick="event.stopPropagation();toggleFolderTree('${n.id}')" title="Развернуть/Свернуть">▶</span>`;
+        }
+        
+        html+=`<span class="icon">${icon}</span><span>${esc(label)}</span>`+
+          `<span class="cnt">${count}</span>`+
+          (!isSystem?`<span class="folder-acts">`+
+          `<button onclick="event.stopPropagation();renameFolderTree('${n.id}','${esc(label)}')" title="Переименовать" style="background:none;border:none;cursor:pointer;font-size:11px;padding:2px 4px;color:var(--text3)" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text3)'">✏️</button>`+
+          `<button onclick="event.stopPropagation();deleteFolderTree('${n.id}','${esc(label)}')" title="Удалить" style="background:none;border:none;cursor:pointer;font-size:11px;padding:2px 4px;color:var(--text3)" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'">🗑</button>`+
+          `</span>`:'')+
+          `</div>`;
+        
+        // Добавляем children с классом для сворачивания
+        if(hasChildren){
+          html+=`<div class="folder-tree-children" id="folder-children-${n.id}">`;
+          html+=renderTree(n.children,depth+1);
+          html+=`</div>`;
+        }
+        return html;
+      }).join('');
+    }
+    const allHtml=`<div class="folder ${currentFolder==='all'?'on':''}" onclick="selectFolder('all')"><span class="icon">📋</span><span>Все заметки</span></div>`;
+    document.getElementById('folders').innerHTML=allHtml+renderTree(d.tree);
+  }catch(e){
+    console.warn('Tree API failed, using fallback:',e);
+    try{
+      const r=await fetch('/api/notes/folders');
+      const d=await r.json();
+      const icons={'all':'📋','inbox':'📥'};
+      document.getElementById('folders').innerHTML=d.folders.map(f=>{
+        const label=f==='all'?'Все заметки':f==='inbox'?'Входящие':f;
+        const icon=icons[f]||'📁';
+        return`<div class="folder ${f===currentFolder?'on':''}" onclick="selectFolder('${f}')"><span class="icon">${icon}</span><span>${esc(label)}</span></div>`;
+      }).join('');
+    }catch(e2){
+      console.error('Folders fallback also failed:',e2);
+      document.getElementById('folders').innerHTML='<div class="folder on"><span class="icon">📥</span><span>Входящие</span></div>';
+    }
+  }
+}
+// Сворачивание/разворачивание папок
+function toggleFolderTree(id){
+  const children=document.getElementById('folder-children-'+id);
+  if(!children)return;
+  const toggle=document.querySelector(`[onclick="event.stopPropagation();toggleFolderTree('${id}')"]`);
+  if(children.classList.contains('open')){
+    children.classList.remove('open');
+    if(toggle)toggle.classList.remove('expanded');
+  }else{
+    children.classList.add('open');
+    if(toggle)toggle.classList.add('expanded');
+  }
+}
+async function renameFolderTree(id,currentName){
+  const n=await InfinityDialogs.prompt({label:'Новое название папки:', value:currentName});
+  if(!n||!n.trim()||n===currentName)return;
+  try{
+    await fetch('/api/notes/tree/rename',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,name:n.trim()})});
+    loadFolders();
+  }catch(e){alert('Ошибка: '+e.message)}
+}
+async function deleteFolderTree(id,name){
+  if(!confirm(`Удалить папку "${name}"?\nЗаметки не будут удалены.`))return;
+  try{
+    await fetch('/api/notes/tree/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+    if(currentFolder===id)selectFolder('all');
+    loadFolders();
+  }catch(e){alert('Ошибка: '+e.message)}
+}
+async function selectFolder(f){
+  currentFolder=f;currentTag='';
+  const labels={'all':'Все заметки','inbox':'Входящие'};
+  document.getElementById('folderTitle').innerHTML=(labels[f]||f)+' <span id="noteCount"></span>';
+  loadFolders();loadList();
+  if(window.innerWidth<=768)toggleSidebar();
+}
+async function loadTags(){
+  try{
+    const r=await fetch('/api/notes/tags');
+    const d=await r.json();
+    const el=document.getElementById('tagsList');
+    if(!d.tags||!d.tags.length){el.innerHTML='<div style="padding:8px 12px;font-size:11px;color:var(--text3)">Нет тегов</div>';return}
+    el.innerHTML=d.tags.slice(0,15).map(t=>
+      `<div class="folder ${currentTag===t.name?'on':''}" onclick="filterByTag('${esc(t.name)}')">`+
+      `<span style="font-size:13px">#</span><span>${esc(t.name)}</span>`+
+      `<span class="cnt">${t.count}</span></div>`
+    ).join('');
+  }catch(e){}
+}
+async function loadList(){
+  const el=document.getElementById('list');
+  el.innerHTML='<div class="empty"><div class="icon">⏳</div><p>Загрузка...</p></div>';
+  try{
+    if(currentTag){
+      const r=await fetch('/api/notes/by-tag?tag='+encodeURIComponent(currentTag));
+      const d=await r.json();
+      renderCards(d.articles||[]);
+      return;
+    }
+    const url='/api/notes/list?folder='+currentFolder+'&sort='+currentSort;
+    const r=await fetch(url);
+    const d=await r.json();
+    if(d.error){
+      el.innerHTML='<div class="empty"><div class="icon">❌</div><p>'+esc(d.error)+'</p></div>';
+      return;
+    }
+    renderCards(d.articles||[]);
+  }catch(e){
+    el.innerHTML='<div class="empty"><div class="icon">❌</div><p>Ошибка загрузки: '+esc(e.message)+'</p></div>';
+  }
+}
+function renderCards(articles){
+  const el=document.getElementById('list');
+  if(!articles.length){el.innerHTML='<div class="empty"><div class="icon">📝</div><p>Заметок пока нет.<br>Создайте первую!</p></div>';document.getElementById('noteCount').textContent='';return}
+  document.getElementById('noteCount').textContent=articles.length;
+  el.innerHTML=articles.map(a=>{
+    const preview=(a.preview||'').replace(/[#*_`~\[\]>|]/g,'').substring(0,150);
+    const tags=(a.tags||[]).map(t=>'<span class="tag" onclick="event.stopPropagation();filterByTag(\''+esc(t)+'\')" style="cursor:pointer;background:var(--purple-light);color:var(--purple)">#'+esc(t)+'</span>').join('');
+    const img=a.image_url?'<img class="card-img" src="'+esc(a.image_url)+'" loading="lazy" onerror="this.style.display=\'none\'">':'';
+    return`<div class="card" onclick="openNote('${a.id}')">`+
+      img+
+      `<div class="title">${esc(a.title)}</div>`+
+      (preview?`<div class="preview">${esc(preview)}</div>`:'')+
+      `<div class="meta"><span class="tag">${esc(a.folder==='inbox'?'📥 Входящие':'📁 '+a.folder)}</span>`+
+      (tags?'<span class="dot"></span>'+tags:'')+
+      `<span class="dot"></span><span>${fmtDate(a.updated)}</span></div></div>`;
+  }).join('');
+}
+async function filterByTag(tag){
+  currentTag=currentTag===tag?'':tag;
+  document.getElementById('folderTitle').innerHTML=(currentTag?'#'+esc(currentTag):'Все заметки')+' <span id="noteCount"></span>';
+  loadFolders();loadList();
+}
+async function doSearch(){
+  const q=document.getElementById('sq').value.trim();if(!q)return;
+  const r=await fetch('/api/notes/search?q='+encodeURIComponent(q));
+  const d=await r.json();
+  document.getElementById('noteCount').textContent='Найдено: '+d.results.length;
+  const el=document.getElementById('list');
+  if(!d.results.length){el.innerHTML='<div class="empty"><div class="icon">🔍</div><p>Ничего не найдено</p></div>';return}
+  el.innerHTML=d.results.map(a=>{
+    const preview=(a.preview||'').replace(/[#*_`~\[\]>|]/g,'').substring(0,150);
+    return`<div class="card" onclick="openNote('${a.id}')"><div class="title">${esc(a.title)}</div>`+(preview?`<div class="preview">${esc(preview)}</div>`:'')+`</div>`;
+  }).join('');
+}
+function setSort(s){currentSort=s;document.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',b.dataset.sort===s));loadList()}
+function createNote(){location.href='/notes/edit?folder='+currentFolder}
+function openNote(id){location.href='/notes/edit?id='+id}
+async function addFolder(){
+  openNewFolderModal();
+}
+async function openNewFolderModal(){
+  let modal=document.getElementById('newFolderModal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='newFolderModal';
+    modal.className='modal-bg';
+    document.body.appendChild(modal);
+  }
+  // Build parent folder options
+  let opts='<option value="">— Корневая папка —</option>';
+  function buildOpts(nodes,depth){
+    nodes.forEach(n=>{
+      if(n.id!=='all'){
+        const indent='  '.repeat(depth);
+        opts+=`<option value="${n.id}">${indent}${n.icon||'📁'} ${n.name}</option>`;
+        if(n.children&&n.children.length)buildOpts(n.children,depth+1);
+      }
+    });
+  }
+  try{
+    const r=await fetch('/api/notes/tree');
+    const d=await r.json();
+    if(d.tree)buildOpts(d.tree,0);
+  }catch(e){}
+  modal.innerHTML=`<div class="modal" style="max-width:400px">
+    <h3><i class="fas fa-folder-plus"></i> Новая папка</h3>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text2);margin-bottom:6px;display:block">Название папки:</label>
+      <input id="newFolderName" placeholder="Мои заметки" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none" onkeydown="if(event.key==='Enter')doCreateFolder()">
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;color:var(--text2);margin-bottom:6px;display:block">Вложить в папку:</label>
+      <select id="newFolderParent" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">${opts}</select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn primary" onclick="doCreateFolder()" style="flex:1;justify-content:center"><i class="fas fa-check"></i> Создать</button>
+      <button class="btn" onclick="closeNewFolderModal()" style="flex:1;justify-content:center">Отмена</button>
+    </div>
+  </div>`;
+  modal.classList.add('open');
+  setTimeout(()=>{const inp=document.getElementById('newFolderName');if(inp)inp.focus()},100);
+}
+function closeNewFolderModal(){const m=document.getElementById('newFolderModal');if(m)m.classList.remove('open')}
+async function doCreateFolder(){
+  const name=document.getElementById('newFolderName').value.trim();
+  const parentId=document.getElementById('newFolderParent').value||null;
+  if(!name){alert('Введите название папки');return}
+  try{
+    await fetch('/api/notes/tree/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,parent_id:parentId})});
+    closeNewFolderModal();
+    loadFolders();
+  }catch(e){
+    try{
+      await fetch('/api/notes/create-folder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});
+      closeNewFolderModal();
+      loadFolders();
+    }catch(e2){alert('Ошибка: '+e2.message)}
+  }
+}
+async function autoLinkFromList(){
+  const btn=document.getElementById('autoLinkListBtn');
+  btn.disabled=true;btn.textContent='⏳';
+  btn.style.background='var(--accent)';btn.style.color='#fff';
+  try{
+    const r=await fetch('/api/notes/auto-links',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({use_ai:true})});
+    const d=await r.json();
+    if(d.ok){
+      alert('Автосвязи: '+d.links_added+' новых (всего: '+d.total_links+')');
+      loadList();
+    }else{alert('Ошибка: '+(d.error||'Unknown'))}
+  }catch(e){alert('Ошибка: '+e.message)}
+  btn.disabled=false;btn.textContent='🔗';btn.style.background='';btn.style.color='';
+}
+
+// ==================== Attachments Gallery ====================
+async function openAttachmentsGallery(){
+  // Открываем sidebar вложений как в редакторе
+  openNotesAttachmentsSidebar();
+}
+
+// Sidebar вложений для главной страницы заметок
+async function openNotesAttachmentsSidebar(){
+  let sidebar=document.getElementById('notesAttSidebar');
+  if(!sidebar){
+    sidebar=document.createElement('div');
+    sidebar.id='notesAttSidebar';
+    sidebar.className='attachments-sidebar';
+    document.body.appendChild(sidebar);
+  }
+  
+  sidebar.innerHTML=`
+    <div class="att-sidebar-header">
+      <h3><i class="fas fa-paperclip"></i> Все вложения</h3>
+      <button class="att-sidebar-close" onclick="closeNotesAttachmentsSidebar()">✕</button>
+    </div>
+    <div class="att-sidebar-body" id="notesAttSidebarBody">
+      <div style="text-align:center;padding:40px;color:var(--text3)">Загрузка...</div>
+    </div>
+  `;
+  
+  sidebar.classList.add('open');
+  await loadAllAttachmentsSidebar();
+}
+
+function closeNotesAttachmentsSidebar(){
+  const s=document.getElementById('notesAttSidebar');
+  if(s)s.classList.remove('open');
+}
+
+async function loadAllAttachmentsSidebar(){
+  try{
+    const r=await fetch('/api/notes/attachments-all');
+    const d=await r.json();
+    const body=document.getElementById('notesAttSidebarBody');
+    if(!body)return;
+    
+    if(!d.attachments||!d.attachments.length){
+      body.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:48px;margin-bottom:12px">📎</div>Нет вложений</div>';
+      return;
+    }
+    
+    body.innerHTML=d.attachments.map(att=>{
+      if(att.is_image){
+        return`<div class="att-sidebar-item" onclick="window.open('${att.url}','_blank')">
+          <img src="${att.url}" alt="${escHtml(att.filename)}" loading="lazy">
+          <div class="att-name">${escHtml(att.filename)}</div>
+          <div class="att-meta">${att.note_title||''} · ${formatBytes(att.size)}</div>
+        </div>`;
+      }else{
+        const icon=att.ext==='.pdf'?'📕':att.ext==='.txt'?'📄':att.ext==='.zip'?'📦':'📎';
+        return`<div class="att-sidebar-item" onclick="window.open('${att.url}','_blank')">
+          <div style="font-size:48px;text-align:center;padding:20px">${icon}</div>
+          <div class="att-name">${escHtml(att.filename)}</div>
+          <div class="att-meta">${att.note_title||''} · ${att.ext} · ${formatBytes(att.size)}</div>
+        </div>`;
+      }
+    }).join('');
+  }catch(e){
+    document.getElementById('notesAttSidebarBody').innerHTML='<div style="text-align:center;padding:20px;color:var(--red)">Ошибка: '+escHtml(e.message)+'</div>';
+  }
+}
+function closeAttGallery(){const m=document.getElementById('attGalleryModal');if(m)m.classList.remove('open')}
+function viewImageFullscreen(url){
+  let overlay=document.getElementById('imgFullscreen');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='imgFullscreen';
+    overlay.className='img-fullscreen';
+    overlay.onclick=()=>overlay.remove();
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML=`<img src="${url}" style="max-width:90vw;max-height:90vh;object-fit:contain">`;
+  overlay.style.display='flex';
+}
+function showAttMenu(e,url,filename){
+  e.preventDefault();
+  e.stopPropagation();
+  let menu=document.getElementById('attGalleryMenu');
+  if(!menu){
+    menu=document.createElement('div');
+    menu.id='attGalleryMenu';
+    menu.style.cssText='position:fixed;z-index:500;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3);min-width:220px';
+    document.body.appendChild(menu);
+  }
+  menu.innerHTML=`
+    <div style="padding:6px 10px;font-size:11px;color:var(--text3);border-bottom:1px solid var(--border);margin-bottom:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(filename)}</div>
+    <button onclick="downloadAttachment('${url}','${esc(filename)}')" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer;border-radius:4px;text-align:left"><span>📥</span>Скачать</button>
+    <button onclick="alert('Путь: '+decodeURIComponent('${url}'))" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer;border-radius:4px;text-align:left"><span>📂</span>Путь к файлу</button>
+    <button onclick="alert('✓ Файл уже сохранён в базе')" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;border-radius:4px;text-align:left"><span>💾</span>Сохранить в БД</button>
+    <div style="height:1px;background:var(--border);margin:4px 0"></div>
+    <button onclick="copyToClipboard('${url}')" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer;border-radius:4px;text-align:left"><span>📋</span>Копировать ссылку</button>
+  `;
+  menu.style.left=Math.min(e.clientX,window.innerWidth-240)+'px';
+  menu.style.top=Math.min(e.clientY,window.innerHeight-250)+'px';
+  menu.style.display='block';
+  setTimeout(()=>{const h=()=>{menu.style.display='none';document.removeEventListener('click',h)};document.addEventListener('click',h)},10);
+}
+function downloadAttachment(url,filename){const a=document.createElement('a');a.href=url;a.download=filename;a.click()}
+
+function escHtml(t){if(!t)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function formatBytes(bytes){if(!bytes)return'0 B';if(bytes<1024)return bytes+' B';if(bytes<1048576)return(bytes/1024).toFixed(1)+' KB';return(bytes/1048576).toFixed(1)+' MB'}
+
+loadFolders();loadList();loadTags();
+</script></body></html>

@@ -1,0 +1,2084 @@
+﻿<!DOCTYPE html>
+<html class="pg-page_desktop" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Infinity Desktop</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;--text:#c9d1d9;--text2:#8b949e;--text3:#484f58;--accent:#58a6ff;--accent2:#1f6feb;--green:#238636;--red:#da3633;--orange:#d29922;--purple:#8b5cf6;--glass:rgba(22,27,34,0.75);--glass-border:rgba(255,255,255,0.12);--shadow-lg:0 8px 32px rgba(0,0,0,.5);--radius:8px;--radius-lg:12px;--font:Segoe UI,system-ui,sans-serif}
+body.light{--bg:#f0f4f8;--bg2:#ffffff;--bg3:#f1f5f9;--border:#e0e0e0;--text:#1a1a1a;--text2:#666;--text3:#999;--accent:#0078d4;--accent2:#006cbd;--glass:rgba(255,255,255,0.75);--glass-border:rgba(0,0,0,0.1);--shadow-lg:0 8px 32px rgba(0,0,0,.15)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:var(--font);color:var(--text);background:var(--bg);user-select:none}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--text3);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text2)}
+
+#desktop{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);overflow:hidden;transition:background .5s ease}
+#desktop.wallpaper{background-size:cover;background-position:center;background-repeat:no-repeat}
+
+.desktop-icon{position:absolute;display:flex;flex-direction:column;align-items:center;width:80px;padding:6px;border-radius:var(--radius);cursor:pointer;text-align:center;transition:background .1s;z-index:1}
+.desktop-icon:hover{background:rgba(255,255,255,.08)}
+.desktop-icon.selected{background:rgba(88,166,255,.2);outline:1px solid var(--accent)}
+.desktop-icon.dragging{opacity:.5;z-index:9999}
+.desktop-icon .icon-wrap{width:52px;height:52px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--text);position:relative;overflow:hidden;flex-shrink:0}
+.desktop-icon .icon-wrap img{width:100%;height:100%;object-fit:cover;border-radius:var(--radius)}
+.desktop-icon .icon-label{font-size:11px;color:var(--text);margin-top:4px;max-width:76px;overflow:hidden;text-overflow:ellipsis;word-break:break-word;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,.6);padding:1px 4px;border-radius:3px}
+.desktop-icon.selected .icon-label{background:var(--accent);color:#fff;text-shadow:none}
+.desktop-icon .icon-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:var(--red);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.desktop-icon.folder .icon-wrap{background:linear-gradient(135deg,var(--orange),#f59e0b);color:#fff}
+.desktop-icon.shortcut .icon-wrap{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.desktop-icon.file .icon-wrap{background:var(--bg3);color:var(--accent);border:1px solid var(--border)}
+.desktop-icon.app .icon-wrap{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff}
+
+.selection-rect{position:fixed;border:1px solid var(--accent);background:rgba(88,166,255,.1);pointer-events:none;z-index:10000}
+
+/* Context Menu */
+#ctxMenu{position:fixed;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:100001;min-width:200px;padding:4px 0;display:none;animation:fadeIn .12s ease}
+#ctxMenu.show{display:block}
+.ctx-item{display:flex;align-items:center;gap:10px;padding:7px 14px;cursor:pointer;font-size:12px;color:var(--text);transition:background .08s}
+.ctx-item:hover{background:rgba(255,255,255,.08)}
+.ctx-item i{width:16px;text-align:center;color:var(--text2);font-size:12px}
+.ctx-item.disabled{opacity:.35;pointer-events:none}
+.ctx-sep{height:1px;background:var(--border);margin:4px 8px}
+.ctx-sub{position:absolute;left:100%;top:-4px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);min-width:160px;padding:4px 0;display:none}
+.ctx-item:hover>.ctx-sub{display:block}
+
+/* Folder Window */
+.folder-window{position:fixed;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);z-index:10000;min-width:400px;min-height:300px;width:600px;height:420px;display:flex;flex-direction:column;animation:fadeIn .15s ease;overflow:hidden}
+.folder-window.dragging{opacity:.8}
+.fw-header{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);cursor:default;flex-shrink:0}
+.fw-header .fw-icon{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;margin-right:8px;flex-shrink:0}
+.fw-header .fw-title{flex:1;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fw-header .fw-close{width:24px;height:24px;border-radius:50%;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s;margin-left:4px}
+.fw-header .fw-close:hover{background:var(--red);color:#fff}
+.folder-window.fw-fullscreen{width:100vw!important;height:100vh!important;left:0!important;top:0!important;right:0!important;bottom:0!important;border-radius:0!important;z-index:10002}
+.folder-window.fw-fullscreen .fw-body{max-height:none}
+.fw-header .fw-win-controls{display:flex;align-items:center;gap:4px;margin-left:4px}
+.fw-header .fw-win-btn{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.fw-header .fw-win-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+#folderTray{position:fixed;right:16px;bottom:16px;display:none;gap:8px;z-index:10001;background:var(--bg2);padding:8px;border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);max-width:60vw;flex-wrap:wrap}
+.tray-folder-btn{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:12px;transition:all .15s}
+.tray-folder-btn:hover{background:var(--accent);color:#fff}
+.tray-folder-btn i{color:#f59e0b;font-size:13px}
+.fw-toolbar{display:flex;align-items:center;gap:6px;padding:6px 14px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.fw-toolbar button{padding:4px 8px;border-radius:4px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:11px;display:flex;align-items:center;gap:4px;transition:all .1s}
+.fw-toolbar button:hover{background:var(--bg3);color:var(--text)}
+.fw-toolbar button i{font-size:10px}
+.fw-toolbar .fw-path{flex:1;font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 8px}
+.fw-body{flex:1;overflow-y:auto;padding:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:4px;align-content:start}
+.fw-body::-webkit-scrollbar{width:5px}
+.fw-item{display:flex;flex-direction:column;align-items:center;padding:6px 4px;border-radius:6px;cursor:pointer;transition:background .1s;text-align:center}
+.fw-item:hover{background:rgba(255,255,255,.06)}
+.fw-item.selected{background:rgba(88,166,255,.2);outline:1px solid var(--accent)}
+.fw-item-icon{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:3px;overflow:hidden;flex-shrink:0}
+.fw-item-icon img{width:100%;height:100%;object-fit:cover}
+.fw-item-label{font-size:10px;color:var(--text);overflow:hidden;text-overflow:ellipsis;word-break:break-word;max-width:100%;line-height:1.2}
+.fw-item.folder .fw-item-icon{background:linear-gradient(135deg,var(--orange),#f59e0b);color:#fff}
+.fw-empty{padding:40px 20px;text-align:center;color:var(--text3);font-size:12px;grid-column:1/-1}
+.fm-embed{display:block;width:100%;height:100%;flex:1;border:0;background:var(--bg);min-height:0}
+.fw-loading{position:absolute;inset:38px 0 0 0;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text3);font-size:13px;background:var(--bg2)}
+
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:200000;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;width:380px;max-width:90vw;box-shadow:0 24px 64px rgba(0,0,0,.4);animation:modalIn .2s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.modal label{font-size:12px;color:var(--text2);margin-bottom:4px;display:block}
+.modal input,.modal select{width:100%;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none;margin-bottom:12px}
+.modal input:focus,.modal select:focus{border-color:var(--accent)}
+.modal-actions{display:flex;gap:8px;margin-top:4px}
+.modal-actions button{flex:1;padding:8px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:12px;font-weight:600;transition:all .12s}
+.modal-actions button.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.modal-actions button.btn-primary:hover{background:var(--accent2)}
+.modal-actions button.btn-secondary{background:var(--bg3);color:var(--text)}
+.modal-actions button.btn-secondary:hover{background:var(--bg)}
+.modal-actions button.btn-danger{background:var(--red);border-color:var(--red);color:#fff}
+.modal-actions button.btn-danger:hover{filter:brightness(1.15)}
+
+/* Background Picker */
+.bg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.bg-preset{height:60px;border-radius:var(--radius);border:2px solid transparent;cursor:pointer;transition:all .15s;overflow:hidden;position:relative}
+.bg-preset:hover{border-color:var(--accent);transform:scale(1.03)}
+.bg-preset.selected{border-color:var(--accent);box-shadow:0 0 12px rgba(88,166,255,.4)}
+.bg-preset .bg-label{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);padding:2px 6px;font-size:9px;color:#fff;text-align:center}
+.bg-preset.wallpaper-preview{background-size:cover;background-position:center}
+.bg-upload-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:var(--bg3);border:1px dashed var(--border);border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:12px;transition:all .15s;margin-bottom:8px}
+.bg-upload-btn:hover{background:rgba(88,166,255,.1);border-color:var(--accent);color:var(--accent)}
+.bg-custom-actions{display:flex;gap:6px;margin-top:4px}
+.bg-custom-actions button{flex:1;padding:5px;border-radius:4px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;gap:4px}
+.bg-custom-actions button:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Toast */
+#toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 20px;font-size:12px;z-index:300000;display:none;box-shadow:var(--shadow-lg);animation:fadeIn .2s ease;color:var(--text)}
+#toast.show{display:block}
+#toast.success{border-color:var(--green)}
+#toast.error{border-color:var(--red);color:var(--red)}
+#toast.info{border-color:var(--accent)}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* Desktop Drop Zone */
+#dropOverlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(88,166,255,.08);border:3px dashed var(--accent);z-index:99999;display:none;pointer-events:none;animation:fadeIn .2s ease}
+#dropOverlay.show{display:block}
+#dropOverlay .drop-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--accent);font-size:18px;font-weight:600}
+#dropOverlay .drop-hint i{font-size:42px;margin-bottom:12px;display:block}
+
+/* Inline icon text colors for different types */
+.folder-window .fw-item.file .fw-item-icon{background:var(--bg3);color:var(--accent);border:1px solid var(--border)}
+.folder-window .fw-item.app .fw-item-icon{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff}
+.folder-window .fw-item.shortcut .fw-item-icon{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+
+/* Resize handle */
+.fw-resize{position:absolute;right:0;bottom:0;width:12px;height:12px;cursor:nwse-resize;z-index:5}
+.fw-resize::after{content:'';position:absolute;right:2px;bottom:2px;width:6px;height:6px;border-right:2px solid var(--text3);border-bottom:2px solid var(--text3)}
+
+@media(max-width:640px){
+  .folder-window{width:90vw!important;min-width:unset;left:5vw!important}
+  .desktop-icon{width:64px}
+  .desktop-icon .icon-wrap{width:42px;height:42px;font-size:20px}
+  .desktop-icon .icon-label{font-size:10px;max-width:60px}
+  .bg-grid{grid-template-columns:repeat(2,1fr)}
+  .modal{width:90vw}
+}
+</style>
+<script src="/static/js/i18n.js"></script>
+<!-- Общая тема приложения: рабочий стол берёт тему отсюда, а не своими
+     правилами. Раньше скрипт не подключался, поэтому loadTheme() знал
+     только localStorage и одно значение — 'light'. -->
+<script src="/static/js/theme.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+<!-- Палитра быстрого запроса к ИИ (Shift+Space). Разметку скрипт собирает
+     сам: на этой странице её нет, а дублировать её в шаблоне незачем. -->
+<link rel="stylesheet" href="/static/css/ai_bar.css">
+<link rel="stylesheet" href="/static/css/aibar_voice.css">
+<link rel="stylesheet" href="/static/css/aibar_messenger.css">
+<link rel="stylesheet" href="/static/css/aibar_emoji.css">
+<script src="/static/js/aibar_voice.js" defer></script>
+<script src="/static/js/aibar_messenger.js" defer></script>
+<script src="/static/js/aibar_emoji.js" defer></script>
+<script src="/static/js/ai_bar.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+<div id="desktop"></div>
+<div id="dropOverlay"><div class="drop-hint"><i class="fas fa-cloud-upload-alt"></i>Бросьте файлы на рабочий стол</div></div>
+
+<!-- Context Menu -->
+<div id="ctxMenu">
+  <div class="ctx-item" data-action="new-folder"><i class="fas fa-folder-plus"></i> Создать папку</div>
+  <div class="ctx-item" data-action="new-shortcut"><i class="fas fa-external-link-alt"></i> Создать ярлык</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" data-action="paste"><i class="fas fa-paste"></i> Вставить</div>
+  <div class="ctx-item" data-action="paste-file"><i class="fas fa-file-import"></i> Вставить файл</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" data-action="change-bg"><i class="fas fa-image"></i> Изменить фон</div>
+  <div class="ctx-item" data-action="refresh"><i class="fas fa-sync"></i> Обновить</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" data-action="sort"><i class="fas fa-sort"></i> Сортировать
+    <div class="ctx-sub">
+      <div class="ctx-item" data-action="sort-name"><i class="fas fa-sort-alpha-down"></i> По имени</div>
+      <div class="ctx-item" data-action="sort-type"><i class="fas fa-sort-amount-down"></i> По типу</div>
+      <div class="ctx-item" data-action="sort-date"><i class="fas fa-clock"></i> По дате</div>
+    </div>
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" data-action="open-terminal"><i class="fas fa-terminal"></i> Терминал</div>
+  <div class="ctx-item" data-action="open-filemanager"><i class="fas fa-folder-open"></i> Файловый менеджер</div>
+  <div class="ctx-item" data-action="settings"><i class="fas fa-cog"></i> Настройки</div>
+</div>
+
+<!-- Folder Window Template -->
+<!-- modals -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- Background Picker Modal -->
+<div class="modal-overlay" id="bgModal">
+  <div class="modal" style="width:500px">
+    <h3><i class="fas fa-image"></i> Фон рабочего стола</h3>
+    <div class="bg-grid" id="bgGrid"></div>
+    <div class="bg-upload-btn" onclick="document.getElementById('bgUploadInput').click()">
+      <i class="fas fa-upload"></i> Загрузить своё изображение
+      <input type="file" id="bgUploadInput" accept="image/*" style="display:none" onchange="uploadBackground(this)">
+    </div>
+    <div id="bgCustomActions" class="bg-custom-actions" style="display:none">
+      <button onclick="deleteCurrentBackground()" class="btn-danger"><i class="fas fa-trash"></i> Удалить</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="closeBgPicker()">Готово</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// === STATE ===
+let DS = { icons: [], folders: {}, background: { type: 'color', value: '#0d1117', preset: 'dark' }, taskbar: { pinned: [], position: 'bottom' }, wallpaper: null, fsBase: '' };
+let selectedIcons = [];
+let clipboardItems = [];
+let clipboardAction = null; // 'copy' or 'cut'
+let dragData = null;
+let folderWindows = {};
+let folderZIndex = 10000;
+let iconIdCounter = Date.now();
+let startOpen = false;
+
+const NAV_APPS = [
+  { name: 'Главная', icon: 'fa-home', color: '#58a6ff', route: '/' },
+  { name: 'Агент', icon: 'fa-robot', color: '#10b981', route: '/agentai' },
+  { name: 'Заметки', icon: 'fa-sticky-note', color: '#f59e0b', route: '/notes' },
+  { name: 'Книги', icon: 'fa-book', color: '#8b5cf6', route: '/books' },
+  { name: 'Медиа', icon: 'fa-music', color: '#ef4444', route: '/media' },
+  { name: 'GenLab', icon: 'fa-wand-magic-sparkles', color: '#3b6ef5', route: '/genlab' },
+  { name: 'Новости', icon: 'fa-newspaper', color: '#06b6d4', route: '/news' },
+  { name: 'Файлы', icon: 'fa-folder', color: '#f97316', route: '/filemanager' },
+  { name: 'HTML', icon: 'fa-code', color: '#22c55e', route: '/html' },
+  { name: 'Настройки', icon: 'fa-cog', color: '#64748b', route: '/settings' },
+  { name: 'Админ-панель', icon: 'fa-shield-halved', color: '#6366f1', route: '/admin' },
+];
+
+// === INIT ===
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadState();
+  if (DS.icons.some(i => i.target === '/ask') && !NAV_APPS.some(a => a.route === '/ask')) {
+    NAV_APPS.push({ name: 'AI Чат', icon: 'fa-comments', color: '#10b981', route: '/ask' });
+  }
+  renderDesktop();
+  updateClock();
+  setInterval(updateClock, 1000);
+  document.addEventListener('click', closeAll);
+  document.addEventListener('keydown', handleKeydown);
+  document.getElementById('desktop').addEventListener('contextmenu', onDesktopContextMenu);
+  document.getElementById('desktop').addEventListener('mousedown', onDesktopMouseDown);
+  document.getElementById('desktop').addEventListener('dragenter', onDragEnter);
+  document.getElementById('desktop').addEventListener('dragover', onDragOver);
+  document.getElementById('desktop').addEventListener('dragleave', onDragLeave);
+  document.getElementById('desktop').addEventListener('drop', onDesktopDrop);
+  document.getElementById('ctxMenu').addEventListener('click', onContextMenuAction);
+  loadTheme();
+  // 3с вместо 1с: опрос нужен только для команд из панели desktop.html,
+  // а в фоне (свёрнутый телефон/другая вкладка) не опрашиваем вовсе —
+  // раньше каждый открытый рабочий стол грузил сервер раз в секунду.
+  _syncWindowsTimer = setInterval(function () {
+    if (document.hidden) return;
+    syncWindows();
+  }, 3000);
+});
+
+function loadTheme() {
+  // Тема общая со всем приложением (static/js/theme.js). Раньше здесь был
+  // свой код, который знал только 'light' и вызывался один раз при загрузке,
+  // поэтому рабочий стол не реагировал на смену темы в другой вкладке и не
+  // знал ни об одной теме, кроме светлой.
+  var apply = function () {
+    var t = (window.InfinityTheme && window.InfinityTheme.get()) ||
+            localStorage.getItem('infinity_theme') || 'light';
+    var list = (window.InfinityTheme && window.InfinityTheme.themes) ||
+               ['light','dark','sepia','warm','paper','ocean','forest','midnight','rose'];
+    if (list.indexOf(t) === -1) t = 'light';
+    document.body.classList.remove.apply(document.body.classList, list);
+    if (t !== 'dark') document.body.classList.add(t);
+    document.body.setAttribute('data-theme', t);
+  };
+  apply();
+  // Подхватываем смену темы — из этой вкладки и из соседних.
+  if (window.InfinityTheme && window.InfinityTheme.onChange) {
+    window.InfinityTheme.onChange(apply);
+  }
+  window.addEventListener('storage', function (e) {
+    if (e.key === 'infinity_theme' || e.key === null) apply();
+  });
+}
+
+function closeAll(e) {
+  const t = e && e.target;
+  if (t && (t.closest('#ctxMenu') || t.closest('#startMenu') || t.closest('.modal-overlay'))) return;
+  hideCtxMenu();
+  if (!t || !t.closest('#startMenu') && !t.closest('#startBtn')) {
+    closeStart();
+  }
+}
+
+// === STATE MANAGEMENT ===
+function _profileKey() {
+  const m = document.cookie.match(/(?:^|; )infinity_profile=([^;]+)/);
+  return 'desktop_state_' + (m ? decodeURIComponent(m[1]) : 'default');
+}
+
+async function loadState() {
+  let serverData = null;
+  try {
+    const r = await fetch('/api/desktop/state');
+    if (r.ok) {
+      serverData = await r.json();
+    }
+  } catch(e) {}
+  if (serverData) {
+    DS.icons = serverData.icons || [];
+    DS.folders = serverData.folders || {};
+    DS.background = serverData.background || { type: 'color', value: '#0d1117', preset: 'dark' };
+    DS.wallpaper = serverData.wallpaper || null;
+    if (serverData.fs_base) DS.fsBase = serverData.fs_base;
+    applyBackground();
+    _stateLoaded = true;
+    if (DS.icons.length === 0 && Object.keys(DS.folders).length === 0) {
+      _createDefaultIcons();
+    }
+    return;
+  }
+  try {
+    const local = localStorage.getItem(_profileKey());
+    if (local) {
+      const data = JSON.parse(local);
+      DS.icons = data.icons || [];
+      DS.folders = data.folders || {};
+      if (data.background) DS.background = data.background;
+      applyBackground();
+    }
+  } catch(e) {}
+  _stateLoaded = true;
+  if (DS.icons.length === 0 && Object.keys(DS.folders).length === 0) {
+    _createDefaultIcons();
+  }
+}
+
+async function saveState() {
+  const payload = {
+    icons: DS.icons,
+    folders: DS.folders,
+    background: DS.background,
+    taskbar: DS.taskbar
+  };
+  localStorage.setItem(_profileKey(), JSON.stringify({ icons: DS.icons, folders: DS.folders, background: DS.background }));
+  try {
+    const r = await fetch('/api/desktop/state', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) {
+      console.warn('saveState server error:', r.status);
+      _showDesktopToast('Ошибка сохранения на сервере', 'error');
+    }
+  } catch(e) {
+    console.warn('saveState server failed, kept in localStorage', e);
+    _showDesktopToast('Ошибка сохранения на сервере', 'error');
+  }
+}
+function _showDesktopToast(msg, type) {
+  let t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(30,30,30,0.95);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,0.4);transition:opacity 0.3s;';
+  if (type === 'error') t.style.borderLeft = '4px solid #ef4444';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// Перезагрузить рабочий стол при смене активного профиля (куки infinity_profile)
+(function(){
+  let _lastPid = (document.cookie.match(/(?:^|; )infinity_profile=([^;]+)/) || [])[1] || 'default';
+  setInterval(function(){
+    const m = document.cookie.match(/(?:^|; )infinity_profile=([^;]+)/);
+    const pid = m ? decodeURIComponent(m[1]) : 'default';
+    if (pid !== _lastPid) { _lastPid = pid; location.reload(); }
+  }, 2000);
+})();
+
+// === BACKGROUND ===
+function applyBackground() {
+  const d = document.getElementById('desktop');
+  const bg = DS.background;
+  if (!bg) return;
+  if (bg.type === 'image' && bg.value) {
+    const url = '/api/desktop/background/' + encodeURIComponent(bg.value);
+    d.style.background = `url("${url}") center/cover no-repeat`;
+    d.classList.add('wallpaper');
+  } else if (bg.type === 'gradient') {
+    d.style.background = bg.value;
+    d.classList.remove('wallpaper');
+  } else {
+    d.style.background = bg.value;
+    d.classList.remove('wallpaper');
+  }
+}
+
+function showBgPicker() {
+  closeStart();
+  const m = document.getElementById('bgModal');
+  m.classList.add('show');
+  renderBgPresets();
+}
+
+function closeBgPicker() {
+  document.getElementById('bgModal').classList.remove('show');
+}
+
+async function renderBgPresets() {
+  const grid = document.getElementById('bgGrid');
+  let presets = [
+    { id:'dark', name:'Тёмный', type:'color', value:'#0d1117' },
+    { id:'light', name:'Светлый', type:'color', value:'#f0f4f8' },
+    { id:'blue', name:'Синий', type:'gradient', value:'linear-gradient(135deg, #0f0c29, #302b63, #24243e)' },
+    { id:'purple', name:'Фиолетовый', type:'gradient', value:'linear-gradient(135deg, #1a0028, #4a0066, #1a0028)' },
+    { id:'ocean', name:'Океан', type:'gradient', value:'linear-gradient(135deg, #000428, #004e92)' },
+    { id:'sunset', name:'Закат', type:'gradient', value:'linear-gradient(135deg, #200122, #6f0000)' },
+    { id:'forest', name:'Лес', type:'gradient', value:'linear-gradient(135deg, #0b1a0b, #1a4a1a, #0b1a0b)' },
+    { id:'midnight', name:'Полночь', type:'gradient', value:'linear-gradient(135deg, #0a0a0a, #1a1a2e, #0a0a0a)' },
+    { id:'cherry', name:'Сакура', type:'gradient', value:'linear-gradient(135deg, #1a0011, #4a0033, #1a0011)' },
+  ];
+
+  try {
+    const r = await fetch('/api/desktop/presets');
+    if (r.ok) {
+      const data = await r.json();
+      if (data.backgrounds) presets = data.backgrounds;
+    }
+  } catch(e) {}
+
+  grid.innerHTML = '';
+  const curBg = DS.background;
+
+  // Custom wallpapers from server
+  let customBgs = [];
+  try {
+    const r = await fetch('/api/desktop/state');
+    if (r.ok) {
+      const data = await r.json();
+      customBgs = data.available_backgrounds || [];
+    }
+  } catch(e) {}
+
+  for (const p of presets) {
+    const div = document.createElement('div');
+    div.className = 'bg-preset' + (p.id === curBg.preset ? ' selected' : '');
+    if (p.type === 'gradient') div.style.background = p.value;
+    else div.style.background = p.value;
+    div.innerHTML = `<span class="bg-label">${p.name}</span>`;
+    div.onclick = () => selectBgPreset(p, div);
+    grid.appendChild(div);
+  }
+
+  for (const bg of customBgs) {
+    const div = document.createElement('div');
+    const isSelected = curBg.type === 'image' && curBg.value === bg.name;
+    div.className = 'bg-preset wallpaper-preview' + (isSelected ? ' selected' : '');
+    div.style.backgroundImage = `url("${bg.url}")`;
+    div.innerHTML = `<span class="bg-label">${bg.name}</span>`;
+    div.onclick = () => selectBgImage(bg.name, div);
+    grid.appendChild(div);
+  }
+
+  document.getElementById('bgCustomActions').style.display = curBg.type === 'image' ? 'flex' : 'none';
+}
+
+async function selectBgPreset(p, el) {
+  document.querySelectorAll('.bg-preset').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  DS.background = { type: p.type, value: p.value, preset: p.id };
+  applyBackground();
+  await saveState();
+  document.getElementById('bgCustomActions').style.display = 'none';
+}
+
+async function selectBgImage(name, el) {
+  document.querySelectorAll('.bg-preset').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  DS.background = { type: 'image', value: name, preset: 'custom' };
+  applyBackground();
+  await saveState();
+  document.getElementById('bgCustomActions').style.display = 'flex';
+}
+
+async function uploadBackground(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const r = await fetch('/api/desktop/upload-background', { method: 'POST', body: fd });
+    if (r.ok) {
+      const data = await r.json();
+      DS.background = { type: 'image', value: data.name, preset: 'custom' };
+      applyBackground();
+      await saveState();
+      renderBgPresets();
+      toast('Фон установлен', 'success');
+    } else {
+      toast('Ошибка загрузки', 'error');
+    }
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+  input.value = '';
+}
+
+async function deleteCurrentBackground() {
+  const name = DS.background.value;
+  if (!name) return;
+  try {
+    const fd = new FormData();
+    fd.append('filename', name);
+    const r = await fetch('/api/desktop/delete-background', { method: 'POST', body: fd });
+    if (r.ok) {
+      DS.background = { type: 'color', value: '#0d1117', preset: 'dark' };
+      applyBackground();
+      await saveState();
+      renderBgPresets();
+      toast('Фон удалён', 'info');
+    }
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+// === DESKTOP RENDER ===
+function renderDesktop() {
+  const d = document.getElementById('desktop');
+  const existing = d.querySelectorAll('.desktop-icon');
+  existing.forEach(el => el.remove());
+
+  const rootIcons = DS.icons.filter(ic => !ic.folderId);
+  const folders = Object.values(DS.folders).filter(f => !f.parentId);
+  const allItems = [...rootIcons, ...folders.map(f => ({
+    id: f.id, type: 'folder', name: f.name, icon: f.icon || 'fa-folder',
+    x: (typeof f.x === 'number' ? f.x : 60 + Math.random() * 40),
+    y: (typeof f.y === 'number' ? f.y : 60 + Math.random() * 40),
+    folderId: null, _folderData: f
+  }))];
+
+  for (let i = 0; i < allItems.length; i++) {
+    const item = allItems[i];
+    if (item.id && document.querySelector(`.desktop-icon[data-id="${item.id}"]`)) continue;
+    createDesktopIcon(item, i, d);
+  }
+}
+
+function createDesktopIcon(item, idx, container) {
+  const el = document.createElement('div');
+  el.className = 'desktop-icon ' + (item.type || 'shortcut');
+  el.dataset.id = item.id;
+  el.dataset.type = item.type;
+  el.style.left = (item.x || 60 + (idx % 8) * 90) + 'px';
+  el.style.top = (item.y || 60 + Math.floor(idx / 8) * 90) + 'px';
+
+  const iconColor = item.type === 'folder' ? '#f59e0b'
+    : item.type === 'shortcut' ? 'linear-gradient(135deg,var(--accent),var(--accent2))'
+    : item.type === 'file' ? 'var(--bg3)'
+    : 'linear-gradient(135deg,var(--accent),var(--purple))';
+
+  let iconHtml = '';
+  if (item.icon && item.icon.startsWith('fa-')) {
+    iconHtml = `<i class="fas ${item.icon}"></i>`;
+  } else if (item.icon) {
+    iconHtml = `<img src="${item.icon}" onerror="this.style.display='none';this.parentElement.textContent='${(item.name||'?')[0]}'">`;
+  } else {
+    const iconMap = { folder: 'fa-folder', shortcut: 'fa-external-link-alt', file: 'fa-file', app: 'fa-cog' };
+    iconHtml = `<i class="fas ${iconMap[item.type] || 'fa-file'}"></i>`;
+  }
+
+  el.innerHTML = `<div class="icon-wrap">${iconHtml}</div><div class="icon-label">${esc(item.name)}</div>`;
+
+  el.addEventListener('mousedown', (e) => onIconMouseDown(e, item.id, el));
+  el.addEventListener('dblclick', () => onIconDblClick(item));
+  el.addEventListener('contextmenu', (e) => onIconContextMenu(e, item));
+
+  (container || document.getElementById('desktop')).appendChild(el);
+}
+
+// === ICON INTERACTIONS ===
+let iconDragState = null;
+
+function onIconMouseDown(e, id, el) {
+  if (e.button !== 0) return;
+  hideCtxMenu();
+
+  if (e.ctrlKey || e.metaKey) {
+    toggleSelection(id, el);
+    return;
+  }
+  if (!el.classList.contains('selected')) {
+    clearSelection();
+    selectIcon(id, el);
+  }
+
+  const startX = e.clientX;
+  const startY = e.clientY;
+  const bound = el.getBoundingClientRect();
+  const offsetX = e.clientX - bound.left;
+  const offsetY = e.clientY - bound.top;
+
+  iconDragState = { id, el, startX, startY, offsetX, offsetY, moved: false };
+
+  const onMove = (ev) => {
+    if (!iconDragState) return;
+    const dx = Math.abs(ev.clientX - startX);
+    const dy = Math.abs(ev.clientY - startY);
+    if (dx > 3 || dy > 3) iconDragState.moved = true;
+
+    if (iconDragState.moved) {
+      const selectedEls = document.querySelectorAll('.desktop-icon.selected');
+      const deltaX = ev.clientX - iconDragState.startX;
+      const deltaY = ev.clientY - iconDragState.startY;
+      selectedEls.forEach(el2 => {
+        const left = parseFloat(el2.style.left) + deltaX;
+        const top = parseFloat(el2.style.top) + deltaY;
+        el2.style.left = Math.max(0, left) + 'px';
+        el2.style.top = Math.max(0, top) + 'px';
+      });
+      iconDragState.startX = ev.clientX;
+      iconDragState.startY = ev.clientY;
+    }
+  };
+
+  const onUp = async () => {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    if (iconDragState && iconDragState.moved) {
+      const selectedEls = document.querySelectorAll('.desktop-icon.selected');
+      selectedEls.forEach(el2 => {
+        const id2 = el2.dataset.id;
+        const x = parseFloat(el2.style.left) || 0;
+        const y = parseFloat(el2.style.top) || 0;
+        const iconObj = DS.icons.find(i => i.id === id2);
+        if (iconObj) { iconObj.x = x; iconObj.y = y; return; }
+        if (DS.folders[id2]) { DS.folders[id2].x = x; DS.folders[id2].y = y; return; }
+        const item = findItem(id2);
+        if (item && item._folderData) { item._folderData.x = x; item._folderData.y = y; }
+      });
+      await saveState();
+    }
+    iconDragState = null;
+  };
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function onIconDblClick(item) {
+  if (item.type === 'folder') {
+    openFolder(item.id || item._folderData?.id);
+  } else if (item.type === 'shortcut' || item.type === 'app') {
+    openShortcut(item);
+  } else if (item.type === 'file') {
+    openFile(item);
+  }
+}
+
+function openShortcut(item) {
+  if (item.target) {
+    window.open(item.target, '_blank');
+  }
+}
+
+function openFile(item) {
+  if (item.target) {
+    window.open(item.target, '_blank');
+  }
+}
+
+/* Отдельное окно Electron для адреса приложения. Без preload (обычный
+   браузер) — обычное всплывающее окно; при блокировке сообщаем причину. */
+async function openSeparately(url, title) {
+  if (!url) { toast('У приложения нет адреса', 'error'); return; }
+  const abs = /^[a-z][a-z0-9+.-]*:/i.test(url) ? url : location.origin + (url.startsWith('/') ? url : '/' + url);
+  if (window.electronAPI && window.electronAPI.openAppWindow) {
+    try {
+      const r = await window.electronAPI.openAppWindow({ url: abs, title: title || 'Приложение' });
+      if (r && r.ok === false && r.error) toast(r.error, 'error');
+      return;
+    } catch (e) {
+      /* Главный процесс Electron старше main.js — обработчика ещё нет:
+         открываем обычной ссылкой, чтобы кнопка работала до перезапуска. */
+      const w0 = window.open(abs, '_blank', 'width=1100,height=780');
+      if (!w0) toast('Не удалось открыть отдельное окно: ' + e.message, 'error');
+      return;
+    }
+  }
+  const w = window.open(abs, '_blank', 'width=1100,height=780');
+  if (!w) toast('Браузер заблокировал отдельное окно', 'error');
+}
+
+function findItem(id) {
+  let item = DS.icons.find(i => i.id === id);
+  if (item) return item;
+  for (const f of Object.values(DS.folders)) {
+    if (f.id === id) return { ...f, _folderData: f, type: 'folder' };
+    item = (f.items || []).find(i => i.id === id);
+    if (item) return item;
+    for (const sf of Object.values(DS.folders)) {
+      if (sf.parentId === f.id) {
+        item = (sf.items || []).find(i => i.id === id);
+        if (item) return item;
+      }
+    }
+  }
+  return null;
+}
+
+function selectIcon(id, el) {
+  if (!el.classList.contains('selected')) {
+    el.classList.add('selected');
+    selectedIcons.push(id);
+  }
+}
+
+function toggleSelection(id, el) {
+  if (el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    selectedIcons = selectedIcons.filter(i => i !== id);
+  } else {
+    el.classList.add('selected');
+    selectedIcons.push(id);
+  }
+}
+
+function clearSelection() {
+  document.querySelectorAll('.desktop-icon.selected').forEach(el => el.classList.remove('selected'));
+  selectedIcons = [];
+}
+
+// === CONTEXT MENU ===
+function hideCtxMenu() {
+  document.getElementById('ctxMenu').classList.remove('show');
+}
+
+function showCtxMenu(x, y, items) {
+  const menu = document.getElementById('ctxMenu');
+  menu.innerHTML = '';
+  for (const item of items) {
+    if (item.sep) {
+      const sep = document.createElement('div');
+      sep.className = 'ctx-sep';
+      menu.appendChild(sep);
+      continue;
+    }
+    const div = document.createElement('div');
+    div.className = 'ctx-item' + (item.disabled ? ' disabled' : '');
+    if (item.sub) {
+      div.innerHTML = `<i class="fas ${item.icon}"></i> ${item.name} <i class="fas fa-chevron-right" style="margin-left:auto;font-size:8px"></i>`;
+      const sub = document.createElement('div');
+      sub.className = 'ctx-sub';
+      for (const si of item.sub) {
+        const sd = document.createElement('div');
+        sd.className = 'ctx-item';
+        sd.innerHTML = `<i class="fas ${si.icon}"></i> ${si.name}`;
+        sd.dataset.action = si.action;
+        sub.appendChild(sd);
+      }
+      div.appendChild(sub);
+    } else {
+      div.innerHTML = `<i class="fas ${item.icon}"></i> ${item.name}`;
+      div.dataset.action = item.action;
+    }
+    if (!item.disabled) {
+      div.onclick = (e) => {
+        e.stopPropagation();
+        if (item.fn) item.fn();
+        else if (item.action) handleAction(item.action);
+        hideCtxMenu();
+      };
+    }
+    menu.appendChild(div);
+  }
+  menu.style.left = Math.min(x, window.innerWidth - 210) + 'px';
+  menu.style.top = Math.min(y, window.innerHeight - 100) + 'px';
+  menu.classList.add('show');
+}
+
+function onDesktopContextMenu(e) {
+  e.preventDefault();
+  hideCtxMenu();
+  const hasSelection = selectedIcons.length > 0;
+  const items = [
+    { name: 'Создать папку', icon: 'fa-folder-plus', action: 'new-folder' },
+    { name: 'Создать ярлык', icon: 'fa-external-link-alt', action: 'new-shortcut' },
+    { sep: true },
+    { name: 'Вставить', icon: 'fa-paste', action: 'paste', disabled: !clipboardItems.length },
+    { sep: true },
+    { name: 'Изменить фон', icon: 'fa-image', action: 'change-bg' },
+    { name: 'Обновить', icon: 'fa-sync', action: 'refresh' },
+    { sep: true },
+    { name: 'Сортировать', icon: 'fa-sort', action: '', sub: [
+      { name: 'По имени', icon: 'fa-sort-alpha-down', action: 'sort-name' },
+      { name: 'По типу', icon: 'fa-sort-amount-down', action: 'sort-type' },
+      { name: 'По дате', icon: 'fa-clock', action: 'sort-date' },
+    ]},
+    { sep: true },
+    { name: 'Файловый менеджер', icon: 'fa-folder-open', action: 'open-filemanager' },
+    { name: 'Вернуться в комнату', icon: 'fa-people-group', action: 'collab-return' },
+    { name: 'Настройки', icon: 'fa-cog', action: 'settings' },
+  ];
+  showCtxMenu(e.clientX, e.clientY, items);
+}
+
+function onIconContextMenu(e, item) {
+  e.preventDefault();
+  e.stopPropagation();
+  hideCtxMenu();
+  const isSelected = selectedIcons.includes(item.id);
+  if (!isSelected) {
+    clearSelection();
+    const el = document.querySelector(`.desktop-icon[data-id="${item.id}"]`);
+    if (el) selectIcon(item.id, el);
+  }
+
+  const s = selectedIcons.length;
+  const items = [
+    { name: 'Открыть', icon: item.type === 'folder' ? 'fa-folder-open' : 'fa-external-link-alt', action: 'open' },
+    { sep: true },
+    { name: 'Вырезать', icon: 'fa-cut', action: 'cut' },
+    { name: 'Копировать', icon: 'fa-copy', action: 'copy' },
+    { name: 'Вставить', icon: 'fa-paste', action: 'paste', disabled: !clipboardItems.length },
+    { sep: true },
+    { name: 'Переименовать', icon: 'fa-pen', action: 'rename' },
+    { name: 'Удалить', icon: 'fa-trash', action: 'delete' },
+    { sep: true },
+    { name: 'Свойства', icon: 'fa-info-circle', action: 'properties' },
+  ];
+  if (s === 1 && item.type === 'shortcut' && item.target && item.target.includes('/notes/edit?id=')) {
+    items.splice(5, 0, { sep: true }, { name: 'Совместно', icon: 'fa-people-group', action: 'collab' });
+  }
+  showCtxMenu(e.clientX, e.clientY, items);
+}
+
+function onContextMenuAction(e) {
+  const item = e.target.closest('.ctx-item');
+  if (!item || item.dataset.action) return;
+  // handled by onclick on ctx-item
+}
+
+function handleAction(action) {
+  if (action.startsWith('open-folder-')) { openFolder(action.slice('open-folder-'.length)); return; }
+  if (action.startsWith('rename-folder-')) { renameFolder(action.slice('rename-folder-'.length)); return; }
+  if (action.startsWith('delete-folder-')) { deleteFolder(action.slice('delete-folder-'.length)); return; }
+  if (action.startsWith('open-sep-')) {
+    const route = action.slice('open-sep-'.length);
+    const nav = NAV_APPS.find(a => a.route === route);
+    openSeparately(route, nav ? nav.name : '');
+    return;
+  }
+  if (action.startsWith('open-item-')) {
+    const it = findItem(action.slice('open-item-'.length));
+    if (!it) return;
+    if (it.type === 'folder') openFolder(it.id || it._folderData?.id);
+    else if (it.target) window.open(it.target, '_blank');
+    return;
+  }
+  if (action.startsWith('open-')) { openRoute(action.slice('open-'.length)); return; }
+  switch(action) {
+    case 'new-folder': showNewFolderModal(); break;
+    case 'new-shortcut': showNewShortcutModal(); break;
+    case 'paste': pasteClipboard(); break;
+    case 'paste-file': pasteFileClipboard(); break;
+    case 'change-bg': showBgPicker(); break;
+    case 'refresh': refreshDesktop(); break;
+    case 'sort-name': sortIcons('name'); break;
+    case 'sort-type': sortIcons('type'); break;
+    case 'sort-date': sortIcons('date'); break;
+    case 'open': openSelected(); break;
+    case 'cut': cutSelected(); break;
+    case 'copy': copySelected(); break;
+    case 'rename': renameSelected(); break;
+    case 'delete': deleteSelected(); break;
+    case 'properties': showProperties(); break;
+    case 'collab': collabFromShortcut(); break;
+    case 'collab-return': collabReturnList(); break;
+    case 'open-terminal': window.open('/terminal', '_blank'); break;
+    case 'open-filemanager': window.open('/filemanager', '_blank'); break;
+    case 'settings': window.open('/settings', '_blank'); break;
+  }
+}
+
+// === FOLDER SYSTEM ===
+function genId() { return 'id_' + (iconIdCounter++); }
+
+function showNewFolderModal() {
+  showModal(
+    '<i class="fas fa-folder-plus" style="color:var(--orange)"></i> Новая папка',
+    `<label>Название папки</label><input type="text" id="modalInput" value="Новая папка" autofocus>
+     <label>Родительская папка (необязательно)</label>
+     <select id="modalSelect"><option value="">На рабочем столе</option></select>`,
+    async () => {
+      const name = document.getElementById('modalInput').value.trim();
+      const parentId = document.getElementById('modalSelect')?.value || '';
+      if (!name) return toast('Введите название', 'error');
+      // Populate parent folder select
+      const sel = document.getElementById('modalSelect');
+      if (sel) {
+        for (const f of Object.values(DS.folders)) {
+          if (!f.parentId) {
+            const opt = document.createElement('option');
+            opt.value = f.id; opt.textContent = f.name;
+            sel.appendChild(opt);
+          }
+        }
+      }
+      const id = genId();
+      const folder = { id, name, icon: 'fa-folder', color: '#f59e0b', parentId: parentId || '', items: [] };
+      DS.folders[id] = folder;
+      try { await resolveFolderRealPath(folder); } catch(e) { console.warn('real folder create failed', e); }
+      if (!parentId) {
+        renderDesktop();
+      } else {
+        updateFolderWindow(parentId);
+      }
+      await saveState();
+      toast('Папка создана', 'success');
+    }
+  );
+  // Populate parent folder select
+  const sel = document.getElementById('modalSelect');
+  if (sel) {
+    for (const f of Object.values(DS.folders)) {
+      if (!f.parentId) {
+        const opt = document.createElement('option');
+        opt.value = f.id; opt.textContent = f.name;
+        sel.appendChild(opt);
+      }
+    }
+  }
+}
+
+function showNewShortcutModal() {
+  showModal(
+    '<i class="fas fa-external-link-alt" style="color:var(--accent)"></i> Новый ярлык',
+    `<label>Название</label><input type="text" id="modalInput" value="Новый ярлык" autofocus>
+     <label>Ссылка (URL или путь)</label><input type="text" id="modalInput2" placeholder="https://...">
+     <label>Тип</label>
+     <select id="modalSelect">
+       <option value="app">Приложение</option>
+       <option value="shortcut">Ссылка</option>
+       <option value="file">Файл</option>
+     </select>`,
+    async () => {
+      const name = document.getElementById('modalInput').value.trim();
+      const target = document.getElementById('modalInput2').value.trim();
+      const type = document.getElementById('modalSelect').value;
+      if (!name) return toast('Введите название', 'error');
+      if (!target) return toast('Введите ссылку', 'error');
+      const id = genId();
+      DS.icons.push({ id, type, name, icon: 'fa-external-link-alt', target, targetType: type, x: 100 + Math.random() * 300, y: 100 + Math.random() * 300, folderId: '', size: 1 });
+      renderDesktop();
+      await saveState();
+      toast('Ярлык создан', 'success');
+    }
+  );
+}
+
+// === FILE MANAGER INTEGRATION (real folders on disk) ===
+let FS_HOME = '';
+let DESKTOP_FS_BASE = '';
+function fsSep() { return (FS_HOME && FS_HOME.indexOf('\\') !== -1) ? '\\' : '/'; }
+function fsJoin(parts) { return parts.filter(p => p).join(fsSep()); }
+function fsSanitize(name) { return (name || '').replace(/[\\/:*?"<>|]/g, '_').trim() || 'Папка'; }
+
+async function ensureFsBase() {
+  if (DESKTOP_FS_BASE) return;
+  if (DS.fsBase) {
+    FS_HOME = DS.fsBase.replace(/\\/g, fsSepWin() ? '\\' : '/');
+    DESKTOP_FS_BASE = DS.fsBase;
+    return;
+  }
+  try {
+    const r = await fetch('/filemanager/platform');
+    if (r.ok) { const d = await r.json(); FS_HOME = d.home || ''; }
+  } catch (e) {}
+  DESKTOP_FS_BASE = FS_HOME ? fsJoin([FS_HOME, 'InfinityDesktop']) : 'InfinityDesktop';
+}
+
+function fsSepWin() { return navigator.platform && navigator.platform.toLowerCase().indexOf('win') !== -1; }
+
+async function ensureDir(realPath) {
+  try {
+    const r = await fetch('/filemanager/list?path=' + encodeURIComponent(realPath));
+    if (r.ok) return true;
+  } catch (e) {}
+  const sep = fsSep();
+  const idx = realPath.lastIndexOf(sep);
+  const base = idx > 0 ? realPath.slice(0, idx) : DESKTOP_FS_BASE;
+  const name = idx > 0 ? realPath.slice(idx + 1) : realPath;
+  try {
+    await fetch('/filemanager/mkdir', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: base, name })
+    });
+  } catch (e) {}
+  return true;
+}
+
+async function resolveFolderRealPath(folder) {
+  await ensureFsBase();
+  if (folder.path) {
+    try {
+      const r = await fetch('/filemanager/list?path=' + encodeURIComponent(folder.path));
+      if (r.ok) return folder.path;
+    } catch (e) {}
+  }
+  const parentPath = (folder.parentId && DS.folders[folder.parentId] && DS.folders[folder.parentId].path)
+    ? DS.folders[folder.parentId].path
+    : DESKTOP_FS_BASE;
+  const realPath = fsJoin([parentPath, fsSanitize(folder.name)]);
+  await ensureDir(realPath);
+  folder.path = realPath;
+  try { saveState(); } catch (e) {}
+  return realPath;
+}
+
+function openFolder(folderId) {
+  const existing = folderWindows[folderId];
+  if (existing) {
+    if (existing.style.display === 'none') restoreFolderWindow(folderId);
+    else { existing.style.zIndex = ++folderZIndex; }
+    return;
+  }
+  const folder = DS.folders[folderId];
+  if (!folder) return;
+  const win = document.createElement('div');
+  win.className = 'folder-window';
+  win.dataset.folderId = folderId;
+  const offset = Object.keys(folderWindows).length * 30;
+  win.style.left = (80 + offset) + 'px';
+  win.style.top = (60 + offset) + 'px';
+  win.style.zIndex = ++folderZIndex;
+  document.body.appendChild(win);
+  folderWindows[folderId] = win;
+  renderFolderWindow(win, folder);
+  try { makeFolderDraggable(win); } catch (e) { console.warn('makeFolderDraggable', e); }
+  try { makeFolderResizable(win); } catch (e) { console.warn('makeFolderResizable', e); }
+  notifyWindow('open', folderId, folder.name, folder.icon || 'fa-folder');
+}
+
+function renderFolderWindow(win, folder) {
+  win.innerHTML = `
+    <div class="fw-header">
+      <div class="fw-icon" style="background:#f59e0b;color:#fff"><i class="fas ${folder.icon || 'fa-folder'}"></i></div>
+      <div class="fw-title">${esc(folder.name)}</div>
+      <div class="fw-win-controls">
+        <button class="fw-win-btn" onclick="minimizeFolderWindow('${folder.id}')" title="Свернуть"><i class="fas fa-window-minimize"></i></button>
+        <button class="fw-win-btn" onclick="toggleFullscreenFolder('${folder.id}')" title="Полноэкранный"><i class="fas fa-expand" id="fsIcon_${folder.id}"></i></button>
+        <button class="fw-close" onclick="closeFolderWindow('${folder.id}')" title="Закрыть"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+    <div class="fw-loading" id="fwLoad_${folder.id}"><i class="fas fa-spinner fa-spin"></i> Открытие файлового менеджера…</div>
+    <iframe class="fm-embed" id="fmEmbed_${folder.id}" style="display:none" title="${esc(folder.name)}"></iframe>
+  `;
+  win._minimized = false;
+  resolveFolderRealPath(folder).then(realPath => {
+    const iframe = document.getElementById('fmEmbed_' + folder.id);
+    const load = document.getElementById('fwLoad_' + folder.id);
+    if (!iframe) return;
+    // Тему НЕ передаём: файловый менеджер читает общий infinity_theme
+    // сам. Раньше здесь считывался класс body и подставлялась тема в URL,
+    // но список значений сжимался до трёх (light/sepia/всё остальное —
+    // тёмная), а на уже открытый iframe смена темы не влияла вовсе.
+    iframe.src = '/filemanager?path=' + encodeURIComponent(realPath) + '&embed=1';
+    iframe.onload = () => { if (load) load.style.display = 'none'; iframe.style.display = 'block'; };
+  }).catch(() => {
+    const load = document.getElementById('fwLoad_' + folder.id);
+    if (load) load.textContent = 'Не удалось открыть папку';
+  });
+}
+
+function renderFolderTray() {
+  let tray = document.getElementById('folderTray');
+  if (!tray) {
+    tray = document.createElement('div');
+    tray.id = 'folderTray';
+    document.body.appendChild(tray);
+  }
+  const ids = Object.keys(folderWindows).filter(id => folderWindows[id].style.display === 'none');
+  if (ids.length === 0) { tray.style.display = 'none'; return; }
+  tray.style.display = 'flex';
+  tray.innerHTML = '';
+  ids.forEach(id => {
+    const folder = DS.folders[id];
+    const name = folder ? folder.name : 'Папка';
+    const icon = folder ? (folder.icon || 'fa-folder') : 'fa-folder';
+    const btn = document.createElement('button');
+    btn.className = 'tray-folder-btn';
+    btn.title = 'Восстановить: ' + name;
+    btn.innerHTML = `<i class="fas ${icon}"></i><span>${esc(name)}</span>`;
+    btn.onclick = () => restoreFolderWindow(id);
+    tray.appendChild(btn);
+  });
+}
+
+function minimizeFolderWindow(id) {
+  const win = folderWindows[id];
+  if (!win) return;
+  if (win.style.display === 'none') { restoreFolderWindow(id); return; }
+  win.style.display = 'none';
+  win._minimized = true;
+  notifyWindow('minimize', id);
+  renderFolderTray();
+}
+
+function restoreFolderWindow(id) {
+  const win = folderWindows[id];
+  if (!win) return;
+  win.style.display = 'flex';
+  win._minimized = false;
+  win.style.zIndex = ++folderZIndex;
+  notifyWindow('restore', id);
+  renderFolderTray();
+}
+
+// Поллинг: сверяем состояние открытых окон папок с сервером (команды из панели desktop.html)
+let _syncWindowsTimer = null;
+async function syncWindows() {
+  try {
+    const r = await fetch('/api/desktop/windows');
+    if (!r.ok) return;
+    const data = await r.json();
+    const serverWins = {};
+    (data.windows || []).forEach(w => { serverWins[w.id] = w; });
+    for (const id in serverWins) {
+      const srv = serverWins[id];
+      const win = folderWindows[id];
+      if (!win) {
+        // Локального окна нет (напр. после перезагрузки страницы) — убираем «висячий» значок
+        notifyWindow('close', id);
+        continue;
+      }
+      const hidden = win.style.display === 'none';
+      if (srv.state === 'minimized' && !hidden) { win.style.display = 'none'; win._minimized = true; }
+      else if (srv.state === 'open' && hidden) { win.style.display = 'flex'; win._minimized = false; win.style.zIndex = ++folderZIndex; }
+    }
+    // Локальные окна, которых нет на сервере (закрыты из панели) — закрываем
+    for (const id in folderWindows) {
+      if (!serverWins[id]) closeFolderWindow(id);
+    }
+  } catch (e) {}
+}
+
+function toggleFullscreenFolder(id) {
+  const win = folderWindows[id];
+  if (!win) return;
+  win.classList.toggle('fw-fullscreen');
+  const icon = document.getElementById('fsIcon_' + id);
+  if (icon) icon.className = win.classList.contains('fw-fullscreen') ? 'fas fa-compress' : 'fas fa-expand';
+}
+
+function renderFolderContents(folder) {
+  const body = document.getElementById('fwBody_' + folder.id);
+  if (!body) return;
+  body.innerHTML = '';
+  const items = folder.items || [];
+  const subFolders = Object.values(DS.folders).filter(f => f.parentId === folder.id);
+
+  if (items.length === 0 && subFolders.length === 0) {
+    body.innerHTML = '<div class="fw-empty"><i class="fas fa-folder-open" style="font-size:32px;margin-bottom:8px;display:block;color:var(--text3)"></i>Папка пуста</div>';
+    return;
+  }
+
+  for (const sf of subFolders) {
+    const el = document.createElement('div');
+    el.className = 'fw-item folder';
+    el.dataset.id = sf.id;
+    el.innerHTML = `<div class="fw-item-icon"><i class="fas ${sf.icon || 'fa-folder'}"></i></div><div class="fw-item-label">${esc(sf.name)}</div>`;
+    el.onclick = () => openFolder(sf.id);
+    el.oncontextmenu = (e) => {
+      e.preventDefault();
+      const items = [
+        { name: 'Открыть', icon: 'fa-folder-open', action: `open-folder-${sf.id}` },
+        { name: 'Переименовать', icon: 'fa-pen', action: `rename-folder-${sf.id}` },
+        { name: 'Удалить', icon: 'fa-trash', action: `delete-folder-${sf.id}` },
+      ];
+      showCtxMenu(e.clientX, e.clientY, items);
+    };
+    body.appendChild(el);
+  }
+
+  for (const item of items) {
+    const el = document.createElement('div');
+    const typeClass = item.type === 'folder' ? 'folder' : item.type === 'file' ? 'file' : item.type === 'app' ? 'app' : 'shortcut';
+    el.className = 'fw-item ' + typeClass;
+    el.dataset.id = item.id;
+
+    const iconHtml = item.icon && item.icon.startsWith('fa-')
+      ? `<i class="fas ${item.icon}"></i>`
+      : item.icon ? `<img src="${item.icon}">` : `<i class="fas fa-file"></i>`;
+
+    el.innerHTML = `<div class="fw-item-icon">${iconHtml}</div><div class="fw-item-label">${esc(item.name)}</div>`;
+    el.onclick = () => {
+      if (item.type === 'folder') openFolder(item.target);
+      else if (item.target) window.open(item.target, '_blank');
+    };
+    el.oncontextmenu = (e) => {
+      e.preventDefault();
+      const items2 = [
+        { name: 'Открыть', icon: 'fa-external-link-alt', action: `open-item-${item.id}` },
+        { name: 'Переименовать', icon: 'fa-pen', action: `rename-item-${item.id}` },
+        { name: 'Удалить', icon: 'fa-trash', action: `delete-item-${item.id}` },
+      ];
+      showCtxMenu(e.clientX, e.clientY, items2);
+    };
+    body.appendChild(el);
+  }
+}
+
+function updateFolderWindow(folderId) {
+  const folder = DS.folders[folderId];
+  if (!folder || !folderWindows[folderId]) return;
+  const iframe = document.getElementById('fmEmbed_' + folderId);
+  if (iframe && folder.path) {
+    iframe.src = '/filemanager?path=' + encodeURIComponent(folder.path) + '&embed=1';
+  }
+}
+
+function closeFolderWindow(id) {
+  const win = folderWindows[id];
+  if (win) {
+    win.remove();
+    delete folderWindows[id];
+  }
+  notifyWindow('close', id);
+  renderFolderTray();
+}
+
+// === КРОСС-СТРАНИЧНЫЕ ОКНА ПАПОК (серверная синхронизация с панелью задач desktop.html) ===
+async function notifyWindow(action, id, name, icon) {
+  try {
+    await fetch('/api/desktop/window', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, id, name: name || '', icon: icon || 'fa-folder' })
+    });
+  } catch (e) { console.warn('notifyWindow failed', e); }
+}
+
+async function renameFolder(folderId) {
+  const folder = DS.folders[folderId];
+  if (!folder) return;
+  const newName = await InfinityDialogs.prompt({label:'Новое название папки:', value:folder.name});
+  if (!newName || !newName.trim() || newName.trim() === folder.name) return;
+  const clean = fsSanitize(newName);
+  folder.name = newName.trim();
+  if (folder.path) {
+    try {
+      const r = await fetch('/filemanager/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: folder.path, new_name: clean })
+      });
+      if (r.ok) {
+        const sep = fsSep();
+        folder.path = fsJoin([folder.path.slice(0, folder.path.lastIndexOf(sep)), clean]);
+      }
+    } catch (e) {}
+  }
+  closeFolderWindow(folderId);
+  renderDesktop();
+  await saveState();
+  openFolder(folderId);
+}
+
+async function deleteFolder(folderId) {
+  const folder = DS.folders[folderId];
+  if (!folder) return;
+  if (!confirm('Удалить папку «' + folder.name + '»? Файлы на диске тоже будут удалены.')) return;
+  if (folder.path) {
+    try {
+      await fetch('/filemanager/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paths: [folder.path], recursive: true })
+      });
+    } catch (e) {}
+  }
+  const removeIds = [folderId];
+  for (const f of Object.values(DS.folders)) {
+    if (removeIds.includes(f.parentId)) removeIds.push(f.id);
+  }
+  for (const id of removeIds) {
+    delete DS.folders[id];
+    closeFolderWindow(id);
+  }
+  renderDesktop();
+  await saveState();
+  toast('Папка удалена', 'success');
+}
+
+async function folderNewFolder(folderId) {
+  const name = await InfinityDialogs.prompt({label:'Название новой папки:'});
+  if (!name || !name.trim()) return;
+  const id = genId();
+  const folder = { id, name: name.trim(), icon: 'fa-folder', color: '#f59e0b', parentId: folderId, items: [] };
+  DS.folders[id] = folder;
+  resolveFolderRealPath(folder).then(() => saveState()).catch(() => {});
+  updateFolderWindow(folderId);
+  saveState();
+}
+
+async function folderNewShortcut(folderId) {
+  const name = await InfinityDialogs.prompt({label:'Название ярлыка:'});
+  if (!name || !name.trim()) return;
+  const target = await InfinityDialogs.prompt({label:'Ссылка (URL):'});
+  if (!target) return;
+  const folder = DS.folders[folderId];
+  if (!folder) return;
+  if (!folder.items) folder.items = [];
+  folder.items.push({ id: genId(), type: 'shortcut', name: name.trim(), icon: 'fa-external-link-alt', target, targetType: 'shortcut', x: 0, y: 0, folderId, size: 1 });
+  updateFolderWindow(folderId);
+  saveState();
+}
+
+function folderUploadFile(folderId) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.multiple = true;
+  input.onchange = async () => {
+    const folder = DS.folders[folderId];
+    if (!folder) return;
+    try { await resolveFolderRealPath(folder); } catch(e) {}
+    if (!folder.path) {
+      toast('Папка не привязана к реальной директории', 'error');
+      return;
+    }
+    let okCount = 0;
+    for (const file of input.files) {
+      const fd = new FormData();
+      fd.append('destination', folder.path);
+      fd.append('file', file);
+      try {
+        const r = await fetch('/filemanager/upload', { method: 'POST', body: fd });
+        if (r.ok) okCount++;
+      } catch(e) {}
+    }
+    updateFolderWindow(folderId);
+    saveState();
+    if (okCount > 0) toast('Файлы загружены в папку', 'success');
+    else toast('Ошибка загрузки файлов', 'error');
+  };
+  input.click();
+}
+
+// === DRAG AND DROP FROM OS ===
+function onDragEnter(e) {
+  e.preventDefault();
+  document.getElementById('dropOverlay').classList.add('show');
+}
+
+function onDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropOverlay').classList.add('show');
+}
+
+function onDragLeave(e) {
+  if (!e.relatedTarget || !e.relatedTarget.closest) {
+    document.getElementById('dropOverlay').classList.remove('show');
+    return;
+  }
+  if (!e.relatedTarget.closest('#desktop') && !e.relatedTarget.closest('#dropOverlay')) {
+    document.getElementById('dropOverlay').classList.remove('show');
+  }
+}
+
+async function onDesktopDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropOverlay').classList.remove('show');
+  const files = e.dataTransfer.files;
+  if (files.length > 0) {
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append('file', file);
+      try {
+        const r = await fetch('/api/desktop/upload-file', { method: 'POST', body: fd });
+        if (r.ok) {
+          const d = await r.json();
+          const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg|ico)$/i.test(file.name);
+          DS.icons.push({
+            id: genId(), type: 'file', name: file.name,
+            icon: isImage ? (d.url || d.path) : 'fa-file',
+            target: d.url || d.path, targetType: 'file',
+            x: e.clientX, y: e.clientY - 48, folderId: '', size: 1
+          });
+        }
+      } catch(e) {}
+    }
+    renderDesktop();
+    await saveState();
+    toast('Файлы добавлены на рабочий стол', 'success');
+    return;
+  }
+  // Handle text drop (URLs, etc.)
+  const text = e.dataTransfer.getData('text');
+  if (text) {
+    if (text.startsWith('http://') || text.startsWith('https://')) {
+      DS.icons.push({ id: genId(), type: 'shortcut', name: text.substring(0, 30), icon: 'fa-external-link-alt', target: text, targetType: 'shortcut', x: e.clientX, y: e.clientY - 48, folderId: '', size: 1 });
+      renderDesktop();
+      await saveState();
+      toast('Ярлык создан', 'success');
+    }
+  }
+}
+
+// === KEYBOARD HANDLING ===
+function handleKeydown(e) {
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (selectedIcons.length > 0 && !e.target.closest('input,textarea,select')) {
+      deleteSelected();
+    }
+  }
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 'c') { e.preventDefault(); copySelected(); }
+    if (e.key === 'x') { e.preventDefault(); cutSelected(); }
+    if (e.key === 'v') { e.preventDefault(); pasteClipboard(); }
+    if (e.key === 'a') { e.preventDefault(); selectAll(); }
+  }
+  if (e.key === 'Escape') {
+    clearSelection();
+    hideCtxMenu();
+    Object.keys(folderWindows).forEach(id => closeFolderWindow(id));
+  }
+  if (e.key === 'F5') { e.preventDefault(); refreshDesktop(); }
+  if (e.key === 'F2') { if (selectedIcons.length === 1) renameSelected(); }
+}
+
+// === CLIPBOARD ===
+function copySelected() {
+  if (selectedIcons.length === 0) return;
+  clipboardItems = selectedIcons.map(id => {
+    const item = findItem(id);
+    return item ? { ...item } : null;
+  }).filter(Boolean);
+  clipboardAction = 'copy';
+  toast('Скопировано: ' + clipboardItems.length, 'info');
+}
+
+function cutSelected() {
+  if (selectedIcons.length === 0) return;
+  clipboardItems = selectedIcons.map(id => {
+    const item = findItem(id);
+    return item ? { ...item, _sourceId: id } : null;
+  }).filter(Boolean);
+  clipboardAction = 'cut';
+  toast('Вырезано: ' + clipboardItems.length, 'info');
+}
+
+function pasteClipboard() {
+  if (clipboardItems.length === 0) return;
+  for (const item of clipboardItems) {
+    const newItem = { ...item, id: genId(), x: (item.x || 100) + 20, y: (item.y || 100) + 20 };
+    delete newItem._sourceId;
+    if (clipboardAction === 'cut') {
+      const src = findItem(item._sourceId || item.id);
+      if (src) {
+        Object.assign(src, { x: newItem.x, y: newItem.y });
+      }
+    } else {
+      DS.icons.push(newItem);
+    }
+  }
+  if (clipboardAction === 'cut') {
+    clipboardItems = [];
+    clipboardAction = null;
+  }
+  renderDesktop();
+  saveState();
+  toast('Вставлено', 'success');
+}
+
+function pasteFileClipboard() {
+  toast('Вставка файлов', 'info');
+}
+
+function selectAll() {
+  clearSelection();
+  document.querySelectorAll('.desktop-icon').forEach(el => {
+    el.classList.add('selected');
+    selectedIcons.push(el.dataset.id);
+  });
+}
+
+function deleteSelected() {
+  if (selectedIcons.length === 0) return;
+  if (!confirm('Удалить ' + selectedIcons.length + ' элемент(ов)?')) return;
+  for (const id of selectedIcons) {
+    DS.icons = DS.icons.filter(i => i.id !== id);
+    if (DS.folders[id]) {
+      delete DS.folders[id];
+    }
+    for (const f of Object.values(DS.folders)) {
+      f.items = (f.items || []).filter(i => i.id !== id);
+    }
+  }
+  clearSelection();
+  renderDesktop();
+  saveState();
+  toast('Удалено', 'info');
+}
+
+function openSelected() {
+  for (const id of selectedIcons) {
+    const item = findItem(id);
+    if (item) onIconDblClick(item);
+    break;
+  }
+}
+
+function noteIdFromTarget(target) {
+  const m = String(target || '').match(/\/notes\/edit\?id=([^&]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+async function collabFromShortcut() {
+  const id = selectedIcons[0];
+  const item = id ? findItem(id) : null;
+  const nid = item ? noteIdFromTarget(item.target) : null;
+  if (!nid) { toast('Ярлык не ссылается на заметку', 'warning'); return; }
+  try {
+    const st = await (await fetch('/api/collab/status', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note_id: nid, token: '' })
+    })).json();
+    if (st && st.active && st.token) {
+      location.href = '/notes/edit?id=' + encodeURIComponent(nid) + '&collab=' + encodeURIComponent(st.token);
+      return;
+    }
+    const r = await fetch('/api/collab/start', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note_id: nid })
+    });
+    const d = await r.json();
+    if (d.ok && d.token) {
+      location.href = '/notes/edit?id=' + encodeURIComponent(nid) + '&collab=' + encodeURIComponent(d.token);
+    } else {
+      toast(d.error || 'Не удалось начать совместный доступ', 'error');
+    }
+  } catch (e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function collabReturnList() {
+  try {
+    const r = await fetch('/api/collab/my-rooms');
+    const d = await r.json();
+    const rooms = (d.rooms || []).filter(rr => rr.token);
+    if (!rooms.length) {
+      toast('Нет активных комнат, к которым у вас есть доступ', 'info');
+      return;
+    }
+    showModal(
+      '<i class="fas fa-people-group" style="color:var(--accent)"></i> Вернуться в комнату',
+      `<div style="max-height:320px;overflow:auto;display:flex;flex-direction:column;gap:6px">
+        ${rooms.map(rr => `
+          <button style="text-align:left;padding:10px 12px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px" onclick="location.href='/notes/edit?id=${encodeURIComponent(rr.nid)}&collab=${encodeURIComponent(rr.token)}'">
+            <i class="fas fa-note-sticky" style="color:var(--accent)"></i>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(rr.title || 'Заметка')}</span>
+            <span style="font-size:11px;color:var(--text3);white-space:nowrap">${rr.is_owner ? 'владелец' : (rr.is_moderator ? 'модератор' : (rr.role === 'write' ? 'редактор' : 'читатель'))}</span>
+          </button>`).join('')}
+      </div>`,
+      null, 'Закрыть'
+    );
+  } catch (e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function renameSelected() {
+  if (selectedIcons.length !== 1) return;
+  const id = selectedIcons[0];
+  const item = findItem(id);
+  if (!item) return;
+  const newName = await InfinityDialogs.prompt({label:'Новое имя:', value:item.name});
+  if (newName && newName.trim()) {
+    item.name = newName.trim();
+    if (DS.folders[id]) DS.folders[id].name = newName.trim();
+    renderDesktop();
+    // Update folder windows
+    for (const fid of Object.keys(folderWindows)) {
+      updateFolderWindow(fid);
+    }
+    saveState();
+  }
+}
+
+function showProperties() {
+  if (selectedIcons.length !== 1) return;
+  const id = selectedIcons[0];
+  const item = findItem(id);
+  if (!item) return;
+  showModal(
+    '<i class="fas fa-info-circle" style="color:var(--accent)"></i> Свойства',
+    `<div style="font-size:13px;margin-bottom:8px"><strong>Имя:</strong> ${esc(item.name)}</div>
+     <div style="font-size:13px;margin-bottom:8px"><strong>Тип:</strong> ${item.type}</div>
+     <div style="font-size:13px;margin-bottom:8px"><strong>ID:</strong> ${item.id}</div>
+     ${item.target ? `<div style="font-size:13px;margin-bottom:8px"><strong>Цель:</strong> ${esc(item.target)}</div>` : ''}
+     <div style="font-size:13px"><strong>Позиция:</strong> ${Math.round(item.x || 0)}, ${Math.round(item.y || 0)}</div>`,
+    null, 'Закрыть'
+  );
+}
+
+// === SORTING ===
+function sortIcons(by) {
+  const rootIcons = DS.icons.filter(i => !i.folderId);
+  if (by === 'name') rootIcons.sort((a,b) => a.name.localeCompare(b.name));
+  else if (by === 'type') rootIcons.sort((a,b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name));
+  // Re-apply positions in order
+  rootIcons.forEach((item, idx) => {
+    item.x = 60 + (idx % 8) * 90;
+    item.y = 60 + Math.floor(idx / 8) * 90;
+  });
+  renderDesktop();
+  saveState();
+  toast('Отсортировано', 'success');
+}
+
+function refreshDesktop() {
+  renderDesktop();
+  renderTaskbar();
+  toast('Обновлено', 'info');
+}
+
+// === TASKBAR ===
+function renderTaskbar() {
+  const apps = document.getElementById('tbApps');
+  if (!apps) return;
+  apps.innerHTML = '';
+  const pinned = DS.taskbar?.pinned || [];
+  for (const appId of pinned) {
+    const app = NAV_APPS.find(a => a.name === (appId === 'AI Чат' ? 'Агент' : appId)) || NAV_APPS[0];
+    const btn = document.createElement('button');
+    btn.className = 'tb-app';
+    btn.innerHTML = `<i class="fas ${app.icon}" style="font-size:16px;color:var(--text2)"></i>`;
+    btn.title = app.name;
+    btn.onclick = () => openRoute(app.route);
+    apps.appendChild(btn);
+  }
+}
+
+function renderStartMenu() {
+  const main = document.getElementById('smMain');
+  if (!main) return;
+  main.innerHTML = '';
+  for (const app of NAV_APPS) {
+    const div = document.createElement('div');
+    div.className = 'sm-app';
+    div.innerHTML = `<div class="sm-app-icon" style="background:${app.color}"><i class="fas ${app.icon}" style="color:#fff;font-size:17px"></i></div>
+      <div class="sm-app-name">${app.name}</div>`;
+    div.onclick = () => { closeStart(); openRoute(app.route); };
+    div.oncontextmenu = (e) => {
+      e.preventDefault();
+      const items = [
+        { name: 'Закрепить на панели', icon: 'fa-thumbtack', action: 'pin-' + app.name },
+        { name: 'Открыть', icon: 'fa-external-link-alt', action: 'open-' + app.route },
+        { name: 'Открыть отдельно', icon: 'fa-arrow-up-right-from-square', action: 'open-sep-' + app.route },
+      ];
+      showCtxMenu(e.clientX, e.clientY, items);
+    };
+    main.appendChild(div);
+  }
+}
+
+function filterStartApps(query) {
+  const main = document.getElementById('smMain');
+  if (!main) return;
+  const items = main.querySelectorAll('.sm-app');
+  const q = query.toLowerCase();
+  items.forEach(el => {
+    const name = el.querySelector('.sm-app-name').textContent.toLowerCase();
+    el.style.display = name.includes(q) ? '' : 'none';
+  });
+}
+
+function toggleStart() {
+  const sm = document.getElementById('startMenu');
+  if (!sm) return;
+  startOpen = !startOpen;
+  sm.classList.toggle('show', startOpen);
+}
+
+function closeStart() {
+  startOpen = false;
+  const sm = document.getElementById('startMenu');
+  if (sm) sm.classList.remove('show');
+}
+
+// === ROUTING ===
+function openRoute(path) {
+  window.open(path, '_blank');
+}
+
+// === CLOCK ===
+function updateClock() {
+  const clock = document.getElementById('tbClock');
+  if (!clock) return;
+  const now = new Date();
+  clock.textContent = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+}
+
+// === MODALS ===
+function showModal(title, body, onOk, okText) {
+  const overlay = document.getElementById('modalOverlay');
+  const content = document.getElementById('modalContent');
+  content.innerHTML = `
+    <h3>${title}</h3>
+    ${body}
+    <div class="modal-actions">
+      ${onOk ? `<button class="btn-primary" id="modalOkBtn">${okText || 'Создать'}</button>` : ''}
+      <button class="btn-secondary" onclick="closeModal()">${okText ? 'Отмена' : 'Закрыть'}</button>
+    </div>`;
+  overlay.classList.add('show');
+  const input = document.getElementById('modalInput');
+  if (input) setTimeout(() => input.focus(), 100);
+  if (onOk) {
+    document.getElementById('modalOkBtn').onclick = async () => {
+      await onOk();
+      closeModal();
+    };
+  }
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+// === WINDOW HELPERS ===
+function makeFolderDraggable(win) {
+  const header = win.querySelector('.fw-header');
+  let isDragging = false, startX, startY, origX, origY;
+  header.addEventListener('mousedown', (e) => {
+    if (e.target.closest('button')) return;
+    isDragging = true;
+    startX = e.clientX; startY = e.clientY;
+    origX = win.offsetLeft; origY = win.offsetTop;
+    win.classList.add('dragging');
+    win.style.zIndex = ++folderZIndex;
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+  function onMove(e) {
+    if (!isDragging) return;
+    win.style.left = (origX + e.clientX - startX) + 'px';
+    win.style.top = (origY + e.clientY - startY) + 'px';
+  }
+  function onUp() {
+    isDragging = false;
+    win.classList.remove('dragging');
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+}
+
+function makeFolderResizable(win) {
+  const resize = document.createElement('div');
+  resize.className = 'fw-resize';
+  win.appendChild(resize);
+  let isResizing = false, startX, startY, startW, startH;
+  resize.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+    isResizing = true;
+    startX = e.clientX; startY = e.clientY;
+    startW = win.offsetWidth; startH = win.offsetHeight;
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+  function onMove(e) {
+    if (!isResizing) return;
+    win.style.width = Math.max(300, startW + e.clientX - startX) + 'px';
+    win.style.height = Math.max(200, startH + e.clientY - startY) + 'px';
+  }
+  function onUp() {
+    isResizing = false;
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+}
+
+// === DESKTOP SELECTION RECT ===
+function onDesktopMouseDown(e) {
+  if (e.button !== 0) return;
+  if (e.target !== document.getElementById('desktop')) return;
+  hideCtxMenu();
+  clearSelection();
+
+  const rect = document.createElement('div');
+  rect.className = 'selection-rect';
+  rect.style.left = e.clientX + 'px';
+  rect.style.top = e.clientY + 'px';
+  rect.style.width = '0px';
+  rect.style.height = '0px';
+  document.body.appendChild(rect);
+
+  const startX = e.clientX, startY = e.clientY;
+
+  const onMove = (ev) => {
+    const x = Math.min(ev.clientX, startX);
+    const y = Math.min(ev.clientY, startY);
+    const w = Math.abs(ev.clientX - startX);
+    const h = Math.abs(ev.clientY - startY);
+    rect.style.left = x + 'px';
+    rect.style.top = y + 'px';
+    rect.style.width = w + 'px';
+    rect.style.height = h + 'px';
+
+    document.querySelectorAll('.desktop-icon').forEach(el => {
+      const r = el.getBoundingClientRect();
+      const overlap = !(r.right < x || r.left > x + w || r.bottom < y || r.top > y + h);
+      el.classList.toggle('selected', overlap);
+      const id = el.dataset.id;
+      if (overlap && !selectedIcons.includes(id)) selectedIcons.push(id);
+      if (!overlap) selectedIcons = selectedIcons.filter(i => i !== id);
+    });
+  };
+
+  const onUp = () => {
+    rect.remove();
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  };
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+// === SHOW ALL FOLDERS ===
+function showFolders() {
+  const folderList = Object.values(DS.folders).filter(f => !f.parentId);
+  if (folderList.length === 0) {
+    toast('Нет папок на рабочем столе', 'info');
+    return;
+  }
+  const list = folderList.map(f => `<div style="padding:6px 10px;cursor:pointer;border-radius:6px;font-size:13px;display:flex;align-items:center;gap:8px" onclick="closeModal();openFolder('${f.id}')" onmouseenter="this.style.background='var(--hover)'" onmouseleave="this.style.background='transparent'">
+    <i class="fas fa-folder" style="color:var(--orange)"></i> ${esc(f.name)}</div>`).join('');
+  showModal('<i class="fas fa-folder-open" style="color:var(--orange)"></i> Папки', list, null, 'Закрыть');
+}
+
+// === CLIPBOARD VIEW ===
+function showClipboard() {
+  if (clipboardItems.length === 0) {
+    toast('Буфер обмена пуст', 'info');
+    return;
+  }
+  const list = clipboardItems.map((item, i) => `<div style="padding:6px 10px;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;margin-bottom:4px;background:var(--bg3)">
+    <i class="fas ${item.type === 'folder' ? 'fa-folder' : 'fa-file'}" style="color:var(--accent)"></i>
+    <span style="flex:1">${esc(item.name)}</span>
+    <span style="color:var(--text3);font-size:10px">${clipboardAction === 'cut' ? '✂️' : '📋'}</span>
+  </div>`).join('');
+  showModal('<i class="fas fa-clipboard" style="color:var(--accent)"></i> Буфер обмена', list, null, 'Закрыть');
+}
+
+// === UTILS ===
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  if (!t) {
+    const nt = document.createElement('div');
+    nt.id = 'toast';
+    nt.textContent = msg;
+    nt.className = 'show ' + (type || 'info');
+    document.body.appendChild(nt);
+    setTimeout(() => nt.remove(), 2500);
+    return;
+  }
+  t.textContent = msg;
+  t.className = 'show ' + (type || 'info');
+  clearTimeout(t._timeout);
+  t._timeout = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// === OVERRIDE GLOBAL CTX MENU ===
+document.addEventListener('contextmenu', (e) => {
+  if (e.target.closest('#desktop') || e.target.closest('#ctxMenu') || e.target.closest('.folder-window')) return;
+  e.preventDefault();
+});
+
+// === LOAD APPS ===
+async function loadApps() {
+  try {
+    const r = await fetch('/api/apps');
+    if (r.ok) {
+      const data = await r.json();
+      const apps = Array.isArray(data) ? data : (data.apps || []);
+      if (apps.length) {
+        const main = document.getElementById('smMain');
+        for (const app of apps) {
+          if (main.querySelector(`[data-app="${app.id}"]`)) continue;
+          const div = document.createElement('div');
+          div.className = 'sm-app';
+          div.dataset.app = app.id;
+          div.innerHTML = `<div class="sm-app-icon" style="background:linear-gradient(135deg,var(--accent),var(--purple))">
+            <img src="/api/apps/icon?id=${app.id}" onerror="this.style.display='none';this.parentElement.innerHTML='${(app.name||'?')[0]}'" style="width:100%;height:100%;object-fit:cover">
+          </div><div class="sm-app-name">${esc(app.name || app.id)}</div>`;
+          div.onclick = () => { closeStart(); window.open('/apps/view?id=' + app.id, '_blank'); };
+          main.appendChild(div);
+        }
+      }
+    }
+  } catch(e) {}
+}
+
+setTimeout(loadApps, 1000);
+
+// === PREVENT DEFAULT DRAG ===
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => e.preventDefault());
+
+// === COLLAB INVITE NOTIFICATIONS ===
+let notifInbox = [];
+let notifTimer = null;
+
+function toggleNotifPanel() {
+  const p = document.getElementById('notifPanel');
+  if (!p) return;
+  p.classList.toggle('show');
+  if (p.classList.contains('show')) {
+    notifRefreshBadge(true);
+    notifFetch();
+  }
+}
+
+function notifFetch() {
+  return fetch('/api/collab/inbox')
+    .then(r => r.json())
+    .then(d => {
+      const invites = (d.invites || []).map(inv => ({
+        id: String(inv.collab_note_id || inv.item_id || (inv.share_id || inv.collab_token || '')),
+        title: String(inv.title || inv.collab_note_id || 'Заметка'),
+        noteId: String(inv.collab_note_id || inv.item_id || ''),
+        token: String(inv.collab_token || ''),
+        shareId: String(inv.share_id || ''),
+        remoteNode: inv.collab_remote ? String(inv.collab_remote.node || '') : '',
+        ts: inv.shared_at || Date.now() / 1000
+      }));
+      const prev = notifInbox.map(n => n.id);
+      const fresh = invites.filter(n => !prev.includes(n.id));
+      notifInbox = invites;
+      notifRender();
+      if (fresh.length) notifShowFresh(fresh);
+    })
+    .catch(() => {});
+}
+
+function notifSeenIds() {
+  try { const s = JSON.parse(localStorage.getItem('notifSeen') || '[]'); return Array.isArray(s) ? s : [] } catch (e) { return [] }
+}
+
+function notifRefreshBadge() {
+  const badge = document.getElementById('notifBadge');
+  if (!badge) return;
+  const seen = notifSeenIds();
+  const unread = notifInbox.filter(n => n.id && !seen.includes(n.id)).length;
+  badge.style.display = unread ? 'block' : 'none';
+  badge.textContent = unread > 99 ? '99+' : unread;
+}
+
+function notifShowFresh(fresh) {
+  const seen = notifSeenIds();
+  const reallyNew = fresh.filter(n => n.id && !seen.includes(n.id));
+  if (reallyNew.length) {
+    localStorage.setItem('notifSeen', JSON.stringify(seen.concat(reallyNew.map(n => n.id)).slice(-100)));
+    reallyNew.forEach(n => {
+      try {
+        if (typeof toast === 'function') toast('Приглашение: ' + n.title, 'info');
+      } catch (e) { }
+      try {
+        if ('Notification' in window) {
+          if (Notification.permission === 'granted') {
+            const ntf = new Notification('Приглашение в совместную заметку', { body: n.title });
+            ntf.onclick = () => { window.focus(); openRouteInvite(n); };
+          } else if (Notification.permission === 'default') {
+            Notification.requestPermission().then(p => {
+              if (p === 'granted') {
+                const ntf = new Notification('Приглашение в совместную заметку', { body: n.title });
+                ntf.onclick = () => { window.focus(); openRouteInvite(n); };
+              }
+            });
+          }
+        }
+      } catch (e) { }
+    });
+  }
+  notifRefreshBadge();
+}
+
+function notifRender() {
+  const list = document.getElementById('notifList');
+  if (!list) return;
+  if (!notifInbox.length) {
+    list.innerHTML = '<div class="notif-empty">Нет уведомлений</div>';
+    return;
+  }
+  const seen = notifSeenIds();
+  list.innerHTML = notifInbox.map(n => `
+    <div class="notif-item">
+      <div class="n-title"><i class="fas fa-people-group"></i> Приглашение в совместную заметку</div>
+      <div>${esc(n.title)}</div>
+      <div class="n-actions">
+        <button class="n-open" onclick="openRouteInvite(${JSON.stringify(n).replace(/'/g, '&#39;')})">Открыть</button>
+        ${n.noteId ? `<button class="n-read" onclick="notifDeclineInvite(${JSON.stringify(n).replace(/'/g, '&#39;')})">Отклонить</button>` : ''}
+        ${n.id && !seen.includes(n.id) ? `<button class="n-read" onclick="notifMarkOne('${String(n.id).replace(/'/g, "\\'")}')">Прочитано</button>` : ''}
+      </div>
+    </div>`).join('');
+  notifRefreshBadge();
+}
+
+function openRouteInvite(n) {
+  if (n.noteId && n.token) {
+    let url = '/notes/edit?id=' + encodeURIComponent(n.noteId) + '&collab=' + encodeURIComponent(n.token);
+    if (n.remoteNode) url += '&remote=1&node=' + encodeURIComponent(n.remoteNode);
+    location.href = url;
+  } else {
+    location.href = '/notes';
+  }
+}
+
+function notifMarkOne(id) {
+  const seen = notifSeenIds();
+  if (!seen.includes(id)) {
+    seen.push(id);
+    localStorage.setItem('notifSeen', JSON.stringify(seen.slice(-100)));
+  }
+  notifRender();
+  notifRefreshBadge();
+}
+
+async function notifDeclineInvite(n) {
+  if (!n.noteId) return;
+  if (!confirm('Отклонить приглашение к этой заметке?')) return;
+  try {
+    const r = await fetch('/api/collab/decline', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note_id: n.noteId, share_id: n.shareId || '', token: n.token || '' })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      toast('Приглашение отклонено', 'success');
+      notifFetch(true);
+    } else {
+      toast(d.error || 'Ошибка', 'error');
+    }
+  } catch (e) {
+    toast('Ошибка сети', 'error');
+  }
+}
+
+function notifMarkAllSeen() {
+  localStorage.setItem('notifSeen', JSON.stringify(notifInbox.map(n => n.id)));
+  notifRender();
+  notifRefreshBadge();
+}
+
+function notifRefresh() {
+  notifRender();
+  notifRefreshBadge();
+}
+
+setInterval(() => {
+  notifFetch();
+}, 20000);
+setTimeout(() => notifFetch(), 2500);
+</script>
+</body>
+</html>

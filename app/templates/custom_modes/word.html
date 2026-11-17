@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<style>
+:root {
+  --bg: #f9fafb;
+  --fg: #1f2937;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --acc: #4f46e5;
+  --card-bg: #ffffff;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111827;
+    --fg: #f3f4f6;
+    --muted: #9ca3af;
+    --line: #374151;
+    --acc: #818cf8;
+    --card-bg: #1f2937;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+h1 {
+  font-size: 24px;
+  margin: 0 0 20px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+input[type="text"] {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--fg);
+  font-size: 14px;
+}
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--acc);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc) 20%, transparent);
+}
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+.card-header {
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--acc);
+  margin: 0 0 4px;
+}
+.card-meta {
+  font-size: 13px;
+  color: var(--muted);
+}
+.card-body {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: var(--fg);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.highlight {
+  background-color: color-mix(in srgb, var(--acc) 30%, transparent);
+  color: var(--fg);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+  display: none;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Красивый просмотр текста</h1>
+  <div class="controls">
+    <input type="text" id="search" placeholder="Поиск по тексту...">
+  </div>
+  <div id="content"></div>
+  <div id="empty" class="empty-state">Ничего не найдено</div>
+</div>
+
+<script>
+const DATA = [
+  {
+    title: "The standard Lorem Ipsum passage",
+    meta: "Used since 1966",
+    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+  },
+  {
+    title: "Section 1.10.32 of \"de Finibus Bonorum et Malorum\"",
+    meta: "Written by Cicero in 45 BC",
+    text: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
+  },
+  {
+    title: "1914 translation by H. Rackham",
+    meta: "English Translation",
+    text: "But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?"
+  },
+  {
+    title: "Section 1.10.33 of \"de Finibus Bonorum et Malorum\"",
+    meta: "Written by Cicero in 45 BC",
+    text: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat."
+  },
+  {
+    title: "1914 translation by H. Rackham",
+    meta: "English Translation",
+    text: "On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures, or else he endures pains to avoid worse pains."
+  }
+];
+
+const contentDiv = document.getElementById('content');
+const emptyDiv = document.getElementById('empty');
+const searchInput = document.getElementById('search');
+
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function highlightText(text, query) {
+  if (!query) return escapeHtml(text);
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escapedQuery})`, "gi");
+  return escapeHtml(text).replace(regex, "<span class=\"highlight\">$1</span>");
+}
+
+function render(filter = "") {
+  const filtered = DATA.filter(item => {
+    const searchStr = (item.title + " " + item.meta + " " + item.text).toLowerCase();
+    return searchStr.includes(filter.toLowerCase());
+  });
+
+  if (filtered.length === 0) {
+    contentDiv.innerHTML = "";
+    emptyDiv.style.display = "block";
+    return;
+  }
+
+  emptyDiv.style.display = "none";
+  contentDiv.innerHTML = filtered.map(item => `
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">${highlightText(item.title, filter)}</h2>
+        <div class="card-meta">${highlightText(item.meta, filter)}</div>
+      </div>
+      <div class="card-body">
+        ${highlightText(item.text, filter)}
+      </div>
+    </div>
+  `).join("");
+}
+
+searchInput.addEventListener('input', (e) => {
+  render(e.target.value);
+});
+
+// Initial render
+render();
+</script>
+</body>
+</html>

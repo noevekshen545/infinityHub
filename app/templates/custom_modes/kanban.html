@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Канбан</title>
+<style>
+:root{--bg:#fff;--fg:#1f2937;--muted:#6b7280;--line:#e5e7eb;--acc:#4f46e5;--card:#fff;--r:14px;--sh:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.06)}
+@media (prefers-color-scheme:dark){:root{--bg:#15171c;--fg:#e8eaed;--muted:#9aa3af;--line:#2b2f37;--acc:#818cf8;--card:#1b1e24;--sh:0 1px 3px rgba(0,0,0,.4)}}
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+h1{font-size:18px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;align-items:start}
+.col{background:color-mix(in srgb,var(--acc) 5%,transparent);border:1px solid var(--line);border-radius:var(--r);padding:10px}
+.col h2{display:flex;align-items:center;gap:8px;font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:2px 4px 10px}
+.col h2 b{margin-left:auto;background:var(--card);border:1px solid var(--line);border-radius:999px;min-width:26px;text-align:center;padding:0 7px;font-size:12px;color:var(--fg)}
+.col.over{border-color:var(--acc);border-style:dashed}
+.cards{display:flex;flex-direction:column;gap:8px;min-height:40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--sh);padding:10px 12px;cursor:grab;transition:transform .18s ease,box-shadow .18s ease}
+.card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(16,24,40,.12)}
+.card:active{cursor:grabbing}
+.card h3{margin:0 0 2px;font-size:14px}
+.card p{margin:0;color:var(--muted);font-size:12px}
+.empty{padding:32px;text-align:center;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<h1 id="title">Канбан</h1>
+<div class="sub">Перетаскивай карточки между колонками</div>
+<div class="cols" id="cols">
+  <div class="col" data-k="0"><h2>К выполнению<b></b></h2><div class="cards"></div></div>
+  <div class="col" data-k="1"><h2>В работе<b></b></h2><div class="cards"></div></div>
+  <div class="col" data-k="2"><h2>Готово<b></b></h2><div class="cards"></div></div>
+</div>
+<div class="empty" id="empty" style="display:none">В заметке нет задач</div>
+<script>
+/* ДАННЫЕ: ИИ вписывает сюда содержимое заметки.
+   ROWS — задачи вида [колонка (0/1/2), заголовок, описание]. */
+const ROWS=[[0,"Задача 1","Описание задачи"],[1,"Задача 2","Описание задачи"],[2,"Задача 3","Описание задачи"]];
+
+const colsEl=document.getElementById("cols"),
+      empty=document.getElementById("empty");
+const cols=[...colsEl.querySelectorAll(".col")];
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]));}
+
+let dragEl=null;
+cols.forEach((col,colIdx)=>{
+  const box=col.querySelector(".cards");
+  box.addEventListener("dragover",e=>{e.preventDefault();col.classList.add("over");});
+  box.addEventListener("dragleave",()=>col.classList.remove("over"));
+  box.addEventListener("drop",e=>{
+    e.preventDefault();
+    col.classList.remove("over");
+    if(dragEl)box.appendChild(dragEl);
+    upd();
+  });
+});
+
+function draw(){
+  cols.forEach((col,i)=>{
+    const box=col.querySelector(".cards");
+    box.innerHTML="";
+    ROWS.forEach((r,j)=>{
+      if(r[0]!==i)return;
+      const d=document.createElement("div");
+      d.className="card";
+      d.draggable=true;
+      d.innerHTML="<h3>"+esc(r[1])+"</h3><p>"+esc(r[2])+"</p>";
+      d.addEventListener("dragstart",()=>{dragEl=d;});
+      d.addEventListener("dragend",()=>{dragEl=null;});
+      box.appendChild(d);
+    });
+  });
+  upd();
+}
+function upd(){
+  cols.forEach((col,i)=>{
+    const n=ROWS.filter(r=>r[0]===i).length;
+    const b=col.querySelector("h2 b");
+    if(b)b.textContent=n;
+  });
+  empty.style.display=ROWS.length?"none":"";
+}
+draw();
+</script>
+</body>
+</html>

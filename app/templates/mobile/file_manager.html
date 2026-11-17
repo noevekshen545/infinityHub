@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html class="pg-file-manager-mobile" lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <title>Файлы — Infinity</title>
+  <link rel="stylesheet" href="/static/vendor/fa-all.min.css">
+  <script>
+    /* Тема до первой отрисовки — тот же ключ и тот же приём, что в
+       desktop-шаблоне file_manager.html: иначе первый кадр в палитре
+       design.css и заметное мигание. */
+    (function () {
+      try {
+        var ALL = ['light','dark','sepia','warm','paper','ocean','forest','midnight','rose'];
+        var t = null;
+        try {
+          t = localStorage.getItem('infinity_theme') || localStorage.getItem('html_theme')
+              || localStorage.getItem('fm_theme');
+        } catch (e) {}
+        if (!t || ALL.indexOf(t) === -1) t = 'light';
+        document.documentElement.setAttribute('data-fm-theme', t);
+        document.documentElement.setAttribute('data-theme', t);
+        var setBodyTheme = function () {
+          var b = document.body;
+          if (!b) return;
+          for (var i = 0; i < ALL.length; i++) b.classList.remove(ALL[i]);
+          b.classList.add(t);
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', setBodyTheme, { once: true });
+        } else { setBodyTheme(); }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/static/css/design.css">
+  <!-- file_manager.css нужен постольку, поскольку модалки FM (настройки,
+       шаринг, AI-задачи, терминал, open-with) используют его fm-modal/fm-input
+       классы. Всю desktop-раскладку mobile.css/fm_mobile.css обнуляют. -->
+  <link rel="stylesheet" href="/static/css/file_manager.css">
+  <link rel="stylesheet" href="/static/css/mobile_shell.css">
+  <link rel="stylesheet" href="/static/css/fm_mobile.css">
+  <script src="/static/js/theme.js"></script>
+  <script src="/static/js/i18n.js"></script>
+  <!-- Порядок важен: file_manager.js экспортирует класс на window и сам
+       пропускает свою инициализацию, когда FM_MOBILE_MODE=true (эта строка
+       выполнится раньше любого defer-скрипта и до DOMContentLoaded). -->
+  <script>window.FM_MOBILE_MODE = true;</script>
+  <script src="/static/js/file_manager.js" defer></script>
+  <script src="/static/js/mobile_shell.js" defer></script>
+  <script src="/static/js/fm_mobile.js" defer></script>
+</head>
+<body class="fm-mobile">
+  <div class="mh-progress"><div></div></div>
+
+  <header class="mh-header">
+    <button class="mh-iconbtn" id="mhNavBtn" type="button" title="Навигация"
+            aria-label="Навигация"><i class="fas fa-bars"></i></button>
+    <div class="mh-title">Файлы<span class="mh-sub" id="mhSubtitle"></span></div>
+    <button class="mh-iconbtn" id="mhSearchBtn" type="button" title="Поиск"
+            aria-label="Поиск"><i class="fas fa-magnifying-glass"></i></button>
+    <button class="mh-iconbtn" id="mhViewBtn" type="button" title="Вид"
+            aria-label="Вид"><i class="fas fa-th"></i></button>
+    <button class="mh-iconbtn" id="mhMoreBtn" type="button" title="Ещё"
+            aria-label="Ещё"><i class="fas fa-ellipsis"></i></button>
+  </header>
+
+  <div class="mh-crumbs" id="mhCrumbs"></div>
+  <div class="mh-chips" id="mhFilterChips">
+    <button class="mh-chip on" data-filter="all" type="button">Все</button>
+    <button class="mh-chip" data-filter="images" type="button"><i class="fas fa-image"></i> Картинки</button>
+    <button class="mh-chip" data-filter="documents" type="button"><i class="fas fa-file-lines"></i> Документы</button>
+    <button class="mh-chip" data-filter="audio" type="button"><i class="fas fa-music"></i> Аудио</button>
+    <button class="mh-chip" data-filter="video" type="button"><i class="fas fa-film"></i> Видео</button>
+    <button class="mh-chip" data-filter="archives" type="button"><i class="fas fa-file-zipper"></i> Архивы</button>
+  </div>
+
+  <main class="mh-main">
+    <div class="fm-file-list" data-pane="1" id="fileList1"></div>
+  </main>
+
+  <button class="mh-fab" id="mhFab" type="button" aria-label="Создать">
+    <i class="fas fa-plus"></i>
+  </button>
+
+  <!-- Строка вырезано/копирование (FM renderClipboardIndicators) -->
+  <div class="fm-clipboard-indicator" id="fmClipboardIndicator" style="display:none"></div>
+
+  <nav class="mh-bar" id="mhBar"></nav>
+
+  <!-- Полноэкранный просмотр: FM openFullscreen использует эти id,
+       мобильная тема превращает overlay во full-screen слой. -->
+  <div class="fm-modal-overlay" id="fullscreenModal" style="display:none">
+    <div class="fm-modal fm-modal-full">
+      <div class="fm-modal-header">
+        <h3 id="fullscreenTitle">Просмотр</h3>
+        <div style="display:flex;gap:8px">
+          <button class="fm-btn primary" id="fullscreenSaveBtn" style="display:none"><i class="fas fa-save"></i> Сохранить</button>
+          <button class="fm-close-btn" id="closeFullscreenBtn" type="button"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+      <div class="fm-modal-body" id="fullscreenBody"></div>
+    </div>
+  </div>
+
+  <!-- Скрытые узлы десктопного дерева: FM renderTree/loadDisks наполняют их,
+       мобильный drawer копирует готовую разметку в sheet. -->
+  <div id="fmTree" style="display:none" aria-hidden="true">
+    <div id="fmDrives"></div>
+    <div id="fmTreeContent"></div>
+  </div>
+  <div id="previewPanel" style="display:none" aria-hidden="true">
+    <div id="previewContent"></div>
+  </div>
+
+  <!-- fm_mobile.js ставит window.FM; инлайн-обработчики desktop-кода
+       (FM.setSort / FM.showPathInput в разметке) работают отсюда. -->
+</body>
+</html>

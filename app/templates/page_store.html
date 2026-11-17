@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html class="pg-page_store" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Медиастор - Infinity</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="manifest" href="/static/manifest.json">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box }
+:root {
+--bg: #fafbfc; --bg2: #ffffff; --bg3: #f3f4f6; --bg4: #e5e7eb;
+--border: rgba(0, 0, 0, 0.06); --border2: rgba(0, 0, 0, 0.1);
+--text: #111827; --text2: #4b5563; --text3: #9ca3af;
+--accent: #4f46e5; --accent2: #4338ca;
+--accent-glow: rgba(79, 70, 229, 0.15); --accent-light: rgba(79, 70, 229, 0.1);
+--link: #4338ca; --card: rgba(255, 255, 255, 0.8); --hover: rgba(0, 0, 0, 0.03);
+--red: #dc2626; --red-light: rgba(220, 38, 38, 0.08);
+--green: #059669; --green-light: rgba(5, 150, 105, 0.08);
+--yellow: #d97706; --yellow-light: rgba(217, 119, 6, 0.08);
+--purple: #7c3aed; --purple-light: rgba(124, 58, 237, 0.08);
+--blue: #2563eb; --orange: #ea580c;
+--shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+--shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+--shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+--shadow-glow: 0 0 40px rgba(79, 70, 229, 0.1);
+--radius: 16px; --radius-sm: 10px; --radius-lg: 24px; --radius-xl: 32px;
+--tr: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+--tr-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+--glass: rgba(255, 255, 255, 0.72); --glass-border: rgba(0, 0, 0, 0.08);
+--glass-hover: rgba(255, 255, 255, 0.85);
+--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+--font-mono: 'JetBrains Mono', monospace;
+}
+body.dark {
+--bg: #0a0e14; --bg2: #111820; --bg3: #1a222e; --bg4: #252f3d;
+--border: rgba(255, 255, 255, 0.06); --border2: rgba(255, 255, 255, 0.1);
+--text: #e8ecf4; --text2: #a0aec0; --text3: #64748b;
+--accent: #818cf8; --accent2: #6366f1;
+--accent-glow: rgba(129, 140, 248, 0.2); --accent-light: rgba(129, 140, 248, 0.12);
+--link: #a5b4fc; --card: rgba(17, 24, 32, 0.7); --hover: rgba(255, 255, 255, 0.04);
+--red: #f87171; --red-light: rgba(248, 113, 113, 0.12);
+--green: #34d399; --green-light: rgba(52, 211, 153, 0.12);
+--yellow: #fbbf24; --yellow-light: rgba(251, 191, 36, 0.12);
+--purple: #a78bfa; --purple-light: rgba(167, 139, 250, 0.12);
+--blue: #60a5fa; --orange: #fb923c;
+--shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+--shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+--shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+--glass: rgba(17, 24, 32, 0.65); --glass-border: rgba(255, 255, 255, 0.08);
+--glass-hover: rgba(26, 34, 46, 0.8);
+}
+html { scroll-behavior: smooth }
+body {
+font-family: var(--font-sans); background: var(--bg); color: var(--text);
+min-height: 100vh; transition: background 0.4s, color 0.4s;
+line-height: 1.6; -webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale; overflow-x: hidden;
+}
+body::before {
+content: ''; position: fixed; inset: 0;
+background:
+  radial-gradient(ellipse 80% 50% at 20% -10%, var(--accent-glow), transparent),
+  radial-gradient(ellipse 60% 40% at 85% 85%, rgba(168, 85, 247, 0.06), transparent),
+  radial-gradient(ellipse 50% 50% at 50% 50%, rgba(59, 130, 246, 0.03), transparent);
+pointer-events: none; z-index: 0; transition: opacity 0.4s;
+}
+::selection { background: var(--accent); color: #fff }
+a { color: var(--accent); text-decoration: none; transition: var(--tr) }
+a:hover { color: var(--link) }
+button { font-family: inherit; border: none; cursor: pointer; outline: none; background: none }
+input, textarea { font-family: inherit; outline: none }
+
+::-webkit-scrollbar { width: 8px; height: 8px }
+::-webkit-scrollbar-track { background: transparent }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; border: 2px solid var(--bg) }
+::-webkit-scrollbar-thumb:hover { background: var(--accent) }
+
+/* ===== FLOATING TOOLBAR ===== */
+.toolbar {
+position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+z-index: 1000; background: var(--glass);
+backdrop-filter: blur(28px) saturate(180%);
+-webkit-backdrop-filter: blur(28px) saturate(180%);
+border: 1px solid var(--glass-border);
+border-radius: var(--radius-xl); padding: 6px;
+display: flex; align-items: center; gap: 4px; flex-wrap: nowrap;
+box-shadow: var(--shadow-lg), 0 0 0 0.5px rgba(0,0,0,0.05);
+max-width: calc(100vw - 24px);
+transition: var(--tr);
+}
+.toolbar:hover { box-shadow: var(--shadow-lg), 0 0 60px var(--accent-glow) }
+.toolbar .btn {
+background: transparent; border: 1px solid transparent;
+color: var(--text2); padding: 8px 14px; border-radius: 12px;
+cursor: pointer; font-size: 13px; font-weight: 500; transition: var(--tr);
+display: inline-flex; align-items: center; gap: 7px;
+font-family: inherit; text-decoration: none; white-space: nowrap;
+position: relative;
+}
+.toolbar .btn i { font-size: 14px; transition: var(--tr) }
+.toolbar .btn:hover { background: var(--hover); color: var(--text); transform: translateY(-1px) }
+.toolbar .btn:hover i { color: var(--accent) }
+.toolbar .btn.active {
+background: linear-gradient(135deg, var(--accent), var(--accent2));
+border-color: transparent; color: #fff;
+box-shadow: 0 4px 16px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.toolbar .btn.active i { color: #fff }
+.toolbar .btn-icon {
+background: transparent; border: 1px solid transparent;
+color: var(--text2); padding: 8px 10px; border-radius: 12px;
+cursor: pointer; font-size: 15px; transition: var(--tr);
+display: inline-flex; align-items: center; justify-content: center;
+width: 36px; height: 36px;
+}
+.toolbar .btn-icon:hover { background: var(--hover); color: var(--accent); transform: rotate(15deg) }
+.toolbar .sep { width: 1px; height: 20px; background: linear-gradient(to bottom, transparent, var(--border2), transparent); margin: 0 2px; flex-shrink: 0 }
+.toolbar .status-chip {
+font-size: 11px; padding: 4px 10px; border-radius: 20px;
+background: var(--bg3); color: var(--text2); white-space: nowrap;
+}
+.toolbar .status-chip.good { background: var(--green-light); color: var(--green) }
+.toolbar .status-chip.bad { background: var(--red-light); color: var(--red) }
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+max-width: 1200px; margin: 0 auto;
+padding: 90px 24px 200px; position: relative; z-index: 1;
+}
+@keyframes fadeInSection { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: translateY(0) } }
+.section { animation: fadeInSection 0.4s ease }
+
+.page-header {
+display: flex; align-items: center; justify-content: space-between;
+margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
+}
+.page-header h1 {
+font-size: 28px; font-weight: 700; letter-spacing: -0.5px;
+background: linear-gradient(135deg, var(--text), var(--text2));
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+background-clip: text;
+display: flex; align-items: center; gap: 12px;
+}
+.page-header h1 i { -webkit-text-fill-color: initial }
+.page-header .subtitle { font-size: 14px; color: var(--text3); margin-top: 4px }
+
+/* ===== ADD FORM ===== */
+.add-form {
+display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
+background: var(--glass); backdrop-filter: blur(12px);
+border: 1px solid var(--glass-border); border-radius: var(--radius);
+padding: 12px;
+}
+.add-form input {
+flex: 1; min-width: 260px; padding: 11px 14px; border-radius: var(--radius-sm);
+border: 1.5px solid var(--border); background: var(--bg2); color: var(--text); font-size: 13px;
+transition: var(--tr);
+}
+.add-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-light) }
+.add-form input::placeholder { color: var(--text3) }
+.hint { font-size: 12px; color: var(--text3); margin-bottom: 18px }
+
+/* ===== REPO GRID ===== */
+.repo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px }
+.repo-card {
+background: var(--glass); backdrop-filter: blur(12px);
+border: 1px solid var(--glass-border); border-radius: var(--radius);
+padding: 18px; cursor: pointer; transition: var(--tr);
+display: flex; flex-direction: column; gap: 8px;
+}
+.repo-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--accent) }
+.repo-card .ico {
+width: 44px; height: 44px; border-radius: var(--radius-sm);
+background: linear-gradient(135deg, var(--accent), var(--purple));
+display: flex; align-items: center; justify-content: center;
+font-size: 18px; color: #fff; margin-bottom: 4px; box-shadow: var(--shadow-sm);
+}
+.repo-card .name { font-weight: 700; font-size: 15px }
+.repo-card .desc { font-size: 12px; color: var(--text2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
+.repo-card .meta { font-size: 11px; color: var(--text3) }
+.repo-card .meta .tag {
+display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 20px;
+background: var(--accent-light); color: var(--accent); margin-right: 6px; font-weight: 600;
+}
+.card-actions { display: flex; gap: 8px; margin-top: 6px }
+
+/* ===== ITEMS GRID ===== */
+.back-bar {
+display: flex; align-items: center; gap: 12px; margin: 0 0 18px; flex-wrap: wrap;
+}
+.back-bar h2 { font-size: 18px; flex: 1; min-width: 200px; display: flex; align-items: center; gap: 10px }
+.back-bar .sub { font-size: 13px; color: var(--text2) }
+.items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px }
+.item-card {
+background: var(--glass); backdrop-filter: blur(12px);
+border: 1px solid var(--glass-border); border-radius: var(--radius);
+padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: var(--tr);
+}
+.item-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-sm) }
+.item-card .i-head { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start }
+.item-card .i-title { font-weight: 600; font-size: 14px; flex: 1; min-width: 0 }
+.item-card .i-type { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--accent-light); color: var(--accent); white-space: nowrap; font-weight: 600 }
+.item-card .i-desc { font-size: 12px; color: var(--text2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden }
+.item-card .i-meta { font-size: 11px; color: var(--text3) }
+.item-card .go-btn { width: 100%; justify-content: center }
+.item-card .go-btn:disabled { opacity: .6; cursor: default; transform: none }
+
+/* ===== BUTTONS ===== */
+.btn {
+background: linear-gradient(135deg, var(--accent), var(--accent2));
+color: #fff; border: none;
+padding: 9px 18px; border-radius: 12px;
+cursor: pointer; font-size: 13px; font-weight: 600;
+transition: var(--tr); font-family: inherit;
+display: inline-flex; align-items: center; gap: 8px;
+box-shadow: 0 2px 8px var(--accent-glow);
+text-decoration: none; position: relative; overflow: hidden;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); color: #fff }
+.btn:active { transform: translateY(0) }
+.btn.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); box-shadow: none }
+.btn.btn-outline:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); box-shadow: none }
+.btn.btn-danger { background: linear-gradient(135deg, var(--red), #b91c1c); box-shadow: 0 2px 8px var(--red-light) }
+.btn.btn-danger:hover { color: #fff }
+.card-actions .btn { flex: 1; padding: 7px 10px; font-size: 12px; justify-content: center }
+.card-actions .btn.btn-outline:hover { color: var(--red); border-color: var(--red); background: var(--red-light) }
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+text-align: center; padding: 70px 24px; color: var(--text3);
+background: var(--glass); backdrop-filter: blur(12px);
+border: 1px dashed var(--border); border-radius: var(--radius-lg);
+}
+.empty-state .icon { font-size: 56px; margin-bottom: 16px; opacity: .6 }
+.empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 6px; font-weight: 600 }
+.empty-state p { font-size: 14px; margin-bottom: 18px }
+
+/* ===== NOTIFICATIONS ===== */
+.notification {
+position: fixed; top: 84px; right: 20px; z-index: 5000;
+background: var(--bg2); border: 1px solid var(--glass-border);
+border-left: 3px solid var(--accent);
+border-radius: 12px; padding: 12px 16px;
+box-shadow: var(--shadow-lg); font-size: 13px;
+display: flex; align-items: center; gap: 10px;
+animation: notifIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); max-width: 360px;
+}
+@keyframes notifIn { from { opacity: 0; transform: translateX(120%) } to { opacity: 1; transform: translateX(0) } }
+.notification.success { border-left-color: var(--green) }
+.notification.error { border-left-color: var(--red) }
+
+@media (max-width: 640px) {
+.main-content { padding: 76px 14px 160px }
+.toolbar .btn span { display: none }
+.toolbar .btn { padding: 6px 8px }
+.toolbar .status-chip { display: none }
+}
+</style>
+<link rel="stylesheet" href="/static/css/mobile.css">
+<script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+<link rel="stylesheet" href="/static/fonts/site-fonts.css">
+</head>
+<body>
+<div class="toolbar">
+<a class="btn" href="/"><i class="fa-solid fa-house"></i><span>Главная</span></a>
+<a class="btn" href="/media"><i class="fa-solid fa-music"></i><span>Медиа</span></a>
+<a class="btn" href="/media"><i class="fa-solid fa-bolt"></i><span>Торренты</span></a>
+<a class="btn active" href="/mediastore"><i class="fa-solid fa-store"></i><span>Медиастор</span></a>
+<a class="btn" href="/downloads"><i class="fa-solid fa-download"></i><span>Загрузки</span></a>
+<div class="sep"></div>
+<span class="status-chip" id="helperChip">Хелпер: …</span>
+<button class="btn-icon" onclick="toggleTheme()" title="Сменить тему"><i class="fa-solid fa-moon" id="themeIcon"></i></button>
+</div>
+
+<div class="main-content"><div class="section" id="viewRoot"></div></div>
+
+<div id="repoHelpModal" class="modal-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:3000;justify-content:center;align-items:center;backdrop-filter:blur(6px)">
+  <div style="background:var(--bg1);border-radius:16px;padding:28px;max-width:640px;width:92%;max-height:86vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="margin:0;font-size:20px;display:flex;align-items:center;gap:10px"><i class="fa-solid fa-circle-question" style="color:var(--accent)"></i> Создание репозитория</h2>
+      <button onclick="closeRepoHelp()" style="background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p style="color:var(--text2);font-size:14px;line-height:1.55;margin:0 0 14px">
+      Репозиторий — это JSON-каталог с торрентами. Загрузите его файлом с ПК, вставьте URL/путь до JSON или добавьте встроенный каталог.
+      Каждый элемент должен иметь <b>title</b> и один из источников: <b>magnet</b> или <b>torrent_url</b>.
+    </p>
+    <pre style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12px;line-height:1.5;overflow:auto;color:var(--text1);margin:0 0 14px">{
+  "name": "Мой каталог",
+  "description": "Описание каталога",
+  "items": [
+    {
+      "title": "Фильм (BluRay)",
+      "type": "video",
+      "size": "1.4 ГБ",
+      "year": 2025,
+      "magnet": "magnet:?xt=urn:btih:&lt;хэш&gt;&amp;dn=..."
+    },
+    {
+      "title": "Концерт (FLAC)",
+      "type": "music",
+      "torrent_url": "https://archive.org/download/ID/ID_archive.torrent"
+    }
+  ]
+}</pre>
+    <ul style="color:var(--text2);font-size:13px;line-height:1.7;padding-left:20px;margin:0">
+      <li><b>type</b> — music, video, software, games, books, photos, documents, archives или other (по умолчанию video)</li>
+      <li><b>title</b> — обязателен; <b>description</b>, <b>size</b>, <b>year</b> — опционально</li>
+      <li>Вместо <b>magnet</b> можно дать <b>torrent_url</b> на .torrent файл по HTTP</li>
+    </ul>
+  </div>
+</div>
+<script>
+const TYPE_LABELS = {music:'Музыка', video:'Видео', software:'Программы', games:'Игры', books:'Книги', photos:'Фото', documents:'Документы', archives:'Архивы', other:'Прочее'};
+
+let view = { mode: 'repos', repoId: null };
+
+function $(s){ return document.querySelector(s); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function pluralize(n, one, few, many){ const m10 = n % 10, m100 = n % 100;
+  if(m10 === 1 && m100 !== 11) return one;
+  if(m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+  return many; }
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  const dark = document.body.classList.contains('dark');
+  localStorage.setItem('infinity-theme', dark ? 'dark' : 'light');
+  const ic = $('#themeIcon');
+  if(ic) ic.className = 'fa-solid ' + (dark ? 'fa-sun' : 'fa-moon');
+}
+(function(){ if(localStorage.getItem('infinity-theme') === 'dark') document.body.classList.add('dark'); })();
+
+let notifTimer = null;
+function showNotification(msg, type='info'){
+  const n = document.createElement('div');
+  n.className = `notification ${type}`;
+  const icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info';
+  n.innerHTML = `<i class="fa-solid ${icon}"></i><span>${esc(msg)}</span>`;
+  document.body.appendChild(n);
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(() => {
+    n.style.opacity = '0';
+    n.style.transition = 'all 0.3s ease';
+    setTimeout(() => n.remove(), 300);
+  }, 3500);
+}
+function toast(msg, type){ showNotification(msg, type === 'err' ? 'error' : type === 'ok' ? 'success' : 'info'); }
+
+async function checkHelper(){
+  const chip = $('#helperChip');
+  try{
+    const r = await fetch('/api/torrent/list');
+    const d = await r.json();
+    const n = (d.torrents || []).length;
+    chip.textContent = 'Активно: ' + n;
+    chip.className = 'status-chip ' + (d.error || !Array.isArray(d.torrents) ? 'bad' : 'good');
+  }catch(e){
+    chip.textContent = 'Хелпер недоступен';
+    chip.className = 'status-chip bad';
+  }
+}
+
+async function loadRepos(){
+  const root = $('#viewRoot');
+  try{
+    const r = await fetch('/api/repos');
+    const d = await r.json();
+    const repos = d.repos || [];
+    let html = `<div class="page-header">
+      <div>
+        <h1><i class="fa-solid fa-store" style="color:var(--orange)"></i> Медиастор</h1>
+        <div class="subtitle">${repos.length} ${pluralize(repos.length,'репозиторий','репозитория','репозиториев')} · каталоги magnet-ссылок и .torrent файлов</div>
+      </div>
+    </div>
+    <div class="add-form">
+      <input id="srcInput" placeholder="URL или путь к JSON-репозиторию, либо прямая magnet-ссылка">
+      <button class="btn" onclick="addRepo()"><i class="fa-solid fa-plus"></i> Добавить</button>
+      <button class="btn btn-outline" id="builtinBtn" onclick="addBuiltin()"><i class="fa-solid fa-flask"></i> Встроенные каталоги</button>
+      <input type="file" id="storeJsonFile" accept=".json,application/json" hidden onchange="importRepoJson(this)">
+      <button class="btn btn-outline" onclick="document.getElementById('storeJsonFile').click()"><i class="fa-solid fa-file-import"></i> Загрузить JSON</button>
+      <button class="btn btn-outline" onclick="openRepoHelp()" title="Справка о формате репозитория" style="width:40px;flex:0 0 40px;padding:0;font-weight:700"><i class="fa-solid fa-circle-question"></i></button>
+    </div>
+    <div class="hint">Формат JSON: {"name":"…", "description":"…", "items":[{"title":"…","type":"music|video","magnet":"magnet:?xt=…","torrent_url":"https://…/x.torrent"}]}</div>`;
+    if(!repos.length){
+      html += `<div class="empty-state"><div class="icon"><i class="fa-solid fa-store"></i></div><h3>Репозитории не подключены</h3><p>Вставьте ссылку на JSON-каталог выше, чтобы начать.</p></div>`;
+    } else {
+      html += `<div class="repo-grid">` + repos.map(rp => `
+        <div class="repo-card" onclick="openRepo('${esc(rp.id)}')">
+          <div class="ico"><i class="fa-solid ${rp.source && rp.source.indexOf('builtin:') === 0 ? 'fa-box-open' : 'fa-layer-group'}"></i></div>
+          <div class="name">${esc(rp.name)}</div>
+          ${rp.description ? `<div class="desc">${esc(rp.description)}</div>` : ''}
+          <div class="meta">${rp.source && rp.source.indexOf('builtin:') === 0 ? '<span class="tag">Встроенный</span>' : ''}${rp.itemCount} ${pluralize(rp.itemCount,'элемент','элемента','элементов')}</div>
+          <div class="card-actions">
+            <button class="btn btn-outline" onclick="event.stopPropagation();removeRepo('${esc(rp.id)}')"><i class="fa-solid fa-trash"></i> Удалить</button>
+            <button class="btn" onclick="event.stopPropagation();openRepo('${esc(rp.id)}')"><i class="fa-solid fa-folder-open"></i> Открыть</button>
+          </div>
+        </div>`).join('') + '</div>';
+    }
+    root.innerHTML = html;
+  }catch(e){
+    root.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Ошибка</h3><p>${esc(e.message)}</p></div>`;
+  }
+}
+
+async function addRepo(){
+  const src = $('#srcInput').value.trim();
+  if(!src){ toast('Введите URL или путь к JSON', 'err'); return; }
+  if(/^magnet:/i.test(src)){
+    try{
+      const r = await fetch('/api/torrent/add', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({magnet: src, type: 'video'})});
+      const d = await r.json();
+      if(d.error) toast('Ошибка: ' + d.error, 'err');
+      else { toast('Торрент добавлен: ' + (d.name || '')); checkHelper(); }
+    }catch(e){ toast('Ошибка: ' + e.message, 'err'); }
+    return;
+  }
+  try{
+    const r = await fetch('/api/repos/add', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({source: src})});
+    const d = await r.json();
+    if(d.error) toast('Ошибка: ' + d.error, 'err');
+    else { toast('Репозиторий добавлен: ' + (d.repo.name || '')); $('#srcInput').value = ''; loadRepos(); }
+  }catch(e){ toast('Ошибка: ' + e.message, 'err'); }
+}
+
+async function importRepoJson(input){
+  const file = input && input.files && input.files[0];
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const repo = JSON.parse(text);
+    if(!repo || typeof repo !== 'object' || !Array.isArray(repo.items)){
+      toast('Невалидный репозиторий: нужен JSON с полем items (массив)', 'err');
+      return;
+    }
+    const r = await fetch('/api/repos/add', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({repo: repo})});
+    const d = await r.json();
+    if(d.error) toast('Ошибка: ' + d.error, 'err');
+    else { toast('Репозиторий загружен: ' + (d.repo.name || ''), 'ok'); loadRepos(); }
+  }catch(e){
+    toast('Не удалось прочитать JSON: ' + e.message, 'err');
+  } finally {
+    if(input) input.value = '';
+  }
+}
+function openRepoHelp(){
+  const m = document.getElementById('repoHelpModal');
+  if(m) m.style.display = 'flex';
+}
+function closeRepoHelp(){
+  const m = document.getElementById('repoHelpModal');
+  if(m) m.style.display = 'none';
+}
+
+async function addBuiltin(){
+  const btn = $('#builtinBtn');
+  if(btn){ btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Добавляю…'; }
+  const sources = ['builtin:test', 'builtin:films', 'builtin:music'];
+  let added = 0, failed = 0;
+  for(const src of sources){
+    try{
+      const r = await fetch('/api/repos/add', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({source: src})});
+      const d = await r.json();
+      if(d.error){ failed++; } else { added++; }
+    }catch(e){ failed++; }
+  }
+  if(btn){ btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-flask"></i> Встроенные каталоги'; }
+  if(failed) toast('Ошибок: ' + failed + (added ? ' · добавлено: ' + added : ''), failed && !added ? 'err' : 'ok');
+  else toast('Встроенные каталоги добавлены (' + added + ')', 'ok');
+  loadRepos();
+}
+
+async function removeRepo(id){
+  if(!confirm('Удалить репозиторий?')) return;
+  try{
+    const r = await fetch('/api/repos/remove', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id})});
+    const d = await r.json();
+    if(d.error) toast('Ошибка: ' + d.error, 'err');
+    else { toast('Репозиторий удалён', 'ok'); loadRepos(); }
+  }catch(e){ toast('Ошибка: ' + e.message, 'err'); }
+}
+
+async function openRepo(id){
+  const root = $('#viewRoot');
+  try{
+    const r = await fetch('/api/repos/items?id=' + encodeURIComponent(id));
+    const d = await r.json();
+    if(d.error){ root.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>${esc(d.error)}</h3></div>`; return; }
+    const items = d.items || [];
+    let html = `<div class="back-bar">
+      <button class="btn btn-outline" onclick="loadRepos()"><i class="fa-solid fa-arrow-left"></i> К репозиториям</button>
+      <h2><i class="fa-solid fa-store" style="color:var(--orange)"></i> ${esc(d.name)}</h2>
+      <span class="sub">${items.length} ${pluralize(items.length,'элемент','элемента','элементов')}</span>
+      <button class="btn" onclick="downloadAll('${esc(id)}')"><i class="fa-solid fa-circle-arrow-down"></i> Скачать всё</button>
+    </div>`;
+    if(!items.length){
+      html += `<div class="empty-state"><div class="icon">📭</div><h3>Каталог пуст</h3><p>В этом репозитории пока нет элементов.</p></div>`;
+    } else {
+      html += `<div class="items-grid">` + items.map((it, i) => `
+        <div class="item-card">
+          <div class="i-head">
+            <div style="flex:1;min-width:0">
+              <div class="i-title">${esc(it.title)}</div>
+              <div class="i-meta">${it.year ? esc(it.year) : ''}${it.size ? (it.year ? ' · ' : '') + esc(it.size) : ''}</div>
+            </div>
+            <span class="i-type">${esc(TYPE_LABELS[it.type] || it.type || 'other')}</span>
+          </div>
+          ${it.description ? `<div class="i-desc">${esc(it.description)}</div>` : ''}
+          <button class="btn go-btn" id="dlbtn_${i}" onclick="dlOne('${esc(id)}', ${i}, this)"><i class="fa-solid fa-download"></i> Скачать</button>
+        </div>`).join('') + '</div>';
+    }
+    root.innerHTML = html;
+  }catch(e){
+    root.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Ошибка</h3><p>${esc(e.message)}</p></div>`;
+  }
+}
+
+async function dlOne(repoId, itemIndex, btn){
+  if(btn){ btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Добавляю…'; }
+  try{
+    const r = await fetch('/api/repos/download', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({repoId, itemIndex})});
+    const d = await r.json();
+    if(d.error){ toast('Ошибка: ' + d.error, 'err'); }
+    else { toast('Скачивание началось: ' + (d.name || ''), 'ok'); if(btn) btn.innerHTML = '<i class="fa-solid fa-check"></i> В очереди'; }
+  }catch(e){
+    toast('Ошибка: ' + e.message, 'err');
+    if(btn){ btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-download"></i> Скачать'; }
+  }
+  checkHelper();
+}
+
+async function downloadAll(repoId){
+  try{
+    const r = await fetch('/api/repos/items?id=' + encodeURIComponent(repoId));
+    const d = await r.json();
+    const items = d.items || [];
+    if(!items.length){ toast('Каталог пуст', 'err'); return; }
+    const n = items.length;
+    if(!confirm('Скачать все ' + n + ' элементов? До 3 параллельно.')) return;
+    toast('Ставлю в очередь ' + n + ' элементов');
+    let idx = 0;
+    async function worker(){
+      while(idx < items.length){
+        const i = idx++;
+        const it = items[i];
+        if(!it) continue;
+        try{
+          await fetch('/api/repos/download', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({repoId, item: it})});
+        }catch(e){}
+      }
+    }
+    await Promise.all([worker(), worker(), worker()]);
+    toast('Очередь запущена: ' + n + ' элементов', 'ok');
+    checkHelper();
+  }catch(e){
+    toast('Ошибка: ' + e.message, 'err');
+  }
+}
+
+loadRepos();
+checkHelper();
+setInterval(checkHelper, 10000);
+</script>
+</body>
+</html>

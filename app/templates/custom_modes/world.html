@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root {
+  --bg: #f3f4f6;
+  --card-bg: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #4f46e5;
+  --accent-light: #e0e7ff;
+  --code-bg: #f9fafb;
+  --code-text: #111827;
+  --shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111827;
+    --card-bg: #1f2937;
+    --text: #f9fafb;
+    --muted: #9ca3af;
+    --border: #374151;
+    --accent: #818cf8;
+    --accent-light: #312e81;
+    --code-bg: #111827;
+    --code-text: #e5e7eb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+}
+h1 { font-size: 24px; margin: 0 0 10px; }
+p.desc { color: var(--muted); margin-bottom: 20px; font-size: 14px; }
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+input[type="text"] {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 14px;
+}
+select {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 14px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: var(--accent);
+}
+.card p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.code-block {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 13px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.tag {
+  display: inline-block;
+  background: var(--accent-light);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<h1>Laya: Установка и возможности</h1>
+<p class="desc">Интерактивный просмотр документации по установке и дополнительным модулям библиотеки Laya.</p>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Поиск по названию или описанию...">
+  <select id="filter">
+    <option value="all">Все категории</option>
+    <option value="python">Python</option>
+    <option value="node">Node.js</option>
+    <option value="extra">Доп. модули</option>
+    <option value="info">Информация</option>
+  </select>
+</div>
+
+<div class="grid" id="container">
+  <!-- Cards will be injected here -->
+</div>
+
+<script>
+const DATA = [
+  {
+    id: 1,
+    title: "Установка через uv (Python)",
+    category: "python",
+    description: "Быстрая установка в проекте uv или виртуальном окружении.",
+    code: "uv add laya\n# или\nuv pip install laya",
+    tags: ["uv", "python", "install"]
+  },
+  {
+    id: 2,
+    title: "Требования к Python",
+    category: "info",
+    description: "Минимальная версия Python для работы библиотеки.",
+    code: "Python 3.10 or newer",
+    tags: ["requirements", "python"]
+  },
+  {
+    id: 3,
+    title: "HTTP Server (serve)",
+    category: "extra",
+    description: "Дополнительный модуль для запуска HTTP сервера.",
+    code: "laya[serve]",
+    tags: ["extra", "server", "http"]
+  },
+  {
+    id: 4,
+    title: "MCP Server (mcp)",
+    category: "extra",
+    description: "Поддержка Model Context Protocol сервера.",
+    code: "laya[mcp]",
+    tags: ["extra", "mcp", "protocol"]
+  },
+  {
+    id: 5,
+    title: "LangChain & LangGraph",
+    category: "extra",
+    description: "Интеграция с фреймворками LangChain и LangGraph.",
+    code: "laya[langchain]",
+    tags: ["extra", "langchain", "graph"]
+  },
+  {
+    id: 6,
+    title: "LlamaIndex Selectors",
+    category: "extra",
+    description: "Селекторы для интеграции с LlamaIndex.",
+    code: "laya[llamaindex]",
+    tags: ["extra", "llamaindex", "selectors"]
+  },
+  {
+    id: 7,
+    title: "CrewAI Routing",
+    category: "extra",
+    description: "Маршрутизация для CrewAI.",
+    code: "laya[crewai]",
+    tags: ["extra", "crewai", "routing"]
+  },
+  {
+    id: 8,
+    title: "ONNX Runtime",
+    category: "extra",
+    description: "Поддержка ONNX Runtime для инференса.",
+    code: "laya[onnx]",
+    tags: ["extra", "onnx", "runtime"]
+  },
+  {
+    id: 9,
+    title: "TileLang GPU Fast Path",
+    category: "extra",
+    description: "Ускоренный путь для GPU с использованием TileLang.",
+    code: "laya[fast]",
+    tags: ["extra", "gpu", "tilelang", "performance"]
+  },
+  {
+    id: 10,
+    title: "Pydantic Models (structured)",
+    category: "extra",
+    description: "Поддержка структурированных выходов через pydantic в decide.",
+    code: "laya[structured]",
+    tags: ["extra", "pydantic", "structured"]
+  },
+  {
+    id: 11,
+    title: "TypeScript / Node.js / Browser",
+    category: "node",
+    description: "Установка для JS-экосистемы. Публикуется из тегов laya-ts-v*.",
+    code: "npm install laya-ts",
+    tags: ["typescript", "node", "npm", "browser"]
+  },
+  {
+    id: 12,
+    title: "Длинные документы (Multilingual)",
+    category: "info",
+    description: "Поддержка длинных контекстов до 8192 токенов.",
+    code: "laya-multilingual\nmax_len=8192",
+    tags: ["long-context", "multilingual", "benchmark"]
+  }
+];
+
+const container = document.getElementById('container');
+const searchInput = document.getElementById('search');
+const filterSelect = document.getElementById('filter');
+
+function renderCards(data) {
+  container.innerHTML = '';
+  if (data.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted); text-align:center; grid-column: 1/-1;">Ничего не найдено</p>';
+    return;
+  }
+  data.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    
+    const tagsHtml = item.tags.map(t => `<span class="tag">${t}</span>`).join('');
+    
+    card.innerHTML = `
+      <h3>${item.title}</h3>
+      <p>${item.description}</p>
+      <div class="code-block">${item.code}</div>
+      <div style="margin-top:10px;">${tagsHtml}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function filterData() {
+  const query = searchInput.value.toLowerCase();
+  const category = filterSelect.value;
+  
+  const filtered = DATA.filter(item => {
+    const matchesQuery = item.title.toLowerCase().includes(query) || 
+                         item.description.toLowerCase().includes(query) ||
+                         item.tags.some(t => t.toLowerCase().includes(query));
+    const matchesCategory = category === 'all' || item.category === category;
+    return matchesQuery && matchesCategory;
+  });
+  
+  renderCards(filtered);
+}
+
+searchInput.addEventListener('input', filterData);
+filterSelect.addEventListener('change', filterData);
+
+// Initial render
+renderCards(DATA);
+</script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+/* Окно 3D-аватара (Electron /avatar?embed=1).
+   Здесь только «оболочка»: прозрачный фон, панель управления и всплывающие
+   подсказки. Сам аватар рисует portable.js — его разметку не трогаем. */
+
+html.av-embed,
+html.av-embed body {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--text, #1a1f26);
+}
+
+/* Всё, что не относится к модели: правая панель, нижняя строка, кнопки
+   страницы /avatar, загрузочный фон и тяжёлый iframe сайта. */
+html.av-embed #right,
+html.av-embed #bottom,
+html.av-embed #floating-buttons,
+html.av-embed #chat-panel,
+html.av-embed #settings-panel,
+html.av-embed #bonecontrolpanel,
+html.av-embed .avatar-drag-handle,
+html.av-embed #avatar-size-modal,
+html.av-embed #save-bone-anim-modal,
+html.av-embed #siteFrame {
+  display: none !important;
+}
+
+html.av-embed #main,
+html.av-embed #left,
+html.av-embed #view,
+html.av-embed #avatar {
+  background: transparent !important;
+}
+/* portable.js прячет #avatar, пока в localStorage выключен флаг avatar-3d
+   (на /desktop это правильно — модель там больше не нужна). В окне-оверлее
+   модель грузит avatar_overlay.js, поэтому контейнер обязан быть видимым:
+   иначе canvas остаётся 0×0 и пользователь видит пустое окно. */
+html.av-embed #avatar {
+  display: block !important;
+  opacity: 1 !important;
+}
+html.av-embed #left {
+  width: 100% !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+}
+/* portable.js восстанавливает сохранённую позицию виджета аватара
+   (inline `inset: 154px auto auto 770px` — там, где он висел на /desktop).
+   В окне-оверлее это уносит сцену за пределы 340×480: модель рисовалась,
+   но её не было видно (пустое прозрачное окно). Позицию задаёт окно,
+   поэтому рамку прижимаем к нулю. */
+html.av-embed #main {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+/* Пока модель грузится, тёмная заливка выглядела бы прямоугольником поверх
+   рабочего стола — оставляем только спиннер. */
+html.av-embed #left #loading #loading-back {
+  display: none !important;
+}
+
+/* ---------- панель управления ---------- */
+.av-bar {
+  position: fixed;
+  top: 6px;
+  right: 6px;
+  left: 6px;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(20, 24, 32, .62);
+  border: 1px solid rgba(255, 255, 255, .14);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .28);
+  /* Полоса видна только при наведении на окно аватара: постоянно висящая
+     панель закрывала модель и мешала смотреть на рабочий стол. Пока она
+     не нужна, она прозрачна и не перехватывает мышь. */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+  -webkit-app-region: drag;
+  user-select: none;
+}
+html.av-embed:hover .av-bar,
+.av-bar:focus-within,
+.av-bar.pinned { opacity: 1; pointer-events: auto; }
+
+.av-bar .av-grip {
+  flex: 1;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, .55);
+  letter-spacing: .02em;
+  -webkit-app-region: drag;
+  cursor: grab;
+}
+.av-bar button {
+  -webkit-app-region: no-drag;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: rgba(255, 255, 255, .82);
+  cursor: pointer;
+  font-size: 13px;
+  transition: background .15s, color .15s, transform .15s;
+}
+.av-bar button:hover { background: rgba(255, 255, 255, .16); color: #fff; }
+.av-bar button.on { background: rgba(88, 166, 255, .85); color: #fff; }
+.av-bar button.rec { background: rgba(218, 54, 51, .9); color: #fff; animation: avPulse 1.1s infinite; }
+.av-bar button.think { background: rgba(210, 153, 34, .9); color: #fff; }
+.av-bar button.talk { background: rgba(35, 134, 54, .9); color: #fff; }
+.av-bar button:disabled { opacity: .4; cursor: default; }
+@keyframes avPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(218, 54, 51, .55); }
+  50% { box-shadow: 0 0 0 7px rgba(218, 54, 51, 0); }
+}
+
+/* ---------- меню настроек ---------- */
+.av-menu {
+  position: fixed;
+  top: 44px;
+  right: 8px;
+  z-index: 2147483001;
+  width: 252px;
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(17, 21, 28, .94);
+  border: 1px solid rgba(255, 255, 255, .14);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .45);
+  color: #e6edf3;
+  font: 13px/1.4 "Segoe UI", system-ui, sans-serif;
+  display: none;
+}
+.av-menu.open { display: block; }
+.av-menu h4 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .45);
+}
+.av-menu .av-row { display: flex; gap: 4px; margin-bottom: 10px; }
+.av-menu .av-row:last-child { margin-bottom: 0; }
+.av-menu .av-row button {
+  flex: 1;
+  padding: 6px 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .06);
+  color: #e6edf3;
+  font-size: 12px;
+  cursor: pointer;
+}
+.av-menu .av-row button:hover { border-color: rgba(88, 166, 255, .8); }
+.av-menu .av-row button.on { background: rgba(88, 166, 255, .9); border-color: transparent; color: #fff; }
+.av-menu .av-sep { height: 1px; background: rgba(255, 255, 255, .1); margin: 8px 0; }
+.av-menu .av-wide {
+  width: 100%;
+  padding: 8px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .06);
+  color: #e6edf3;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+.av-menu .av-wide + .av-wide { margin-top: 6px; }
+.av-menu .av-wide:hover { background: rgba(255, 255, 255, .12); }
+.av-menu .av-hint { font-size: 11px; color: rgba(255, 255, 255, .42); margin-top: 8px; }
+
+/* ---------- ручка размера окна ---------- */
+.av-resize-corner {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  z-index: 2147483000;
+  cursor: nwse-resize;
+  opacity: .55;
+  background: linear-gradient(135deg, transparent 42%, rgba(255, 255, 255, .75) 42%,
+              rgba(255, 255, 255, .75) 52%, transparent 52%);
+  -webkit-app-region: no-drag;
+}
+.av-resize-corner:hover { opacity: 1; }
+
+/* ---------- подсказка «что услышал / что ответил» ---------- */
+.av-status {
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2147483000;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(17, 21, 28, .86);
+  border: 1px solid rgba(255, 255, 255, .12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #e6edf3;
+  font: 12px/1.45 "Segoe UI", system-ui, sans-serif;
+  max-height: 42%;
+  overflow: auto;
+  display: none;
+  user-select: text;
+}
+.av-status.show { display: block; }
+.av-status b { color: #58a6ff; font-weight: 600; }
+.av-status.err { border-color: rgba(218, 54, 51, .65); }

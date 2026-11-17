@@ -1,0 +1,599 @@
+/* Режим ботов в интерфейсе агента (/agentai).
+
+Палитра — та же цепочка фолбэков, что у панелей личностей и профиля: мост темы
+отдаёт агентовские имена (--surface, --text-3, --accent-soft), theme.js — свои
+(--bg2, --text3). Имени --muted нет ни там, ни там, поэтому приглушённый текст
+берётся из --text-3: с --muted панель в светлых темах писала серым по серому. */
+
+.ab-root {
+  --p-bg: var(--bg, #10151c);
+  --p-1: var(--surface, var(--bg2, #171d26));
+  --p-2: var(--surface-2, var(--bg3, #1e2732));
+  --p-3: var(--surface-3, var(--bg4, #263241));
+  --p-line: var(--border, #2a3240);
+  --p-line-2: var(--border-2, var(--border2, #3b4757));
+  --p-text: var(--text, #e8eef2);
+  --p-2nd: var(--text-2, var(--text2, #b9c3ce));
+  --p-dim: var(--text-3, var(--text3, #93a1b1));
+  --p-acc: var(--accent, #5aa9ff);
+  --p-acc-soft: var(--accent-soft, rgba(90, 169, 255, .16));
+  --p-on-acc: var(--bg, #10151c);
+  --p-ok: var(--ok, #34d399);
+  --p-warn: var(--warn, #fbbf24);
+  --p-err: var(--err, #f87171);
+  --p-sh: var(--sh-3, 0 24px 70px rgba(0, 0, 0, .55));
+  --p-sh-2: var(--sh-2, 0 10px 30px -12px rgba(0, 0, 0, .55));
+  --p-code: var(--code-bg, #151a22);
+
+  position: fixed;
+  inset: 0;
+  z-index: 900100;
+  pointer-events: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--p-text);
+}
+
+/* Кнопка вызова: зелёная точка — что в какой-то комнате идёт круг. */
+.ab-fab {
+  position: absolute;
+  right: 18px;
+  bottom: 148px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--p-line);
+  background: var(--p-1);
+  color: var(--p-acc);
+  font-size: 16px;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: var(--p-sh-2);
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+}
+.ab-fab:hover { transform: translateY(-2px); background: var(--p-2); border-color: var(--p-acc); }
+.ab-root.open .ab-fab { opacity: 0; pointer-events: none; }
+.ab-fab .ab-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--p-ok);
+  box-shadow: 0 0 0 2px var(--p-1);
+  display: none;
+}
+.ab-root.running .ab-fab .ab-dot { display: block; }
+
+/* Затемнение и окно */
+.ab-modal {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 9, 14, .66);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .18s ease, visibility .18s ease;
+}
+[data-theme="light"] .ab-modal { background: rgba(18, 24, 32, .34); }
+.ab-root.open .ab-modal { opacity: 1; visibility: visible; pointer-events: auto; }
+
+.ab-panel {
+  width: min(1120px, calc(100vw - 40px));
+  height: min(720px, calc(100vh - 60px));
+  display: flex;
+  flex-direction: column;
+  background: var(--p-bg);
+  border: 1px solid var(--p-line);
+  border-radius: 16px;
+  box-shadow: var(--p-sh);
+  overflow: hidden;
+}
+
+.ab-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--p-line);
+  background: var(--p-1);
+}
+.ab-title {
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ab-title i { color: var(--p-acc); }
+.ab-chip {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--p-line);
+  background: var(--p-2);
+  color: var(--p-dim);
+  white-space: nowrap;
+}
+.ab-chip.on {
+  color: var(--p-ok);
+  border-color: var(--p-ok);
+  background: transparent;
+}
+.ab-spacer { flex: 1; }
+
+.ab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--p-line);
+  background: var(--p-2);
+  color: var(--p-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color .12s ease, background .12s ease;
+}
+.ab-btn:hover:not(:disabled) { border-color: var(--p-acc); background: var(--p-3); }
+.ab-btn.primary {
+  background: var(--p-acc);
+  color: var(--p-on-acc);
+  border-color: transparent;
+  font-weight: 600;
+}
+.ab-btn.primary:hover:not(:disabled) { background: var(--p-acc); filter: brightness(1.06); }
+.ab-btn.danger { color: var(--p-err); }
+.ab-btn.danger:hover:not(:disabled) { border-color: var(--p-err); background: var(--p-bg); }
+.ab-btn:disabled { opacity: .45; cursor: default; }
+
+.ab-x {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--p-line);
+  background: transparent;
+  color: var(--p-dim);
+}
+.ab-x:hover { background: var(--p-2); color: var(--p-text); }
+
+.ab-body { flex: 1; display: grid; grid-template-columns: 1fr 300px; min-height: 0; }
+.ab-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+
+/* Тема комнаты */
+.ab-topic {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--p-line);
+  font-size: 12px;
+  color: var(--p-dim);
+}
+.ab-topic .ab-topic-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--p-2nd);
+}
+.ab-topic input {
+  flex: 1;
+  background: var(--p-2);
+  color: var(--p-text);
+  border: 1px solid var(--p-line);
+  border-radius: 8px;
+  padding: 6px 9px;
+  font: inherit;
+  font-size: 12px;
+}
+.ab-topic input:focus {
+  outline: none;
+  border-color: var(--p-acc);
+  box-shadow: 0 0 0 3px var(--p-acc-soft);
+}
+
+/* Лента */
+.ab-feed {
+  flex: 1;
+  overflow: auto;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-3) transparent;
+}
+.ab-round {
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--p-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 -2px;
+}
+.ab-round:after { content: ""; flex: 1; height: 1px; background: var(--p-line); }
+
+.ab-msg { display: flex; gap: 10px; max-width: 92%; }
+.ab-msg .ab-av {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--p-2);
+  color: var(--p-acc);
+  border: 1px solid var(--p-line);
+  flex: 0 0 30px;
+  font-size: 13px;
+}
+.ab-msg .ab-bubble {
+  background: var(--p-1);
+  border: 1px solid var(--p-line);
+  border-radius: 12px;
+  border-top-left-radius: 4px;
+  padding: 8px 11px;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.ab-msg .ab-who { font-size: 11px; color: var(--p-dim); margin-bottom: 3px; }
+.ab-msg .ab-who b { color: var(--p-text); font-weight: 600; }
+.ab-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+.ab-msg.user .ab-bubble {
+  background: var(--p-acc-soft);
+  border-color: var(--p-line-2);
+  border-radius: 12px;
+  border-top-right-radius: 4px;
+}
+.ab-msg.user .ab-av { color: var(--p-acc); background: var(--p-acc-soft); }
+.ab-msg.err .ab-bubble {
+  border-color: var(--p-err);
+  color: var(--p-err);
+  background: transparent;
+}
+.ab-empty {
+  margin: auto;
+  text-align: center;
+  color: var(--p-dim);
+  font-size: 13px;
+  line-height: 1.7;
+  max-width: 460px;
+}
+.ab-empty .ab-btn { margin-top: 10px; }
+
+/* Composer */
+.ab-compose {
+  border-top: 1px solid var(--p-line);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--p-1);
+}
+.ab-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ab-controls label {
+  font-size: 12px;
+  color: var(--p-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ab-controls input[type=number] {
+  width: 58px;
+  background: var(--p-2);
+  color: var(--p-text);
+  border: 1px solid var(--p-line);
+  border-radius: 8px;
+  padding: 5px 7px;
+  font: inherit;
+  font-size: 12px;
+}
+.ab-controls input[type=number]:focus {
+  outline: none;
+  border-color: var(--p-acc);
+  box-shadow: 0 0 0 3px var(--p-acc-soft);
+}
+.ab-say { display: flex; gap: 8px; align-items: flex-end; }
+.ab-say textarea {
+  flex: 1;
+  min-height: 42px;
+  max-height: 140px;
+  resize: vertical;
+  background: var(--p-2);
+  color: var(--p-text);
+  border: 1px solid var(--p-line);
+  border-radius: 9px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+}
+.ab-say textarea:focus {
+  outline: none;
+  border-color: var(--p-acc);
+  box-shadow: 0 0 0 3px var(--p-acc-soft);
+}
+
+/* Правая колонка: комнаты и состав */
+.ab-side {
+  border-left: 1px solid var(--p-line);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--p-1);
+}
+.ab-side-head {
+  padding: 10px 12px;
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--p-dim);
+  border-bottom: 1px solid var(--p-line);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ab-rooms {
+  max-height: 36%;
+  overflow: auto;
+  border-bottom: 1px solid var(--p-line);
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-3) transparent;
+}
+.ab-room {
+  position: relative;
+  padding: 8px 36px 8px 12px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  font-size: 12px;
+}
+.ab-room:hover { background: var(--p-2); }
+.ab-room.active { border-left-color: var(--p-acc); background: var(--p-2); }
+.ab-room .ab-room-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ab-room .ab-room-sub { color: var(--p-dim); font-size: 11px; margin-top: 2px; }
+.ab-room .ab-room-del {
+  position: absolute;
+  top: 8px;
+  right: 7px;
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--p-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ab-room .ab-room-del:hover { color: var(--p-err); border-color: var(--p-err); }
+
+.ab-roster {
+  flex: 1;
+  overflow: auto;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-3) transparent;
+}
+.ab-bot {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--p-line);
+  background: var(--p-bg);
+}
+.ab-bot .ab-av {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  flex: 0 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--p-2);
+  color: var(--p-acc);
+  border: 1px solid var(--p-line);
+  font-size: 12px;
+}
+.ab-bot .ab-name { font-size: 12px; font-weight: 600; display: block; }
+.ab-bot .ab-role { font-size: 11px; color: var(--p-dim); line-height: 1.35; display: block; }
+
+/* Создание комнаты */
+.ab-create {
+  padding: 14px 16px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-3) transparent;
+}
+.ab-create h4 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--p-dim);
+}
+.ab-create input,
+.ab-create textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 5px;
+  background: var(--p-2);
+  color: var(--p-text);
+  border: 1px solid var(--p-line);
+  border-radius: 9px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 12px;
+  resize: vertical;
+}
+.ab-create input:focus,
+.ab-create textarea:focus {
+  outline: none;
+  border-color: var(--p-acc);
+  box-shadow: 0 0 0 3px var(--p-acc-soft);
+}
+.ab-pick { display: flex; flex-direction: column; gap: 6px; }
+.ab-pick-row {
+  display: grid;
+  grid-template-columns: 22px 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 9px;
+  border: 1px solid var(--p-line);
+  border-radius: 9px;
+  background: var(--p-bg);
+}
+.ab-pick-row:hover { border-color: var(--p-line-2); }
+.ab-pick-row input[type=text] {
+  display: inline-block;
+  margin: 0;
+  padding: 5px 8px;
+  background: var(--p-2);
+  color: var(--p-text);
+  border: 1px solid var(--p-line);
+  border-radius: 7px;
+  font: inherit;
+  font-size: 12px;
+}
+.ab-pick-row input[type=checkbox] {
+  margin: 0;
+  width: auto;
+  accent-color: var(--p-acc);
+}
+.ab-pick-row .ab-pname { font-size: 12px; font-weight: 600; }
+.ab-pick-row .ab-pdesc { font-size: 11px; color: var(--p-dim); }
+.ab-picon {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  align-items: center;
+  justify-content: center;
+  background: var(--p-2);
+  color: var(--p-acc);
+  font-size: 11px;
+  vertical-align: -6px;
+}
+.ab-note { font-size: 12px; color: var(--p-dim); line-height: 1.5; display: block; }
+
+/* Git-модалка внутри режима ботов */
+.ab-git {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 9, 14, .72);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+[data-theme="light"] .ab-git { background: rgba(18, 24, 32, .4); }
+.ab-git.open { display: flex; }
+.ab-git-panel {
+  width: min(900px, calc(100vw - 60px));
+  height: min(640px, calc(100vh - 80px));
+  display: flex;
+  flex-direction: column;
+  background: var(--p-bg);
+  border: 1px solid var(--p-line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--p-sh);
+}
+.ab-git-body { flex: 1; display: grid; grid-template-columns: 320px 1fr; min-height: 0; }
+.ab-git-list {
+  border-right: 1px solid var(--p-line);
+  overflow: auto;
+  background: var(--p-1);
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-3) transparent;
+}
+.ab-commit {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--p-line);
+  border-left: 3px solid transparent;
+}
+.ab-commit:hover,
+.ab-commit.active { background: var(--p-2); border-left-color: var(--p-acc); }
+.ab-commit .ab-cm { font-size: 12px; font-weight: 600; }
+.ab-commit .ab-cs { font-size: 11px; color: var(--p-dim); margin-top: 2px; }
+.ab-git-diff { overflow: auto; display: flex; flex-direction: column; min-width: 0; }
+.ab-git-diff .ab-files {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--p-line);
+  font-size: 12px;
+  color: var(--p-dim);
+}
+/* Диф всегда тёмный: --code-* из моста темы заданы под читаемый код, а
+   подсветка +/- остаётся статусной, а не декоративной. */
+.ab-git-diff pre {
+  margin: 0;
+  padding: 12px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  white-space: pre;
+  overflow: auto;
+  flex: 1;
+  background: var(--p-code);
+  color: var(--code-fg, #d9e1ee);
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+.ab-git-diff pre .add { color: var(--p-ok); }
+.ab-git-diff pre .del { color: var(--p-err); }
+.ab-git-diff pre .hunk { color: var(--p-acc); }
+
+/* Всплывашка живёт на document.body, вне .ab-root: локальные переменные до неё
+   не доходят, поэтому здесь полные цепочки имён темы, а не --p-*. */
+.ab-toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 26px;
+  z-index: 900500;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  background: var(--surface-2, var(--bg3, #1e2732));
+  color: var(--text, #e8eef2);
+  border: 1px solid var(--border, #2a3240);
+  box-shadow: var(--sh-2, 0 10px 30px -12px rgba(0, 0, 0, .55));
+  transition: opacity .3s ease;
+}
+.ab-toast.ok { border-color: var(--ok, #34d399); }
+.ab-toast.error { border-color: var(--err, #f87171); }
+.ab-toast.warn { border-color: var(--warn, #fbbf24); }
+
+/* Фокус с клавиатуры: у агента своих колец нет, без них панель непроходима */
+.ab-root :is(button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--p-acc);
+  outline-offset: 1px;
+}
+
+@media (max-width: 860px) {
+  .ab-body { grid-template-columns: 1fr; }
+  .ab-side { display: none; }
+  .ab-git-body { grid-template-columns: 1fr; }
+  .ab-git-list { max-height: 40%; }
+}

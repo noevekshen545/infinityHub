@@ -1,0 +1,404 @@
+/* Общий компонент комментариев соцсети.
+ *
+ * Раньше у комментариев не было общих стилей вообще: страница ленты и
+ * страница профиля описывали .comment / .comment-input у себя в <style>,
+ * а страница групп — не описывала ничего, поэтому комментарии там
+ * выглядели как поток неоформленных div-ов. Здесь одно описание на все
+ * три места: посты группы, фото альбомов и ответы форума.
+ *
+ * Разметка (генерируется social-comments.js):
+ *   .cmt-box
+ *     .cmt-head            заголовок «Комментарии · N»
+ *     .cmt-list
+ *       .cmt-item           [+ .cmt-item--reply для вложенного]
+ *         .cmt-avatar
+ *         .cmt-main
+ *           .cmt-line1      .cmt-author .cmt-time
+ *           .cmt-text
+ *           .cmt-actions    .cmt-btn × N
+ *     .cmt-more            «Показать ещё»
+ *     .cmt-empty
+ *     .cmt-form
+ *       .cmt-input-wrap     textarea.cmt-input + .cmt-attach
+ *       .cmt-send
+ *     .cmt-replyhint       «Ответ для @name ×»
+ */
+
+.cmt-box {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.cmt-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.cmt-head .cmt-head-icon { color: var(--text3); font-size: 12px; }
+.cmt-head .cmt-head-count { color: var(--text3); font-weight: 500; }
+.cmt-head .cmt-head-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: var(--tr);
+}
+.cmt-head .cmt-head-close:hover { background: var(--hover); color: var(--text); }
+
+.cmt-list { display: flex; flex-direction: column; gap: 2px; }
+
+.cmt-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+.cmt-item:hover { background: var(--hover); }
+/* Вложенный ответ: тонкая вертикальная линия вместо сдвига всей ленты. */
+.cmt-item--reply { margin-left: 22px; position: relative; }
+.cmt-item--reply::before {
+  content: '';
+  position: absolute;
+  left: -13px; top: 0; bottom: 0;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--border2);
+}
+
+.cmt-avatar {
+  width: 32px; height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--accent2), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 600; font-size: 12px;
+  user-select: none;
+}
+.cmt-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.cmt-main { flex: 1; min-width: 0; }
+
+.cmt-line1 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  line-height: 1.3;
+}
+.cmt-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+.cmt-author:hover { color: var(--link); }
+.cmt-time { font-size: 11px; color: var(--text3); }
+.cmt-badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 600;
+}
+.cmt-badge--edited { background: transparent; color: var(--text3); font-weight: 400; padding: 0; }
+
+.cmt-text {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.45;
+  margin-top: 3px;
+  /* white-space: pre-wrap обязателен — иначе переносы строк из текста
+     комментария теряются. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.cmt-text a { color: var(--link); }
+
+.cmt-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+  /* Действия появляются при наведении, но на тач-устройствах наведения
+     нет — там они видны всегда (см. медиазапрос в конце файла). */
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+.cmt-item:hover .cmt-actions,
+.cmt-actions:focus-within { opacity: 1; }
+
+.cmt-btn {
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 11px;
+  font-family: inherit;
+  padding: 3px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--tr);
+}
+.cmt-btn:hover { background: var(--hover); color: var(--text2); }
+.cmt-btn i { font-size: 10px; }
+.cmt-btn--like.is-active { color: var(--red); }
+.cmt-btn--like.is-active i { color: var(--red); }
+.cmt-btn--del:hover { color: var(--red); background: var(--red-light); }
+
+.cmt-replyhint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--accent-light);
+  border-radius: var(--radius-sm);
+  padding: 5px 9px;
+  margin-bottom: 6px;
+}
+.cmt-replyhint button {
+  background: none; border: none; color: var(--text3);
+  cursor: pointer; font-size: 12px; padding: 0 2px;
+}
+.cmt-replyhint button:hover { color: var(--red); }
+
+.cmt-form { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; }
+.cmt-input-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  transition: var(--tr);
+}
+.cmt-input-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.cmt-input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  resize: none;
+  /* textarea по умолчанию имеет height: 2 строки, из-за чего однострочный
+     комментарий выглядел как просторный блок. */
+  height: 22px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 3px 0;
+}
+.cmt-input::placeholder { color: var(--text3); }
+
+.cmt-send {
+  flex-shrink: 0;
+  width: 34px; height: 34px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--tr);
+}
+.cmt-send:hover:not(:disabled) { background: var(--accent2); transform: translateY(-1px); }
+.cmt-send:disabled { opacity: .4; cursor: default; }
+
+.cmt-empty {
+  font-size: 12px;
+  color: var(--text3);
+  padding: 10px;
+  text-align: center;
+}
+
+.cmt-more {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 7px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--link);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--tr);
+}
+.cmt-more:hover { background: var(--hover); }
+
+.cmt-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  color: var(--text3);
+  font-size: 12px;
+}
+.cmt-error { padding: 10px; font-size: 12px; color: var(--red); }
+
+/* --- Упоминания @ --- */
+.cmt-mention { color: var(--accent2); font-weight: 600; }
+
+.mn-pop {
+  position: fixed;
+  z-index: 100200;
+  min-width: 210px;
+  max-width: 280px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 4px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(20px);
+}
+.mn-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.mn-item:hover, .mn-item.is-active { background: var(--accent-light); }
+.mn-ava {
+  width: 26px; height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--accent2), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 11px; font-weight: 600;
+}
+.mn-ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mn-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* --- Кнопка комментариев на плитке альбома ------------------------------
+   Раньше оформлена инлайном прямо в social-album-player.js, поэтому при
+   смене темы не перекрашивалась. */
+.ap-comment {
+  position: absolute; top: 4px; left: 4px;
+  width: 26px; height: 26px; border-radius: 50%;
+  border: none; background: rgba(0,0,0,.55); color: #fff;
+  cursor: pointer; font-size: 11px; z-index: 3;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity var(--transition-fast), background var(--transition-fast);
+}
+.ph-tile:hover .ap-comment,
+.av-tile:hover .ap-comment,
+.ap-track:hover .ap-comment { opacity: 1; }
+.ap-comment:hover { background: var(--accent); }
+
+/* --- Аватары и подписи постов/сообщений форума -------------------------
+   На странице групп классы .post-avatar / .post-author / .post-time
+   использовались, но не были описаны ни в одном css-файле: аватар
+   рендерился голым div, а имя и время наследовали базовый шрифт. */
+
+.post-avatar, .fm-avatar {
+  width: 40px; height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--accent2), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 600; font-size: 15px;
+  user-select: none;
+}
+.post-avatar img, .fm-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.post-avatar--sm, .fm-avatar--sm { width: 30px; height: 30px; font-size: 12px; }
+
+.post-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.post-author:hover { color: var(--link); }
+.post-time { font-size: 11px; color: var(--text3); }
+
+/* --- Опросы в постах группы --------------------------------------------
+   .poll-block и .poll-option использовались в разметке, но правил для них
+   не было — весь вид задавался инлайном. */
+
+.poll-block {
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  background: var(--bg2);
+}
+.poll-question { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.poll-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  overflow: hidden;
+  font-size: 13px;
+  transition: var(--tr);
+}
+.poll-option:last-child { margin-bottom: 0; }
+.poll-option:hover { border-color: var(--border2); background: var(--hover); }
+.poll-option.is-voted { border-color: var(--accent); background: var(--accent-light); }
+.poll-option.is-winner { border-color: var(--green); background: var(--green-light); }
+.poll-option-bar {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: var(--accent-light);
+  transition: width .4s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+.poll-option > * { position: relative; z-index: 1; }
+.poll-option-pct { margin-left: auto; font-size: 11px; color: var(--text3); font-variant-numeric: tabular-nums; }
+
+@media (max-width: 640px) {
+  /* На сенсорных экранах наведения нет: прятать действия нельзя, иначе
+     лайк и удаление становятся недоступны. */
+  .cmt-actions { opacity: 1; }
+  .cmt-item { padding: 8px 4px; }
+  .cmt-item--reply { margin-left: 14px; }
+  .cmt-avatar { width: 28px; height: 28px; }
+  .ap-comment { opacity: 1; width: 28px; height: 28px; }
+}

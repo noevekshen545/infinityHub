@@ -1,0 +1,343 @@
+/* Компактный мессенджер окна палитры. Панель занимает всё окно, как плеер,
+   и переключается кнопкой в шапке. */
+
+/* --- Панель --- */
+.aibar-msgs {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg2, #fff);
+  border: 1px solid var(--border, #e3e6ea);
+  border-radius: 14px;
+  padding: 10px;
+  overflow: hidden;
+}
+
+/* Отдельное окно: панель закрывает окно целиком. */
+html.aibar-solo .aibar-msgs {
+  inset: 0;
+  border-radius: 0;
+  border: none;
+}
+
+/* --- Шапка --- */
+.aibar-msgs-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.aibar-msgs-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text, #1a1f26);
+}
+.aibar-msgs-head .spacer { flex: 1; }
+.aibar-msgs-pin { display: none; }
+html.aibar-solo .aibar-msgs-pin { display: inline-flex; align-items: center; justify-content: center; }
+.aibar-msgs-pin.on {
+  color: var(--accent, #3b6ef5);
+  background: var(--accent-soft, rgba(59, 110, 245, .12));
+}
+
+/* --- Полоса сессий --- */
+.aibar-msgs-tabs {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+.aibar-msgs-tabs::-webkit-scrollbar { height: 4px; }
+.aibar-msgs-tabs::-webkit-scrollbar-thumb {
+  background: var(--border, #e3e6ea);
+  border-radius: 2px;
+}
+
+.aibar-msgs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  max-width: 190px;
+  padding: 4px 6px 4px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #e3e6ea);
+  background: transparent;
+  color: var(--text-2, #5b6472);
+  font-size: 11.5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.aibar-msgs-chip:hover { background: var(--bg3, #f1f3f6); }
+.aibar-msgs-chip.on {
+  color: var(--accent, #3b6ef5);
+  border-color: var(--accent, #3b6ef5);
+  background: var(--accent-soft, rgba(59, 110, 245, .10));
+}
+.aibar-msgs-chip-t {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aibar-msgs-chip-x {
+  border: 0;
+  background: transparent;
+  color: var(--text-3, #8a93a0);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0 2px;
+  border-radius: 4px;
+}
+.aibar-msgs-chip-x:hover { color: var(--red, #d64545); background: var(--bg3, #f1f3f6); }
+.aibar-msgs-chip.add,
+.aibar-msgs-chip.more {
+  padding: 4px 8px;
+  font-size: 13px;
+  color: var(--text-3, #8a93a0);
+}
+.aibar-msgs-chip.add:hover,
+.aibar-msgs-chip.more:hover { color: var(--accent, #3b6ef5); }
+
+.aibar-msgs-badge {
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--accent, #3b6ef5);
+  color: #fff;
+  font-size: 10px;
+  line-height: 15px;
+  text-align: center;
+}
+
+.aibar-msgs-none {
+  font-size: 11.5px;
+  color: var(--text-3, #8a93a0);
+  padding: 2px 4px;
+}
+
+/* --- Тело --- */
+.aibar-msgs-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: 10px;
+  border: 1px solid var(--border, #e3e6ea);
+  background: var(--bg, #fff);
+}
+.aibar-msgs-body.list { padding: 4px; }
+.aibar-msgs-body.thread {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Список диалогов */
+.aibar-msgs-conv {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.aibar-msgs-conv:hover { background: var(--bg3, #f1f3f6); }
+.aibar-msgs-ava {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--accent-soft, rgba(59, 110, 245, .14));
+  color: var(--accent, #3b6ef5);
+  font-size: 13px;
+  font-weight: 600;
+}
+.aibar-msgs-conv-n {
+  flex: 1;
+  min-width: 0;
+}
+.aibar-msgs-conv-t {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text, #1a1f26);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aibar-msgs-conv-p {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-3, #8a93a0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aibar-msgs-conv-time {
+  font-size: 11px;
+  color: var(--text-3, #8a93a0);
+  flex-shrink: 0;
+}
+
+/* Переписка */
+.aibar-msgs-thread {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.aibar-msgs-msg {
+  max-width: 86%;
+  padding: 7px 10px;
+  border-radius: 11px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.aibar-msgs-msg.me {
+  align-self: flex-end;
+  background: var(--accent, #3b6ef5);
+  color: #fff;
+}
+.aibar-msgs-msg.ag {
+  align-self: flex-start;
+  background: var(--bg3, #f1f3f6);
+  color: var(--text, #1a1f26);
+}
+.aibar-msgs-who {
+  display: block;
+  font-size: 10.5px;
+  opacity: .75;
+  margin-bottom: 2px;
+}
+.aibar-msgs-text { display: block; }
+.aibar-msgs-time {
+  display: block;
+  font-size: 10px;
+  opacity: .6;
+  margin-top: 3px;
+  text-align: right;
+}
+
+/* Поле отправки */
+.aibar-msgs-foot {
+  display: flex;
+  gap: 7px;
+  padding: 8px;
+  border-top: 1px solid var(--border, #e3e6ea);
+  background: var(--bg2, #fff);
+  flex-shrink: 0;
+}
+
+/* Выбор собеседника для нового диалога */
+.aibar-msgs-pick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border, #e3e6ea);
+  position: sticky;
+  top: 0;
+  background: var(--bg, #fff);
+  z-index: 2;
+}
+.aibar-msgs-pick-back {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-3, #8a93a0);
+  cursor: pointer;
+}
+.aibar-msgs-pick-back:hover { background: var(--bg3, #f1f3f6); color: var(--text, #1a1f26); }
+.aibar-msgs-pick-search {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--border, #e3e6ea);
+  background: var(--bg2, #fff);
+  color: var(--text, #1a1f26);
+  font: inherit;
+  font-size: 12.5px;
+}
+.aibar-msgs-pick-search:focus { outline: none; border-color: var(--accent, #3b6ef5); }
+.aibar-msgs-pick-list { padding: 4px; }
+.aibar-msgs-user {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.aibar-msgs-user:hover { background: var(--bg3, #f1f3f6); }
+.aibar-msgs-user-t {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text, #1a1f26);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aibar-msgs-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--border, #e3e6ea);
+  background: var(--bg, #fff);
+  color: var(--text, #1a1f26);
+  font: inherit;
+  font-size: 12.5px;
+}
+.aibar-msgs-input:focus {
+  outline: none;
+  border-color: var(--accent, #3b6ef5);
+}
+.aibar-msgs-send {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  border: 0;
+  background: var(--accent, #3b6ef5);
+  color: #fff;
+  cursor: pointer;
+}
+.aibar-msgs-emo {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  border: 1px solid var(--border, #e3e6ea);
+  background: transparent;
+  color: var(--text-3, #8a93a0);
+  cursor: pointer;
+}
+.aibar-msgs-emo:hover { background: var(--bg3, #f1f3f6); color: var(--text, #1a1f26); }

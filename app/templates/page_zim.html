@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html class="pg-page_zim" lang="ru" data-zim-skin="next"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZIM Viewer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+/* Палитра страницы снята: в новом виде её задаёт design.css по классу темы на
+   теге body, который ставит applyTheme(). Свои :root и body.light/body.sepia
+   перебивали бы общую тему приложения, а на ?skin=classic они живут в копии из
+   templates_backup. --accent2 и --tr здесь потому, что design.css их не
+   объявляет, а правила страницы их читают. */
+:root{--accent2:color-mix(in srgb, var(--accent,#58a6ff) 78%, #05070c);--tr:all .3s ease}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:var(--tr)}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}
+.hdr{text-align:center;margin-bottom:30px;animation:fadeIn .6s ease}
+.hdr h1{font-size:28px;color:var(--accent);margin-bottom:8px}
+.hdr p{color:var(--text2);font-size:14px}
+.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;width:100%;animation:fadeInUp .4s ease}
+.files.list-view{grid-template-columns:1fr;gap:8px}
+.fc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;cursor:pointer;transition:var(--tr);text-decoration:none;color:inherit;display:block;position:relative;overflow:hidden}
+.fc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));transform:scaleX(0);transition:transform .3s ease;transform-origin:left}
+.fc:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--shadow)}
+.fc:hover::before{transform:scaleX(1)}
+.list-view .fc{display:flex;align-items:center;gap:16px;padding:16px 20px;border-radius:8px}
+.list-view .fc::before{height:100%;width:3px;top:0;left:0;right:auto;transform:scaleY(0);transform-origin:top}
+.list-view .fc:hover::before{transform:scaleY(1)}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase;margin-bottom:10px;background:var(--accent);color:#fff}
+.list-view .badge{margin-bottom:0;margin-right:8px}
+.fc h3{font-size:15px;color:var(--text);margin-bottom:6px;transition:color .2s}
+.fc:hover h3{color:var(--accent)}
+.list-view .fc h3{margin-bottom:0;flex:1}
+.fc .st{color:var(--text2);font-size:12px}.fc .st b{color:var(--accent)}
+.list-view .fc .st{margin-left:auto}
+.srch{display:flex;gap:8px;margin:16px 0}
+.srch input{flex:1;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;transition:var(--tr)}
+.srch input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(88,166,255,.15)}
+.srch button{padding:10px 16px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;cursor:pointer;transition:var(--tr)}
+.srch button:hover{background:var(--accent2);transform:translateY(-1px)}
+.mark-fav{color:#e3b341}.mark-read{color:var(--accent);font-size:11px}
+.fc-wrap{position:relative}
+.zim-share-btn{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;opacity:0;transition:var(--tr);z-index:2}
+.fc-wrap:hover .zim-share-btn{opacity:1}
+.zim-share-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.list-view .zim-share-btn{top:50%;right:12px;transform:translateY(-50%)}
+/* Кнопка добавления в векторную БД — рядом с «Поделиться» */
+.fc-wrap .qdrant-add-btn{position:absolute;top:12px;right:52px;width:32px;height:32px;border-radius:50%;justify-content:center;padding:0;font-size:13px;opacity:0;transition:var(--tr);z-index:2;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;align-items:center}
+.fc-wrap:hover .qdrant-add-btn{opacity:1}
+.fc-wrap .qdrant-add-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.list-view .fc-wrap .qdrant-add-btn{top:50%;right:52px;transform:translateY(-50%)}
+
+/* Share modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10001;justify-content:center;align-items:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:20px}
+.modal-bg.open{display:flex!important}
+.share-modal{background:var(--bg2);border:1px solid var(--border);border-radius:14px;width:480px;max-width:90vw;max-height:80vh;overflow-y:auto;padding:24px}
+.share-modal .share-item-title{font-weight:600;color:var(--text);margin-bottom:4px;word-break:break-word}
+.share-modal .share-item-type{font-size:12px;color:var(--text3);margin-bottom:16px}
+.share-tabs{display:flex;gap:8px;margin-bottom:16px}
+.share-tab{flex:1;padding:10px 16px;background:var(--bg3);border:none;border-radius:8px;cursor:pointer;color:var(--text2);font-size:14px;font-weight:500;transition:all 0.2s}
+.share-tab:hover{background:var(--border)}
+.share-tab.active{background:var(--accent);color:#fff}
+.share-panel{display:none}
+.share-panel.active{display:block}
+.share-profile-select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;margin-bottom:12px}
+.share-profile-select:focus{outline:none;border-color:var(--accent)}
+.share-label{font-size:13px;color:var(--text3);margin-bottom:6px;display:block}
+.share-result{margin-top:12px;padding:10px 14px;border-radius:8px;font-size:13px;display:none}
+.share-result.success{display:block;background:rgba(35,134,54,0.15);color:var(--green)}
+.share-result.error{display:block;background:rgba(218,54,51,0.15);color:var(--red)}
+.share-btn-primary{width:100%;padding:10px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:var(--tr)}
+.share-btn-primary:hover{background:var(--accent2);transform:translateY(-1px)}
+.share-btn-primary:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.uw-section{margin:22px 0 26px}
+.uw-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.uw-head h2{font-size:18px;color:var(--text);margin-right:auto}
+.uw-head p{width:100%;color:var(--text2);font-size:13px;margin-top:-6px}
+.uw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.uw-card{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;color:inherit;text-decoration:none;transition:var(--tr)}
+.uw-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+.uw-card h3{font-size:15px;margin:8px 0 4px;color:var(--text)}
+.uw-card p{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:8px;min-height:18px}
+.uw-card .st{font-size:11px;color:var(--text3)}
+.uw-badges{display:flex;gap:5px;flex-wrap:wrap}
+.uw-badge{padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase}
+.uw-badge.private{background:rgba(218,54,51,.15);color:var(--red,#f85149)}
+.uw-badge.public{background:rgba(35,134,54,.18);color:var(--green,#3fb950)}
+.uw-badge.search{background:rgba(88,166,255,.15);color:var(--accent)}
+.uw-badge.vector{background:rgba(163,113,247,.18);color:#a371f7}
+.uw-actions{display:flex;gap:6px;margin-top:10px}
+.uw-actions button{background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:7px;padding:5px 9px;font-size:11px;cursor:pointer}
+.uw-actions button:hover{border-color:var(--accent);color:var(--text)}
+.uw-actions button.danger:hover{border-color:#da3633;color:#f85149}
+.uw-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;font-size:13px;color:var(--text2)}
+.uw-field input[type=text],.uw-field textarea,.uw-field select{padding:9px 11px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font:inherit;font-size:13px}
+.uw-field textarea{min-height:70px;resize:vertical}
+.uw-check{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2);margin:8px 0}
+.uw-check input{margin-top:2px}
+.uw-error{display:none;padding:8px 10px;border-radius:8px;background:rgba(218,54,51,.15);color:#f85149;font-size:12px;margin-top:8px}
+@media(max-width:600px){.files{grid-template-columns:1fr}.fc{padding:16px}.uw-grid{grid-template-columns:1fr}}
+</style><link rel="stylesheet" href="/static/css/font-awesome.min.css"><script src="/static/js/i18n.js"></script><script src="/static/js/qdrant_add.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+</head><body>
+<!-- Рейл 2.0: тот же каркас, что у новостей, обучения, App Store и настроек.
+     Разметка страницы (поиск, сетка файлов, секция вики) не тронута — из
+     шапки сюда переехали только действия. -->
+<div class="toolbar" id="zimRail" role="navigation" aria-label="ZIM Viewer">
+  <div class="rail-head">
+    <a class="rail-brand" href="/" title="На главную">
+      <span class="rail-logo"><i class="fa-solid fa-book-open"></i></span>
+      <span class="rail-name"><b>Infinity</b><small>ZIM Viewer</small></span>
+    </a>
+  </div>
+  <div class="rail-scroll">
+    <div class="rail-group">
+      <span class="rail-cap">Разделы</span>
+      <a class="btn" href="/"><i class="icon fa-solid fa-house"></i><span>Главная</span></a>
+      <button class="btn active" onclick="showZimLibrary()" title="Библиотека ZIM"><i class="icon fa-solid fa-box-archive"></i><span>Библиотека</span></button>
+      <button class="btn" onclick="scrollToUserWikis()" title="Мои вики"><i class="icon fa-solid fa-book-open"></i><span>Мои вики</span></button>
+    </div>
+    <div class="rail-group">
+      <span class="rail-cap">Действия</span>
+      <button class="btn" onclick="showZimRecs()"><i class="icon fa-solid fa-lightbulb"></i><span>Рекомендации</span></button>
+      <button class="btn" id="themeBtn" onclick="openThemePicker()" title="Тема приложения"><i class="icon fa-solid fa-palette"></i><span>Тема</span><span class="rail-tag" id="themeName"></span></button>
+      <button class="btn" onclick="location.reload()" title="Перечитать каталог ZIM с диска"><i class="icon fa-solid fa-rotate"></i><span>Обновить</span></button>
+    </div>
+    <div class="rail-group">
+      <span class="rail-cap">Вид списка</span>
+      <button class="btn on" id="viewGrid" onclick="setView('grid')" title="Сетка"><i class="icon fa-solid fa-table-cells-large"></i><span>Сетка</span></button>
+      <button class="btn" id="viewList" onclick="setView('list')" title="Список"><i class="icon fa-solid fa-list"></i><span>Список</span></button>
+    </div>
+    <div class="rail-group" id="railWikiGroup" style="display:none">
+      <span class="rail-cap">Пользовательские вики</span>
+      <button class="btn" id="createWikiBtn" onclick="openWikiCreate()" style="display:none"><i class="icon fa-solid fa-plus"></i><span>Создать свою Wiki</span></button>
+      <button class="btn" onclick="document.getElementById('uwImportFile').click()"><i class="icon fa-solid fa-file-import"></i><span>Импорт .zip</span></button>
+    </div>
+  </div>
+</div>
+<button class="rail-fab" id="zimRailToggle" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="toggleZimRail()">
+  <i class="fa-solid fa-bars"></i>
+</button>
+<div class="wrap">
+  <div class="hdr">
+    <h1>ZIM Viewer</h1>
+    <p>Просмотр офлайн энциклопедий Kiwix (Wikipedia, WikiHow и др.)</p>
+  </div>
+  <div id="uwSection" class="uw-section" style="display:none">
+    <div class="uw-head">
+      <h2><i class="fa-solid fa-book-open"></i> Пользовательские вики</h2>
+      <p>Свои Markdown-вики: приватные или публичные, с поиском и векторным индексом.</p>
+    </div>
+    <div id="uwList" class="uw-grid"></div>
+  </div>
+  <div class="srch"><input id="zimSearch" placeholder="Поиск по названию файла..." oninput="filterZim(this.value)"><button onclick="document.getElementById('zimSearch').value='';filterZim('')">Сброс</button></div>
+  <div id="zimFiles" class="files"><div style="color:var(--text2);text-align:center;grid-column:1/-1;padding:40px">Загрузка...</div></div>
+</div>
+
+<!-- ВЫБОР ТЕМЫ: 9 тем общие с приложением (infinity_theme), своей палитры у
+     страницы больше нет — иначе выбор темы здесь расходился бы с главной. -->
+<div class="modal-bg" id="zimThemeModal" onclick="if(event.target===this)closeThemePicker()">
+  <div class="share-modal">
+    <div class="modal-title-row">
+      <h2><i class="fa-solid fa-palette"></i> Тема оформления</h2>
+      <button class="modal-x" onclick="closeThemePicker()">&times;</button>
+    </div>
+    <div class="theme-grid" id="zimThemeGrid"></div>
+    <p class="theme-note">Тема общая для всего приложения и применяется сразу на всех открытых вкладках.</p>
+  </div>
+</div>
+
+<!-- RECOMMENDATIONS MODAL -->
+<div class="modal-bg" id="zimRecModal" onclick="if(event.target===this)closeZimRecModal()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;align-items:center;justify-content:center">
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:24px;width:480px;max-width:90vw;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-size:18px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-lightbulb" style="color:var(--yellow)"></i> Рекомендации</h2>
+      <button onclick="closeZimRecModal()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer">&times;</button>
+    </div>
+    <div id="zimRecBody" style="line-height:1.7;font-size:14px"><p style="color:var(--text3)">Загрузка...</p></div>
+  </div>
+</div>
+
+<input type="file" id="uwImportFile" accept=".zip" style="display:none" onchange="importUserWiki(this)">
+
+<div class="modal-bg" id="uwCreateModal" onclick="if(event.target===this)closeWikiCreate()">
+  <div class="share-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-size:18px"><i class="fa-solid fa-book-open"></i> Новая вики</h2>
+      <button onclick="closeWikiCreate()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer">&times;</button>
+    </div>
+    <label class="uw-field">Название
+      <input type="text" id="uwTitle" maxlength="200" placeholder="Например: Заметки по Python">
+    </label>
+    <label class="uw-field">Описание
+      <textarea id="uwDesc" maxlength="2000" placeholder="Коротко о чём эта вики"></textarea>
+    </label>
+    <label class="uw-field">Доступ
+      <select id="uwVisibility">
+        <option value="private">Приватная — только я</option>
+        <option value="public">Публичная — видна всем профилям</option>
+      </select>
+    </label>
+    <label class="uw-check"><input type="checkbox" id="uwSearchIndex"> <span>Индексировать в Search All. Приватную вики найдёт только её владелец.</span></label>
+    <label class="uw-check"><input type="checkbox" id="uwVectorIndex"> <span>Добавить в векторную БД. Приватная — в личную, публичная — в общую.</span></label>
+    <div id="uwCreateError" class="uw-error"></div>
+    <button class="share-btn-primary" id="uwCreateBtn" onclick="createUserWiki()" style="margin-top:8px"><i class="fa-solid fa-plus"></i> Создать</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="uwSettingsModal" onclick="if(event.target===this)closeWikiSettings()">
+  <div class="share-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-size:18px"><i class="fa-solid fa-gear"></i> Настройки вики</h2>
+      <button onclick="closeWikiSettings()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer">&times;</button>
+    </div>
+    <input type="hidden" id="uwSettingsId">
+    <label class="uw-field">Название
+      <input type="text" id="uwSettingsTitle" maxlength="200">
+    </label>
+    <label class="uw-field">Описание
+      <textarea id="uwSettingsDesc" maxlength="2000"></textarea>
+    </label>
+    <label class="uw-field">Доступ
+      <select id="uwSettingsVisibility">
+        <option value="private">Приватная — только я</option>
+        <option value="public">Публичная — видна всем профилям</option>
+      </select>
+    </label>
+    <label class="uw-check"><input type="checkbox" id="uwSettingsSearch"> <span>Индексировать в Search All</span></label>
+    <label class="uw-check"><input type="checkbox" id="uwSettingsVector"> <span>Добавить в векторную БД</span></label>
+    <div id="uwSettingsError" class="uw-error"></div>
+    <button class="share-btn-primary" onclick="saveWikiSettings()" style="margin-top:8px"><i class="fa-solid fa-floppy-disk"></i> Сохранить</button>
+    <button class="share-btn-primary" onclick="deleteUserWiki()" style="margin-top:8px;background:#da3633"><i class="fa-solid fa-trash"></i> Удалить вики</button>
+  </div>
+</div>
+<script>
+function esc(t){if(!t)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+const LS='zimview_';
+let allFiles=[];
+const THEME_LIST=['light','dark','sepia','warm','paper','ocean','forest','midnight','rose'];
+/* Тема берётся из общих настроек приложения (ключ infinity_theme) и
+   поддерживает все 9 тем. Своего ключа zimview_theme больше нет — иначе
+   выбранная на главной тема не применялась бы. */
+function readGlobalTheme(){
+  try{
+    if(window.InfinityTheme&&InfinityTheme.get)return InfinityTheme.get();
+    var v=localStorage.getItem('infinity_theme')||localStorage.getItem('html_theme');
+    if(v&&THEME_LIST.indexOf(v)!==-1)return v;
+  }catch(e){}
+  return 'light';
+}
+function applyThemeVars(theme){
+  var vars=(window.InfinityTheme&&InfinityTheme.vars&&InfinityTheme.vars[theme])||null;
+  if(vars){var root=document.documentElement;for(var k in vars){if(Object.prototype.hasOwnProperty.call(vars,k))root.style.setProperty(k,vars[k]);}}
+  return theme;
+}
+function applyTheme(){
+  var t=applyThemeVars(readGlobalTheme());
+  /* Класс темы на теге body держит theme.js: он вычищает имена тем и добавляет
+     своё, не трогая чужие классы. Прежняя строка `body.className = t` стирала
+     pg-page_zim и служебные классы окна — здесь только страховка для случая,
+     когда InfinityTheme не загрузился. */
+  if(document.body&&!document.body.classList.contains(t))document.body.classList.add(t);
+  /* Подпись темы живёт в самом пункте рейла (#themeBtn больше не перезаписывается
+     целиком: textContent стёр бы иконку и слово «Тема»). */
+  var n=document.getElementById('themeName');if(n)n.textContent=t;
+  var b=document.getElementById('themeBtn');if(b)b.title='Тема: '+t;
+  markThemeActive(t);
+}
+/* Меняем ОБЩУЮ тему, чтобы выбор в ZIM совпадал с остальными страницами. */
+function setGlobalTheme(t){
+  try{
+    if(window.InfinityTheme&&InfinityTheme.set){InfinityTheme.set(t);return;}
+    localStorage.setItem('infinity_theme',t);
+  }catch(e){}
+}
+const THEME_LABELS={light:'Светлая',dark:'Тёмная',sepia:'Сепия',warm:'Тёплая',paper:'Бумага',ocean:'Океан',forest:'Лес',midnight:'Полночь',rose:'Роза'};
+const THEME_ICONS={light:'☀️',dark:'🌙',sepia:'📜',warm:'🔥',paper:'📄',ocean:'🌊',forest:'🌲',midnight:'🌌',rose:'🌹'};
+function buildThemeGrid(){
+  const g=document.getElementById('zimThemeGrid');if(!g)return;
+  g.innerHTML=THEME_LIST.map(t=>
+    `<button class="theme-cell" data-theme="${t}" onclick="pickTheme('${t}')">`+
+    `<span class="tc-icon">${THEME_ICONS[t]||'🎨'}</span>`+
+    `<span class="tc-label">${esc(THEME_LABELS[t]||t)}</span></button>`).join('');
+}
+function markThemeActive(t){
+  document.querySelectorAll('#zimThemeGrid .theme-cell').forEach(c=>
+    c.classList.toggle('active',c.dataset.theme===t));
+}
+function pickTheme(t){setGlobalTheme(t);applyTheme()}
+function openThemePicker(){document.getElementById('zimThemeModal').classList.add('open');markThemeActive(readGlobalTheme())}
+function closeThemePicker(){document.getElementById('zimThemeModal').classList.remove('open')}
+window.addEventListener('storage',function(e){if(e.key==='infinity_theme'||e.key==='html_theme'||e.key===null)applyTheme()});
+if(window.InfinityTheme&&InfinityTheme.onChange)InfinityTheme.onChange(applyTheme);
+buildThemeGrid();
+applyTheme();
+function getView(){return localStorage.getItem(LS+'filesView')||'grid'}
+function setView(v){
+  const g=document.getElementById('zimFiles');
+  g.className=v==='list'?'files list-view':'files';
+  document.getElementById('viewGrid').classList.toggle('on',v==='grid');
+  document.getElementById('viewList').classList.toggle('on',v==='list');
+  localStorage.setItem(LS+'filesView',v);
+}
+function filterZim(q){
+  q=q.toLowerCase();
+  const filtered=allFiles.filter(f=>f.name.toLowerCase().includes(q));
+  renderFiles(filtered);
+}
+/* Переходы рейла. Библиотека снимает фильтр и ведёт к сетке; «Мои вики» — к
+   своей секции, но только если она показана: при выключенном модуле wiki
+   секция скрыта, и кнопка не должна скроллить в пустоту. */
+function showZimLibrary(){
+  const inp=document.getElementById('zimSearch');
+  if(inp){inp.value='';filterZim('')}
+  const g=document.getElementById('zimFiles');
+  if(g)g.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function scrollToUserWikis(){
+  const s=document.getElementById('uwSection');
+  if(!s||s.style.display==='none')return;
+  s.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderFiles(files){
+  const g=document.getElementById('zimFiles');
+  if(!files.length){g.innerHTML='<div style="color:var(--text2);text-align:center;grid-column:1/-1;padding:40px">Нет ZIM файлов</div>';return}
+  const reads=JSON.parse(localStorage.getItem(LS+'reads')||'{}');
+  const favs=JSON.parse(localStorage.getItem(LS+'favs')||'{}');
+  g.innerHTML=files.map(f=>{
+    const sz=f.size<1048576?(f.size/1024).toFixed(1)+' KB':f.size<1073741824?(f.size/1048576).toFixed(1)+' MB':(f.size/1073741824).toFixed(2)+' GB';
+    const isFav=Object.keys(favs).some(k=>k.startsWith(f.path+':'));
+    const readCount=Object.keys(reads).filter(k=>k.startsWith(f.path+':')).length;
+    let marks='';
+    if(isFav)marks+=' <span class="mark-fav">★</span>';
+    if(readCount>0)marks+=' <span class="mark-read">✓'+readCount+'</span>';
+    return`<div class="fc-wrap"><a class="fc" href="/zim/view?file=${encodeURIComponent(f.path)}&name=${encodeURIComponent(f.name)}">
+      <span class="badge">ZIM</span>
+      <h3>${f.name}${marks}</h3>
+      <div class="st"><b>${(f.count||0).toLocaleString()}</b> статей · ${sz}</div>
+    </a><button class="zim-share-btn" onclick="event.stopPropagation();showShareModal('zim','${encodeURIComponent(f.path)}','${esc(f.name)}')" title="Поделиться"><i class="fa-solid fa-share-nodes"></i></button>
+    <button class="qdrant-add-btn" onclick="event.stopPropagation();addSourceToQdrant('zim','${f.path}','${esc(f.name)}')" title="Добавить весь ZIM в векторную БД"><i class="fa-solid fa-database"></i></button></div>`;
+  }).join('');
+}
+setView(getView());
+(async()=>{
+  const r=await fetch('/api/zim/files');
+  allFiles=await r.json();
+  renderFiles(allFiles);
+})()
+function showZimRecs(){
+  const modal=document.getElementById('zimRecModal');
+  const body=document.getElementById('zimRecBody');
+  modal.style.display='flex';
+  body.innerHTML='<p style="color:var(--text3)"><i class="fa-solid fa-spinner fa-spin"></i> Загрузка...</p>';
+  Promise.allSettled([
+    fetch('/api/stats/recommendations/concrete?module=zim&limit=10').then(r=>r.json()),
+    fetch('/api/stats/recommendations/zim?days=30').then(r=>r.json()),
+    fetch('/api/config').then(r=>r.json())
+  ]).then(([concreteR, statsR, cfgR])=>{
+    const concrete=concreteR.value||{items:[],based_on:''};
+    const stats=statsR.value||{categories:[],based_on:''};
+    const cfg=cfgR.value||{config:{stats:{}}};
+    let html='';
+    const aiEnabled = cfg.config?.stats?.ai_recommendations === true;
+    if(aiEnabled){
+      html+='<div style="margin-bottom:12px"><button class="btn btn-primary" onclick="loadAiZimRecs()" style="font-size:13px;width:100%"><i class="fa-solid fa-robot"></i> AI-рекомендации</button></div>';
+    }
+    const items=concrete.items||[];
+    if(items.length){
+      html+='<h4 style="margin:0 0 12px;font-size:14px;font-weight:600"><i class="fa-solid fa-newspaper"></i> Рекомендуемые статьи</h4>';
+      html+='<div style="display:flex;flex-direction:column;gap:8px">';
+      items.forEach(a=>{
+        const url='/zim/view?file='+encodeURIComponent(a.zim_file)+'&path='+encodeURIComponent(a.path);
+        html+=`<a href="${url}" style="display:block;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--text);transition:all.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-weight:600;font-size:14px;margin-bottom:4px">${esc(a.title)}</div>
+          <div style="font-size:11px;color:var(--text3);display:flex;gap:8px;flex-wrap:wrap">
+            <span><i class="fa-solid fa-tag"></i> ${esc(a.genre||'')}</span>
+            <span><i class="fa-solid fa-archive"></i> ${esc(a.zim_name||a.zim_file)}</span>
+          </div>
+          <div style="font-size:11px;color:var(--accent);margin-top:4px">${esc(a.reason)}</div>
+        </a>`;
+      });
+      html+='</div>';
+    }
+    const basedOn=concrete.based_on||stats.based_on||'';
+    if(basedOn){
+      html+='<div style="padding:12px;background:var(--bg3);border-radius:8px;margin-top:16px;font-size:13px;color:var(--text2);line-height:1.6"><i class="fa-solid fa-circle-info" style="color:var(--accent)"></i> '+esc(basedOn)+'</div>';
+    }
+    if(!items.length){
+      const cats=stats.categories||[];
+      if(cats.length){
+        html+='<h4 style="margin:0 0 12px;font-size:14px;font-weight:600"><i class="fa-solid fa-tag"></i> Интересные категории</h4>';
+        html+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
+        cats.slice(0,10).forEach(c=>{
+          const name=Array.isArray(c)?c[0]:'';
+          const data=Array.isArray(c)?c[1]:{};
+          const hours=Math.round((data.time||0)/3600);
+          html+='<div style="padding:8px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:13px"><div style="font-weight:600;color:var(--text)">'+esc(name)+'</div>'+(hours>0?'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+hours+' ч</div>':'')+'</div>';
+        });
+        html+='</div>';
+        html+='<div style="margin-top:16px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text2)"><i class="fa-solid fa-circle-info" style="color:var(--accent)"></i> Откройте ZIM-архив и читайте статьи по этим категориям</div>';
+      }else{
+        html='<p style="color:var(--text3);padding:20px 0;text-align:center">Пока недостаточно данных. Читайте статьи в ZIM, чтобы мы могли подобрать рекомендации.</p>';
+      }
+    }
+    body.innerHTML=html;
+  }).catch(()=>{
+    body.innerHTML='<p style="color:var(--red)">Ошибка загрузки рекомендаций</p>';
+  });
+}
+
+function loadAiZimRecs(){
+  const body=document.getElementById('zimRecBody');
+  body.innerHTML='<p style="color:var(--text3)"><i class="fa-solid fa-spinner fa-spin"></i> AI анализирует ваши предпочтения...</p>';
+  fetch('/api/stats/recommendations/ai?module=zim&count=8').then(r=>r.json()).then(d=>{
+    const items=d.items||[];
+    let html='';
+    if(d.ai_generated){
+      html+='<div style="padding:10px 14px;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border-radius:8px;margin-bottom:12px;font-size:13px"><i class="fa-solid fa-robot"></i> Рекомендации сгенерированы AI</div>';
+    }
+    if(items.length){
+      html+='<h4 style="margin:0 0 12px;font-size:14px;font-weight:600"><i class="fa-solid fa-newspaper"></i> AI рекомендует</h4>';
+      html+='<div style="display:flex;flex-direction:column;gap:8px">';
+      items.forEach(it=>{
+        html+=`<div style="padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:10px">
+          <div style="font-weight:600;font-size:14px">${esc(it.title)}</div>
+          ${it.author?'<div style="font-size:12px;color:var(--text2);margin-top:2px">'+esc(it.author)+'</div>':''}
+          ${it.genre?'<div style="font-size:11px;color:var(--text3);margin-top:2px"><i class="fa-solid fa-tag"></i> '+esc(it.genre)+'</div>':''}
+          <div style="font-size:12px;color:var(--accent);margin-top:6px;padding:6px 10px;background:var(--bg3);border-radius:6px">${esc(it.reason)}</div>
+        </div>`;
+      });
+      html+='</div>';
+    }else{
+      html+=d.disabled
+        ? '<p style="color:var(--text3);padding:20px 0;text-align:center">AI-рекомендации выключены в Настройках → Статистика.</p>'
+        : '<p style="color:var(--text3);padding:20px 0;text-align:center">AI не смог сгенерировать рекомендации. Проверьте подключение к LLM.</p>';
+    }
+    body.innerHTML=html;
+  }).catch(()=>{
+    body.innerHTML='<p style="color:var(--red)">Ошибка AI</p>';
+  });
+}
+function closeZimRecModal(){document.getElementById('zimRecModal').style.display='none'}
+
+// ===== SHARE =====
+let shareCurrentType='',shareCurrentId='',shareCurrentTitle='';
+function showShareModal(type,id,title){
+  shareCurrentType=type;shareCurrentId=id;shareCurrentTitle=title||'';
+  document.getElementById('shareItemTitle').textContent=shareCurrentTitle;
+  const typeLabels={note:'Заметка',chat:'Чат',memory:'Воспоминание',ai_answer:'Ответ AI',attachment:'Файл',plugin:'Плагин',app:'Приложение',html:'HTML',extension:'Расширение',music:'Музыка',video:'Видео',photo:'Фото',zim:'ZIM',book:'Книга'};
+  document.getElementById('shareItemType').textContent=typeLabels[type]||type;
+  document.getElementById('sharePublishResult').className='share-result';
+  document.getElementById('sharePublishResult').style.display='none';
+  document.getElementById('shareLinkResult').className='share-result';
+  document.getElementById('shareLinkResult').style.display='none';
+  switchShareTab('publish');
+  loadShareProfiles();
+  document.getElementById('shareModal').classList.add('open');
+}
+function closeShareModal(){document.getElementById('shareModal').classList.remove('open')}
+function switchShareTab(tab){
+  document.querySelectorAll('.share-tab').forEach(t=>t.classList.toggle('active',t.dataset.shareTab===tab));
+  ['publish','link'].forEach(s=>{
+    const el=document.getElementById('sharePanel'+s.charAt(0).toUpperCase()+s.slice(1));
+    if(el)el.style.display=s===tab?'block':'none';
+  });
+}
+async function loadShareProfiles(){
+  const sel=document.getElementById('shareTargetProfile');
+  sel.innerHTML='<option value="">Загрузка...</option>';
+  try{
+    const r=await fetch('/api/profiles');
+    const d=await r.json();
+    const profiles=d.profiles||[];
+    const all=await(await fetch('/api/profiles')).json();
+    const currentId=(all.profiles||[]).find(p=>p.is_active)?.id||'';
+    sel.innerHTML=profiles.filter(p=>p.id!==currentId).map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+    if(sel.options.length===0)sel.innerHTML='<option value="">Нет других профилей</option>';
+  }catch(e){sel.innerHTML='<option value="">Ошибка загрузки</option>'}
+}
+async function doPublish(){
+  const btn=document.getElementById('sharePublishBtn');
+  const res=document.getElementById('sharePublishResult');
+  btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Публикация...';
+  res.className='share-result';res.style.display='none';
+  try{
+    const r=await fetch('/api/share/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:shareCurrentType,item_id:shareCurrentId,title:shareCurrentTitle})});
+    const d=await r.json();
+    if(d.ok||d.share_id){res.className='share-result success';res.style.display='block';res.innerHTML='<i class="fa-solid fa-circle-check"></i> Опубликовано!';}
+    else{res.className='share-result error';res.style.display='block';res.innerHTML='<i class="fa-solid fa-circle-xmark"></i> '+(d.error||'Ошибка');}
+  }catch(e){res.className='share-result error';res.style.display='block';res.innerHTML='<i class="fa-solid fa-circle-xmark"></i> '+e.message;}
+  btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-cloud-upload"></i> Опубликовать';
+}
+async function doLinkShare(){
+  const sel=document.getElementById('shareTargetProfile');
+  const targetId=sel.value;
+  const btn=document.getElementById('shareLinkBtn');
+  const res=document.getElementById('shareLinkResult');
+  if(!targetId){res.className='share-result error';res.style.display='block';res.innerHTML='<i class="fa-solid fa-circle-xmark"></i> Выберите профиль';return;}
+  btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Отправка...';
+  res.className='share-result';res.style.display='none';
+  try{
+    const r=await fetch('/api/share/link',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source_profile_id:'',target_profile_id:targetId,type:shareCurrentType,item_id:shareCurrentId,title:shareCurrentTitle})});
+    const d=await r.json();
+    if(d.ok||d.share_id){res.className='share-result success';res.style.display='block';res.innerHTML='<i class="fa-solid fa-circle-check"></i> Поделились!';}
+    else{res.className='share-result error';res.style.display='block';res.innerHTML='<i class="fa-solid fa-circle-xmark"></i> '+(d.error||'Ошибка');}
+  }catch(e){res.className='share-result error';res.style.display='block';res.innerHTML='<i class="fa-solid fa-circle-xmark"></i> '+e.message;}
+  btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-share"></i> Поделиться';
+}
+
+// ===== Пользовательские вики =====
+let UW_ENABLED=false, UW_LIST=[], UW_QDRANT=false;
+function uwShowError(id,text){
+  const el=document.getElementById(id); if(!el)return;
+  el.textContent=text||''; el.style.display=text?'block':'none';
+}
+(async function initUserWikis(){
+  try{
+    const st=await fetch('/api/userwiki/status',{cache:'no-store'}).then(r=>r.json());
+    UW_ENABLED=!!st.enabled; UW_QDRANT=!!st.qdrant;
+  }catch(e){ UW_ENABLED=false; }
+  if(!UW_ENABLED) return;
+  document.getElementById('createWikiBtn').style.display='';
+  document.getElementById('uwSection').style.display='';
+  /* Пункты про вики живут в рейле: группа показывается тем же условием, что и
+     кнопка, иначе при выключенном модуле в меню висел бы мёртвый раздел. */
+  const railGroup=document.getElementById('railWikiGroup');
+  if(railGroup) railGroup.style.display='';
+  const vec=document.getElementById('uwVectorIndex');
+  if(vec){ vec.disabled=!UW_QDRANT; if(!UW_QDRANT) vec.title='Qdrant недоступен'; }
+  loadUserWikis();
+  // Вся карточка ведёт в вики, а не только заголовок: клик по пустому месту
+  // раньше не делал ничего, и новая вика выглядела «неоткрываемой».
+  const uwListEl=document.getElementById('uwList');
+  if(uwListEl) uwListEl.addEventListener('click',function(e){
+    if(e.target.closest('.uw-actions')||e.target.closest('a')) return;
+    const card=e.target.closest('.uw-card');
+    if(card&&card.dataset.href) window.location.href=card.dataset.href;
+  });
+})();
+async function loadUserWikis(){
+  try{
+    const r=await fetch('/api/userwiki/list',{cache:'no-store'});
+    if(!r.ok) return;
+    const d=await r.json(); UW_LIST=d.wikis||[]; renderUserWikis();
+  }catch(e){}
+}
+function renderUserWikis(){
+  const g=document.getElementById('uwList'); if(!g)return;
+  if(!UW_LIST.length){
+    g.innerHTML='<div style="color:var(--text2);font-size:13px;padding:8px 0">Пока нет вики. Нажмите «Создать». </div>';
+    return;
+  }
+  g.innerHTML=UW_LIST.map(w=>{
+    const vis=w.visibility==='public'
+      ? '<span class="uw-badge public">Публичная</span>'
+      : '<span class="uw-badge private">Приватная</span>';
+    const idx=w.search_index?'<span class="uw-badge search">Search All</span>':'';
+    const vec=w.vector_index?'<span class="uw-badge vector">Вектор</span>':'';
+    const owner=w.can_edit?'моя':('автор: '+esc(w.owner||''));
+    const href='/zim/view?wiki='+encodeURIComponent(w.id)+'&name='+encodeURIComponent(w.title||'');
+    const actions='<div class="uw-actions">'
+      +'<button onclick="window.location=\'/api/userwiki/'+w.id+'/export\'"><i class="fa-solid fa-download"></i> Экспорт</button>'
+      +(w.can_edit ? '<button onclick="openWikiSettings(\''+w.id+'\')"><i class="fa-solid fa-gear"></i> Настройки</button>'
+        +'<button class="danger" onclick="deleteUserWiki(\''+w.id+'\')"><i class="fa-solid fa-trash"></i> Удалить</button>' : '')
+      +'</div>';
+    return '<div class="uw-card" data-href="'+esc(href)+'" style="cursor:pointer">'
+      +'<div class="uw-badges">'+vis+idx+vec+'</div>'
+      +'<h3><a href="'+href+'" style="color:inherit;text-decoration:none">'+esc(w.title||'Без названия')+'</a></h3>'
+      +'<p>'+esc(w.description||'')+'</p>'
+      +'<div class="st">'+owner+' · '+(w.pages_count||0)+' стр.</div>'
+      +actions+'</div>';
+  }).join('');
+}
+function openWikiCreate(){
+  uwShowError('uwCreateError','');
+  document.getElementById('uwTitle').value='';
+  document.getElementById('uwDesc').value='';
+  document.getElementById('uwVisibility').value='private';
+  document.getElementById('uwSearchIndex').checked=false;
+  document.getElementById('uwVectorIndex').checked=false;
+  document.getElementById('uwCreateModal').classList.add('open');
+  setTimeout(()=>document.getElementById('uwTitle').focus(),50);
+}
+function closeWikiCreate(){ document.getElementById('uwCreateModal').classList.remove('open'); }
+async function createUserWiki(){
+  const title=document.getElementById('uwTitle').value.trim();
+  if(!title){ uwShowError('uwCreateError','Введите название'); return; }
+  const btn=document.getElementById('uwCreateBtn');
+  btn.disabled=true;
+  try{
+    const r=await fetch('/api/userwiki/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      title:title,
+      description:document.getElementById('uwDesc').value,
+      visibility:document.getElementById('uwVisibility').value,
+      search_index:document.getElementById('uwSearchIndex').checked,
+      vector_index:document.getElementById('uwVectorIndex').checked
+    })});
+    const d=await r.json();
+    if(!r.ok){ uwShowError('uwCreateError',d.error||'Ошибка создания'); return; }
+    closeWikiCreate(); await loadUserWikis();
+  }catch(e){ uwShowError('uwCreateError',e.message); }
+  finally{ btn.disabled=false; }
+}
+function openWikiSettings(id){
+  const w=UW_LIST.find(x=>x.id===id); if(!w)return;
+  uwShowError('uwSettingsError','');
+  document.getElementById('uwSettingsId').value=id;
+  document.getElementById('uwSettingsTitle').value=w.title||'';
+  document.getElementById('uwSettingsDesc').value=w.description||'';
+  document.getElementById('uwSettingsVisibility').value=w.visibility||'private';
+  document.getElementById('uwSettingsSearch').checked=!!w.search_index;
+  document.getElementById('uwSettingsVector').checked=!!w.vector_index;
+  document.getElementById('uwSettingsModal').classList.add('open');
+}
+function closeWikiSettings(){ document.getElementById('uwSettingsModal').classList.remove('open'); }
+async function saveWikiSettings(){
+  const id=document.getElementById('uwSettingsId').value;
+  const title=document.getElementById('uwSettingsTitle').value.trim();
+  if(!title){ uwShowError('uwSettingsError','Введите название'); return; }
+  try{
+    const r=await fetch('/api/userwiki/'+encodeURIComponent(id),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      title:title,
+      description:document.getElementById('uwSettingsDesc').value,
+      visibility:document.getElementById('uwSettingsVisibility').value,
+      search_index:document.getElementById('uwSettingsSearch').checked,
+      vector_index:document.getElementById('uwSettingsVector').checked
+    })});
+    const d=await r.json();
+    if(!r.ok){ uwShowError('uwSettingsError',d.error||'Ошибка сохранения'); return; }
+    closeWikiSettings(); await loadUserWikis();
+  }catch(e){ uwShowError('uwSettingsError',e.message); }
+}
+async function deleteUserWiki(id){
+  const w=UW_LIST.find(x=>x.id===id);
+  if(!confirm('Удалить вики «'+((w&&w.title)||'')+'»? Она будет перемещена в корзину профиля.')) return;
+  try{
+    const r=await fetch('/api/userwiki/'+encodeURIComponent(id),{method:'DELETE'});
+    const d=await r.json();
+    if(!r.ok){ alert(d.error||'Ошибка удаления'); return; }
+    closeWikiSettings(); await loadUserWikis();
+  }catch(e){ alert(e.message); }
+}
+async function importUserWiki(input){
+  const f=input.files&&input.files[0]; if(!f)return;
+  const fd=new FormData(); fd.append('file',f);
+  try{
+    const r=await fetch('/api/userwiki/import',{method:'POST',body:fd});
+    const d=await r.json();
+    if(!r.ok){ alert(d.error||'Ошибка импорта'); return; }
+    await loadUserWikis();
+  }catch(e){ alert(e.message); }
+  finally{ input.value=''; }
+}
+</script>
+
+<!-- Share Modal -->
+<div class="modal-bg" id="shareModal" onclick="if(event.target===this)closeShareModal()">
+  <div class="share-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-size:18px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-share-nodes" style="color:var(--accent)"></i> Поделиться</h2>
+      <button onclick="closeShareModal()" style="background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer">&times;</button>
+    </div>
+    <div class="share-item-title" id="shareItemTitle"></div>
+    <div class="share-item-type" id="shareItemType"></div>
+    <div class="share-tabs">
+      <button class="share-tab active" data-share-tab="publish" onclick="switchShareTab('publish')"><i class="fa-solid fa-globe"></i> Опубликовать</button>
+      <button class="share-tab" data-share-tab="link" onclick="switchShareTab('link')"><i class="fa-solid fa-link"></i> Поделиться с профилем</button>
+    </div>
+    <div class="share-panel active" id="sharePanelPublish" style="display:block">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Опубликовать в <strong>Общедоступный</strong> профиль. Элемент будет доступен всем профилям системы.</p>
+      <button class="share-btn-primary" onclick="doPublish()" id="sharePublishBtn"><i class="fa-solid fa-cloud-upload"></i> Опубликовать</button>
+      <div class="share-result" id="sharePublishResult"></div>
+    </div>
+    <div class="share-panel" id="sharePanelLink">
+      <label class="share-label">Выберите профиль получателя</label>
+      <select class="share-profile-select" id="shareTargetProfile"></select>
+      <button class="share-btn-primary" onclick="doLinkShare()" id="shareLinkBtn"><i class="fa-solid fa-share"></i> Поделиться</button>
+      <div class="share-result" id="shareLinkResult"></div>
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="/static/css/module_rail.css">
+<link rel="stylesheet" href="/static/css/zim_next.css">
+<script src="/static/js/module_rail.js" defer></script>
+<script src="/static/js/zim_next.js" defer></script>
+</body></html>

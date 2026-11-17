@@ -1,0 +1,3794 @@
+[
+ {
+  "method": "GET",
+  "path": "/",
+  "kind": "exact",
+  "line": 8059,
+  "test": "p.path == '/'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/admin",
+  "kind": "exact",
+  "line": 8048,
+  "test": "p.path == '/admin'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/agent",
+  "kind": "exact",
+  "line": 9164,
+  "test": "p.path == '/agent'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/ai",
+  "kind": "exact",
+  "line": 8580,
+  "test": "p.path == '/ai'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/achievements",
+  "kind": "exact",
+  "line": 10520,
+  "test": "p.path == '/api/achievements'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/achievements/stats",
+  "kind": "exact",
+  "line": 10536,
+  "test": "p.path == '/api/achievements/stats'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/achievements/unlocked",
+  "kind": "exact",
+  "line": 10528,
+  "test": "p.path == '/api/achievements/unlocked'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/agent/",
+  "kind": "prefix",
+  "line": 9176,
+  "test": "p.path.startswith('/api/agent/') and (not LEGACY_ASIO_ENABLED)",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/agent/folders",
+  "kind": "exact",
+  "line": 9223,
+  "test": "p.path == '/api/agent/folders'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/agent/sessions",
+  "kind": "exact",
+  "line": 9183,
+  "test": "p.path == '/api/agent/sessions'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/agent/sessions/",
+  "kind": "prefix",
+  "line": 9209,
+  "test": "p.path.startswith('/api/agent/sessions/') and p.path.endswith('.json')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/ai/get",
+  "kind": "exact",
+  "line": 8585,
+  "test": "p.path == '/api/ai/get'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/ai/list",
+  "kind": "exact",
+  "line": 8582,
+  "test": "p.path == '/api/ai/list'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/ai/search",
+  "kind": "exact",
+  "line": 8593,
+  "test": "p.path == '/api/ai/search'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps",
+  "kind": "exact",
+  "line": 9703,
+  "test": "p.path == '/api/apps'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/categories",
+  "kind": "exact",
+  "line": 9740,
+  "test": "p.path == '/api/apps/categories'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/config/get",
+  "kind": "exact",
+  "line": 9636,
+  "test": "p.path == '/api/apps/config/get'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/config/save",
+  "kind": "exact",
+  "line": 9666,
+  "test": "p.path == '/api/apps/config/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/cover/upload-temp",
+  "kind": "exact",
+  "line": 9747,
+  "test": "p.path == '/api/apps/cover/upload-temp'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/detail",
+  "kind": "exact",
+  "line": 9804,
+  "test": "p.path == '/api/apps/detail'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/file/delete",
+  "kind": "exact",
+  "line": 9685,
+  "test": "p.path == '/api/apps/file/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/file/get",
+  "kind": "exact",
+  "line": 9618,
+  "test": "p.path == '/api/apps/file/get'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/files",
+  "kind": "exact",
+  "line": 9577,
+  "test": "p.path == '/api/apps/files'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/icon",
+  "kind": "exact",
+  "line": 9908,
+  "test": "p.path == '/api/apps/icon'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/screenshot",
+  "kind": "exact",
+  "line": 9858,
+  "test": "p.path == '/api/apps/screenshot'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/screenshots",
+  "kind": "exact",
+  "line": 9841,
+  "test": "p.path == '/api/apps/screenshots'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/serve",
+  "kind": "exact",
+  "line": 9885,
+  "test": "p.path == '/api/apps/serve'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/serve-cover",
+  "kind": "exact",
+  "line": 9784,
+  "test": "p.path == '/api/apps/serve-cover'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/server/start",
+  "kind": "exact",
+  "line": 9526,
+  "test": "p.path == '/api/apps/server/start'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/server/status",
+  "kind": "exact",
+  "line": 9542,
+  "test": "p.path == '/api/apps/server/status'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/server/stop",
+  "kind": "exact",
+  "line": 9534,
+  "test": "p.path == '/api/apps/server/stop'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/servers",
+  "kind": "exact",
+  "line": 9883,
+  "test": "p.path == '/api/apps/servers'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/terminal/output",
+  "kind": "exact",
+  "line": 9550,
+  "test": "p.path == '/api/apps/terminal/output'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/apps/update",
+  "kind": "exact",
+  "line": 9708,
+  "test": "p.path == '/api/apps/update'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/article-content",
+  "kind": "exact",
+  "line": 8360,
+  "test": "p.path == '/api/article-content'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/avatar/gateway/poll",
+  "kind": "exact",
+  "line": 10503,
+  "test": "p.path == '/api/avatar/gateway/poll' and AG_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/avatar/motion/file/",
+  "kind": "prefix",
+  "line": 10473,
+  "test": "p.path.startswith('/api/avatar/motion/file/') and AMS_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/avatar/motions",
+  "kind": "exact",
+  "line": 10466,
+  "test": "p.path == '/api/avatar/motions' and AMS_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/book-categories",
+  "kind": "exact",
+  "line": 10070,
+  "test": "p.path == '/api/book-categories'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/book-folders",
+  "kind": "exact",
+  "line": 10058,
+  "test": "p.path == '/api/book-folders'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookgen/books",
+  "kind": "exact",
+  "line": 10186,
+  "test": "p.path == '/api/bookgen/books'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookgen/download/",
+  "kind": "prefix",
+  "line": 10395,
+  "test": "p.path.startswith('/api/bookgen/download/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookgen/draft",
+  "kind": "exact",
+  "line": 10288,
+  "test": "p.path == '/api/bookgen/draft'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookgen/library-books",
+  "kind": "exact",
+  "line": 10373,
+  "test": "p.path == '/api/bookgen/library-books'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookgen/models",
+  "kind": "exact",
+  "line": 10174,
+  "test": "p.path == '/api/bookgen/models'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookgen/page/",
+  "kind": "prefix",
+  "line": 10255,
+  "test": "p.path.startswith('/api/bookgen/page/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookgen/pages_status/",
+  "kind": "prefix",
+  "line": 10274,
+  "test": "p.path.startswith('/api/bookgen/pages_status/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookgen/plan",
+  "kind": "exact",
+  "line": 10216,
+  "test": "p.path == '/api/bookgen/plan'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookgen/proofreads",
+  "kind": "exact",
+  "line": 10354,
+  "test": "p.path == '/api/bookgen/proofreads'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookgen/status/",
+  "kind": "prefix",
+  "line": 10240,
+  "test": "p.path.startswith('/api/bookgen/status/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookgen/study",
+  "kind": "exact",
+  "line": 10326,
+  "test": "p.path == '/api/bookgen/study'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookgen/world",
+  "kind": "exact",
+  "line": 10307,
+  "test": "p.path == '/api/bookgen/world'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookmarks",
+  "kind": "exact",
+  "line": 10081,
+  "test": "p.path == '/api/bookmarks'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookmarks/favorites",
+  "kind": "exact",
+  "line": 10084,
+  "test": "p.path == '/api/bookmarks/favorites'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/bookmarks/history",
+  "kind": "exact",
+  "line": 10086,
+  "test": "p.path == '/api/bookmarks/history'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/books",
+  "kind": "exact",
+  "line": 8653,
+  "test": "p.path == '/api/books'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/books/cover",
+  "kind": "exact",
+  "line": 10001,
+  "test": "p.path == '/api/books/cover'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/books/progress",
+  "kind": "exact",
+  "line": 10044,
+  "test": "p.path == '/api/books/progress'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/books/read",
+  "kind": "exact",
+  "line": 8655,
+  "test": "p.path == '/api/books/read'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/books/search",
+  "kind": "exact",
+  "line": 8660,
+  "test": "p.path == '/api/books/search'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/brain/graph-data",
+  "kind": "exact",
+  "line": 8601,
+  "test": "p.path == '/api/brain/graph-data'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/brain/regenerate",
+  "kind": "prefix",
+  "line": 8608,
+  "test": "p.path.startswith('/api/brain/regenerate')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/chat/folders",
+  "kind": "exact",
+  "line": 8629,
+  "test": "p.path == '/api/chat/folders'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/chat/history",
+  "kind": "exact",
+  "line": 8624,
+  "test": "p.path == '/api/chat/history'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/chat/session",
+  "kind": "exact",
+  "line": 8620,
+  "test": "p.path == '/api/chat/session'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/chat/sessions",
+  "kind": "exact",
+  "line": 8617,
+  "test": "p.path == '/api/chat/sessions'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/config",
+  "kind": "exact",
+  "line": 8123,
+  "test": "p.path == '/api/config'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/files",
+  "kind": "exact",
+  "line": 8333,
+  "test": "p.path == '/api/files'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/health",
+  "kind": "exact",
+  "line": 7671,
+  "test": "p.path == '/api/health'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/html",
+  "kind": "exact",
+  "line": 9312,
+  "test": "p.path == '/api/html'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/html/file/create",
+  "kind": "exact",
+  "line": 9390,
+  "test": "p.path == '/api/html/file/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/html/file/delete",
+  "kind": "exact",
+  "line": 9375,
+  "test": "p.path == '/api/html/file/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/html/file/rename",
+  "kind": "exact",
+  "line": 9352,
+  "test": "p.path == '/api/html/file/rename'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/html/folder/create",
+  "kind": "exact",
+  "line": 9405,
+  "test": "p.path == '/api/html/folder/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/html/folders",
+  "kind": "exact",
+  "line": 9347,
+  "test": "p.path == '/api/html/folders'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/html/search",
+  "kind": "exact",
+  "line": 9317,
+  "test": "p.path == '/api/html/search'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/html/tree",
+  "kind": "exact",
+  "line": 9314,
+  "test": "p.path == '/api/html/tree'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/html/view",
+  "kind": "exact",
+  "line": 9320,
+  "test": "p.path == '/api/html/view'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/item",
+  "kind": "exact",
+  "line": 8401,
+  "test": "p.path == '/api/item'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/artist-info",
+  "kind": "exact",
+  "line": 8732,
+  "test": "p.path == '/api/media/artist-info'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/backdrop/",
+  "kind": "prefix",
+  "line": 8761,
+  "test": "p.path.startswith('/api/media/backdrop/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/collections",
+  "kind": "exact",
+  "line": 8820,
+  "test": "p.path == '/api/media/collections'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/collections/",
+  "kind": "prefix",
+  "line": 8839,
+  "test": "p.path.startswith('/api/media/collections/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/cover/",
+  "kind": "prefix",
+  "line": 8774,
+  "test": "p.path.startswith('/api/media/cover/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/download",
+  "kind": "exact",
+  "line": 10145,
+  "test": "p.path == '/api/media/download'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/duplicates",
+  "kind": "exact",
+  "line": 8792,
+  "test": "p.path == '/api/media/duplicates'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/favorites",
+  "kind": "exact",
+  "line": 8805,
+  "test": "p.path == '/api/media/favorites'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/favorites/videos",
+  "kind": "exact",
+  "line": 8826,
+  "test": "p.path == '/api/media/favorites/videos'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/file-info",
+  "kind": "exact",
+  "line": 10130,
+  "test": "p.path == '/api/media/file-info'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/index-progress",
+  "kind": "exact",
+  "line": 8815,
+  "test": "p.path == '/api/media/index-progress'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/lyrics",
+  "kind": "exact",
+  "line": 8726,
+  "test": "p.path == '/api/media/lyrics'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/movie-metadata",
+  "kind": "exact",
+  "line": 8738,
+  "test": "p.path == '/api/media/movie-metadata'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/music-index",
+  "kind": "exact",
+  "line": 8672,
+  "test": "p.path == '/api/media/music-index'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/playlist",
+  "kind": "exact",
+  "line": 9018,
+  "test": "p.path == '/api/media/playlist'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/playlists",
+  "kind": "exact",
+  "line": 8810,
+  "test": "p.path == '/api/media/playlists'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/poster/",
+  "kind": "prefix",
+  "line": 8745,
+  "test": "p.path.startswith('/api/media/poster/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/random",
+  "kind": "exact",
+  "line": 10119,
+  "test": "p.path == '/api/media/random'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/rebuild-music",
+  "kind": "exact",
+  "line": 8688,
+  "test": "p.path == '/api/media/rebuild-music'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/rebuild-video",
+  "kind": "exact",
+  "line": 8695,
+  "test": "p.path == '/api/media/rebuild-video'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/recommendations",
+  "kind": "exact",
+  "line": 8799,
+  "test": "p.path == '/api/media/recommendations'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/search",
+  "kind": "exact",
+  "line": 8702,
+  "test": "p.path == '/api/media/search'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/series/",
+  "kind": "prefix",
+  "line": 8832,
+  "test": "p.path.startswith('/api/media/series/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/statistics",
+  "kind": "exact",
+  "line": 10113,
+  "test": "p.path == '/api/media/statistics'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/stream/",
+  "kind": "prefix",
+  "line": 9083,
+  "test": "p.path.startswith('/api/media/stream/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/tracks-by-album",
+  "kind": "exact",
+  "line": 8718,
+  "test": "p.path == '/api/media/tracks-by-album'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/tracks-by-artist",
+  "kind": "exact",
+  "line": 8710,
+  "test": "p.path == '/api/media/tracks-by-artist'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/video-index",
+  "kind": "exact",
+  "line": 8683,
+  "test": "p.path == '/api/media/video-index'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/media/video-stream/",
+  "kind": "prefix",
+  "line": 9024,
+  "test": "p.path.startswith('/api/media/video-stream/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/memory/categories",
+  "kind": "exact",
+  "line": 8636,
+  "test": "p.path == '/api/memory/categories'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/models",
+  "kind": "exact",
+  "line": 8631,
+  "test": "p.path == '/api/models'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/news/article",
+  "kind": "exact",
+  "line": 9001,
+  "test": "p.path == '/api/news/article'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/news/articles",
+  "kind": "exact",
+  "line": 8995,
+  "test": "p.path == '/api/news/articles'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/news/search",
+  "kind": "exact",
+  "line": 9012,
+  "test": "p.path == '/api/news/search'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/news/sources",
+  "kind": "exact",
+  "line": 9007,
+  "test": "p.path == '/api/news/sources'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/attachment",
+  "kind": "exact",
+  "line": 8478,
+  "test": "p.path == '/api/notes/attachment'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/attachment-text",
+  "kind": "exact",
+  "line": 8499,
+  "test": "p.path == '/api/notes/attachment-text'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/attachments",
+  "kind": "exact",
+  "line": 8473,
+  "test": "p.path == '/api/notes/attachments'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/attachments-all",
+  "kind": "exact",
+  "line": 8476,
+  "test": "p.path == '/api/notes/attachments-all'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/by-tag",
+  "kind": "exact",
+  "line": 8509,
+  "test": "p.path == '/api/notes/by-tag'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/comment/list",
+  "kind": "exact",
+  "line": 8575,
+  "test": "p.path == '/api/notes/comment/list'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/folders",
+  "kind": "exact",
+  "line": 8461,
+  "test": "p.path == '/api/notes/folders'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/get",
+  "kind": "exact",
+  "line": 8467,
+  "test": "p.path == '/api/notes/get'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/graph",
+  "kind": "exact",
+  "line": 8505,
+  "test": "p.path == '/api/notes/graph'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/list",
+  "kind": "exact",
+  "line": 8463,
+  "test": "p.path == '/api/notes/list'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/plugins",
+  "kind": "exact",
+  "line": 8503,
+  "test": "p.path == '/api/notes/plugins'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/search",
+  "kind": "exact",
+  "line": 8470,
+  "test": "p.path == '/api/notes/search'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/tags",
+  "kind": "exact",
+  "line": 8507,
+  "test": "p.path == '/api/notes/tags'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/tree",
+  "kind": "exact",
+  "line": 8527,
+  "test": "p.path == '/api/notes/tree'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/version/get",
+  "kind": "exact",
+  "line": 8569,
+  "test": "p.path == '/api/notes/version/get'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notes/version/list",
+  "kind": "exact",
+  "line": 8566,
+  "test": "p.path == '/api/notes/version/list'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/notifications",
+  "kind": "exact",
+  "line": 8237,
+  "test": "p.path == '/api/notifications'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/page",
+  "kind": "exact",
+  "line": 8335,
+  "test": "p.path == '/api/page'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/albums",
+  "kind": "exact",
+  "line": 8941,
+  "test": "p.path == '/api/photos/albums'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/dirs",
+  "kind": "exact",
+  "line": 8972,
+  "test": "p.path == '/api/photos/dirs' and self.command == 'GET'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/editor",
+  "kind": "exact",
+  "line": 8849,
+  "test": "p.path == '/api/photos/editor'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/events",
+  "kind": "exact",
+  "line": 8951,
+  "test": "p.path == '/api/photos/events'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/file/",
+  "kind": "prefix",
+  "line": 8920,
+  "test": "p.path.startswith('/api/photos/file/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/happy-moments",
+  "kind": "exact",
+  "line": 8983,
+  "test": "p.path == '/api/photos/happy-moments'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/index",
+  "kind": "prefix",
+  "line": 8883,
+  "test": "p.path.startswith('/api/photos/index')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/persons",
+  "kind": "exact",
+  "line": 8946,
+  "test": "p.path == '/api/photos/persons'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/photo/",
+  "kind": "prefix",
+  "line": 8895,
+  "test": "p.path.startswith('/api/photos/photo/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/search",
+  "kind": "exact",
+  "line": 8977,
+  "test": "p.path == '/api/photos/search'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/slideshow",
+  "kind": "exact",
+  "line": 8961,
+  "test": "p.path == '/api/photos/slideshow'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/stats",
+  "kind": "exact",
+  "line": 8967,
+  "test": "p.path == '/api/photos/stats'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/thumb/",
+  "kind": "prefix",
+  "line": 8901,
+  "test": "p.path.startswith('/api/photos/thumb/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/photos/timeline",
+  "kind": "exact",
+  "line": 8956,
+  "test": "p.path == '/api/photos/timeline'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/profiles",
+  "kind": "exact",
+  "line": 8240,
+  "test": "p.path == '/api/profiles'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/profiles/load-state",
+  "kind": "exact",
+  "line": 8253,
+  "test": "p.path == '/api/profiles/load-state'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/profiles/private-paths",
+  "kind": "exact",
+  "line": 8262,
+  "test": "p.path == '/api/profiles/private-paths'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/search",
+  "kind": "exact",
+  "line": 8337,
+  "test": "p.path == '/api/search'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/search-all",
+  "kind": "exact",
+  "line": 8349,
+  "test": "p.path == '/api/search-all'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/search-history",
+  "kind": "exact",
+  "line": 10077,
+  "test": "p.path == '/api/search-history'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/search-stats",
+  "kind": "exact",
+  "line": 10089,
+  "test": "p.path == '/api/search-stats'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/share/inbox",
+  "kind": "exact",
+  "line": 8303,
+  "test": "p.path == '/api/share/inbox'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/share/my-links",
+  "kind": "exact",
+  "line": 8289,
+  "test": "p.path == '/api/share/my-links'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/share/my-publications",
+  "kind": "exact",
+  "line": 8275,
+  "test": "p.path == '/api/share/my-publications'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/share/resolve",
+  "kind": "exact",
+  "line": 8317,
+  "test": "p.path == '/api/share/resolve'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/stats",
+  "kind": "exact",
+  "line": 8232,
+  "test": "p.path == '/api/stats' or p.path == '/statistics'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/stats/daily",
+  "kind": "exact",
+  "line": 8158,
+  "test": "p.path == '/api/stats/daily'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/stats/genre",
+  "kind": "exact",
+  "line": 8154,
+  "test": "p.path == '/api/stats/genre'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/stats/recommendations/ai",
+  "kind": "exact",
+  "line": 8216,
+  "test": "p.path == '/api/stats/recommendations/ai'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/stats/recommendations/books",
+  "kind": "exact",
+  "line": 8162,
+  "test": "p.path == '/api/stats/recommendations/books'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/stats/recommendations/concrete",
+  "kind": "exact",
+  "line": 8177,
+  "test": "p.path == '/api/stats/recommendations/concrete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/stats/recommendations/media",
+  "kind": "exact",
+  "line": 8167,
+  "test": "p.path == '/api/stats/recommendations/media'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/stats/recommendations/zim",
+  "kind": "exact",
+  "line": 8172,
+  "test": "p.path == '/api/stats/recommendations/zim'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/stats/summary",
+  "kind": "exact",
+  "line": 8150,
+  "test": "p.path == '/api/stats/summary'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/stt/status",
+  "kind": "exact",
+  "line": 10513,
+  "test": "p.path == '/api/stt/status' and STT_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/suggestions",
+  "kind": "exact",
+  "line": 8370,
+  "test": "p.path == '/api/suggestions'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/system-apps",
+  "kind": "exact",
+  "line": 9468,
+  "test": "p.path == '/api/system-apps'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/system-apps/icon",
+  "kind": "exact",
+  "line": 9483,
+  "test": "p.path == '/api/system-apps/icon'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/system-apps/sessions",
+  "kind": "exact",
+  "line": 9470,
+  "test": "p.path == '/api/system-apps/sessions'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/system/cache-stats",
+  "kind": "exact",
+  "line": 10556,
+  "test": "p.path == '/api/system/cache-stats'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/system/load",
+  "kind": "exact",
+  "line": 10559,
+  "test": "p.path == '/api/system/load'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/templates",
+  "kind": "exact",
+  "line": 10448,
+  "test": "p.path == '/api/templates' and TC_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/templates/match",
+  "kind": "prefix",
+  "line": 10455,
+  "test": "p.path.startswith('/api/templates/match') and TC_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/tts",
+  "kind": "exact",
+  "line": 7775,
+  "test": "p.path == '/api/tts'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/tts/install-piper",
+  "kind": "exact",
+  "line": 7754,
+  "test": "p.path == '/api/tts/install-piper' and self.command == 'POST'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/tts/install-silero",
+  "kind": "exact",
+  "line": 7756,
+  "test": "p.path == '/api/tts/install-silero' and self.command == 'POST'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/tts/voices",
+  "kind": "exact",
+  "line": 7758,
+  "test": "p.path == '/api/tts/voices'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/wakeword/status",
+  "kind": "exact",
+  "line": 10516,
+  "test": "p.path == '/api/wakeword/status' and WW_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/wget/folders",
+  "kind": "exact",
+  "line": 9343,
+  "test": "p.path == '/api/wget/folders'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/wget/list",
+  "kind": "exact",
+  "line": 9340,
+  "test": "p.path == '/api/wget/list'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/wget/status",
+  "kind": "exact",
+  "line": 9336,
+  "test": "p.path == '/api/wget/status'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/worker-pool/task/",
+  "kind": "prefix",
+  "line": 10548,
+  "test": "p.path.startswith('/api/worker-pool/task/') and (not p.path.endswith('/cancel'))",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/worker-pool/tasks",
+  "kind": "exact",
+  "line": 10545,
+  "test": "p.path == '/api/worker-pool/tasks'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/workspace/attachments",
+  "kind": "exact",
+  "line": 8520,
+  "test": "p.path == '/api/workspace/attachments'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/workspace/folders",
+  "kind": "exact",
+  "line": 8523,
+  "test": "p.path == '/api/workspace/folders'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/workspace/notes",
+  "kind": "exact",
+  "line": 8517,
+  "test": "p.path == '/api/workspace/notes'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/workspace/state",
+  "kind": "exact",
+  "line": 8514,
+  "test": "p.path == '/api/workspace/state'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/zim/entry",
+  "kind": "exact",
+  "line": 8420,
+  "test": "p.path == '/api/zim/entry'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/zim/files",
+  "kind": "exact",
+  "line": 8418,
+  "test": "p.path == '/api/zim/files'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/zim/list",
+  "kind": "exact",
+  "line": 8424,
+  "test": "p.path == '/api/zim/list'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/zim/random",
+  "kind": "exact",
+  "line": 8434,
+  "test": "p.path == '/api/zim/random'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/zim/search",
+  "kind": "exact",
+  "line": 8429,
+  "test": "p.path == '/api/zim/search'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/api/zim/stream",
+  "kind": "exact",
+  "line": 8437,
+  "test": "p.path == '/api/zim/stream'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/apps",
+  "kind": "exact",
+  "line": 9457,
+  "test": "p.path == '/apps'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/apps/create",
+  "kind": "exact",
+  "line": 9459,
+  "test": "p.path == '/apps/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/apps/detail",
+  "kind": "exact",
+  "line": 9824,
+  "test": "p.path == '/apps/detail'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/apps/edit",
+  "kind": "exact",
+  "line": 9438,
+  "test": "p.path == '/apps/edit'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/apps/edit-ext",
+  "kind": "exact",
+  "line": 9449,
+  "test": "p.path == '/apps/edit-ext'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/apps/screenshot",
+  "kind": "exact",
+  "line": 9830,
+  "test": "p.path == '/apps/screenshot'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/apps/serve",
+  "kind": "exact",
+  "line": 9557,
+  "test": "p.path == '/apps/serve'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/apps/view",
+  "kind": "exact",
+  "line": 9818,
+  "test": "p.path == '/apps/view'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/article",
+  "kind": "exact",
+  "line": 8119,
+  "test": "p.path == '/article'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/ask",
+  "kind": "exact",
+  "line": 8121,
+  "test": "p.path == '/ask'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/assets/",
+  "kind": "prefix",
+  "line": 8546,
+  "test": "p.path.startswith('/static/excalidraw/') or p.path.startswith('/assets/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/avatar",
+  "kind": "exact",
+  "line": 9307,
+  "test": "p.path == '/avatar'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/bookgen",
+  "kind": "exact",
+  "line": 8643,
+  "test": "p.path == '/bookgen'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/books",
+  "kind": "exact",
+  "line": 8651,
+  "test": "p.path == '/books'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/desktop",
+  "kind": "exact",
+  "line": 9255,
+  "test": "p.path == '/desktop'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/desktop-page",
+  "kind": "exact",
+  "line": 9298,
+  "test": "p.path == '/desktop-page'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/education",
+  "kind": "exact",
+  "line": 8647,
+  "test": "p.path == '/education'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/excalidraw",
+  "kind": "exact",
+  "line": 8531,
+  "test": "p.path == '/excalidraw'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/html",
+  "kind": "exact",
+  "line": 9250,
+  "test": "p.path == '/html'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/html/viewer",
+  "kind": "exact",
+  "line": 9252,
+  "test": "p.path == '/html/viewer'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/list",
+  "kind": "exact",
+  "line": 8117,
+  "test": "p.path == '/list'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/media",
+  "kind": "exact",
+  "line": 8665,
+  "test": "p.path == '/media'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/memory",
+  "kind": "exact",
+  "line": 8599,
+  "test": "p.path == '/memory' or p.path == '/memory/'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/memory/",
+  "kind": "exact",
+  "line": 8599,
+  "test": "p.path == '/memory' or p.path == '/memory/'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/news",
+  "kind": "exact",
+  "line": 8990,
+  "test": "p.path == '/news'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/notes",
+  "kind": "exact",
+  "line": 8455,
+  "test": "p.path == '/notes'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/notes/",
+  "kind": "prefix",
+  "line": 10073,
+  "test": "p.path.startswith('/notes/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/notes/edit",
+  "kind": "exact",
+  "line": 8459,
+  "test": "p.path == '/notes/edit'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/notes/graph",
+  "kind": "exact",
+  "line": 8529,
+  "test": "p.path == '/notes/graph'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/plugins/",
+  "kind": "prefix",
+  "line": 9419,
+  "test": "p.path.startswith('/plugins/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/search-all",
+  "kind": "exact",
+  "line": 8340,
+  "test": "p.path == '/search-all'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/settings",
+  "kind": "exact",
+  "line": 8046,
+  "test": "p.path == '/settings'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/static/",
+  "kind": "prefix",
+  "line": 7594,
+  "test": "p.path.startswith('/static/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/static/excalidraw/",
+  "kind": "prefix",
+  "line": 8546,
+  "test": "p.path.startswith('/static/excalidraw/') or p.path.startswith('/assets/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/statistics",
+  "kind": "exact",
+  "line": 8232,
+  "test": "p.path == '/api/stats' or p.path == '/statistics'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/task-manager",
+  "kind": "exact",
+  "line": 8044,
+  "test": "p.path == '/task-manager'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/v2",
+  "kind": "exact",
+  "line": 8106,
+  "test": "p.path == '/v2'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/workspace",
+  "kind": "exact",
+  "line": 8457,
+  "test": "p.path == '/workspace'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/zim",
+  "kind": "exact",
+  "line": 8414,
+  "test": "p.path == '/zim'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "GET",
+  "path": "/zim/view",
+  "kind": "exact",
+  "line": 8416,
+  "test": "p.path == '/zim/view'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/achievements/check",
+  "kind": "exact",
+  "line": 14307,
+  "test": "p.path == '/api/achievements/check'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/achievements/reset",
+  "kind": "exact",
+  "line": 14318,
+  "test": "p.path == '/api/achievements/reset'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agent/",
+  "kind": "prefix",
+  "line": 13198,
+  "test": "p.path.startswith('/api/agent/') and (not LEGACY_ASIO_ENABLED)",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agent/chat",
+  "kind": "exact",
+  "line": 13234,
+  "test": "p.path == '/api/agent/chat'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agent/folders",
+  "kind": "exact",
+  "line": 13231,
+  "test": "p.path == '/api/agent/folders'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agent/sessions",
+  "kind": "exact",
+  "line": 13171,
+  "test": "p.path == '/api/agent/sessions'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agent/sessions",
+  "kind": "exact",
+  "line": 13205,
+  "test": "p.path == '/api/agent/sessions'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/agent/sessions/",
+  "kind": "prefix",
+  "line": 13228,
+  "test": "p.path.startswith('/api/agent/sessions/') and p.path.endswith('.json')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/ai/add",
+  "kind": "exact",
+  "line": 12585,
+  "test": "p.path == '/api/ai/add'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/ai/delete",
+  "kind": "exact",
+  "line": 12581,
+  "test": "p.path == '/api/ai/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/ai/update",
+  "kind": "exact",
+  "line": 12575,
+  "test": "p.path == '/api/ai/update'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/create",
+  "kind": "exact",
+  "line": 11359,
+  "test": "p.path == '/api/apps/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/delete",
+  "kind": "exact",
+  "line": 10781,
+  "test": "p.path == '/api/apps/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/file/save",
+  "kind": "exact",
+  "line": 10680,
+  "test": "p.path == '/api/apps/file/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/folder/create",
+  "kind": "exact",
+  "line": 10762,
+  "test": "p.path == '/api/apps/folder/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/image/upload",
+  "kind": "exact",
+  "line": 10708,
+  "test": "p.path == '/api/apps/image/upload'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/share",
+  "kind": "exact",
+  "line": 10803,
+  "test": "p.path == '/api/apps/share'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/terminal/input",
+  "kind": "exact",
+  "line": 10840,
+  "test": "p.path == '/api/apps/terminal/input'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/terminal/input",
+  "kind": "exact",
+  "line": 11529,
+  "test": "p.path == '/api/apps/terminal/input'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/terminal/start",
+  "kind": "exact",
+  "line": 10822,
+  "test": "p.path == '/api/apps/terminal/start'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/terminal/start",
+  "kind": "exact",
+  "line": 11511,
+  "test": "p.path == '/api/apps/terminal/start'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/terminal/stop",
+  "kind": "exact",
+  "line": 10847,
+  "test": "p.path == '/api/apps/terminal/stop'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/terminal/stop",
+  "kind": "exact",
+  "line": 11536,
+  "test": "p.path == '/api/apps/terminal/stop'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/apps/update",
+  "kind": "exact",
+  "line": 10647,
+  "test": "p.path == '/api/apps/update'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/ask",
+  "kind": "exact",
+  "line": 11714,
+  "test": "p.path == '/api/ask'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/ask-agent",
+  "kind": "exact",
+  "line": 11850,
+  "test": "p.path == '/api/ask-agent'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/ask-database",
+  "kind": "exact",
+  "line": 11866,
+  "test": "p.path == '/api/ask-database'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/ask-models",
+  "kind": "exact",
+  "line": 11846,
+  "test": "p.path == '/api/ask-models'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/ask-stream",
+  "kind": "exact",
+  "line": 11543,
+  "test": "p.path == '/api/ask-stream'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/avatar/motion/create",
+  "kind": "exact",
+  "line": 14112,
+  "test": "p.path == '/api/avatar/motion/create' and AMS_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/avatar/motion/delete",
+  "kind": "exact",
+  "line": 14132,
+  "test": "p.path == '/api/avatar/motion/delete' and AMS_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/avatar/motion/upload",
+  "kind": "exact",
+  "line": 14232,
+  "test": "p.path == '/api/avatar/motion/upload' and AMS_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-categories/add-book",
+  "kind": "exact",
+  "line": 12637,
+  "test": "p.path == '/api/book-categories/add-book'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-categories/ai-sort",
+  "kind": "exact",
+  "line": 12643,
+  "test": "p.path == '/api/book-categories/ai-sort'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-categories/create",
+  "kind": "exact",
+  "line": 12631,
+  "test": "p.path == '/api/book-categories/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-categories/delete",
+  "kind": "exact",
+  "line": 12635,
+  "test": "p.path == '/api/book-categories/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-categories/remove-book",
+  "kind": "exact",
+  "line": 12639,
+  "test": "p.path == '/api/book-categories/remove-book'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-categories/rename",
+  "kind": "exact",
+  "line": 12633,
+  "test": "p.path == '/api/book-categories/rename'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-categories/reorder",
+  "kind": "exact",
+  "line": 12641,
+  "test": "p.path == '/api/book-categories/reorder'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-folders/add-book",
+  "kind": "exact",
+  "line": 12625,
+  "test": "p.path == '/api/book-folders/add-book'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-folders/create",
+  "kind": "exact",
+  "line": 12617,
+  "test": "p.path == '/api/book-folders/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-folders/delete",
+  "kind": "exact",
+  "line": 12623,
+  "test": "p.path == '/api/book-folders/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-folders/move",
+  "kind": "exact",
+  "line": 12621,
+  "test": "p.path == '/api/book-folders/move'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-folders/remove-book",
+  "kind": "exact",
+  "line": 12627,
+  "test": "p.path == '/api/book-folders/remove-book'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/book-folders/rename",
+  "kind": "exact",
+  "line": 12619,
+  "test": "p.path == '/api/book-folders/rename'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/ai_edit_page",
+  "kind": "exact",
+  "line": 11003,
+  "test": "p.path == '/api/bookgen/ai_edit_page'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/ai_edit_section",
+  "kind": "exact",
+  "line": 11025,
+  "test": "p.path == '/api/bookgen/ai_edit_section'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/continuation_plan",
+  "kind": "exact",
+  "line": 11206,
+  "test": "p.path == '/api/bookgen/continuation_plan'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/continue",
+  "kind": "exact",
+  "line": 11161,
+  "test": "p.path == '/api/bookgen/continue'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/delete/",
+  "kind": "prefix",
+  "line": 10923,
+  "test": "p.path.startswith('/api/bookgen/delete/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/delete_page",
+  "kind": "exact",
+  "line": 11108,
+  "test": "p.path == '/api/bookgen/delete_page'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/draft",
+  "kind": "exact",
+  "line": 11223,
+  "test": "p.path == '/api/bookgen/draft'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/generate_page",
+  "kind": "exact",
+  "line": 10908,
+  "test": "p.path == '/api/bookgen/generate_page'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/insert_page",
+  "kind": "exact",
+  "line": 11143,
+  "test": "p.path == '/api/bookgen/insert_page'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/move_page",
+  "kind": "exact",
+  "line": 11125,
+  "test": "p.path == '/api/bookgen/move_page'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/plan",
+  "kind": "exact",
+  "line": 10893,
+  "test": "p.path == '/api/bookgen/plan'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/proofread",
+  "kind": "exact",
+  "line": 11263,
+  "test": "p.path == '/api/bookgen/proofread'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/proofreads/apply",
+  "kind": "exact",
+  "line": 11280,
+  "test": "p.path == '/api/bookgen/proofreads/apply'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/proofreads/reject",
+  "kind": "exact",
+  "line": 11306,
+  "test": "p.path == '/api/bookgen/proofreads/reject'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/regenerate_page",
+  "kind": "exact",
+  "line": 11092,
+  "test": "p.path == '/api/bookgen/regenerate_page'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/regenerate_section",
+  "kind": "exact",
+  "line": 11056,
+  "test": "p.path == '/api/bookgen/regenerate_section'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/save_page",
+  "kind": "exact",
+  "line": 10954,
+  "test": "p.path == '/api/bookgen/save_page'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/save_to_library",
+  "kind": "exact",
+  "line": 11077,
+  "test": "p.path == '/api/bookgen/save_to_library'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/set_reference",
+  "kind": "exact",
+  "line": 10875,
+  "test": "p.path == '/api/bookgen/set_reference'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/start",
+  "kind": "exact",
+  "line": 10853,
+  "test": "p.path == '/api/bookgen/start'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/study",
+  "kind": "exact",
+  "line": 11191,
+  "test": "p.path == '/api/bookgen/study'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/update_meta",
+  "kind": "exact",
+  "line": 10984,
+  "test": "p.path == '/api/bookgen/update_meta'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/update_pages",
+  "kind": "exact",
+  "line": 10969,
+  "test": "p.path == '/api/bookgen/update_pages'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/update_plan",
+  "kind": "exact",
+  "line": 10938,
+  "test": "p.path == '/api/bookgen/update_plan'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookgen/world",
+  "kind": "exact",
+  "line": 11240,
+  "test": "p.path == '/api/bookgen/world'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookmarks/add",
+  "kind": "exact",
+  "line": 12736,
+  "test": "p.path == '/api/bookmarks/add'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookmarks/clear",
+  "kind": "exact",
+  "line": 12762,
+  "test": "p.path == '/api/bookmarks/clear'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookmarks/favorite",
+  "kind": "exact",
+  "line": 12744,
+  "test": "p.path == '/api/bookmarks/favorite'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookmarks/read",
+  "kind": "exact",
+  "line": 12751,
+  "test": "p.path == '/api/bookmarks/read'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/bookmarks/remove",
+  "kind": "exact",
+  "line": 12758,
+  "test": "p.path == '/api/bookmarks/remove'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/books/ask",
+  "kind": "exact",
+  "line": 11745,
+  "test": "p.path == '/api/books/ask'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/books/save-progress",
+  "kind": "exact",
+  "line": 12598,
+  "test": "p.path == '/api/books/save-progress'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/brain/delete-node",
+  "kind": "exact",
+  "line": 12411,
+  "test": "p.path == '/api/brain/delete-node'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/brain/edit-node",
+  "kind": "exact",
+  "line": 12419,
+  "test": "p.path == '/api/brain/edit-node'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/brain/save-node",
+  "kind": "exact",
+  "line": 12402,
+  "test": "p.path == '/api/brain/save-node'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/brain/save-to-ai",
+  "kind": "exact",
+  "line": 12372,
+  "test": "p.path == '/api/brain/save-to-notes' or p.path == '/api/brain/save-to-ai'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/brain/save-to-notes",
+  "kind": "exact",
+  "line": 12372,
+  "test": "p.path == '/api/brain/save-to-notes' or p.path == '/api/brain/save-to-ai'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/chat/delete",
+  "kind": "exact",
+  "line": 12267,
+  "test": "p.path == '/api/chat/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/chat/delete",
+  "kind": "exact",
+  "line": 12592,
+  "test": "p.path == '/api/chat/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/chat/folder/create",
+  "kind": "exact",
+  "line": 12304,
+  "test": "p.path == '/api/chat/folder/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/chat/folder/delete",
+  "kind": "exact",
+  "line": 12314,
+  "test": "p.path == '/api/chat/folder/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/chat/folder/rename",
+  "kind": "exact",
+  "line": 12309,
+  "test": "p.path == '/api/chat/folder/rename'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/chat/message/delete",
+  "kind": "exact",
+  "line": 12289,
+  "test": "p.path == '/api/chat/message/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/chat/message/favorite",
+  "kind": "exact",
+  "line": 12294,
+  "test": "p.path == '/api/chat/message/favorite'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/chat/message/to-notes",
+  "kind": "exact",
+  "line": 12299,
+  "test": "p.path == '/api/chat/message/to-notes'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/chat/message/update",
+  "kind": "exact",
+  "line": 12283,
+  "test": "p.path == '/api/chat/message/update'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/chat/move",
+  "kind": "exact",
+  "line": 12263,
+  "test": "p.path == '/api/chat/move'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/chat/rename",
+  "kind": "exact",
+  "line": 12259,
+  "test": "p.path == '/api/chat/rename'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/chat/save-attachment",
+  "kind": "exact",
+  "line": 12271,
+  "test": "p.path == '/api/chat/save-attachment'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/config",
+  "kind": "exact",
+  "line": 11826,
+  "test": "p.path == '/api/config'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/config/restore",
+  "kind": "exact",
+  "line": 13099,
+  "test": "p.path == '/api/config/restore'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/config/save",
+  "kind": "exact",
+  "line": 13012,
+  "test": "p.path == '/api/config/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/html/file/create",
+  "kind": "exact",
+  "line": 12707,
+  "test": "p.path == '/api/html/file/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/html/file/delete",
+  "kind": "exact",
+  "line": 12692,
+  "test": "p.path == '/api/html/file/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/html/file/rename",
+  "kind": "exact",
+  "line": 12669,
+  "test": "p.path == '/api/html/file/rename'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/html/folder/create",
+  "kind": "exact",
+  "line": 12722,
+  "test": "p.path == '/api/html/folder/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/index-status",
+  "kind": "exact",
+  "line": 11799,
+  "test": "p.path == '/api/index-status'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/artist-info/save",
+  "kind": "exact",
+  "line": 13490,
+  "test": "p.path == '/api/media/artist-info/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/collections/add",
+  "kind": "exact",
+  "line": 13843,
+  "test": "p.path == '/api/media/collections/add'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/collections/create",
+  "kind": "exact",
+  "line": 13835,
+  "test": "p.path == '/api/media/collections/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/collections/delete",
+  "kind": "exact",
+  "line": 13869,
+  "test": "p.path == '/api/media/collections/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/collections/remove",
+  "kind": "exact",
+  "line": 13856,
+  "test": "p.path == '/api/media/collections/remove'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/convert-avi",
+  "kind": "exact",
+  "line": 13881,
+  "test": "p.path == '/api/media/convert-avi'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/delete-music",
+  "kind": "exact",
+  "line": 13389,
+  "test": "p.path == '/api/media/delete-music'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/delete-video",
+  "kind": "exact",
+  "line": 13399,
+  "test": "p.path == '/api/media/delete-video'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/download",
+  "kind": "exact",
+  "line": 13701,
+  "test": "p.path == '/api/media/download'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/favorites/add",
+  "kind": "exact",
+  "line": 13419,
+  "test": "p.path == '/api/media/favorites/add'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/favorites/remove",
+  "kind": "exact",
+  "line": 13430,
+  "test": "p.path == '/api/media/favorites/remove'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/file-info",
+  "kind": "exact",
+  "line": 13646,
+  "test": "p.path == '/api/media/file-info'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/lyrics/fetch",
+  "kind": "exact",
+  "line": 13481,
+  "test": "p.path == '/api/media/lyrics/fetch'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/lyrics/save",
+  "kind": "exact",
+  "line": 13475,
+  "test": "p.path == '/api/media/lyrics/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/movie-metadata/save",
+  "kind": "exact",
+  "line": 13501,
+  "test": "p.path == '/api/media/movie-metadata/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/play-log",
+  "kind": "exact",
+  "line": 13810,
+  "test": "p.path == '/api/media/play-log'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/playlist/add-track",
+  "kind": "exact",
+  "line": 13457,
+  "test": "p.path == '/api/media/playlist/add-track'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/playlist/create",
+  "kind": "exact",
+  "line": 13441,
+  "test": "p.path == '/api/media/playlist/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/playlist/delete",
+  "kind": "exact",
+  "line": 13469,
+  "test": "p.path == '/api/media/playlist/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/playlist/remove-track",
+  "kind": "exact",
+  "line": 13463,
+  "test": "p.path == '/api/media/playlist/remove-track'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/playlist/update",
+  "kind": "exact",
+  "line": 13451,
+  "test": "p.path == '/api/media/playlist/update'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/random",
+  "kind": "exact",
+  "line": 13635,
+  "test": "p.path == '/api/media/random'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/rebuild-music",
+  "kind": "exact",
+  "line": 13359,
+  "test": "p.path == '/api/media/rebuild-music'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/rebuild-video",
+  "kind": "exact",
+  "line": 13375,
+  "test": "p.path == '/api/media/rebuild-video'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/series/save",
+  "kind": "exact",
+  "line": 13915,
+  "test": "p.path == '/api/media/series/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/start-indexing",
+  "kind": "exact",
+  "line": 13730,
+  "test": "p.path == '/api/media/start-indexing'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/statistics",
+  "kind": "exact",
+  "line": 13629,
+  "test": "p.path == '/api/media/statistics'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/still/",
+  "kind": "prefix",
+  "line": 13565,
+  "test": "p.path.startswith('/api/media/still/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/track-cover/upload",
+  "kind": "exact",
+  "line": 13601,
+  "test": "p.path == '/api/media/track-cover/upload'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/track-lyrics/save",
+  "kind": "exact",
+  "line": 13580,
+  "test": "p.path == '/api/media/track-lyrics/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/track/delete",
+  "kind": "exact",
+  "line": 13891,
+  "test": "p.path == '/api/media/track/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/transcode/",
+  "kind": "prefix",
+  "line": 13904,
+  "test": "p.path.startswith('/api/media/transcode/')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/validate-all",
+  "kind": "exact",
+  "line": 13661,
+  "test": "p.path == '/api/media/validate-all'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/video-poster/upload",
+  "kind": "exact",
+  "line": 13527,
+  "test": "p.path == '/api/media/video-poster/upload'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/media/watch-log",
+  "kind": "exact",
+  "line": 13822,
+  "test": "p.path == '/api/media/watch-log'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/memory/clear",
+  "kind": "exact",
+  "line": 12364,
+  "test": "p.path == '/api/memory/clear'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/memory/delete",
+  "kind": "exact",
+  "line": 12329,
+  "test": "p.path == '/api/memory/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/memory/list",
+  "kind": "exact",
+  "line": 12356,
+  "test": "p.path == '/api/memory/list'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/memory/save",
+  "kind": "exact",
+  "line": 12319,
+  "test": "p.path == '/api/memory/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/memory/search",
+  "kind": "exact",
+  "line": 12347,
+  "test": "p.path == '/api/memory/search'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/memory/update",
+  "kind": "exact",
+  "line": 12337,
+  "test": "p.path == '/api/memory/update'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/news/fetch",
+  "kind": "exact",
+  "line": 13763,
+  "test": "p.path == '/api/news/fetch'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/news/sources/add",
+  "kind": "exact",
+  "line": 13786,
+  "test": "p.path == '/api/news/sources/add'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/news/sources/remove",
+  "kind": "exact",
+  "line": 13798,
+  "test": "p.path == '/api/news/sources/remove'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/news/sources/toggle",
+  "kind": "exact",
+  "line": 13803,
+  "test": "p.path == '/api/news/sources/toggle'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/auto-links",
+  "kind": "exact",
+  "line": 12511,
+  "test": "p.path == '/api/notes/auto-links'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/comment/delete",
+  "kind": "exact",
+  "line": 12485,
+  "test": "p.path == '/api/notes/comment/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/comment/save",
+  "kind": "exact",
+  "line": 12481,
+  "test": "p.path == '/api/notes/comment/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/comment/update",
+  "kind": "exact",
+  "line": 12483,
+  "test": "p.path == '/api/notes/comment/update'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/create-folder",
+  "kind": "exact",
+  "line": 12459,
+  "test": "p.path == '/api/notes/create-folder'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/delete",
+  "kind": "exact",
+  "line": 12434,
+  "test": "p.path == '/api/notes/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/delete-attachment",
+  "kind": "exact",
+  "line": 12507,
+  "test": "p.path == '/api/notes/delete-attachment'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/delete-folder",
+  "kind": "exact",
+  "line": 12468,
+  "test": "p.path == '/api/notes/delete-folder'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/export",
+  "kind": "exact",
+  "line": 12567,
+  "test": "p.path == '/api/notes/export'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/export-all",
+  "kind": "exact",
+  "line": 12569,
+  "test": "p.path == '/api/notes/export-all'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/from-template",
+  "kind": "exact",
+  "line": 12453,
+  "test": "p.path == '/api/notes/from-template'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/import",
+  "kind": "exact",
+  "line": 12571,
+  "test": "p.path == '/api/notes/import'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/move",
+  "kind": "exact",
+  "line": 12495,
+  "test": "p.path == '/api/notes/move'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/move-folder",
+  "kind": "exact",
+  "line": 12491,
+  "test": "p.path == '/api/notes/move-folder'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/patch",
+  "kind": "exact",
+  "line": 12437,
+  "test": "p.path == '/api/notes/patch'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/plugin/execute",
+  "kind": "exact",
+  "line": 12533,
+  "test": "p.path == '/api/notes/plugin/execute'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/property",
+  "kind": "exact",
+  "line": 12439,
+  "test": "p.path == '/api/notes/property'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/rename-folder",
+  "kind": "exact",
+  "line": 12487,
+  "test": "p.path == '/api/notes/rename-folder'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/restore",
+  "kind": "exact",
+  "line": 12444,
+  "test": "p.path == '/api/notes/restore'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/save",
+  "kind": "exact",
+  "line": 12432,
+  "test": "p.path == '/api/notes/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/tag/rename",
+  "kind": "exact",
+  "line": 12457,
+  "test": "p.path == '/api/notes/tag/rename'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/templates",
+  "kind": "exact",
+  "line": 12448,
+  "test": "p.path == '/api/notes/templates'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/trash",
+  "kind": "exact",
+  "line": 12442,
+  "test": "p.path == '/api/notes/trash'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/trash/empty",
+  "kind": "exact",
+  "line": 12446,
+  "test": "p.path == '/api/notes/trash/empty'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/tree/create",
+  "kind": "exact",
+  "line": 12471,
+  "test": "p.path == '/api/notes/tree/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/tree/delete",
+  "kind": "exact",
+  "line": 12477,
+  "test": "p.path == '/api/notes/tree/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/tree/move",
+  "kind": "exact",
+  "line": 12475,
+  "test": "p.path == '/api/notes/tree/move'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/tree/rename",
+  "kind": "exact",
+  "line": 12473,
+  "test": "p.path == '/api/notes/tree/rename'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/upload",
+  "kind": "exact",
+  "line": 12499,
+  "test": "p.path == '/api/notes/upload'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/version/delete",
+  "kind": "exact",
+  "line": 12565,
+  "test": "p.path == '/api/notes/version/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/version/get",
+  "kind": "exact",
+  "line": 12559,
+  "test": "p.path == '/api/notes/version/get'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/version/list",
+  "kind": "exact",
+  "line": 12556,
+  "test": "p.path == '/api/notes/version/list'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/version/restore",
+  "kind": "exact",
+  "line": 12563,
+  "test": "p.path == '/api/notes/version/restore'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notes/version/save",
+  "kind": "exact",
+  "line": 12554,
+  "test": "p.path == '/api/notes/version/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notifications/dismiss",
+  "kind": "exact",
+  "line": 13087,
+  "test": "p.path == '/api/notifications/dismiss'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/notifications/generate",
+  "kind": "exact",
+  "line": 13070,
+  "test": "p.path == '/api/notifications/generate'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/photos/albums/add",
+  "kind": "exact",
+  "line": 13985,
+  "test": "p.path == '/api/photos/albums/add'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/photos/albums/create",
+  "kind": "exact",
+  "line": 13962,
+  "test": "p.path == '/api/photos/albums/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/photos/albums/delete",
+  "kind": "exact",
+  "line": 13995,
+  "test": "p.path == '/api/photos/albums/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/photos/albums/remove",
+  "kind": "exact",
+  "line": 13990,
+  "test": "p.path == '/api/photos/albums/remove'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/photos/delete-index",
+  "kind": "exact",
+  "line": 13409,
+  "test": "p.path == '/api/photos/delete-index'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/photos/detect-faces",
+  "kind": "exact",
+  "line": 14005,
+  "test": "p.path == '/api/photos/detect-faces'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/photos/dirs",
+  "kind": "exact",
+  "line": 13945,
+  "test": "p.path == '/api/photos/dirs'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/photos/edit",
+  "kind": "exact",
+  "line": 13980,
+  "test": "p.path == '/api/photos/edit'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/photos/identify-face",
+  "kind": "exact",
+  "line": 14000,
+  "test": "p.path == '/api/photos/identify-face'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/photos/scan",
+  "kind": "exact",
+  "line": 13929,
+  "test": "p.path == '/api/photos/scan'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/photos/toggle-fav",
+  "kind": "exact",
+  "line": 13969,
+  "test": "p.path == '/api/photos/toggle-fav'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/photos/update-meta",
+  "kind": "exact",
+  "line": 13975,
+  "test": "p.path == '/api/photos/update-meta'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/profiles/create",
+  "kind": "exact",
+  "line": 12775,
+  "test": "p.path == '/api/profiles/create'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/profiles/delete",
+  "kind": "exact",
+  "line": 12819,
+  "test": "p.path == '/api/profiles/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/profiles/private-paths",
+  "kind": "exact",
+  "line": 12877,
+  "test": "p.path == '/api/profiles/private-paths'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/profiles/rename",
+  "kind": "exact",
+  "line": 12804,
+  "test": "p.path == '/api/profiles/rename'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/profiles/save-private-paths",
+  "kind": "exact",
+  "line": 12891,
+  "test": "p.path == '/api/profiles/save-private-paths'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/profiles/save-state",
+  "kind": "exact",
+  "line": 12834,
+  "test": "p.path == '/api/profiles/save-state'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/profiles/set-password",
+  "kind": "exact",
+  "line": 12849,
+  "test": "p.path == '/api/profiles/set-password'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/profiles/switch",
+  "kind": "exact",
+  "line": 12789,
+  "test": "p.path == '/api/profiles/switch'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/profiles/switch-with-state",
+  "kind": "exact",
+  "line": 12906,
+  "test": "p.path == '/api/profiles/switch-with-state'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/profiles/verify-password",
+  "kind": "exact",
+  "line": 12864,
+  "test": "p.path == '/api/profiles/verify-password'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/rebuild-index",
+  "kind": "exact",
+  "line": 11791,
+  "test": "p.path == '/api/rebuild-index'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/rebuild-index",
+  "kind": "exact",
+  "line": 13153,
+  "test": "p.path == '/api/rebuild-index'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/rebuild-index-incremental",
+  "kind": "exact",
+  "line": 11795,
+  "test": "p.path == '/api/rebuild-index-incremental'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/rebuild-selected",
+  "kind": "exact",
+  "line": 13161,
+  "test": "p.path == '/api/rebuild-selected'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/search-context",
+  "kind": "exact",
+  "line": 11781,
+  "test": "p.path == '/api/search-context'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/search-history/clear",
+  "kind": "exact",
+  "line": 12771,
+  "test": "p.path == '/api/search-history/clear'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/share/link",
+  "kind": "exact",
+  "line": 12972,
+  "test": "p.path == '/api/share/link'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/share/publish",
+  "kind": "exact",
+  "line": 12934,
+  "test": "p.path == '/api/share/publish'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/share/revoke",
+  "kind": "exact",
+  "line": 12993,
+  "test": "p.path == '/api/share/revoke'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/share/unpublish",
+  "kind": "exact",
+  "line": 12954,
+  "test": "p.path == '/api/share/unpublish'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/stats/track",
+  "kind": "exact",
+  "line": 13051,
+  "test": "p.path == '/api/stats/track'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/stt/download",
+  "kind": "exact",
+  "line": 14196,
+  "test": "p.path == '/api/stt/download' and STT_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/stt/load",
+  "kind": "exact",
+  "line": 14183,
+  "test": "p.path == '/api/stt/load' and STT_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/stt/transcribe",
+  "kind": "exact",
+  "line": 14145,
+  "test": "p.path == '/api/stt/transcribe' and STT_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/suggest",
+  "kind": "exact",
+  "line": 11802,
+  "test": "p.path == '/api/suggest'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/system-apps/launch",
+  "kind": "exact",
+  "line": 10750,
+  "test": "p.path == '/api/system-apps/launch'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/system-apps/stop",
+  "kind": "exact",
+  "line": 10756,
+  "test": "p.path == '/api/system-apps/stop'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/templates/create",
+  "kind": "exact",
+  "line": 14012,
+  "test": "p.path == '/api/templates/create' and TC_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/templates/delete",
+  "kind": "exact",
+  "line": 14034,
+  "test": "p.path == '/api/templates/delete' and TC_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/templates/execute",
+  "kind": "exact",
+  "line": 14088,
+  "test": "p.path == '/api/templates/execute' and TC_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/templates/get",
+  "kind": "exact",
+  "line": 14072,
+  "test": "p.path == '/api/templates/get' and TC_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/templates/update",
+  "kind": "exact",
+  "line": 14046,
+  "test": "p.path == '/api/templates/update' and TC_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/translate",
+  "kind": "exact",
+  "line": 11332,
+  "test": "p.path == '/api/translate'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/tts/install-piper",
+  "kind": "exact",
+  "line": 10605,
+  "test": "p.path == '/api/tts/install-piper'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/tts/install-silero",
+  "kind": "exact",
+  "line": 10609,
+  "test": "p.path == '/api/tts/install-silero'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/wakeword/listen",
+  "kind": "exact",
+  "line": 10614,
+  "test": "p.path == '/api/wakeword/listen' and ('audio/pcm' in content_type or 'application/octet-stream' in content_type)",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/wakeword/train",
+  "kind": "exact",
+  "line": 14218,
+  "test": "p.path == '/api/wakeword/train' and WW_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/wget/delete",
+  "kind": "exact",
+  "line": 12663,
+  "test": "p.path == '/api/wget/delete'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/wget/download",
+  "kind": "exact",
+  "line": 12648,
+  "test": "p.path == '/api/wget/download'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/worker-pool/task/",
+  "kind": "prefix",
+  "line": 14328,
+  "test": "p.path.startswith('/api/worker-pool/task/') and p.path.endswith('/cancel')",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/workspace/ai-query",
+  "kind": "exact",
+  "line": 12517,
+  "test": "p.path == '/api/workspace/ai-query'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/api/workspace/save",
+  "kind": "exact",
+  "line": 12515,
+  "test": "p.path == '/api/workspace/save'",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/openai/v1/audio/transcriptions",
+  "kind": "exact",
+  "line": 14285,
+  "test": "p.path == '/openai/v1/audio/transcriptions' and STT_AVAILABLE",
+  "owner_now": "fastapi"
+ },
+ {
+  "method": "POST",
+  "path": "/whisper/inference",
+  "kind": "exact",
+  "line": 14266,
+  "test": "p.path == '/whisper/inference' and STT_AVAILABLE",
+  "owner_now": "fastapi"
+ }
+]

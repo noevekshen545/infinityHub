@@ -1,0 +1,2211 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Редактор</title>
+<link rel="stylesheet" href="/static/vendor/google-fonts.css">
+<link rel="stylesheet" href="/static/css/font-awesome.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="/static/css/katex.min.css">
+<script defer src="/static/js/katex.min.js"></script>
+<script defer src="/static/js/auto-render.min.js"
+  onload="document.addEventListener('DOMContentLoaded',function(){if(window.renderMathInElement)renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}])})"></script>
+<script src="/static/js/plotly.min.js" async></script>
+<style>
+:root{
+  --bg:#f8f9fb;--bg2:#ffffff;--bg3:#f0f2f5;--bg4:#e8eaed;
+  --border:#e0e3e8;--border2:#d0d4da;
+  --text:#1a1a2e;--text2:#5a5f72;--text3:#8b91a0;
+  --accent:#4f6ef7;--accent2:#3b5de7;--accent-light:#eef1fe;
+  --green:#2da44e;--green-light:#dafbe1;
+  --red:#cf222e;--red-light:#ffebe9;
+  --orange:#d29922;--orange-light:#fff8c5;
+  --purple:#8957e5;--purple-light:#fbefff;
+  --shadow:0 1px 3px rgba(0,0,0,.06);--shadow-lg:0 4px 14px rgba(0,0,0,.08);
+  --radius:10px;--radius-sm:6px;
+  --transition:all .2s cubic-bezier(.4,0,.2,1);
+  --font-sans:'Inter',system-ui,-apple-system,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+body.dark{
+  --bg:#0f1117;--bg2:#181b23;--bg3:#1e2230;--bg4:#262a38;
+  --border:#2a2f40;--border2:#353b50;
+  --text:#e4e6eb;--text2:#a0a5b8;--text3:#6b7089;
+  --accent:#6b8aff;--accent2:#5a78f0;--accent-light:#1a2244;
+  --green:#3fb950;--green-light:#1a3528;
+  --red:#f85149;--red-light:#3d1f20;
+  --orange:#d29922;--orange-light:#3d3018;
+  --purple:#a371f7;--purple-light:#2d1f4e;
+  --shadow:0 1px 3px rgba(0,0,0,.3);--shadow-lg:0 4px 14px rgba(0,0,0,.4);
+}
+body.sepia{
+  --bg:#f5eed6;--bg2:#faf6e8;--bg3:#f0e9cf;--bg4:#e8dfc2;
+  --border:#d8ceaf;--border2:#c9be9e;
+  --text:#4a3c28;--text2:#6b5d48;--text3:#8a7d68;
+  --accent:#7c5c20;--accent2:#6b4d18;--accent-light:#f0e8c8;
+  --green:#5a7c20;--green-light:#e8f0c8;
+  --red:#a03020;--red-light:#f0d8d0;
+  --shadow:0 1px 3px rgba(100,80,40,.1);--shadow-lg:0 4px 14px rgba(100,80,40,.15);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;transition:var(--transition);line-height:1.6}
+a{color:var(--accent);text-decoration:none}
+
+/* Top toolbar */
+.toolbar{position:sticky;top:0;z-index:100;background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;box-shadow:var(--shadow)}
+.toolbar .btn{background:var(--bg2);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;transition:var(--transition);font-weight:500;display:inline-flex;align-items:center;gap:5px;font-family:inherit}
+.toolbar .btn:hover{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+.toolbar .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.toolbar .btn.primary:hover{background:var(--accent2);box-shadow:0 2px 8px rgba(79,110,247,.3)}
+.toolbar .btn.danger{background:var(--bg2);border-color:var(--border);color:var(--red)}
+.toolbar .btn.danger:hover{background:var(--red-light);border-color:var(--red)}
+.toolbar .sep{width:1px;height:24px;background:var(--border);margin:0 4px}
+.toolbar select{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:var(--radius-sm);font-size:12px;outline:none;font-family:inherit;cursor:pointer}
+.toolbar select:focus{border-color:var(--accent)}
+
+/* Format bar */
+.format-bar{display:flex;gap:2px;padding:6px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.fmt-btn{background:transparent;border:1px solid transparent;color:var(--text2);width:32px;height:30px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+.fmt-btn:hover{background:var(--bg3);border-color:var(--border);color:var(--text)}
+.fmt-btn.on{background:var(--accent);color:#fff}
+.fmt-sep{width:1px;height:20px;background:var(--border);margin:0 4px}
+.fmt-group{display:flex;gap:2px;align-items:center}
+
+/* Layout */
+.wrap{max-width:960px;margin:0 auto;padding:24px 20px;flex:1;width:100%}
+.title-input{width:100%;padding:12px 0;background:transparent;border:none;color:var(--text);font-size:30px;font-weight:700;outline:none;margin-bottom:6px;font-family:var(--font-sans);line-height:1.3}
+.title-input::placeholder{color:var(--text3)}
+.meta-line{display:flex;gap:14px;align-items:center;padding:8px 0;margin-bottom:16px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text3);flex-wrap:wrap}
+.meta-line .tag{background:var(--bg3);padding:3px 10px;border-radius:4px;font-size:11px;font-weight:500}
+
+/* Editor */
+.editor-wrap{position:relative;min-height:500px}
+.editor{width:100%;min-height:500px;padding:4px 0;background:transparent;border:none;color:var(--text);font-size:16px;line-height:1.9;outline:none;resize:none;font-family:var(--font-sans);white-space:pre-wrap;word-wrap:break-word;tab-size:2}
+.editor::placeholder{color:var(--text3)}
+
+/* Preview */
+.preview-area{display:none;min-height:500px}
+.preview-area.open{display:block}
+.preview-content{font-size:16px;line-height:1.9;font-family:var(--font-sans)}
+.preview-content h1{font-size:28px;font-weight:700;margin:24px 0 12px;color:var(--text)}
+.preview-content h2{font-size:22px;font-weight:700;margin:20px 0 10px;color:var(--text)}
+.preview-content h3{font-size:18px;font-weight:600;margin:16px 0 8px;color:var(--text)}
+.preview-content p{margin-bottom:12px}
+.preview-content strong{font-weight:700;color:var(--text)}
+.preview-content em{color:var(--purple);font-style:italic}
+.preview-content code{background:var(--bg3);padding:2px 7px;border-radius:4px;font-family:var(--font-mono);font-size:14px}
+.preview-content pre{background:var(--bg3);padding:16px;border-radius:var(--radius);overflow-x:auto;margin:14px 0;border:1px solid var(--border)}
+.preview-content pre code{background:none;padding:0}
+.preview-content blockquote{border-left:3px solid var(--accent);padding:8px 16px;color:var(--text2);margin:14px 0;background:var(--accent-light);border-radius:0 var(--radius-sm) var(--radius-sm) 0}
+.preview-content ul,.preview-content ol{padding-left:24px;margin:10px 0}
+.preview-content li{margin-bottom:6px}
+.preview-content a{color:var(--accent);text-decoration:underline}
+.preview-content table{border-collapse:collapse;margin:14px 0;width:100%}
+.preview-content td,.preview-content th{border:1px solid var(--border);padding:10px 12px;text-align:left;font-size:14px}
+.preview-content th{background:var(--bg3);font-weight:600}
+.preview-content img{max-width:100%;border-radius:var(--radius);margin:10px 0;border:1px solid var(--border)}
+.preview-content hr{border:none;border-top:1px solid var(--border);margin:20px 0}
+.preview-content .checkbox{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:14px}
+.preview-content .checkbox input{accent-color:var(--accent)}
+.preview-content .plotly-chart{width:100%;min-height:350px;margin:14px 0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.preview-content .math-block{text-align:center;margin:16px 0;padding:12px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)}
+
+/* Drop zone */
+.drop-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:40px;text-align:center;color:var(--text3);margin:16px 0;transition:var(--transition);display:none;background:var(--bg3)}
+.drop-zone.active{display:block;border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+.drop-zone.dragover{border-color:var(--green);background:var(--green-light);color:var(--green)}
+.drop-zone .icon{font-size:32px;margin-bottom:8px}
+.drop-zone p{font-size:14px}
+
+/* Attachment gallery */
+.attachments{margin:16px 0;display:flex;gap:8px;flex-wrap:wrap}
+.attachments .att{width:80px;height:80px;border-radius:var(--radius-sm);border:1px solid var(--border);overflow:hidden;cursor:pointer;position:relative;transition:var(--transition)}
+.attachments .att:hover{border-color:var(--accent);transform:scale(1.05)}
+.attachments .att img{width:100%;height:100%;object-fit:cover}
+.attachments .att .del{position:absolute;top:2px;right:2px;background:var(--red);color:#fff;width:18px;height:18px;border-radius:50%;font-size:10px;display:none;align-items:center;justify-content:center;cursor:pointer;border:none}
+.attachments .att:hover .del{display:flex}
+
+/* AI panel - sticky at top */
+.ai-panel{background:var(--bg2);border:1px solid var(--border);border-radius:0;margin:0;overflow:hidden;box-shadow:var(--shadow);position:sticky;top:0;z-index:90;border-left:0;border-right:0}
+.ai-panel-header{padding:10px 16px;background:var(--bg3);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--accent);transition:var(--transition)}
+.ai-panel-header:hover{background:var(--bg4)}
+.ai-panel-body{padding:14px;display:none}
+.ai-panel-body.open{display:block}
+.ai-row{display:flex;gap:8px;margin-bottom:10px}
+.ai-row input{flex:1;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;outline:none;font-family:inherit;transition:var(--transition)}
+.ai-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.ai-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.ai-btn{padding:6px 14px;border-radius:20px;cursor:pointer;font-size:12px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);transition:var(--transition);font-weight:500}
+.ai-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.ai-result{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap;max-height:300px;overflow-y:auto;display:none}
+
+/* Plugin toolbar */
+.plugin-bar{display:flex;gap:2px;padding:4px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.plugin-btn{padding:5px 12px;border-radius:20px;cursor:pointer;font-size:12px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);transition:var(--transition);font-weight:500;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
+.plugin-btn:hover{border-color:var(--purple);color:var(--purple);background:var(--purple-light)}
+
+/* Saved indicator */
+.saved-indicator{position:fixed;top:16px;right:16px;background:var(--green);color:#fff;padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;z-index:200;display:none;animation:fadeInOut 2s ease;box-shadow:var(--shadow-lg)}
+@keyframes fadeInOut{0%{opacity:0;transform:translateY(-10px)}10%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0}}
+
+/* Word count */
+.word-count{position:fixed;bottom:16px;right:16px;font-size:11px;color:var(--text3);background:var(--bg2);padding:5px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);z-index:50;box-shadow:var(--shadow)}
+
+/* Plotly modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border-radius:var(--radius);padding:24px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal h3{font-size:18px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.modal textarea{width:100%;min-height:200px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font-mono);font-size:13px;resize:vertical;outline:none}
+.modal textarea:focus{border-color:var(--accent)}
+.modal .actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+
+/* Tags */
+.tags-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:8px 0}
+.tag-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:500;background:var(--accent-light);color:var(--accent);border:1px solid var(--accent);cursor:default}
+.tag-pill .remove{cursor:pointer;opacity:.6;font-size:14px;line-height:1}
+.tag-pill .remove:hover{opacity:1}
+.tag-input{padding:4px 10px;border:1px dashed var(--border);border-radius:12px;font-size:12px;background:transparent;color:var(--text);outline:none;width:120px;font-family:inherit}
+.tag-input:focus{border-color:var(--accent);border-style:solid}
+.tag-input::placeholder{color:var(--text3)}
+
+/* Wiki-link autocomplete */
+.wiki-dropdown{position:absolute;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);max-height:200px;overflow-y:auto;z-index:150;width:280px;display:none}
+.wiki-dropdown.open{display:block}
+.wiki-item{padding:8px 12px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;transition:var(--transition)}
+.wiki-item:hover,.wiki-item.active{background:var(--accent-light);color:var(--accent)}
+.wiki-item .wi-title{font-weight:500}
+.wiki-item .wi-folder{font-size:11px;color:var(--text3);margin-left:auto}
+
+/* Cheatsheet modal */
+.cheatsheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+.cheatsheet-section h4{font-size:13px;font-weight:600;color:var(--accent);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.cheatsheet-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;gap:8px}
+.cheatsheet-row code{background:var(--bg3);padding:2px 6px;border-radius:3px;font-family:var(--font-mono);font-size:11px;white-space:nowrap}
+.cheatsheet-row span{color:var(--text2)}
+
+/* Notes AI Floating Window */
+.notes-ai-float{position:fixed;z-index:300;width:440px;height:520px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;bottom:80px;right:20px;backdrop-filter:blur(12px);animation:aiFloatIn .3s ease}
+@keyframes aiFloatIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.notes-ai-header{display:flex;align-items:center;gap:10px;padding:14px 16px;background:linear-gradient(135deg,var(--bg3),var(--bg4));border-bottom:1px solid var(--border);cursor:move;user-select:none}
+.notes-ai-header .ai-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:10px;color:#fff;font-size:18px}
+.notes-ai-header .title{flex:1;font-size:14px;font-weight:600;color:var(--text)}
+.notes-ai-header button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px 6px;border-radius:4px;transition:all .2s}
+.notes-ai-header button:hover{background:var(--bg);color:var(--text)}
+.notes-ai-body{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.notes-msg{max-width:88%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;margin-bottom:8px;animation:msgIn .2s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.notes-msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-bottom-right-radius:4px}
+.notes-msg.ai{align-self:flex-start;background:var(--bg3);color:var(--text);border-bottom-left-radius:4px}
+.notes-msg.system{align-self:center;color:var(--text3);font-size:11px;font-style:italic;background:none;padding:4px}
+
+/* Attachment gallery on main notes page */
+.att-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;margin-top:12px}
+.att-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:var(--transition);position:relative}
+.att-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.att-card img{width:100%;height:120px;object-fit:cover;display:block}
+.att-card .att-placeholder{width:100%;height:120px;display:flex;align-items:center;justify-content:center;font-size:40px;background:var(--bg3)}
+.att-card .info{padding:10px}
+.att-card .name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.att-card .meta{font-size:10px;color:var(--text3);margin-top:4px}
+
+/* Image fullscreen overlay */
+.img-fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.img-fullscreen img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+
+/* Improved editor styles */
+.editor:focus{box-shadow:0 0 0 3px var(--accent-light)}
+.preview-area{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-top:12px;box-shadow:var(--shadow)}
+.preview-area.open{display:block!important}
+
+/* Import/Export buttons */
+.ie-btns{display:flex;gap:8px;margin-bottom:12px;padding:8px 0}
+
+@media(max-width:768px){
+  .toolbar{padding:6px 10px}.wrap{padding:14px}.title-input{font-size:24px}.editor{font-size:14px}
+  .format-bar,.plugin-bar{padding:4px 10px}
+}
+
+/* Modal overlays for notes editor */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;justify-content:center;align-items:center;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex!important;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-bg .modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:600px;width:92%;max-height:85vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,.4);animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal-bg .modal h3{font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.modal-bg .close-btn{background:var(--accent);border:none;color:#fff;padding:10px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;margin-top:12px;width:100%;transition:all .2s}
+.modal-bg .close-btn:hover{background:var(--accent2)}
+
+/* Attachment gallery */
+.att-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;margin-top:12px}
+.att-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:var(--transition);position:relative}
+.att-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.att-card img{width:100%;height:120px;object-fit:cover;display:block}
+.att-card .att-placeholder{width:100%;height:120px;display:flex;align-items:center;justify-content:center;font-size:40px;background:var(--bg3)}
+.att-card .info{padding:10px}
+.att-card .name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.att-card .meta{font-size:10px;color:var(--text3);margin-top:4px}
+
+/* Image fullscreen */
+.img-fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeIn .2s ease}
+.img-fullscreen img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+
+/* Notes AI Window */
+.notes-ai-float{position:fixed;z-index:300;width:440px;height:520px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;bottom:80px;right:20px;backdrop-filter:blur(12px);animation:aiFloatIn .3s ease}
+@keyframes aiFloatIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.notes-ai-header{display:flex;align-items:center;gap:10px;padding:14px 16px;background:linear-gradient(135deg,var(--bg3),var(--bg4));border-bottom:1px solid var(--border);cursor:move;user-select:none}
+.notes-ai-header button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px 6px;border-radius:4px;transition:all .2s}
+.notes-ai-header button:hover{background:var(--bg);color:var(--text)}
+.notes-ai-body{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.notes-msg{max-width:88%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;margin-bottom:8px;animation:msgIn .2s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.notes-msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-bottom-right-radius:4px}
+.notes-msg.ai{align-self:flex-start;background:var(--bg3);color:var(--text);border-bottom-left-radius:4px}
+.notes-msg.system{align-self:center;color:var(--text3);font-size:11px;font-style:italic;background:none;padding:4px}
+
+/* === TEXT COMMENTS SYSTEM === */
+.text-comment{position:relative;display:inline}
+.text-comment-highlighted{background:linear-gradient(135deg,#fff3cd,#ffeaa7);border-bottom:2px solid #fdcb6e;cursor:pointer;transition:all .2s;border-radius:2px;padding:0 2px}
+.text-comment-highlighted:hover{background:linear-gradient(135deg,#ffeaa7,#fdcb6e);box-shadow:0 2px 8px rgba(253,203,110,.4)}
+.dark .text-comment-highlighted{background:linear-gradient(135deg,#3d3018,#4a3d1f);border-bottom-color:#d29922}
+.dark .text-comment-highlighted:hover{background:linear-gradient(135deg,#4a3d1f,#5a4d2f)}
+
+/* Comment popup on hover */
+.comment-tooltip{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:200;min-width:250px;max-width:350px;display:none;margin-bottom:8px}
+.comment-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--border)}
+.comment-tooltip.show{display:block;animation:tooltipIn .2s ease}
+@keyframes tooltipIn{from{opacity:0;transform:translateX(-50%) translateY(4px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.comment-tooltip .comment-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.comment-tooltip .comment-author{font-size:11px;font-weight:600;color:var(--accent)}
+.comment-tooltip .comment-actions{display:flex;gap:4px}
+.comment-tooltip .comment-actions button{background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;border-radius:4px;color:var(--text3);transition:all .15s}
+.comment-tooltip .comment-actions button:hover{background:var(--bg3);color:var(--text)}
+.comment-tooltip .comment-text{font-size:13px;line-height:1.5;color:var(--text)}
+.comment-tooltip .comment-time{font-size:10px;color:var(--text3);margin-top:6px}
+
+/* Comment input popup */
+.comment-input-popup{position:fixed;z-index:400;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;box-shadow:0 8px 32px rgba(0,0,0,.2);width:320px;animation:commentIn .2s ease}
+@keyframes commentIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.comment-input-popup .comment-input-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.comment-input-popup .comment-input-header span{font-size:12px;font-weight:600;color:var(--text)}
+.comment-input-popup textarea{width:100%;min-height:80px;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;resize:vertical;font-family:var(--font-sans);margin-bottom:8px}
+.comment-input-popup textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.comment-input-popup .comment-input-actions{display:flex;gap:6px;justify-content:flex-end}
+.comment-input-popup .comment-input-actions .btn{padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:500}
+
+/* Selection menu */
+.selection-menu{position:fixed;z-index:500;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:8px;box-shadow:0 8px 32px rgba(0,0,0,.2);display:none;animation:menuIn .15s ease;min-width:200px}
+@keyframes menuIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.selection-menu .sel-btn{display:flex;align-items:center;gap:10px;padding:10px 14px;border:none;background:none;width:100%;cursor:pointer;border-radius:8px;font-size:13px;color:var(--text);transition:all .15s;text-align:left;font-weight:500}
+.selection-menu .sel-btn:hover{background:var(--bg3)}
+.selection-menu .sel-btn .sel-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:15px;flex-shrink:0}
+.selection-menu .sel-btn.ask-ai .sel-icon{background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff}
+.selection-menu .sel-btn.add-comment .sel-icon{background:var(--green-light);color:var(--green)}
+.selection-menu .sel-btn.copy-link .sel-icon{background:var(--orange-light);color:var(--orange)}
+
+/* Improved toolbar buttons */
+.toolbar .btn{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;letter-spacing:.3px;transition:all .2s}
+.toolbar .btn:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.toolbar .btn i{margin-right:4px}
+
+/* === DICTIONARY (shared with books) === */
+.dict-word{border-bottom:1px dashed var(--accent);cursor:pointer;position:relative;color:var(--accent);transition:all .2s}
+.dict-word:hover{background:var(--accent-light);border-bottom-color:var(--accent2)}
+.dict-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:flex;justify-content:center;align-items:center;backdrop-filter:blur(4px)}
+.dict-modal.open{display:flex!important}
+.dict-modal .dict-content{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.dict-word-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px}
+.dict-word-card .word{font-size:15px;font-weight:700;color:var(--accent);margin-bottom:4px}
+.dict-word-card .definition{font-size:13px;color:var(--text);line-height:1.5;margin-bottom:4px}
+.dict-word-card .meta{font-size:10px;color:var(--text3);display:flex;justify-content:space-between}
+.dict-word-card .actions{display:flex;gap:4px;margin-top:8px}
+.dict-word-card .actions button{padding:4px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg2);color:var(--text);font-size:11px;cursor:pointer}
+.dict-word-card .actions button:hover{background:var(--bg4)}
+.dict-word-card .actions button.delete{color:var(--red)}
+
+/* === ATTACHMENTS SIDEBAR === */
+.attachments-sidebar{position:fixed;top:0;right:0;width:320px;height:100vh;background:var(--bg2);border-left:1px solid var(--border);box-shadow:-4px 0 16px rgba(0,0,0,.1);z-index:250;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column;overflow:hidden}
+.attachments-sidebar.open{transform:translateX(0)}
+.attachments-sidebar .att-sidebar-header{padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.attachments-sidebar .att-sidebar-header h3{font-size:16px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.attachments-sidebar .att-sidebar-body{flex:1;overflow-y:auto;padding:12px}
+.att-sidebar-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.att-sidebar-item:hover{border-color:var(--accent);background:var(--accent-light)}
+.att-sidebar-item img{width:100%;height:100px;object-fit:cover;border-radius:6px;margin-bottom:6px}
+.att-sidebar-item .att-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.att-sidebar-item .att-meta{font-size:10px;color:var(--text3);margin-top:4px}
+.att-sidebar-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:4px 8px;border-radius:4px}
+.att-sidebar-close:hover{background:var(--bg3);color:var(--text)}
+
+/* === HTML/IFRAME SUPPORT === */
+.preview-content .html-embed{margin:14px 0;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);overflow:auto}
+.preview-content iframe{width:100%;border:1px solid var(--border);border-radius:var(--radius);margin:14px 0;min-height:400px}
+
+/* === PARAGRAPH ANCHORS === */
+.preview-content p[data-anchor-id],.preview-content li[data-anchor-id],.preview-content blockquote[data-anchor-id]{position:relative;scroll-margin-top:80px}
+.preview-content p[data-anchor-id]:target,.preview-content li[data-anchor-id]:target,.preview-content blockquote[data-anchor-id]:target{background:var(--orange-light);border-radius:4px;padding:4px 8px;margin:-4px -8px 12px 8px}
+.dark .preview-content p[data-anchor-id]:target,.dark .preview-content li[data-anchor-id]:target{background:#3d3018}
+
+</style><script src="/static/js/i18n.js"></script>
+</head><body>
+
+
+<!-- AI Assistant Floating Window -->
+<div id="notesAiFloat" style="display:none;position:fixed;z-index:150;width:420px;height:480px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.35);flex-direction:column;overflow:hidden;right:20px;top:80px">
+  <div id="notesAiHeader" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg3);cursor:move;user-select:none;border-bottom:1px solid var(--border)">
+    <span style="font-size:14px;font-weight:600;color:var(--accent)"><i class="fas fa-robot"></i> AI Ассистент</span>
+    <span style="flex:1"></span>
+    <button onclick="notesAiMinimize()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:14px;padding:2px 6px" title="Свернуть">−</button>
+    <button onclick="notesAiClose()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:14px;padding:2px 6px" title="Закрыть">✕</button>
+  </div>
+  <div id="notesAiBody" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+    <div id="notesAiMessages" style="flex:1;overflow-y:auto;padding:12px;font-size:13px;line-height:1.5"><div style="color:var(--text2)">Задайте вопрос по заметке...</div></div>
+    <div style="padding:10px;border-top:1px solid var(--border)">
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <input id="notesAiInput" style="flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none" placeholder="Ваш вопрос..." onkeydown="if(event.key==='Enter'&&!event.shiftKey)notesAiAsk()">
+        <button onclick="notesAiAsk()" style="padding:8px 12px;background:linear-gradient(135deg,var(--accent),var(--purple));border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:14px">▶</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+        <label style="font-size:11px;color:var(--text3);cursor:pointer;display:flex;align-items:center;gap:3px" title="Использовать сохранённые ответы AI"><input type="checkbox" id="notesUseCache"> 📚 Кэш AI</label>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="notesAiQuick('Улучши этот текст, исправь ошибки. Верни только улучшенный текст.')" style="padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;cursor:pointer">✨ Улучшить</button>
+        <button onclick="notesAiQuick('Сделай краткое резюме этого текста.')" style="padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;cursor:pointer">📝 Резюме</button>
+        <button onclick="notesAiQuick('Исправь все грамматические и пунктуационные ошибки. Верни только исправленный текст.')" style="padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;cursor:pointer">✏️ Грамматика</button>
+        <button onclick="notesAiQuick('Расширь этот текст, добавь деталей и примеров.')" style="padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;cursor:pointer">📖 Расширить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <a class="btn" href="/notes">← Заметки</a>
+  <div class="sep"></div>
+  <select id="folderSelect" onchange="moveNote()"></select>
+  <button class="btn primary" onclick="save()" title="Ctrl+S">💾 Сохранить</button>
+  <button class="btn" onclick="openVersionsModal()" title="Версии заметки"><i class="fas fa-history"></i> Версии</button>
+  <div class="sep"></div>
+  <button class="btn" onclick="togglePreview()" id="previewBtn">👁 Превью</button>
+  <button class="btn" onclick="openAttachmentsSidebar()" title="Вложения"><i class="fas fa-paperclip"></i></button>
+  <button class="btn" onclick="openDictionaryModal()" title="Словарь"><i class="fas fa-book-open"></i></button>
+  <button class="btn" onclick="location.href='/bookgen'" title="Генератор книг"><i class="fas fa-magic"></i><span class="nav-label">Генератор</span></button>
+  <div class="sep"></div>
+  <button class="btn" onclick="insertHtmlCode()" title="Вставить HTML"><i class="fas fa-code"></i> HTML</button>
+  <button class="btn" onclick="insertIframe()" title="Вставить iframe"><i class="fas fa-window-maximize"></i> Iframe</button>
+  <button class="btn" onclick="cycleTheme()" id="themeBtn">🌙</button>
+  <div style="flex:1"></div>
+  <button class="btn danger" onclick="deleteNote()">🗑 Удалить</button>
+</div>
+
+<div class="format-bar">
+  <div class="fmt-group">
+    <button class="fmt-btn" onclick="insertFormat('**','**')" title="Жирный (Ctrl+B)"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M4 2h4a3 3 0 0 1 2.1 5.15A3.5 3.5 0 0 1 8.5 12H4V2zm1 4h3a1.5 1.5 0 0 0 0-3H5v3zm0 1v4h3.5a2 2 0 0 0 0-4H5z"/></svg></button>
+    <button class="fmt-btn" onclick="insertFormat('*','*')" title="Курсив (Ctrl+I)"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M6 2h5v1H9.5L7.5 11H9v1H4v-1h1.5L7.5 3H6V2z"/></svg></button>
+    <button class="fmt-btn" onclick="insertFormat('~~','~~')" title="Зачёркнутый"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M2 7h10M4.5 4.5h5a2 2 0 0 0-3.6-.7H4a2.5 2.5 0 0 1 4.7-.3M9.5 9.5h-5a2 2 0 0 0 3.6.7H10a2.5 2.5 0 0 1-4.7.3"/></svg></button>
+    <button class="fmt-btn" onclick="insertFormat('`','`')" title="Инлайн код" style="font-family:var(--font-mono);font-size:11px">&lt;/&gt;</button>
+  </div>
+  <div class="fmt-sep"></div>
+  <div class="fmt-group">
+    <button class="fmt-btn" onclick="insertLine('# ')" title="Заголовок 1" style="font-weight:800;font-size:14px">H1</button>
+    <button class="fmt-btn" onclick="insertLine('## ')" title="Заголовок 2" style="font-weight:700;font-size:12px">H2</button>
+    <button class="fmt-btn" onclick="insertLine('### ')" title="Заголовок 3" style="font-weight:600;font-size:10px">H3</button>
+  </div>
+  <div class="fmt-sep"></div>
+  <div class="fmt-group">
+    <button class="fmt-btn" onclick="insertLine('- ')" title="Маркированный список"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="3" cy="7" r="1.5"/><circle cx="3" cy="11" r="1.5"/><rect x="6" y="2" width="6" height="2" rx=".5"/><rect x="6" y="6" width="6" height="2" rx=".5"/><rect x="6" y="10" width="6" height="2" rx=".5"/></svg></button>
+    <button class="fmt-btn" onclick="insertLine('1. ')" title="Нумерованный список"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><text x="1" y="4.5" font-size="5" font-weight="700">1.</text><text x="1" y="8.5" font-size="5" font-weight="700">2.</text><text x="1" y="12.5" font-size="5" font-weight="700">3.</text><rect x="6" y="2" width="6" height="2" rx=".5"/><rect x="6" y="6" width="6" height="2" rx=".5"/><rect x="6" y="10" width="6" height="2" rx=".5"/></svg></button>
+    <button class="fmt-btn" onclick="insertLine('- [ ] ')" title="Чекбокс"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="1" y="1" width="10" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 7l1.5 1.5L9 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="fmt-sep"></div>
+  <div class="fmt-group">
+    <button class="fmt-btn" onclick="insertLine('> ')" title="Цитата"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M3 3h1v8H3V3zm2 0h1v8H5V3zm3 2h5v1H8V5zm0 3h4v1H8V8zm0 3h3v1H8v-1z"/></svg></button>
+    <button class="fmt-btn" onclick="insertFormat('[','](url)')" title="Ссылка"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M6.5 10.5l-2.5 1L2 9.5l2.5-2L3 6 1.5 7.5a1 1 0 0 0 0 1.4l2.6 2.6a1 1 0 0 0 1.4 0L7 10l-1.5-1.5 1-1zM7.5 3.5l2.5-1L12 4.5l-2.5 2L11 8l1.5-1.5a1 1 0 0 0 0-1.4L9.9 2.5a1 1 0 0 0-1.4 0L7 4l1.5 1.5-1 1z"/></svg></button>
+    <button class="fmt-btn" onclick="insertLine('---')" title="Разделитель"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="1" y="6" width="12" height="2" rx="1"/></svg></button>
+  </div>
+  <div class="fmt-sep"></div>
+  <div class="fmt-group">
+    <button class="fmt-btn" onclick="insertFormat('```\n','\n```')" title="Блок кода" style="font-family:var(--font-mono);font-size:10px">{ }</button>
+    <button class="fmt-btn" onclick="insertTable()" title="Таблица"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="1" y="1" width="12" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/><line x1="1" y1="5" x2="13" y2="5" stroke="currentColor" stroke-width="1.2"/><line x1="1" y1="9" x2="13" y2="9" stroke="currentColor" stroke-width="1.2"/><line x1="5" y1="1" x2="5" y2="13" stroke="currentColor" stroke-width="1.2"/><line x1="9" y1="1" x2="9" y2="13" stroke="currentColor" stroke-width="1.2"/></svg></button>
+  </div>
+  <div class="fmt-sep"></div>
+  <div class="fmt-group">
+    <button class="fmt-btn" onclick="insertFormat('$','$')" title="Формула (инлайн)" style="font-family:var(--font-mono);font-weight:800;font-size:13px">ƒ</button>
+    <button class="fmt-btn" onclick="insertFormat('$$\n','\n$$')" title="Формула (блочная)" style="font-family:var(--font-mono);font-weight:800;font-size:11px">∑</button>
+    <button class="fmt-btn" onclick="openPlotlyModal()" title="График Plotly"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="2" y="8" width="2" height="4" rx=".5"/><rect x="6" y="5" width="2" height="7" rx=".5"/><rect x="10" y="2" width="2" height="10" rx=".5"/></svg></button>
+  </div>
+  <div class="fmt-sep"></div>
+  <div class="fmt-group">
+    <button class="fmt-btn" onclick="triggerFileUpload()" title="Загрузить файл"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1v8M4 4l3-3 3 3M2 9v3a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <input type="file" id="fileInput" accept="image/*,.pdf,.docx,.txt,.csv,.json,.zip,.md" multiple style="display:none" onchange="handleFileSelect(event)">
+    <button class="fmt-btn" onclick="openImageBrowser()" title="Вставить картинку"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="1" y="2" width="12" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="4.5" cy="5.5" r="1.5"/><path d="M1 10l3.5-3.5 2 2L10 5l3 3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
+    <input type="file" id="imageFileInput" accept="image/*" style="display:none" onchange="insertLocalImage(event)">
+  </div>
+  <div class="fmt-sep"></div>
+  <div class="fmt-group">
+    <button class="fmt-btn" onclick="autoLinkNotes()" title="Автосвязи (AI)" id="autoLinkBtn"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M5 3L3 5l2 2-2 2 2 2 2-2 2 2 2-2-2-2 2-2-2-2-2 2-2-2z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="7" cy="7" r="1"/></svg></button>
+    <button class="fmt-btn" onclick="aiFixErrors()" title="AI исправление ошибок"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M2 12l1-1M7 2a5 5 0 0 1 5 5M7 2a5 5 0 0 0-5 5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M10 8l2 2M9 11l3-1" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="fmt-sep"></div>
+  <div class="fmt-group">
+    <button class="fmt-btn" onclick="toggleNotesAi()" title="AI Ассистент" id="aiFloatBtn"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="4" r="2.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M3 12c0-2.2 1.8-4 4-4s4 1.8 4 4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="4" r="1" fill="currentColor"/></svg></button>
+    <button class="fmt-btn" onclick="openCheatsheet()" title="Справка по командам"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 5.5a1.5 1.5 0 1 1 2.1 1.4c-.8.4-1.1.9-1.1 1.6M7 10h.01" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+  </div>
+</div>
+
+<div class="plugin-bar" id="pluginBar" style="display:none"></div>
+
+<div class="wrap">
+  <input class="title-input" id="title" placeholder="Без названия" onkeydown="if(event.key==='Tab'){event.preventDefault();document.getElementById('content').focus()}">
+  <div class="meta-line">
+    <span id="wordInfo">0 слов</span>
+    <span>·</span>
+    <span id="charInfo">0 символов</span>
+    <span>·</span>
+    <span id="dateInfo"></span>
+  </div>
+
+  <div class="tags-row" id="tagsRow">
+    <input class="tag-input" id="tagInput" placeholder="+ тег" onkeydown="handleTagInput(event)" maxlength="30">
+  </div>
+
+  <div class="editor-wrap">
+    <textarea class="editor" id="content" placeholder="Начните писать...&#10;&#10;Поддерживается Markdown, формулы ($$...$$), графики Plotly, [[ссылки]], #теги." oninput="updateStats();checkWikiLink(event)" onkeydown="handleEditorKeys(event)"></textarea>
+    <div class="wiki-dropdown" id="wikiDropdown"></div>
+  </div>
+
+  <div class="drop-zone" id="dropZone">
+    <div class="icon">📷</div>
+    <p>Перетащите изображения сюда</p>
+    <p style="font-size:12px;margin-top:4px">JPG, PNG, GIF, WebP, SVG</p>
+  </div>
+
+  <div class="attachments" id="attachmentsList"></div>
+
+  <div class="preview-area" id="previewArea">
+    <div class="preview-content" id="previewContent"></div>
+  </div>
+</div>
+
+<!-- Plotly Modal -->
+<div class="modal-overlay" id="plotlyModal">
+  <div class="modal">
+    <h3>📊 График Plotly</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Введите JSON конфигурацию Plotly (data + layout):</p>
+    <textarea id="plotlyData" placeholder='{"data":[{"x":[1,2,3],"y":[4,5,6],"type":"scatter"}],"layout":{"title":"Мой график"}}'></textarea>
+    <div style="margin-top:12px">
+      <p style="font-size:12px;color:var(--text3)">Шаблоны:</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+        <button class="ai-btn" onclick="setPlotlyTemplate('scatter')">📈 Scatter</button>
+        <button class="ai-btn" onclick="setPlotlyTemplate('bar')">📊 Bar</button>
+        <button class="ai-btn" onclick="setPlotlyTemplate('pie')">🥧 Pie</button>
+        <button class="ai-btn" onclick="setPlotlyTemplate('line')">📉 Line</button>
+        <button class="ai-btn" onclick="setPlotlyTemplate('histogram')">📶 Histogram</button>
+        <button class="ai-btn" onclick="setPlotlyTemplate('heatmap')">🌡 Heatmap</button>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="closePlotlyModal()">Отмена</button>
+      <button class="btn primary" onclick="insertPlotly()">Вставить график</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cheatsheet Modal -->
+<div class="modal-overlay" id="cheatsheetModal">
+  <div class="modal" style="max-width:750px">
+    <h3>📖 Справка: Markdown & LaTeX</h3>
+    <div class="cheatsheet-grid">
+      <div class="cheatsheet-section">
+        <h4>Markdown</h4>
+        <div class="cheatsheet-row"><code># Заголовок 1</code><span>Заголовок 1</span></div>
+        <div class="cheatsheet-row"><code>## Заголовок 2</code><span>Заголовок 2</span></div>
+        <div class="cheatsheet-row"><code>### Заголовок 3</code><span>Заголовок 3</span></div>
+        <div class="cheatsheet-row"><code>**жирный**</code><span>Жирный</span></div>
+        <div class="cheatsheet-row"><code>*курсив*</code><span>Курсив</span></div>
+        <div class="cheatsheet-row"><code>~~зачёркнутый~~</code><span>Зачёркнутый</span></div>
+        <div class="cheatsheet-row"><code>`код`</code><span>Инлайн код</span></div>
+        <div class="cheatsheet-row"><code>```блок кода```</code><span>Блок кода</span></div>
+        <div class="cheatsheet-row"><code>- элемент</code><span>Маркированный список</span></div>
+        <div class="cheatsheet-row"><code>1. элемент</code><span>Нумерованный список</span></div>
+        <div class="cheatsheet-row"><code>- [ ] задача</code><span>Чекбокс</span></div>
+        <div class="cheatsheet-row"><code>> цитата</code><span>Цитата</span></div>
+        <div class="cheatsheet-row"><code>[текст](url)</code><span>Ссылка</span></div>
+        <div class="cheatsheet-row"><code>![alt](url)</code><span>Изображение</span></div>
+        <div class="cheatsheet-row"><code>---</code><span>Разделитель</span></div>
+        <div class="cheatsheet-row"><code>| A | B |</code><span>Таблица</span></div>
+        <div class="cheatsheet-row"><code>#тег</code><span>Тег</span></div>
+        <div class="cheatsheet-row"><code>[[id заметки]]</code><span>Ссылка на заметку</span></div>
+      </div>
+      <div class="cheatsheet-section">
+        <h4>LaTeX (KaTeX)</h4>
+        <div class="cheatsheet-row"><code>$x^2$</code><span>Степень (инлайн)</span></div>
+        <div class="cheatsheet-row"><code>$x_n$</code><span>Индекс</span></div>
+        <div class="cheatsheet-row"><code>$\frac{a}{b}$</code><span>Дробь</span></div>
+        <div class="cheatsheet-row"><code>$\sqrt{x}$</code><span>Корень</span></div>
+        <div class="cheatsheet-row"><code>$\sum_{i=1}^{n}$</code><span>Сумма</span></div>
+        <div class="cheatsheet-row"><code>$\int_0^1 f(x)dx$</code><span>Интеграл</span></div>
+        <div class="cheatsheet-row"><code>$\lim_{x\to 0}$</code><span>Предел</span></div>
+        <div class="cheatsheet-row"><code>$\alpha \beta \gamma$</code><span>Греческие буквы</span></div>
+        <div class="cheatsheet-row"><code>$\leq \geq \neq$</code><span>Знаки сравнения</span></div>
+        <div class="cheatsheet-row"><code>$\infty \pm \times$</code><span>Символы</span></div>
+        <div class="cheatsheet-row"><code>$\vec{v} \hat{x}$</code><span>Векторы</span></div>
+        <div class="cheatsheet-row"><code>$\begin{pmatrix}a\\b\end{pmatrix}$</code><span>Матрица</span></div>
+        <div class="cheatsheet-row"><code>$$E=mc^2$$</code><span>Блочная формула</span></div>
+        <h4 style="margin-top:12px">Plotly</h4>
+        <div class="cheatsheet-row"><code>```plotly {json}```</code><span>График</span></div>
+      </div>
+    </div>
+    <div class="actions" style="margin-top:16px">
+      <button class="btn" onclick="closeCheatsheet()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<div class="saved-indicator" id="savedInd">✓ Сохранено</div>
+<div class="word-count" id="wordCount">0 слов</div>
+
+<script>
+const P=new URLSearchParams(location.search);
+let noteId=P.get('id')||'';
+let noteFolder=P.get('folder')||'inbox';
+let noteCreated=0;
+let isPreview=false;
+let autoSaveTimer=null;
+let loadedPlugins=[];
+
+function esc(t){if(!t)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+
+// Themes
+function getTheme(){return localStorage.getItem('infinity_theme')||'light'}
+function setTheme(t){
+  document.body.className=t==='light'?'':(t==='sepia'?'sepia':'dark');
+  document.getElementById('themeBtn').textContent=t==='light'?'🌙':(t==='sepia'?'☀️':'☀️');
+  localStorage.setItem('infinity_theme',t);
+}
+function cycleTheme(){const th=['light','dark','sepia'];setTheme(th[(th.indexOf(getTheme())+1)%th.length])}
+setTheme(getTheme());
+
+// Formatting
+function insertFormat(before,after){
+  const el=document.getElementById('content');
+  const start=el.selectionStart,end=el.selectionEnd;
+  const text=el.value;
+  const selected=text.substring(start,end)||'текст';
+  el.value=text.substring(0,start)+before+selected+after+text.substring(end);
+  el.selectionStart=start+before.length;
+  el.selectionEnd=start+before.length+selected.length;
+  el.focus();updateStats();scheduleAutoSave();
+}
+function insertLine(prefix){
+  const el=document.getElementById('content');
+  const start=el.selectionStart;
+  const text=el.value;
+  let lineStart=text.lastIndexOf('\n',start-1)+1;
+  el.value=text.substring(0,lineStart)+prefix+text.substring(lineStart);
+  el.selectionStart=el.selectionEnd=lineStart+prefix.length;
+  el.focus();updateStats();scheduleAutoSave();
+}
+function insertTable(){
+  const t='\n| Заголовок 1 | Заголовок 2 | Заголовок 3 |\n|---|---|---|\n| Ячейка 1 | Ячейка 2 | Ячейка 3 |\n';
+  const el=document.getElementById('content');
+  const pos=el.selectionStart;
+  el.value=el.value.substring(0,pos)+t+el.value.substring(pos);
+  el.selectionStart=el.selectionEnd=pos+t.length;
+  el.focus();updateStats();scheduleAutoSave();
+}
+function handleEditorKeys(e){
+  if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();save()}
+  if((e.ctrlKey||e.metaKey)&&e.key==='b'){e.preventDefault();insertFormat('**','**')}
+  if((e.ctrlKey||e.metaKey)&&e.key==='i'){e.preventDefault();insertFormat('*','*')}
+  if(e.key==='Tab'){
+    e.preventDefault();
+    const el=document.getElementById('content');
+    const start=el.selectionStart;
+    el.value=el.value.substring(0,start)+'  '+el.value.substring(el.selectionEnd);
+    el.selectionStart=el.selectionEnd=start+2;
+  }
+}
+
+// ==================== File Upload ====================
+function triggerFileUpload(){document.getElementById('fileInput').click()}
+function handleFileSelect(e){const files=e.target.files;for(const f of files)uploadFile(f);e.target.value=''}
+
+async function uploadFile(file){
+  if(file.size>20*1024*1024){alert('Файл слишком большой (макс. 20MB)');return}
+  const formData=new FormData();
+  formData.append('file',file);
+  if(!noteId){await save()}
+  formData.append('note_id',noteId);
+  try{
+    const r=await fetch('/api/notes/upload',{method:'POST',body:formData});
+    const d=await r.json();
+    if(d.ok){
+      if(d.is_image){
+        insertFormat('\n![image](','('+d.url+')\n');
+      }else{
+        insertFormat('\n[📎 '+file.name+'](',')('+d.url+')\n');
+      }
+      loadAttachments();
+    }else{alert(d.error||'Ошибка загрузки')}
+  }catch(e){alert('Ошибка: '+e.message)}
+}
+
+async function loadAttachments(){
+  if(!noteId)return;
+  const r=await fetch('/api/notes/attachments?note='+noteId);
+  const d=await r.json();
+  const el=document.getElementById('attachmentsList');
+  if(!d.attachments.length){el.innerHTML='';return}
+  el.innerHTML=d.attachments.map(a=>{
+    if(a.is_image){
+      return`<div class="att" onclick="insertFormat('\\n![image](','${a.url})\\n')">`+
+        `<img src="${a.url}" alt="${esc(a.filename)}" loading="lazy">`+
+        `<button class="del" onclick="event.stopPropagation();deleteAttachment('${esc(a.filename)}')">✕</button></div>`;
+    }else{
+      return`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;font-size:13px">
+        <span>📎</span>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--accent);cursor:pointer;text-decoration:underline" onclick="showAttachmentMenu(event,'${a.url}','${esc(a.filename)}')">${esc(a.filename)}</span>
+        <button class="btn" onclick="deleteAttachment('${esc(a.filename)}')" style="padding:2px 6px;font-size:11px">✕</button>
+      </div>`;
+    }
+  }).join('');
+}
+
+// Attachment context menu
+function showAttachmentMenu(e,url,filename){
+  e.preventDefault();
+  e.stopPropagation();
+  let menu=document.getElementById('attContextMenu');
+  if(!menu){
+    menu=document.createElement('div');
+    menu.id='attContextMenu';
+    menu.style.cssText='position:fixed;z-index:500;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.3);min-width:220px';
+    document.body.appendChild(menu);
+  }
+  menu.innerHTML=`
+    <div style="padding:6px 10px;font-size:11px;color:var(--text3);border-bottom:1px solid var(--border);margin-bottom:4px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(filename)}</div>
+    <button onclick="downloadAttachment('${url}','${esc(filename)}')" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer;border-radius:4px;text-align:left"><span>📥</span>Скачать</button>
+    <button onclick="openFileInExplorer('${url}')" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer;border-radius:4px;text-align:left"><span>📂</span>Открыть путь к файлу</button>
+    <button onclick="saveAttachmentToDB('${url}','${esc(filename)}')" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;background:none;border:none;color:var(--accent);font-size:13px;cursor:pointer;border-radius:4px;text-align:left"><span>💾</span>Сохранить в базу данных</button>
+    <div style="height:1px;background:var(--border);margin:4px 0"></div>
+    <button onclick="copyToClipboard('${url}')" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;background:none;border:none;color:var(--text);font-size:13px;cursor:pointer;border-radius:4px;text-align:left"><span>📋</span>Копировать ссылку</button>
+  `;
+  menu.style.left=Math.min(e.clientX,window.innerWidth-240)+'px';
+  menu.style.top=Math.min(e.clientY,window.innerHeight-250)+'px';
+  menu.style.display='block';
+  setTimeout(()=>{
+    const handler=()=>{menu.style.display='none';document.removeEventListener('click',handler)};
+    document.addEventListener('click',handler);
+  },10);
+}
+function downloadAttachment(url,filename){
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;a.click();
+}
+function openFileInExplorer(url){
+  // Extract local file path from URL
+  const match=url.match(/\/api\/notes\/attachment\?note=([^&]+)&file=(.+)/);
+  if(match){
+    const noteId=decodeURIComponent(match[1]);
+    const file=decodeURIComponent(match[2]);
+    alert('Путь к файлу:\n~/.infinity/notes_attachments/'+noteId+'/'+file+'\n\nВы можете скопировать этот путь и открыть в файловом менеджере.');
+  }else{
+    window.open(url,'_blank');
+  }
+}
+function saveAttachmentToDB(url,filename){
+  if(!noteId)return;
+  // Just confirm - the file is already in attachments dir
+  alert('✓ Файл "'+filename+'" уже сохранён в базе вложений заметки.');
+}
+function copyToClipboard(text){navigator.clipboard.writeText(text).catch(()=>{})}
+
+// Insert image by path or URL
+async function insertImageDialog(){
+  const url = await InfinityDialogs.prompt({label:'Вставьте путь к локальной картинке или URL:\n\nПримеры:\n/home/user/photo.jpg\nhttps://example.com/image.png'});
+  if(!url)return;
+  const alt=await InfinityDialogs.prompt({label:'Описание картинки (alt):', value:''})||'image';
+  insertFormat('\n!['+alt+'](','('+url+')\n');
+}
+
+// AI fix errors
+async function aiFixErrors(){
+  const editor=document.getElementById('content');
+  const text=editor.value;
+  if(!text||text.trim().length<3){alert('В заметке нет текста для исправления');return}
+  const btn=event.target;
+  btn.textContent='⏳';btn.disabled=true;
+  try{
+    const r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      article:text.substring(0,6000),
+      question:'Исправь все грамматические, пунктуационные и орфографические ошибки в этом тексте. Верни ТОЛЬКО исправленный текст без пояснений.',
+      model:'gemma-3-1b-it@q8_0'
+    })});
+    const d=await r.json();
+    if(d.error){alert('Ошибка AI: '+d.error);btn.textContent='✏️';btn.disabled=false;return}
+    if(d.answer&&d.answer.length>10){
+      if(confirm('AI исправил текст ('+d.answer.length+' символов).\n\nЗаменить текущий текст?')){
+        editor.value=d.answer;
+        updateStats();scheduleAutoSave();
+      }
+    }else{alert('AI не смог исправить текст')}
+  }catch(e){alert('Ошибка: '+e.message)}
+  btn.textContent='✏️';btn.disabled=false;
+}
+
+async function deleteAttachment(filename){
+  if(!confirm('Удалить файл?'))return;
+  await fetch('/api/notes/delete-attachment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({note_id:noteId,filename})});
+  loadAttachments();
+}
+
+// Drag & Drop
+const editor=document.getElementById('content');
+editor.addEventListener('dragover',e=>{e.preventDefault();document.getElementById('dropZone').classList.add('dragover')});
+editor.addEventListener('dragleave',e=>{document.getElementById('dropZone').classList.remove('dragover')});
+editor.addEventListener('drop',e=>{
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  const files=e.dataTransfer.files;
+  for(const f of files)if(f.type.startsWith('image/'))uploadFile(f);
+});
+// Show drop zone on drag enter
+document.addEventListener('dragenter',e=>{
+  if(e.dataTransfer&&e.dataTransfer.types.includes('Files')){
+    document.getElementById('dropZone').classList.add('active');
+  }
+});
+document.addEventListener('dragleave',e=>{
+  if(e.relatedTarget===null)document.getElementById('dropZone').classList.remove('active');
+});
+document.addEventListener('drop',e=>{setTimeout(()=>document.getElementById('dropZone').classList.remove('active'),100)});
+
+// ==================== Plotly ====================
+const plotlyTemplates={
+  scatter:'{"data":[{"x":[1,2,3,4,5],"y":[2,5,3,8,6],"mode":"markers","type":"scatter","name":"Данные","marker":{"size":10,"color":"#4f6ef7"}}],"layout":{"title":"Диаграмма рассеяния","xaxis":{"title":"X"},"yaxis":{"title":"Y"}}}',
+  bar:'{"data":[{"x":["Янв","Фев","Мар","Апр","Май"],"y":[12,19,8,15,22],"type":"bar","marker":{"color":["#4f6ef7","#2da44e","#d29922","#cf222e","#8957e5"]}}],"layout":{"title":"Столбчатая диаграмма","xaxis":{"title":"Месяц"},"yaxis":{"title":"Значение"}}}',
+  pie:'{"data":[{"labels":["A","B","C","D"],"values":[30,25,25,20],"type":"pie","hole":0.4}],"layout":{"title":"Круговая диаграмма"}}',
+  line:'{"data":[{"x":[1,2,3,4,5,6,7],"y":[10,15,13,17,20,18,22],"type":"scatter","mode":"lines+markers","line":{"width":3}}],"layout":{"title":"Линейный график","xaxis":{"title":"Время"},"yaxis":{"title":"Значение"}}}',
+  histogram:'{"data":[{"x":[22,25,28,30,32,35,22,24,26,28,30,33,35,38,25,27,29,31],"type":"histogram","nbinsx":8}],"layout":{"title":"Гистограмма","xaxis":{"title":"Значение"},"yaxis":{"title":"Частота"}}}',
+  heatmap:'{"data":[{"z":[[1,20,30],[20,1,60],[30,60,1]],"type":"heatmap","colorscale":"Viridis"}],"layout":{"title":"Тепловая карта"}}'
+};
+function setPlotlyTemplate(key){document.getElementById('plotlyData').value=plotlyTemplates[key]||''}
+function openPlotlyModal(){document.getElementById('plotlyModal').classList.add('open')}
+function closePlotlyModal(){document.getElementById('plotlyModal').classList.remove('open')}
+function insertPlotly(){
+  const data=document.getElementById('plotlyData').value.trim();
+  if(!data){alert('Введите данные');return}
+  try{JSON.parse(data)}catch(e){alert('Невалидный JSON: '+e.message);return}
+  const el=document.getElementById('content');
+  const pos=el.selectionStart;
+  const block='\n```plotly\n'+data+'\n```\n';
+  el.value=el.value.substring(0,pos)+block+el.value.substring(pos);
+  el.selectionStart=el.selectionEnd=pos+block.length;
+  el.focus();updateStats();scheduleAutoSave();closePlotlyModal();
+}
+
+// ==================== Preview & Rendering ====================
+function togglePreview(){
+  isPreview=!isPreview;
+  const editor=document.getElementById('content');
+  const previewArea=document.getElementById('previewArea');
+  const previewContent=document.getElementById('previewContent');
+  const btn=document.getElementById('previewBtn');
+  const dropZone=document.getElementById('dropZone');
+  const editorWrap=document.querySelector('.editor-wrap');
+  if(isPreview){
+    renderPreviewWithComments();
+    editor.style.display='none';
+    if(editorWrap)editorWrap.style.display='none';
+    previewArea.classList.add('open');
+    dropZone.classList.remove('active');
+    btn.textContent='✏️ Редактировать';
+    renderMathJax();renderPlotlyCharts();
+  }else{
+    editor.style.display='block';
+    if(editorWrap)editorWrap.style.display='block';
+    previewArea.classList.remove('open');
+    btn.textContent='👁 Превью';
+    editor.focus();
+  }
+}
+
+function renderMarkdown(text){
+  let h=text;
+  // Escape HTML
+  h=h.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Plotly blocks (before other code processing)
+  h=h.replace(/```plotly\n([\s\S]*?)```/g,function(m,p1){
+    const id='plotly_'+Math.random().toString(36).substr(2,9);
+    return'<div class="plotly-chart" id="'+id+'" data-plotly="'+esc(p1).replace(/"/g,'&quot;')+'"></div>';
+  });
+  // Code blocks
+  h=h.replace(/```(\w*)\n([\s\S]*?)```/g,'<pre><code class="lang-$1">$2</code></pre>');
+  // Inline code
+  h=h.replace(/`([^`]+)`/g,'<code>$1</code>');
+  // Headers
+  h=h.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  h=h.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+  h=h.replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  // Bold/Italic/Strike
+  h=h.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  h=h.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  h=h.replace(/~~(.+?)~~/g,'<s>$1</s>');
+  // Blockquote
+  h=h.replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>');
+  // Checkboxes
+  h=h.replace(/^- \[x\] (.+)$/gm,'<div class="checkbox"><input type="checkbox" checked disabled> $1</div>');
+  h=h.replace(/^- \[ \] (.+)$/gm,'<div class="checkbox"><input type="checkbox" disabled> $1</div>');
+  // Lists
+  h=h.replace(/^- (.+)$/gm,'<li>$1</li>');
+  h=h.replace(/^(\d+)\. (.+)$/gm,'<li>$2</li>');
+  // Images MUST be before Links (otherwise ![alt](url) matches as link)
+  h=h.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,'<img src="$2" alt="$1" loading="lazy" style="max-width:100%;border-radius:8px;margin:8px 0;cursor:pointer" onclick="if(this.style.maxWidth===\'100%\'){this.style.maxWidth=\'\';this.style.position=\'fixed\';this.style.top=\'50%\';this.style.left=\'50%\';this.style.transform=\'translate(-50%,-50%)\';this.style.zIndex=\'9999\';this.style.boxShadow=\'0 0 40px rgba(0,0,0,.5)\'}else{this.style.maxWidth=\'100%\';this.style.position=\'\';this.style.top=\'\';this.style.left=\'\';this.style.transform=\'\';this.style.zIndex=\'\';this.style.boxShadow=\'\'}">');
+  // Links
+  h=h.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // Wiki-links [[id]] or [[id|text]]
+  h=h.replace(/\[\[([^\]|]+?)(?:\|([^\]]+?))?\]\]/g,function(m,id,text){
+    return'<a href="/notes/edit?id='+id+'" style="color:var(--accent);background:var(--accent-light);padding:1px 6px;border-radius:3px;text-decoration:none">📝 '+(text||id)+'</a>';
+  });
+  // Tags #tag
+  h=h.replace(/(^|\s)#([a-zA-Zа-яА-Я0-9_]+)/g,'$1<span style="background:var(--purple-light);color:var(--purple);padding:1px 8px;border-radius:10px;font-size:13px;font-weight:500">#$2</span>');
+  // HR
+  h=h.replace(/^---$/gm,'<hr>');
+  // Paragraphs
+  h=h.replace(/\n\n/g,'</p><p>');
+  h='<p>'+h+'</p>';
+  // Clean up block elements
+  h=h.replace(/<p><h/g,'<h').replace(/<\/h(\d)><\/p>/g,'</h$1>');
+  h=h.replace(/<p><pre>/g,'<pre>').replace(/<\/pre><\/p>/g,'</pre>');
+  h=h.replace(/<p><blockquote>/g,'<blockquote>').replace(/<\/blockquote><\/p>/g,'</blockquote>');
+  h=h.replace(/<p><li>/g,'<ul><li>').replace(/<\/li><\/p>/g,'</li></ul>');
+  h=h.replace(/<\/ul>\s*<ul>/g,'');
+  h=h.replace(/<p><hr><\/p>/g,'<hr>');
+  h=h.replace(/<p><div/g,'<div').replace(/<\/div><\/p>/g,'</div>');
+  h=h.replace(/<p>\s*<\/p>/g,'');
+  // Tables (simple)
+  h=h.replace(/\|(.+)\|\n\|[-| ]+\|\n((?:\|.+\|\n?)+)/g,function(m,header,body){
+    const ths=header.split('|').filter(c=>c.trim()).map(c=>'<th>'+c.trim()+'</th>').join('');
+    const rows=body.trim().split('\n').map(row=>
+      '<tr>'+row.split('|').filter(c=>c.trim()).map(c=>'<td>'+c.trim()+'</td>').join('')+'</tr>'
+    ).join('');
+    return'<table><thead><tr>'+ths+'</tr></thead><tbody>'+rows+'</tbody></table>';
+  });
+  return h;
+}
+
+function renderMathJax(){
+  if(window.renderMathInElement){
+    renderMathInElement(document.getElementById('previewContent'),{
+      delimiters:[
+        {left:"$$",right:"$$",display:true},
+        {left:"$",right:"$",display:false}
+      ]
+    });
+  }
+}
+
+function renderPlotlyCharts(){
+  const charts=document.querySelectorAll('.plotly-chart');
+  charts.forEach(el=>{
+    try{
+      const rawData=el.getAttribute('data-plotly');
+      const decoded=el.textContent||rawData;
+      const config=JSON.parse(decoded);
+      if(window.Plotly){
+        Plotly.newPlot(el,config.data||[],config.layout||{},{responsive:true});
+      }
+    }catch(e){
+      el.innerHTML='<div style="padding:20px;text-align:center;color:var(--red)">Ошибка рендеринга Plotly: '+esc(e.message)+'</div>';
+    }
+  });
+}
+
+// ==================== Stats ====================
+function updateStats(){
+  const text=document.getElementById('content').value;
+  const words=text.trim()?text.trim().split(/\s+/).length:0;
+  const chars=text.length;
+  document.getElementById('wordInfo').textContent=words+' слов';
+  document.getElementById('charInfo').textContent=chars+' символов';
+  document.getElementById('wordCount').textContent=words+' слов · '+chars+' символов';
+}
+
+// ==================== Auto-save ====================
+function scheduleAutoSave(){
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer=setTimeout(save,5000);
+}
+
+// ==================== Folders ====================
+async function loadFolders(){
+  const r=await fetch('/api/notes/folders');
+  const d=await r.json();
+  const sel=document.getElementById('folderSelect');
+  sel.innerHTML=d.folders.filter(f=>f!=='all').map(f=>`<option value="${f}" ${f===noteFolder?'selected':''}>${f==='inbox'?'📥 Входящие':'📁 '+f}</option>`).join('');
+}
+async function moveNote(){
+  if(!noteId)return;
+  const folder=document.getElementById('folderSelect').value;
+  await fetch('/api/notes/move',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:noteId,folder})});
+  noteFolder=folder;
+}
+
+// ==================== Load/Save ====================
+async function loadNote(){
+  if(!noteId)return;
+  const r=await fetch('/api/notes/get?id='+noteId);
+  const d=await r.json();
+  if(d.error)return;
+  document.getElementById('title').value=d.title||'';
+  document.getElementById('content').value=d.content||'';
+  noteFolder=d.folder||'inbox';
+  noteCreated=d.created||0;
+  document.getElementById('dateInfo').textContent=new Date((d.updated||d.created||0)*1000).toLocaleString('ru');
+  loadFolders();updateStats();loadAttachments();loadNoteComments();
+  document.title=(d.title||'Редактор')+' — Заметки';
+}
+async function save(){
+  const title=document.getElementById('title').value.trim()||'Без названия';
+  const content=document.getElementById('content').value;
+  const folder=document.getElementById('folderSelect').value;
+  const r=await fetch('/api/notes/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:noteId,title,content,folder,created:noteCreated})});
+  const d=await r.json();
+  if(d.ok){
+    noteId=d.id;
+    const ind=document.getElementById('savedInd');
+    ind.style.display='block';
+    setTimeout(()=>ind.style.display='none',2000);
+    loadAttachments();
+  }
+}
+async function deleteNote(){
+  if(!noteId||!confirm('Удалить заметку?'))return;
+  await fetch('/api/notes/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:noteId})});
+  location.href='/notes';
+}
+
+// ==================== AI ====================
+function toggleAIPanel(){
+  const body=document.getElementById('aiPanel');
+  const arrow=document.getElementById('aiToggle');
+  body.classList.toggle('open');
+  arrow.textContent=body.classList.contains('open')?'▼':'▶';
+}
+async function askAI(){
+  const q=document.getElementById('aiQuestion').value.trim();if(!q)return;
+  const content=document.getElementById('content').value;
+  const el=document.getElementById('aiResult');el.style.display='block';el.textContent='Думаю...';
+  const r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({article:content,question:q})});
+  const d=await r.json();el.textContent=d.answer||d.error||'Нет ответа';
+}
+async function aiAction(prompt){
+  const content=document.getElementById('content').value;if(!content){alert('Нет текста');return}
+  const el=document.getElementById('aiResult');el.style.display='block';el.textContent='Обрабатываю...';
+  const r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({article:content,question:prompt})});
+  const d=await r.json();
+  if(d.answer){
+    const trimmed=d.answer.replace(/^```[\w]*\n?/,'').replace(/\n?```$/,'');
+    document.getElementById('content').value=trimmed;
+    el.textContent='Готово!';updateStats();scheduleAutoSave();
+  }else{el.textContent=d.error||'Нет ответа'}
+}
+async function aiTranslate(from,to){
+  const content=document.getElementById('content').value;if(!content)return;
+  const el=document.getElementById('aiResult');el.style.display='block';el.textContent='Перевожу...';
+  const r=await fetch('/api/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:content.substring(0,6000),from,to,method:'lm_studio'})});
+  const d=await r.json();
+  if(d.translated){document.getElementById('content').value=d.translated;el.textContent='Переведено!';updateStats();scheduleAutoSave()}
+  else{el.textContent=d.error||'Ошибка'}
+}
+
+// ==================== Plugins ====================
+async function loadPlugins(){
+  try{
+    const r=await fetch('/api/notes/plugins');
+    const d=await r.json();
+    if(!d.plugins.length)return;
+    const bar=document.getElementById('pluginBar');
+    bar.style.display='flex';
+    // Load JS plugins
+    for(const p of d.plugins){
+      if(p.type==='js'){
+        try{
+          const scriptR=await fetch('/api/notes/attachment?note=_plugins&file='+encodeURIComponent(p.file));
+        }catch(e){}
+      }
+    }
+    // Show plugin buttons from JS plugin files
+    bar.innerHTML='<span style="font-size:11px;color:var(--text3);margin-right:4px">Плагины:</span>';
+    for(const p of d.plugins){
+      const btn=document.createElement('button');
+      btn.className='plugin-btn';
+      btn.textContent=(p.type==='js'?'⚡':'🐍')+' '+p.name;
+      btn.title=p.description||p.name;
+      btn.onclick=()=>executePlugin(p);
+      bar.appendChild(btn);
+    }
+  }catch(e){console.log('Plugins load error:',e)}
+}
+
+async function executePlugin(plugin){
+  if(plugin.type==='py'){
+    const content=document.getElementById('content').value;
+    try{
+      const r=await fetch('/api/notes/plugin/execute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plugin:plugin.name,hook:'process',content,note_data:{id:noteId,title:document.getElementById('title').value}})});
+      const d=await r.json();
+      if(d.ok&&d.result!==undefined){
+        document.getElementById('content').value=d.result;
+        updateStats();scheduleAutoSave();
+      }
+    }catch(e){alert('Ошибка плагина: '+e.message)}
+  }
+}
+
+// ==================== Tags ====================
+let noteTags=[];
+function renderTags(){
+  const row=document.getElementById('tagsRow');
+  const input=document.getElementById('tagInput');
+  const pills=row.querySelectorAll('.tag-pill');
+  pills.forEach(p=>p.remove());
+  noteTags.forEach(tag=>{
+    const pill=document.createElement('span');
+    pill.className='tag-pill';
+    pill.innerHTML='#'+esc(tag)+' <span class="remove" onclick="removeTag(\''+tag+'\')">×</span>';
+    row.insertBefore(pill,input);
+  });
+}
+function handleTagInput(e){
+  if(e.key==='Enter'||e.key===','){
+    e.preventDefault();
+    const val=e.target.value.trim().replace(/[^a-zA-Zа-яА-Я0-9_]/g,'');
+    if(val&&!noteTags.includes(val)){
+      noteTags.push(val);
+      renderTags();
+      scheduleAutoSave();
+    }
+    e.target.value='';
+  }
+}
+function removeTag(tag){
+  noteTags=noteTags.filter(t=>t!==tag);
+  renderTags();
+  scheduleAutoSave();
+}
+
+// ==================== Wiki-link Autocomplete ====================
+let wikiNotes=[],wikiDropdownOpen=false,wikiStartPos=-1;
+async function loadWikiNotes(){
+  try{
+    const r=await fetch('/api/notes/list?folder=all&sort=title');
+    const d=await r.json();
+    wikiNotes=d.articles||[];
+  }catch(e){}
+}
+function checkWikiLink(e){
+  const el=document.getElementById('content');
+  const pos=el.selectionStart;
+  const text=el.value;
+  // Check if we just typed [[
+  const before=text.substring(Math.max(0,pos-2),pos);
+  if(before==='[['){
+    wikiStartPos=pos;
+    showWikiDropdown('');
+    return;
+  }
+  // Check if we're inside [[ ]]
+  if(wikiStartPos>=0){
+    const searchStart=wikiStartPos;
+    const searchTerm=text.substring(searchStart,pos).toLowerCase();
+    // Check if ]] was typed or cursor moved before [[
+    if(text.substring(pos-2,pos)===']]'||pos<wikiStartPos){
+      hideWikiDropdown();
+      return;
+    }
+    showWikiDropdown(searchTerm);
+  }
+}
+function showWikiDropdown(query){
+  const dd=document.getElementById('wikiDropdown');
+  const filtered=wikiNotes.filter(n=>!query||n.title.toLowerCase().includes(query)).slice(0,8);
+  if(!filtered.length){dd.classList.remove('open');return}
+  dd.innerHTML=filtered.map((n,i)=>
+    `<div class="wiki-item${i===0?' active':''}" onclick="insertWikiLink('${esc(n.id)}','${esc(n.title)}')">`+
+    `<span class="wi-title">${esc(n.title)}</span><span class="wi-folder">${esc(n.folder)}</span></div>`
+  ).join('');
+  // Position near cursor
+  const el=document.getElementById('content');
+  const rect=el.getBoundingClientRect();
+  dd.style.top=Math.min(rect.top+40,window.innerHeight-220)+'px';
+  dd.style.left=(rect.left+20)+'px';
+  dd.classList.add('open');
+  wikiDropdownOpen=true;
+}
+function hideWikiDropdown(){
+  document.getElementById('wikiDropdown').classList.remove('open');
+  wikiDropdownOpen=false;
+  wikiStartPos=-1;
+}
+function insertWikiLink(id,title){
+  const el=document.getElementById('content');
+  const pos=el.selectionStart;
+  const text=el.value;
+  // Find the [[ before cursor
+  const bracketPos=text.lastIndexOf('[[',pos);
+  if(bracketPos>=0){
+    const before=text.substring(0,bracketPos);
+    const after=text.substring(pos);
+    const link='[['+id+']]';
+    el.value=before+link+after;
+    el.selectionStart=el.selectionEnd=bracketPos+link.length;
+    el.focus();
+    updateStats();scheduleAutoSave();
+  }
+  hideWikiDropdown();
+}
+// Handle keyboard in wiki dropdown
+document.addEventListener('keydown',e=>{
+  if(!wikiDropdownOpen)return;
+  const dd=document.getElementById('wikiDropdown');
+  const items=dd.querySelectorAll('.wiki-item');
+  const active=dd.querySelector('.wiki-item.active');
+  let idx=Array.from(items).indexOf(active);
+  if(e.key==='ArrowDown'){e.preventDefault();idx=Math.min(idx+1,items.length-1)}
+  else if(e.key==='ArrowUp'){e.preventDefault();idx=Math.max(idx-1,0)}
+  else if(e.key==='Enter'&&active){e.preventDefault();active.click();return}
+  else if(e.key==='Escape'){hideWikiDropdown();return}
+  else return;
+  items.forEach(i=>i.classList.remove('active'));
+  if(items[idx])items[idx].classList.add('active');
+});
+// Close dropdown on click outside
+document.addEventListener('click',e=>{
+  if(wikiDropdownOpen&&!e.target.closest('.wiki-dropdown')&&!e.target.closest('#content')){
+    hideWikiDropdown();
+  }
+});
+
+// ==================== Auto-links ====================
+async function autoLinkNotes(){
+  const btn=document.getElementById('autoLinkBtn');
+  btn.disabled=true;btn.textContent='⏳';
+  btn.style.background='var(--accent)';btn.style.color='#fff';
+  try{
+    const r=await fetch('/api/notes/auto-links',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({use_ai:true})});
+    const d=await r.json();
+    if(d.ok){
+      alert('Автосвязи создано: '+d.links_added+' новых связей (всего: '+d.total_links+')');
+    }else{alert('Ошибка: '+(d.error||'Неизвестная ошибка'))}
+  }catch(e){alert('Ошибка: '+e.message)}
+  btn.disabled=false;btn.textContent='🔗';btn.style.background='';btn.style.color='';
+}
+
+// ==================== Cheatsheet ====================
+function openCheatsheet(){document.getElementById('cheatsheetModal').classList.add('open')}
+function closeCheatsheet(){document.getElementById('cheatsheetModal').classList.remove('open')}
+
+// ==================== Init ====================
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();save()}
+  if(e.key==='Escape'){
+    closeImageModal();closeWordModal();closeFolderBooksModal();closeTtsModelModal();
+    closeCategoriesModal();closeDictionaryModal();closeAddToCategoryModal();
+    closeAttGallery();closeVersionsModal();closeNewFolderModal();
+  }
+});
+
+// Override loadNote to also load tags
+const _origLoadNote=loadNote;
+loadNote=async function(){
+  if(!noteId)return;
+  const r=await fetch('/api/notes/get?id='+noteId);
+  const d=await r.json();
+  if(d.error)return;
+  document.getElementById('title').value=d.title||'';
+  document.getElementById('content').value=d.content||'';
+  noteFolder=d.folder||'inbox';
+  noteCreated=d.created||0;
+  noteTags=d.tags||[];
+  document.getElementById('dateInfo').textContent=new Date((d.updated||d.created||0)*1000).toLocaleString('ru');
+  loadFolders();updateStats();loadAttachments();renderTags();
+  document.title=(d.title||'Редактор')+' — Заметки';
+};
+
+// Override save to include tags + auto-save version
+const _origSave=save;
+save=async function(){
+  const title=document.getElementById('title').value.trim()||'Без названия';
+  const content=document.getElementById('content').value;
+  const folder=document.getElementById('folderSelect').value;
+  // Auto-extract tags from content
+  const contentTags=[...new Set((content.match(/(?:^|\s)#([a-zA-Zа-яА-Я0-9_]+)/g)||[]).map(t=>t.trim().replace('#','')))];
+  const allTags=[...new Set([...noteTags,...contentTags])];
+  const r=await fetch('/api/notes/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:noteId,title,content,folder,tags:allTags,created:noteCreated})});
+  const d=await r.json();
+  if(d.ok){
+    noteId=d.id;
+    noteTags=allTags;
+    renderTags();
+    const ind=document.getElementById('savedInd');
+    ind.style.display='block';
+    setTimeout(()=>ind.style.display='none',2000);
+    loadAttachments();
+    // Auto-save version
+    fetch('/api/notes/version/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:noteId,title,content,folder})}).catch(()=>{});
+  }
+};
+
+// ==================== Versions ====================
+async function openVersionsModal(){
+  if(!noteId){alert('Сначала сохраните заметку');return}
+  let modal=document.getElementById('versionsModal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='versionsModal';
+    modal.className='modal-bg';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML=`<div class="modal" style="max-width:650px;width:95%">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="margin:0;font-size:18px"><i class="fas fa-history" style="color:var(--accent);margin-right:8px"></i>История версий</h3>
+      <button onclick="closeVersionsModal()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--text3);padding:4px 8px;border-radius:6px" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">✕</button>
+    </div>
+    <div id="versionsList" style="max-height:450px;overflow-y:auto;margin-bottom:16px"><div style="text-align:center;padding:30px;color:var(--text3)">Загрузка...</div></div>
+    <button class="btn" onclick="closeVersionsModal()" style="width:100%;justify-content:center;padding:10px;font-size:13px">Закрыть</button>
+  </div>`;
+  modal.classList.add('open');
+  await loadVersionsList();
+}
+function closeVersionsModal(){const m=document.getElementById('versionsModal');if(m)m.classList.remove('open')}
+async function loadVersionsList(){
+  const el=document.getElementById('versionsList');
+  try{
+    const r=await fetch('/api/notes/version/list?id='+noteId);
+    const ct=r.headers.get('content-type')||'';
+    if(!ct.includes('application/json')){
+      const txt=await r.text();
+      el.innerHTML='<div style="color:var(--red);padding:20px;text-align:center">Сервер вернул не JSON: '+esc(txt.substring(0,200))+'</div>';
+      return;
+    }
+    const d=await r.json();
+    if(d.error){el.innerHTML='<div style="color:var(--red);padding:20px;text-align:center">Ошибка: '+esc(d.error)+'</div>';return}
+    if(!d.versions||!d.versions.length){
+      el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:48px;margin-bottom:12px">📝</div>Нет сохранённых версий<br><small style="font-size:11px">Версии создаются автоматически при каждом сохранении</small></div>';
+      return;
+    }
+    el.innerHTML=d.versions.reverse().map(v=>{
+      const time=new Date(v.time*1000).toLocaleString('ru');
+      return`<div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;transition:all .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.boxShadow='0 2px 8px rgba(0,0,0,.1)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+        <div style="width:40px;height:40px;background:var(--accent);color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">${v.num}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(v.title||'Без названия')}</div>
+          <div style="font-size:11px;color:var(--text3)">${time} · ${v.content_len} символов</div>
+        </div>
+        <button onclick="confirmRestoreVersion(${v.num},'${esc((v.title||'Без названия').replace(/'/g,"\\'"))}','${time}')" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;white-space:nowrap" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">↺ Восстановить</button>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<div style="color:var(--red);padding:20px;text-align:center">Ошибка: '+esc(e.message)+'</div>'}
+}
+function confirmRestoreVersion(num,title,time){
+  let modal=document.getElementById('restoreConfirmModal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='restoreConfirmModal';
+    modal.className='modal-bg';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML=`<div class="modal" style="max-width:420px;width:90%">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="width:64px;height:64px;background:var(--orange-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 16px">⚠️</div>
+      <h3 style="margin:0 0 8px;font-size:18px;color:var(--text)">Подтверждение</h3>
+      <p style="color:var(--text2);font-size:13px;line-height:1.6;margin:0">Вы хотите восстановить <strong style="color:var(--accent)">версию #${num}</strong><br><small style="color:var(--text3)">${title}</small><br><small style="color:var(--text3)">от ${time}</small></p>
+      <p style="color:var(--text2);font-size:12px;margin-top:12px;background:var(--bg3);padding:10px;border-radius:8px">📝 Текущий текст будет заменён.<br>Автосохранение создаст новую версию перед изменением.</p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeRestoreConfirm()" style="flex:1;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">Отмена</button>
+      <button onclick="doRestoreVersion(${num})" style="flex:1;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s" onmouseover="this.style.background='var(--accent2)'" onmouseout="this.style.background='var(--accent)'">↺ Восстановить</button>
+    </div>
+  </div>`;
+  modal.classList.add('open');
+}
+function closeRestoreConfirm(){const m=document.getElementById('restoreConfirmModal');if(m)m.classList.remove('open')}
+async function doRestoreVersion(num){
+  closeRestoreConfirm();
+  try{
+    const r=await fetch('/api/notes/version/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:noteId,version:num})});
+    const d=await r.json();
+    if(d.ok){
+      // Reload the note
+      const nr=await fetch('/api/notes/get?id='+noteId);
+      const nd=await nr.json();
+      document.getElementById('title').value=nd.title||'';
+      document.getElementById('content').value=nd.content||'';
+      updateStats();scheduleAutoSave();
+      closeVersionsModal();
+      showToast('✅ Версия #'+num+' восстановлена');
+    }else{alert('Ошибка: '+(d.error||'Неизвестная ошибка'))}
+  }catch(e){alert('Ошибка: '+e.message)}
+}
+
+// ==================== Notes AI Assistant ====================
+let notesAiVisible=false,notesAiMin=false;
+function toggleNotesAi(){
+  const w=document.getElementById('notesAiFloat');
+  if(!w)return;
+  if(notesAiVisible){w.style.display='none';notesAiVisible=false}
+  else{
+    w.style.display='flex';
+    notesAiVisible=true;
+    document.getElementById('notesAiMessages').scrollTop=document.getElementById('notesAiMessages').scrollHeight;
+  }
+}
+
+// Сделать AI окно перетаскиваемым
+setTimeout(()=>{
+  const aiFloat=document.getElementById('notesAiFloat');
+  const aiHeader=document.getElementById('notesAiHeader');
+  if(aiFloat&&aiHeader){
+    let isDragging=false,startX,startY,origLeft,origTop;
+    aiHeader.style.cursor='move';
+    aiHeader.addEventListener('mousedown',function(e){
+      isDragging=true;
+      startX=e.clientX;
+      startY=e.clientY;
+      const rect=aiFloat.getBoundingClientRect();
+      origLeft=rect.left;
+      origTop=rect.top;
+      aiFloat.style.transition='none';
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove',function(e){
+      if(!isDragging)return;
+      const dx=e.clientX-startX;
+      const dy=e.clientY-startY;
+      aiFloat.style.left=(origLeft+dx)+'px';
+      aiFloat.style.top=(origTop+dy)+'px';
+      aiFloat.style.right='auto';
+      aiFloat.style.bottom='auto';
+    });
+    document.addEventListener('mouseup',function(){
+      isDragging=false;
+      aiFloat.style.transition='';
+    });
+  }
+},200);
+
+function notesAiMinimize(){
+  const w=document.getElementById('notesAiFloat');
+  const body=document.getElementById('notesAiBody');
+  if(!w||!body)return;
+  if(notesAiMin){
+    body.style.display='flex';
+    w.style.height='520px';
+    notesAiMin=false;
+  }else{
+    body.style.display='none';
+    w.style.height='auto';
+    notesAiMin=true;
+  }
+}
+function notesAiClose(){
+  const w=document.getElementById('notesAiFloat');
+  if(w){w.style.display='none';notesAiVisible=false}
+}
+function notesAiAddMsg(text,type){
+  const div=document.createElement('div');
+  div.style.cssText='margin-bottom:8px;'+(type==='user'?'color:var(--accent);font-weight:600':'color:var(--text)');
+  div.textContent=text;
+  document.getElementById('notesAiMessages').appendChild(div);
+  div.parentNode.scrollTop=div.parentNode.scrollHeight;
+}
+async function notesAiAsk(){
+  const input=document.getElementById('notesAiInput');
+  const q=input.value.trim();
+  if(!q)return;
+  input.value='';
+  const useCache=document.getElementById('notesUseCache')?.checked||false;
+  notesAiAddMsg(q,'user');
+  const msgDiv=document.getElementById('notesAiMessages');
+  const thinking=document.createElement('div');
+  thinking.style.cssText='margin-bottom:8px;color:var(--text2);font-style:italic';
+  thinking.textContent='Думаю...';
+  msgDiv.appendChild(thinking);
+  try{
+    const noteText=document.getElementById('content').value.substring(0,4000);
+    const r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({article:noteText,question:q,model:'gemma-3-1b-it@q8_0',use_cache:useCache})});
+    const d=await r.json();
+    thinking.remove();
+    let extra=d.from_cache&&!useCache?' ⚡':'';
+    notesAiAddMsg((d.answer||'Нет ответа')+extra,'ai');
+  }catch(e){
+    thinking.remove();
+    notesAiAddMsg('Ошибка: '+e.message,'ai');
+  }
+}
+function notesAiQuick(prompt){
+  const editor=document.getElementById('content');
+  const text=editor.value;
+  if(!text.trim()){alert('Нет текста');return}
+  const btn=event.target;
+  const origText=btn.textContent;
+  btn.textContent='⏳';btn.disabled=true;
+  fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({article:text.substring(0,6000),question:prompt,model:'gemma-3-1b-it@q8_0'})})
+  .then(r=>r.json()).then(d=>{
+    if(d.answer&&d.answer.length>10){
+      if(confirm('Заменить текущий текст улучшенной версией?')){
+        editor.value=d.answer;
+        updateStats();scheduleAutoSave();
+      }
+    }else{alert('AI не смог обработать текст')}
+  }).catch(e=>alert('Ошибка: '+e.message))
+  .finally(()=>{btn.textContent=origText;btn.disabled=false});
+}
+
+// ==================== Image Browser ====================
+function openImageBrowser(){
+  let modal=document.getElementById('imageInsertModal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='imageInsertModal';
+    modal.className='modal-bg';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML=`<div class="modal" style="max-width:450px">
+    <h3><i class="fas fa-image"></i> Вставить картинку</h3>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text2);margin-bottom:6px;display:block">URL или путь к файлу:</label>
+      <input id="imgInsertUrl" placeholder="https://example.com/image.jpg" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;margin-bottom:8px">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text2);margin-bottom:6px;display:block">Описание (alt):</label>
+      <input id="imgInsertAlt" placeholder="Описание картинки" style="width:100%;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn primary" onclick="doInsertImage()" style="flex:1;justify-content:center"><i class="fas fa-check"></i> Вставить</button>
+      <button class="btn" onclick="closeImageModal()" style="flex:1;justify-content:center">Отмена</button>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <label style="font-size:12px;color:var(--text2);margin-bottom:6px;display:block">Или выберите файл:</label>
+      <input type="file" id="imgFileInput" accept="image/*" style="font-size:13px" onchange="insertLocalImage(event)">
+    </div>
+  </div>`;
+  modal.classList.add('open');
+  setTimeout(()=>document.getElementById('imgInsertUrl').focus(),100);
+}
+function closeImageModal(){const m=document.getElementById('imageInsertModal');if(m)m.classList.remove('open')}
+function doInsertImage(){
+  const url=document.getElementById('imgInsertUrl').value.trim();
+  const alt=document.getElementById('imgInsertAlt').value.trim()||'image';
+  if(!url){alert('Введите URL или путь');return}
+  const el=document.getElementById('content');
+  const pos=el.selectionStart;
+  const block=`\n![${alt}](${url})\n`;
+  el.value=el.value.substring(0,pos)+block+el.value.substring(pos);
+  el.selectionStart=el.selectionEnd=pos+block.length;
+  el.focus();updateStats();scheduleAutoSave();
+  closeImageModal();
+}
+function insertLocalImage(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const el=document.getElementById('content');
+    const pos=el.selectionStart;
+    const block=`\n![image](${ev.target.result})\n`;
+    el.value=el.value.substring(0,pos)+block+el.value.substring(pos);
+    el.selectionStart=el.selectionEnd=pos+block.length;
+    el.focus();updateStats();scheduleAutoSave();
+    closeImageModal();
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
+}
+
+// ==================== TEXT COMMENTS SYSTEM ====================
+let currentNoteComments = [];
+let activeCommentPopup = null;
+let currentSelectionRange = null;
+
+// Меню выделения - работает и в редакторе и в превью
+let selectionMenuTimeout = null;
+let menuJustClicked = false;
+
+document.addEventListener('mouseup', function(e) {
+  // Не показываем меню если клик в модальных окнах или popup
+  if(e.target.closest('.modal-bg') || e.target.closest('.comment-input-popup') || 
+     e.target.closest('.selection-menu') || e.target.closest('#wordDictPopup') ||
+     e.target.closest('.att-sidebar') || e.target.closest('.dict-modal')) return;
+  
+  // Если только что кликнули на кнопку меню, не показываем его снова
+  if(menuJustClicked) {
+    menuJustClicked = false;
+    return;
+  }
+  
+  setTimeout(() => {
+    const sel = window.getSelection();
+    const text = sel.toString().trim();
+    if(!text || text.length < 3) { hideSelectionMenu(); return; }
+    
+    const menu = getOrCreateSelectionMenu();
+    menu.innerHTML = `
+      <div class="sel-btn ask-ai" onclick="event.stopPropagation();menuJustClicked=true;askAIAboutSelection()">
+        <span class="sel-icon">🤖</span><span>Спросить AI</span>
+      </div>
+      <div class="sel-btn add-comment" onclick="event.stopPropagation();menuJustClicked=true;addCommentToSelection()">
+        <span class="sel-icon">💬</span><span>Добавить комментарий</span>
+      </div>
+      <div class="sel-btn copy-link" onclick="event.stopPropagation();menuJustClicked=true;copyParagraphLink()">
+        <span class="sel-icon">🔗</span><span>Копировать ссылку</span>
+      </div>
+    `;
+    
+    const rect = menu.getBoundingClientRect();
+    menu.style.left = Math.min(e.clientX, window.innerWidth - 220) + 'px';
+    menu.style.top = Math.max(10, e.clientY - rect.height - 10) + 'px';
+    menu.style.display = 'block';
+    
+    currentSelectionRange = sel.getRangeAt(0).cloneRange();
+  }, 50);
+});
+
+function getOrCreateSelectionMenu() {
+  let menu = document.getElementById('selectionMenu');
+  if(!menu) {
+    menu = document.createElement('div');
+    menu.id = 'selectionMenu';
+    menu.className = 'selection-menu';
+    document.body.appendChild(menu);
+  }
+  return menu;
+}
+
+function hideSelectionMenu() {
+  const m = document.getElementById('selectionMenu');
+  if(m) m.style.display = 'none';
+}
+
+// Спросить AI о выделенном тексте
+async function askAIAboutSelection() {
+  hideSelectionMenu();
+  const sel = window.getSelection();
+  const text = sel.toString().trim();
+  if(!text) return;
+  
+  const aiFloat = document.getElementById('notesAiFloat');
+  if(aiFloat) {
+    aiFloat.style.display = 'flex';
+    notesAiAddMsg('Выделенный текст: "'+text.substring(0,200)+'"','system');
+    document.getElementById('notesAiInput').value = '';
+    document.getElementById('notesAiInput').focus();
+  }
+}
+
+// Добавить комментарий к выделенному тексту
+function addCommentToSelection() {
+  hideSelectionMenu();
+  const sel = window.getSelection();
+  const text = sel.toString().trim();
+  if(!text) return;
+  
+  showCommentInputPopup(text);
+}
+
+// Показать popup для ввода комментария
+function showCommentInputPopup(selectedText) {
+  removeCommentPopup();
+  
+  const popup = document.createElement('div');
+  popup.className = 'comment-input-popup';
+  popup.id = 'commentInputPopup';
+  popup.innerHTML = `
+    <div class="comment-input-header">
+      <span>💬 Добавить комментарий</span>
+      <button onclick="removeCommentPopup()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text3)">✕</button>
+    </div>
+    <textarea id="newCommentText" placeholder="Ваш комментарий...">${escHtml(selectedText.substring(0,50))}...</textarea>
+    <div class="comment-input-actions">
+      <button class="btn primary" onclick="saveNewComment()">Сохранить</button>
+      <button class="btn" onclick="removeCommentPopup()">Отмена</button>
+    </div>
+  `;
+  
+  document.body.appendChild(popup);
+  popup.querySelector('textarea').focus();
+  activeCommentPopup = { selectedText };
+}
+
+function removeCommentPopup() {
+  const p = document.getElementById('commentInputPopup');
+  if(p) p.remove();
+  activeCommentPopup = null;
+}
+
+// Сохранить новый комментарий
+async function saveNewComment() {
+  const textarea = document.getElementById('newCommentText');
+  if(!textarea) return;
+  const commentText = textarea.value.trim();
+  if(!commentText) { alert('Введите текст комментария'); return; }
+  
+  const selectedText = activeCommentPopup?.selectedText || '';
+  const anchorId = 'anchor_' + Date.now();
+
+  try {
+    const r = await fetch('/api/notes/comment/save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        note_id: noteId,
+        selected_text: selectedText,
+        comment: commentText,
+        anchor_id: anchorId
+      })
+    });
+    const d = await r.json();
+    if(d.ok) {
+      removeCommentPopup();
+      loadNoteComments();
+      if(document.getElementById('preview')?.classList.contains('open')) {
+        renderPreviewWithComments();
+      }
+    } else {
+      alert('Ошибка: ' + (d.error || 'Не удалось сохранить'));
+    }
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// Загрузить комментарии заметки
+async function loadNoteComments() {
+  if(!noteId) { currentNoteComments = []; return; }
+  
+  try {
+    const r = await fetch('/api/notes/comment/list?note=' + noteId);
+    const d = await r.json();
+    currentNoteComments = d.comments || [];
+  } catch(e) {
+    currentNoteComments = [];
+  }
+}
+
+// Копировать ссылку на абзац
+function copyParagraphLink() {
+  hideSelectionMenu();
+  const sel = window.getSelection();
+  if(!sel.rangeCount) return;
+  
+  const range = sel.getRangeAt(0);
+  let paragraph = range.commonAncestorContainer;
+  while(paragraph && paragraph.nodeType !== 1) paragraph = paragraph.parentNode;
+  if(!paragraph) paragraph = range.commonAncestorContainer.parentElement;
+  
+  const pEl = paragraph.closest ? paragraph.closest('p, li, blockquote, div') : null;
+  let anchorId = pEl?.getAttribute('data-anchor-id');
+  
+  if(!anchorId) {
+    anchorId = 'anchor_' + Date.now();
+    if(pEl) pEl.setAttribute('data-anchor-id', anchorId);
+  }
+  
+  const url = window.location.href.split('?')[0] + '?id=' + noteId + '#' + anchorId;
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('🔗 Ссылка скопирована!');
+  }).catch(async () => {
+    await InfinityDialogs.prompt({label:'Скопируйте ссылку:', value:url});
+  });
+}
+
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if(!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px;color:var(--text);box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:1000;animation:tooltipIn .2s ease';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  setTimeout(() => toast.style.display = 'none', 2000);
+}
+
+function escHtml(t){if(!t)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+
+// ==================== DICTIONARY (SHARED WITH BOOKS) ====================
+function getDictionary() {
+  try {
+    return JSON.parse(localStorage.getItem('books_dictionary') || '[]');
+  } catch(e) { return []; }
+}
+
+function saveWordToDictionary(word) {
+  const dict = getDictionary();
+  if(dict.find(w => w.word.toLowerCase() === word.toLowerCase())) return;
+  dict.push({ word, definition: '', time: Date.now(), source: 'notes' });
+  localStorage.setItem('books_dictionary', JSON.stringify(dict));
+}
+
+function updateWordDefinition(word, definition) {
+  const dict = getDictionary();
+  const entry = dict.find(w => w.word.toLowerCase() === word.toLowerCase());
+  if(entry) {
+    entry.definition = definition;
+    entry.updated = Date.now();
+    localStorage.setItem('books_dictionary', JSON.stringify(dict));
+  }
+}
+
+function deleteDictionaryWord(word) {
+  let dict = getDictionary();
+  dict = dict.filter(w => w.word !== word);
+  localStorage.setItem('books_dictionary', JSON.stringify(dict));
+}
+
+function openDictionaryModal() {
+  let modal = document.getElementById('dictionaryModal');
+  if(!modal) {
+    modal = document.createElement('div');
+    modal.id = 'dictionaryModal';
+    modal.className = 'dict-modal';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = `
+    <div class="dict-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="margin:0"><i class="fas fa-book-open"></i> Словарь</h3>
+        <button onclick="closeDictionaryModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)">✕</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input id="dictSearchInput" placeholder="Поиск по словарю..." oninput="filterDictionary()" style="flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
+        <button class="btn primary" onclick="exportDictionary()"><i class="fas fa-download"></i> Экспорт</button>
+      </div>
+      <div id="dictionaryList" style="max-height:500px;overflow-y:auto"></div>
+    </div>
+  `;
+  modal.classList.add('open');
+  renderDictionary();
+}
+
+function closeDictionaryModal() {
+  const m = document.getElementById('dictionaryModal');
+  if(m) m.classList.remove('open');
+}
+
+function renderDictionary(filter='') {
+  const dict = getDictionary();
+  const el = document.getElementById('dictionaryList');
+  if(!el) return;
+  
+  const filtered = dict.filter(w => !filter || w.word.toLowerCase().includes(filter.toLowerCase()));
+  if(!filtered.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">Словарь пуст. Дважды кликните на слово чтобы добавить.</div>';
+    return;
+  }
+  
+  el.innerHTML = filtered.map((w, idx) => `
+    <div class="dict-word-card">
+      <div class="word">${escHtml(w.word)}</div>
+      ${w.definition ? `<div class="definition">${escHtml(w.definition)}</div>` : '<div class="definition" style="color:var(--text3)">Определение не добавлено</div>'}
+      <div class="meta">
+        <span>${new Date(w.time).toLocaleDateString('ru')}</span>
+        <span>${w.source || 'notes'}</span>
+      </div>
+      <div class="actions">
+        <button onclick="editWordDefinition('${escHtml(w.word)}')">✏️ Редактировать</button>
+        <button class="delete" onclick="confirmDeleteWord('${escHtml(w.word)}')">🗑 Удалить</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterDictionary() {
+  const input = document.getElementById('dictSearchInput');
+  if(input) renderDictionary(input.value.trim());
+}
+
+async function editWordDefinition(word) {
+  const def = await InfinityDialogs.prompt({label:'Введите определение для "'+word+'":'});
+  if(def !== null) {
+    updateWordDefinition(word, def);
+    renderDictionary(document.getElementById('dictSearchInput')?.value || '');
+  }
+}
+
+function confirmDeleteWord(word) {
+  if(confirm('Удалить "'+word+'" из словаря?')) {
+    deleteDictionaryWord(word);
+    renderDictionary(document.getElementById('dictSearchInput')?.value || '');
+  }
+}
+
+function exportDictionary() {
+  const dict = getDictionary();
+  if(!dict.length) { alert('Словарь пуст'); return; }
+  const text = dict.map(w => `${w.word}\n${w.definition || 'Нет определения'}\n`).join('\n---\n\n');
+  const blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dictionary.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Двойной клик по слову - показать словарь (только в превью, не в редакторе)
+document.addEventListener('dblclick', function(e) {
+  // Не показываем словарь в редакторе, только в превью
+  if(e.target.closest('.editor') || e.target.closest('#content') || 
+     e.target.closest('.selection-menu') || e.target.closest('.comment-input-popup') ||
+     e.target.closest('.att-sidebar') || e.target.closest('.dict-modal')) return;
+  
+  const sel = window.getSelection();
+  const word = sel.toString().trim();
+  if(word && word.length > 1 && word.length < 30 && !/\s/.test(word)) {
+    e.preventDefault();
+    // Закрываем меню выделения если оно открыто
+    hideSelectionMenu();
+    showWordDictionaryPopup(word, e.clientX, e.clientY);
+  }
+});
+
+function showWordDictionaryPopup(word, x, y) {
+  let popup = document.getElementById('wordDictPopup');
+  if(!popup) {
+    popup = document.createElement('div');
+    popup.id = 'wordDictPopup';
+    popup.style.cssText = 'position:fixed;z-index:350;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:360px;width:90%;display:none;animation:aiIn .2s ease';
+    document.body.appendChild(popup);
+  }
+  
+  const dict = getDictionary();
+  const entry = dict.find(w => w.word.toLowerCase() === word.toLowerCase());
+  
+  popup.innerHTML = `
+    <div style="font-size:18px;font-weight:700;color:var(--accent);margin-bottom:8px">${escHtml(word)}</div>
+    ${entry && entry.definition ? `<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:8px">${escHtml(entry.definition)}</div>` : '<div style="font-size:12px;color:var(--text3);margin-bottom:8px">Загрузка определения...</div>'}
+    <div style="display:flex;gap:6px">
+      <button class="btn primary" onclick="saveWordFromPopup('${escHtml(word)}')" style="flex:1;font-size:12px">💾 Сохранить</button>
+      <button class="btn" onclick="lookupWordAI('${escHtml(word)}')" style="flex:1;font-size:12px">🔍 Найти</button>
+    </div>
+  `;
+  
+  popup.style.left = Math.min(x, window.innerWidth - 380) + 'px';
+  popup.style.top = Math.min(y, window.innerHeight - 250) + 'px';
+  popup.style.display = 'block';
+  
+  if(!entry) saveWordToDictionary(word);
+  
+  setTimeout(() => {
+    const hide = (e) => { if(!popup.contains(e.target)) { popup.style.display='none'; document.removeEventListener('click', hide); }};
+    document.addEventListener('click', hide);
+  }, 10);
+}
+
+async function saveWordFromPopup(word) {
+  const def = await InfinityDialogs.prompt({label:'Введите определение для "'+word+'":'});
+  if(def) {
+    updateWordDefinition(word, def);
+    document.getElementById('wordDictPopup').style.display = 'none';
+  }
+}
+
+async function lookupWordAI(word) {
+  const popup = document.getElementById('wordDictPopup');
+  if(!popup) return;
+  
+  // Удаляем старые статусы
+  popup.querySelectorAll('[style*="Запрос"],[style*="Ошибка"],[style*="color:var(--text3)"]').forEach(el => {
+    if(el.textContent.includes('Загрузка') || el.textContent.includes('Запрос') || el.textContent.includes('Ошибка')) el.remove();
+  });
+
+  const statusEl = document.createElement('div');
+  statusEl.style.cssText = 'font-size:12px;color:var(--accent);margin:8px 0;font-weight:600';
+  statusEl.textContent = '⏳ Запрос к AI...';
+  popup.querySelector('div[style*="gap"]').parentNode.insertBefore(statusEl, popup.querySelector('div[style*="gap"]'));
+
+  try {
+    const r = await fetch('/api/ask', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        article: '',
+        question: `Дай краткое определение слова "${word}" на русском языке (1-2 предложения). Только определение, без лишних слов.`,
+        model: 'gemma-3-1b-it@q8_0'
+      })
+    });
+    const d = await r.json();
+    statusEl.remove();
+    if(d.answer && d.answer.length > 5) {
+      updateWordDefinition(word, d.answer);
+      const defEl = document.createElement('div');
+      defEl.style.cssText = 'font-size:13px;color:var(--text);line-height:1.6;margin:8px 0;padding:10px;background:var(--accent-light);border-radius:8px;border-left:3px solid var(--accent)';
+      defEl.innerHTML = '<strong style="color:var(--accent)">🤖 AI:</strong> ' + escHtml(d.answer);
+      popup.querySelector('div[style*="gap"]').parentNode.insertBefore(defEl, popup.querySelector('div[style*="gap"]'));
+      // Обновляем кнопку
+      const saveBtn = popup.querySelector('button[onclick*="saveWord"]');
+      if(saveBtn) {
+        saveBtn.textContent = '✓ Сохранено';
+        saveBtn.style.background = 'var(--green)';
+      }
+    } else {
+      statusEl.textContent = '❌ Не удалось получить определение';
+      statusEl.style.color = 'var(--red)';
+      setTimeout(() => statusEl.remove(), 3000);
+    }
+  } catch(e) {
+    statusEl.textContent = '❌ Ошибка: ' + e.message;
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+// ==================== ATTACHMENTS SIDEBAR ====================
+function openAttachmentsSidebar() {
+  let sidebar = document.getElementById('attachmentsSidebar');
+  if(!sidebar) {
+    sidebar = document.createElement('div');
+    sidebar.id = 'attachmentsSidebar';
+    sidebar.className = 'attachments-sidebar';
+    document.body.appendChild(sidebar);
+  }
+  
+  sidebar.innerHTML = `
+    <div class="att-sidebar-header">
+      <h3><i class="fas fa-paperclip"></i> Вложения</h3>
+      <button class="att-sidebar-close" onclick="closeAttachmentsSidebar()">✕</button>
+    </div>
+    <div class="att-sidebar-body" id="attachmentsSidebarBody">
+      <div style="text-align:center;padding:40px;color:var(--text3)">Загрузка...</div>
+    </div>
+  `;
+  
+  sidebar.classList.add('open');
+  loadAttachmentsSidebar();
+}
+
+function closeAttachmentsSidebar() {
+  const s = document.getElementById('attachmentsSidebar');
+  if(s) s.classList.remove('open');
+}
+
+async function loadAttachmentsSidebar() {
+  if(!noteId) return;
+
+  try {
+    const r = await fetch('/api/notes/attachments?note=' + noteId);
+    const d = await r.json();
+    const body = document.getElementById('attachmentsSidebarBody');
+    if(!body) return;
+
+    if(!d.attachments || !d.attachments.length) {
+      body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)">Нет вложений</div>';
+      return;
+    }
+
+    body.innerHTML = d.attachments.map(att => {
+      if(att.is_image) {
+        return `<div class="att-sidebar-item" onclick="window.open('${att.url}','_blank')">
+          <img src="${att.url}" alt="${esc(att.filename)}" loading="lazy">
+          <div class="att-name">${esc(att.filename)}</div>
+          <div class="att-meta">${formatBytes(att.size)}</div>
+        </div>`;
+      } else {
+        const icon = att.ext==='.pdf'?'📕':att.ext==='.txt'?'📄':'📎';
+        return `<div class="att-sidebar-item" onclick="window.open('${att.url}','_blank')">
+          <div style="font-size:48px;text-align:center;padding:20px">${icon}</div>
+          <div class="att-name">${esc(att.filename)}</div>
+          <div class="att-meta">${att.ext} · ${formatBytes(att.size)}</div>
+        </div>`;
+      }
+    }).join('');
+  } catch(e) {
+    document.getElementById('attachmentsSidebarBody').innerHTML = '<div style="text-align:center;padding:20px;color:var(--red)">Ошибка: ' + esc(e.message) + '</div>';
+  }
+}
+
+function formatBytes(bytes) {
+  if(!bytes) return '0 B';
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
+
+// ==================== HTML/IFRAME SUPPORT ====================
+function insertHtmlCode() {
+  const el = document.getElementById('content');
+  const pos = el.selectionStart;
+  const htmlBlock = '\n\n[HTML]\n<div class="html-embed">\n  <!-- Вставьте ваш HTML код здесь -->\n</div>\n[/HTML]\n\n';
+  el.value = el.value.substring(0, pos) + htmlBlock + el.value.substring(pos);
+  el.selectionStart = el.selectionEnd = pos + htmlBlock.length;
+  el.focus();
+  updateStats();
+  scheduleAutoSave();
+}
+
+function insertIframe() {
+  let modal=document.getElementById('iframeInsertModal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='iframeInsertModal';
+    modal.className='modal-bg';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML=`<div class="modal" style="max-width:500px;width:90%">
+    <h3><i class="fas fa-window-maximize"></i> Вставить iframe</h3>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text2);margin-bottom:6px;display:block">URL для iframe:</label>
+      <input id="iframeInsertUrl" placeholder="https://example.com" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none" onkeydown="if(event.key==='Enter')doInsertIframe()">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text2);margin-bottom:6px;display:block">Высота (px):</label>
+      <input id="iframeInsertHeight" value="400" type="number" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn primary" onclick="doInsertIframe()" style="flex:1;justify-content:center"><i class="fas fa-check"></i> Вставить</button>
+      <button class="btn" onclick="closeIframeModal()" style="flex:1;justify-content:center">Отмена</button>
+    </div>
+  </div>`;
+  modal.classList.add('open');
+  setTimeout(()=>document.getElementById('iframeInsertUrl').focus(),100);
+}
+
+function doInsertIframe(){
+  const url=document.getElementById('iframeInsertUrl').value.trim();
+  const height=document.getElementById('iframeInsertHeight').value||'400';
+  if(!url){alert('Введите URL');return}
+  const el=document.getElementById('content');
+  const pos=el.selectionStart;
+  const iframeBlock=`\n\n[IFRAME]\n<iframe src="${url}" width="100%" height="${height}" frameborder="0" style="border-radius:8px"></iframe>\n[/IFRAME]\n\n`;
+  el.value=el.value.substring(0,pos)+iframeBlock+el.value.substring(pos);
+  el.selectionStart=el.selectionEnd=pos+iframeBlock.length;
+  el.focus();
+  updateStats();
+  scheduleAutoSave();
+  closeIframeModal();
+}
+
+function closeIframeModal(){const m=document.getElementById('iframeInsertModal');if(m)m.classList.remove('open')}
+
+// Обновить renderMarkdown для поддержки HTML/IFRAME
+const origRenderMarkdown = window.renderMarkdown || null;
+function renderMarkdown(text) {
+  if(!text) return '';
+  
+  // Обработка HTML блоков
+  text = text.replace(/\[HTML\]([\s\S]*?)\[\/HTML\]/g, function(match, code) {
+    return '<div class="html-embed">' + code.trim() + '</div>';
+  });
+  
+  // Обработка iframe
+  text = text.replace(/\[IFRAME\]([\s\S]*?)\[\/IFRAME\]/g, function(match, code) {
+    return code.trim();
+  });
+  
+  // Стандартный markdown (упрощённый)
+  let html = text
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$2</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>');
+  
+  return html;
+}
+
+// ==================== COMMENTS IN PREVIEW ====================
+async function renderPreviewWithComments() {
+  const content = document.getElementById('content').value;
+  const previewContent = document.getElementById('previewContent');
+  if(!previewContent) return;
+  
+  let html = renderMarkdown(content);
+  
+  // Добавить data-anchor-id к параграфам
+  let anchorCounter = 0;
+  html = html.replace(/<(p|li|blockquote)/g, function(match) {
+    anchorCounter++;
+    const anchorId = 'anchor_' + anchorCounter + '_' + Date.now();
+    return match + ` data-anchor-id="${anchorId}"`;
+  });
+  
+  // Подсветить текст с комментариями
+  if(currentNoteComments.length > 0) {
+    currentNoteComments.forEach((cmt, idx) => {
+      const escText = escHtml(cmt.selected_text).substring(0, 100);
+      if(escText && html.includes(escText)) {
+        const commentHtml = `
+          <span class="text-comment text-comment-highlighted" data-comment-id="${cmt.id}" data-anchor-id="${cmt.anchor_id}">
+            ${escText}
+            <div class="comment-tooltip" id="comment-tooltip-${idx}">
+              <div class="comment-header">
+                <span class="comment-author">💬 Комментарий</span>
+                <div class="comment-actions">
+                  <button onclick="editComment('${cmt.id}')">✏️</button>
+                  <button onclick="deleteComment('${cmt.id}')">🗑</button>
+                </div>
+              </div>
+              <div class="comment-text">${escHtml(cmt.comment)}</div>
+              <div class="comment-time">${new Date(cmt.created * 1000).toLocaleString('ru')}</div>
+            </div>
+          </span>
+        `;
+        html = html.replace(escText, commentHtml);
+      }
+    });
+  }
+  
+  previewContent.innerHTML = html;
+  
+  // Hover для показа комментариев
+  previewContent.querySelectorAll('.text-comment-highlighted').forEach(el => {
+    el.addEventListener('mouseenter', function() {
+      const tooltip = this.querySelector('.comment-tooltip');
+      if(tooltip) tooltip.classList.add('show');
+    });
+    el.addEventListener('mouseleave', function() {
+      const tooltip = this.querySelector('.comment-tooltip');
+      if(tooltip) tooltip.classList.remove('show');
+    });
+  });
+}
+
+async function editComment(commentId) {
+  const cmt = currentNoteComments.find(c => c.id === commentId);
+  if(!cmt) return;
+  const newText = await InfinityDialogs.prompt({label:'Редактировать комментарий:', value:cmt.comment});
+  if(!newText || newText === cmt.comment) return;
+  
+  try {
+    await fetch('/api/notes/comment/update', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ note_id: noteId, comment_id: commentId, comment: newText })
+    });
+    loadNoteComments();
+    renderPreviewWithComments();
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+async function deleteComment(commentId) {
+  if(!confirm('Удалить комментарий?')) return;
+  try {
+    await fetch('/api/notes/comment/delete', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ note_id: noteId, comment_id: commentId })
+    });
+    loadNoteComments();
+    renderPreviewWithComments();
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// ==================== INIT ====================
+loadFolders();loadNote();loadPlugins();loadWikiNotes();
+</script></body></html>

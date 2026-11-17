@@ -1,0 +1,20 @@
+{
+  "id": "hermes-agent",
+  "name": "Hermes Agent",
+  "type": "module",
+  "description": "AI-агент Hermes (Infinity Isolated), интегрированный в Infinity Search как модуль. Работает на движке приложения, голос — через /api/tts и /api/stt.",
+  "icon": "",
+  "version": "0.23.0",
+  "category": "AI",
+  "needsServer": false,
+  "serverPort": 9120,
+  "idleTimeout": 30,
+  "serverCmd": "",
+  "isBackground": false,
+  "url": "/hermes",
+  "defaultView": "iframe",
+  "main": "",
+  "windowWidth": 1280,
+  "windowHeight": 920,
+  "background": false
+}

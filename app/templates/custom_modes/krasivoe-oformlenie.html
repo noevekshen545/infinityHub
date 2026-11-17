@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Классический текст</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --fg: #1f2937;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --acc: #4f46e5;
+  --card: #ffffff;
+  --r: 14px;
+  --sh: 0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.06);
+  --hover-bg: #f9fafb;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171c;
+    --fg: #e8eaed;
+    --muted: #9aa3af;
+    --line: #2b2f37;
+    --acc: #818cf8;
+    --card: #1b1e24;
+    --sh: 0 1px 3px rgba(0,0,0,.4);
+    --hover-bg: #23272f;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  max-width: 1024px;
+  margin-left: auto;
+  margin-right: auto;
+}
+h1 {
+  font-size: 19px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+input[type="text"] {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--fg);
+  font: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--acc);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 20%, transparent);
+}
+select {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+select:focus {
+  outline: none;
+  border-color: var(--acc);
+}
+.article {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--sh);
+  padding: 24px;
+  margin-bottom: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+.article:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(16,24,40,.12);
+}
+.article-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+.article-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--fg);
+}
+.article-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--acc);
+  background: color-mix(in srgb, var(--acc) 12%, transparent);
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+.article-body {
+  color: var(--fg);
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.article-body mark {
+  background: color-mix(in srgb, var(--acc) 30%, transparent);
+  color: var(--fg);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+.empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  display: none;
+}
+.stats {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  display: flex;
+  gap: 16px;
+}
+</style>
+</head>
+<body>
+
+<h1>Классический текст</h1>
+<div class="sub">Интерактивный просмотр и поиск по историческим текстам</div>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Поиск по тексту...">
+  <select id="filter">
+    <option value="all">Все источники</option>
+    <option value="lorem">Lorem Ipsum</option>
+    <option value="cicero">Цицерон (45 до н.э.)</option>
+    <option value="rackham">Перевод Рэкхема (1914)</option>
+  </select>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div id="container"></div>
+<div class="empty" id="empty">Ничего не найдено</div>
+
+<script>
+const DATA = [
+  {
+    id: 1,
+    title: "Стандартный фрагмент Lorem Ipsum",
+    source: "lorem",
+    sourceLabel: "Lorem Ipsum",
+    date: "Используется с 1966 года",
+    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+  },
+  {
+    id: 2,
+    title: "De Finibus Bonorum et Malorum, Раздел 1.10.32",
+    source: "cicero",
+    sourceLabel: "Цицерон",
+    date: "Написано в 45 г. до н.э.",
+    text: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?"
+  },
+  {
+    id: 3,
+    title: "Перевод H. Rackham (1914)",
+    source: "rackham",
+    sourceLabel: "Перевод Рэкхема",
+    date: "1914 год",
+    text: "But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example, which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?"
+  },
+  {
+    id: 4,
+    title: "De Finibus Bonorum et Malorum, Раздел 1.10.33",
+    source: "cicero",
+    sourceLabel: "Цицерон",
+    date: "Написано в 45 г. до н.э.",
+    text: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat."
+  },
+  {
+    id: 5,
+    title: "Перевод H. Rackham (1914) - Часть 2",
+    source: "rackham",
+    sourceLabel: "Перевод Рэкхема",
+    date: "1914 год",
+    text: "On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures, or else he endures pains to avoid worse pains."
+  }
+];
+
+const container = document.getElementById('container');
+const searchInput = document.getElementById('search');
+const filterSelect = document.getElementById('filter');
+const emptyDiv = document.getElementById('empty');
+const statsDiv = document.getElementById('stats');
+
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function highlightText(text, query) {
+  if (!query) return escapeHtml(text);
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escapedQuery})`, "gi");
+  return escapeHtml(text).replace(regex, "<mark>$1</mark>");
+}
+
+function render() {
+  const query = searchInput.value.trim().toLowerCase();
+  const filter = filterSelect.value;
+
+  let filtered = DATA.filter(item => {
+    const matchesQuery = !query || 
+      item.title.toLowerCase().includes(query) || 
+      item.text.toLowerCase().includes(query) ||
+      item.sourceLabel.toLowerCase().includes(query);
+    
+    const matchesFilter = filter === 'all' || item.source === filter;
+    
+    return matchesQuery && matchesFilter;
+  });
+
+  statsDiv.textContent = `Показано ${filtered.length} из ${DATA.length} записей`;
+
+  if (filtered.length === 0) {
+    container.innerHTML = '';
+    emptyDiv.style.display = 'block';
+    return;
+  }
+
+  emptyDiv.style.display = 'none';
+  
+  container.innerHTML = filtered.map(item => {
+    const highlightedTitle = highlightText(item.title, query);
+    const highlightedText = highlightText(item.text, query);
+    
+    return `
+      <div class="article">
+        <div class="article-header">
+          <div>
+            <h2 class="article-title">${highlightedTitle}</h2>
+            <div class="article-meta">${escapeHtml(item.date)}</div>
+          </div>
+          <span class="tag">${escapeHtml(item.sourceLabel)}</span>
+        </div>
+        <div class="article-body">${highlightedText}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+searchInput.addEventListener('input', render);
+filterSelect.addEventListener('change', render);
+
+render();
+</script>
+</body>
+</html>

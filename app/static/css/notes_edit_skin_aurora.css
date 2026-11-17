@@ -1,0 +1,199 @@
+/* Aurora — редактор заметок: воздух, стекло, мягкие градиенты.
+   Все цвета берутся из переменных страницы (--bg2, --accent, --glass,
+   --border), поэтому оформление следует любой из 9 тем приложения:
+   палитру на <html> ставит theme.js, тёмная и сепия дополнительно
+   переопределяют токены на body. */
+
+html[data-notes-skin="aurora"] body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1100px 620px at 8% -14%, var(--accent-light), transparent 62%),
+    radial-gradient(880px 520px at 100% 0%,
+      color-mix(in srgb, var(--purple) 9%, transparent), transparent 58%);
+  background-attachment: fixed;
+}
+
+/* ── Панели ───────────────────────────────────────────────────────────── */
+html[data-notes-skin="aurora"] .toolbar {
+  margin: 10px 18px 6px;
+  padding: 8px 12px;
+  gap: 5px;
+  border-radius: 20px;
+  border-color: var(--glass-border);
+  background: color-mix(in srgb, var(--glass) 82%, transparent);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--accent) 10%, transparent),
+              var(--shadow-sm);
+}
+
+html[data-notes-skin="aurora"] .toolbar .btn {
+  border-radius: 12px;
+  border-color: transparent;
+  background: color-mix(in srgb, var(--bg3) 70%, transparent);
+}
+
+html[data-notes-skin="aurora"] .toolbar .btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  box-shadow: 0 6px 16px var(--accent-glow);
+}
+
+html[data-notes-skin="aurora"] .toolbar .btn-icon { border-radius: 11px }
+
+html[data-notes-skin="aurora"] .format-bar {
+  margin: 0 18px 12px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border-color: var(--glass-border);
+  background: color-mix(in srgb, var(--glass) 78%, transparent);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+html[data-notes-skin="aurora"] .fmt-btn { border-radius: 9px }
+
+html[data-notes-skin="aurora"] .plugin-bar {
+  margin: 0 18px 10px;
+  border-radius: 16px;
+  border-color: var(--glass-border);
+}
+
+/* ── Полотно заметки ──────────────────────────────────────────────────── */
+html[data-notes-skin="aurora"] .wrap {
+  max-width: 1040px;
+  padding: 14px 24px 96px;
+}
+
+html[data-notes-skin="aurora"] .title-input {
+  font-size: clamp(30px, 3.6vw, 40px);
+  font-weight: 750;
+  margin-bottom: 4px;
+}
+
+html[data-notes-skin="aurora"] .meta-line {
+  border-bottom: none;
+  gap: 8px;
+  padding: 8px 0 12px;
+}
+
+html[data-notes-skin="aurora"] .meta-line > span:not([id]) { display: none }
+
+html[data-notes-skin="aurora"] .meta-line > span[id] {
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg3) 72%, transparent);
+  color: var(--text2);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+html[data-notes-skin="aurora"] .editor-wrap { position: relative }
+
+html[data-notes-skin="aurora"] .editor {
+  padding: 22px 26px;
+  border-radius: 22px;
+  border-color: var(--glass-border);
+  background: color-mix(in srgb, var(--bg2) 92%, transparent);
+  box-shadow: 0 18px 44px color-mix(in srgb, var(--accent) 6%, transparent);
+  font-size: 16.5px;
+  line-height: 1.95;
+}
+
+html[data-notes-skin="aurora"] .editor:focus {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-border));
+  box-shadow: 0 0 0 4px var(--accent-light),
+              0 22px 52px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* Подложка подсветки соавторов должна совпадать с полем по отступам,
+   иначе строки расходятся с текстом. */
+html[data-notes-skin="aurora"] .editor-highlight {
+  padding: 22px 26px;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--bg2) 92%, transparent);
+  border-color: var(--glass-border);
+}
+
+html[data-notes-skin="aurora"] .focus-btn { top: 14px; right: 16px }
+
+html[data-notes-skin="aurora"] .drop-zone {
+  border-radius: 18px;
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  background: color-mix(in srgb, var(--accent-light) 35%, transparent);
+}
+
+html[data-notes-skin="aurora"] .attachments { border-radius: 16px }
+
+html[data-notes-skin="aurora"] .note-media-card { border-radius: 16px }
+
+html[data-notes-skin="aurora"] .preview-area {
+  margin-top: 16px;
+  padding: 26px;
+  border-radius: 22px;
+  border-color: var(--glass-border);
+  background: color-mix(in srgb, var(--bg2) 92%, transparent);
+  box-shadow: 0 14px 36px color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+html[data-notes-skin="aurora"] .preview-pane-head {
+  border-radius: 22px 22px 0 0;
+}
+
+/* ── Теги ─────────────────────────────────────────────────────────────── */
+html[data-notes-skin="aurora"] .tag-pill { border-radius: 999px }
+html[data-notes-skin="aurora"] .tag-input { border-radius: 999px }
+
+/* ── Папки ────────────────────────────────────────────────────────────── */
+html[data-notes-skin="aurora"] .notes-explorer {
+  border-radius: 0 24px 24px 0;
+  border-right: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--bg2) 88%, transparent);
+}
+
+html[data-notes-skin="aurora"] .notes-explorer .ne-header {
+  background: linear-gradient(135deg, var(--accent-light), transparent 70%);
+}
+
+html[data-notes-skin="aurora"] .notes-explorer .ne-close { border-radius: 10px }
+
+/* ── Плашки ───────────────────────────────────────────────────────────── */
+html[data-notes-skin="aurora"] .word-count {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--glass) 88%, transparent);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+html[data-notes-skin="aurora"] .saved-indicator { border-radius: 999px }
+
+html[data-notes-skin="aurora"] .focus-tools .ft-btn { border-radius: 12px }
+
+/* Фокус-режим: страница остаётся воздушной, поле — без карточки. */
+body.notes-focus .editor,
+html[data-notes-skin="aurora"] body.notes-focus .editor {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+}
+
+/* ── Адаптив ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  html[data-notes-skin="aurora"] .toolbar { margin: 8px 10px 4px }
+  html[data-notes-skin="aurora"] .format-bar { margin: 0 10px 10px }
+  html[data-notes-skin="aurora"] .wrap { padding: 10px 14px 84px }
+  html[data-notes-skin="aurora"] .editor { padding: 16px 18px; border-radius: 18px }
+  html[data-notes-skin="aurora"] .editor-highlight { padding: 16px 18px; border-radius: 18px }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-notes-skin="aurora"] .editor { transition: none }
+}
+
+/* Фокус-режим: ширину полотна задаёт ручка (--notes-focus-w, ставится на
+   body), а не фиксированный max-width скина. Без этого правила скин
+   перебивал inline-стиль страницы по специфичности, и перетаскивание
+   боковых ручек не меняло ширину — работала только высота. */
+html[data-notes-skin="aurora"] body.notes-focus .wrap {
+  max-width: var(--notes-focus-w, 680px);
+}
+
+/* Сплит: превью — вторая колонка той же строки, что и редактор.
+   Внешний отступ сверху (16px) сдвигал его ниже колонки заметки. */
+html[data-notes-skin="aurora"] body.notes-split .preview-area { margin-top: 0 }

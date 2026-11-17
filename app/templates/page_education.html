@@ -1,0 +1,2283 @@
+<!DOCTYPE html>
+<html class="pg-page_education" lang="ru" data-education-skin="next">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Обучение — Infinity</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box }
+:root {
+--bg: #fafbfc; --bg2: #ffffff; --bg3: #f3f4f6; --bg4: #e5e7eb;
+--border: rgba(0, 0, 0, 0.06); --border2: rgba(0, 0, 0, 0.1);
+--text: #111827; --text2: #4b5563; --text3: #9ca3af;
+--accent: #4f46e5; --accent2: #4338ca;
+--accent-glow: rgba(79, 70, 229, 0.15); --accent-light: rgba(79, 70, 229, 0.1);
+--link: #4338ca; --card: rgba(255, 255, 255, 0.8); --hover: rgba(0, 0, 0, 0.03);
+--red: #dc2626; --red-light: rgba(220, 38, 38, 0.08);
+--green: #059669; --green-light: rgba(5, 150, 105, 0.08);
+--yellow: #d97706; --yellow-light: rgba(217, 119, 6, 0.08);
+--purple: #7c3aed; --purple-light: rgba(124, 58, 237, 0.08);
+--blue: #2563eb; --orange: #ea580c;
+--shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+--shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+--shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+--shadow-glow: 0 0 40px rgba(79, 70, 229, 0.1);
+--radius: 16px; --radius-sm: 10px; --radius-lg: 24px; --radius-xl: 32px;
+--tr: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+--tr-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+--glass: rgba(255, 255, 255, 0.72); --glass-border: rgba(0, 0, 0, 0.08);
+--glass-hover: rgba(255, 255, 255, 0.85);
+--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+--font-serif: 'Literata', 'Merriweather', Georgia, serif;
+--font-mono: 'JetBrains Mono', monospace;
+--reader-max: 720px;
+}
+/* Палитры dark/sepia/… убраны: все девять схем и пользовательский акцент
+   приходят из design.css + theme.js — как в остальном приложении. */
+html { scroll-behavior: smooth }
+body {
+font-family: var(--font-sans); background: var(--bg); color: var(--text);
+min-height: 100vh; transition: background 0.4s, color 0.4s;
+line-height: 1.6; -webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale; overflow-x: hidden;
+}
+body::before {
+content: ''; position: fixed; inset: 0;
+background:
+  radial-gradient(ellipse 80% 50% at 20% -10%, var(--accent-glow), transparent),
+  radial-gradient(ellipse 60% 40% at 85% 85%, rgba(168, 85, 247, 0.06), transparent),
+  radial-gradient(ellipse 50% 50% at 50% 50%, rgba(59, 130, 246, 0.03), transparent);
+pointer-events: none; z-index: 0; transition: opacity 0.4s;
+}
+::selection { background: var(--accent); color: #fff }
+a { color: var(--accent); text-decoration: none; transition: var(--tr) }
+a:hover { color: var(--link) }
+button { font-family: inherit; border: none; cursor: pointer; outline: none; background: none }
+input, textarea, select { font-family: inherit; outline: none }
+::-webkit-scrollbar { width: 8px; height: 8px }
+::-webkit-scrollbar-track { background: transparent }
+::-webkit-scrollbar-thumb {
+background: var(--border2); border-radius: 10px;
+border: 2px solid var(--bg); transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--accent) }
+
+.glass-panel {
+background: var(--glass); backdrop-filter: blur(24px) saturate(180%);
+-webkit-backdrop-filter: blur(24px) saturate(180%);
+border: 1px solid var(--glass-border); border-radius: var(--radius);
+box-shadow: var(--shadow);
+}
+
+.search-inp {
+width: 100%; padding: 10px 14px; border: 1px solid var(--border2);
+border-radius: var(--radius-sm); background: var(--bg2); color: var(--text);
+font-size: 14px; transition: var(--tr-fast); outline: none;
+}
+.search-inp:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow) }
+
+.btn {
+display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+border: 1px solid var(--border2); border-radius: 12px;
+background: transparent; color: var(--text2); font-size: 13px; font-weight: 500;
+cursor: pointer; transition: var(--tr); font-family: inherit; white-space: nowrap;
+}
+.btn:hover { background: var(--hover); color: var(--text); border-color: var(--accent) }
+.btn-primary {
+background: linear-gradient(135deg, var(--accent), var(--accent2));
+color: #fff; border-color: transparent;
+box-shadow: 0 4px 16px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+.btn-primary:hover { box-shadow: 0 6px 24px var(--accent-glow); transform: translateY(-1px) }
+.btn-success {
+background: linear-gradient(135deg, var(--green), #047857); color: #fff; border-color: transparent;
+box-shadow: 0 4px 16px rgba(5, 150, 105, 0.2);
+}
+.btn-success:hover { opacity: 0.9; transform: translateY(-1px) }
+.btn-danger {
+background: linear-gradient(135deg, var(--red), #b91c1c); color: #fff; border-color: transparent;
+box-shadow: 0 4px 16px rgba(220, 38, 38, 0.2);
+}
+.btn-danger:hover { opacity: 0.9; transform: translateY(-1px) }
+.btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 10px }
+.btn-xs { padding: 3px 8px; font-size: 11px; border-radius: 8px; border: none; cursor: pointer }
+.btn-icon {
+width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center;
+justify-content: center; border: 1px solid transparent; border-radius: 12px;
+background: transparent; color: var(--text2); cursor: pointer; font-size: 15px;
+transition: var(--tr);
+}
+.btn-icon:hover { background: var(--hover); color: var(--accent) }
+.btn-icon.recording {
+background: var(--red-light); border-color: var(--red);
+color: var(--red); animation: pulse 1s ease infinite;
+}
+.card {
+background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 16px;
+margin-bottom: 12px; box-shadow: var(--shadow-sm); transition: var(--tr);
+}
+.card:hover { box-shadow: var(--shadow); border-color: var(--accent); transform: translateY(-2px) }
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; color: var(--text) }
+.spinner {
+width: 24px; height: 24px; border: 2px solid var(--border2);
+border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg) } }
+.fb { padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-top: 8px }
+.fb.ok { background: var(--green-light); color: var(--green); border: 1px solid transparent }
+.fb.err { background: var(--red-light); color: var(--red); border: 1px solid transparent }
+.diff-badge {
+display: inline-block; padding: 2px 10px; border-radius: 12px;
+font-size: 11px; font-weight: 500;
+}
+.diff-beginner { background: var(--green-light); color: var(--green) }
+.diff-intermediate { background: var(--yellow-light); color: var(--yellow) }
+.diff-advanced { background: var(--red-light); color: var(--red) }
+
+/* Modal / Panel */
+.modal-overlay {
+position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(0, 0, 0, 0.5); z-index: 1000; display: none;
+align-items: center; justify-content: center; backdrop-filter: blur(8px);
+}
+.modal-overlay.show { display: flex }
+.modal-content {
+background: var(--glass); backdrop-filter: blur(20px) saturate(1.4);
+-webkit-backdrop-filter: blur(20px) saturate(1.4);
+border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 28px;
+max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto;
+box-shadow: var(--shadow-lg);
+animation: modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes modalIn {
+from { opacity: 0; transform: scale(0.92) translateY(16px) }
+to { opacity: 1; transform: scale(1) translateY(0) }
+}
+
+/* Плавающая таблетка-тулбар убрана: меню живёт в левом рейле
+   (module_rail.css), разметка — в начале кузова страницы.
+   Буквальный открывающий тег кузова здесь не пишем: add_page_class ищет
+   первое вхождение во всём документе и повесил бы pg- класс на комментарий. */
+
+body.reading-mode .toolbar { display: none }
+body.reading-mode .edu-sidebar { display: none }
+body.reading-mode .main-content { padding-top: 0 !important }
+body.reading-mode .section-tabs { display: none }
+body.reading-mode .lesson-nav { display: none }
+body.reading-mode .reading-bar { display: flex !important }
+#readingBar { display: none }
+body.reading-mode #readingBar { display: flex !important }
+
+#readingBar {
+display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+background: var(--glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+border-bottom: 1px solid var(--glass-border); padding: 8px 16px;
+}
+#readingBar .rb-inner {
+display: flex; align-items: center; gap: 10px; max-width: 1000px; margin: 0 auto;
+}
+#readingBar .rb-title {
+flex: 1; font-size: 13px; font-weight: 600; overflow: hidden;
+text-overflow: ellipsis; white-space: nowrap; color: var(--text);
+}
+#readingBar .rb-btn {
+background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+padding: 6px 12px; font-size: 12px; color: var(--text2); cursor: pointer;
+transition: var(--tr-fast); font-family: inherit; white-space: nowrap;
+}
+#readingBar .rb-btn:hover { background: var(--hover); color: var(--text) }
+#readingBar .rb-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff }
+
+/* Layout */
+.layout { display: flex; height: 100vh; overflow: hidden }
+.edu-sidebar {
+width: 300px; min-width: 300px; background: var(--glass);
+backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
+border-right: 1px solid var(--glass-border); display: flex;
+flex-direction: column; transition: var(--tr); z-index: 10;
+}
+.edu-sidebar.collapsed { width: 0; min-width: 0; overflow: hidden; border: none; opacity: 0 }
+.edu-sidebar .sb-header {
+padding: 16px; display: flex; align-items: center; gap: 8px;
+border-bottom: 1px solid var(--glass-border); flex-shrink: 0;
+}
+.edu-sidebar .sb-title {
+font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px;
+}
+.edu-sidebar .sb-chat {
+flex: 1; overflow-y: auto; padding: 12px; display: flex;
+flex-direction: column; gap: 8px;
+}
+.edu-sidebar .sb-chat::-webkit-scrollbar { width: 4px }
+.edu-sidebar .sb-chat::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px }
+.edu-sidebar .sb-input-area {
+padding: 12px; border-top: 1px solid var(--glass-border);
+display: flex; gap: 8px; background: var(--glass); flex-shrink: 0;
+}
+.msg {
+padding: 8px 12px; border-radius: var(--radius-sm); font-size: 13px;
+line-height: 1.5; max-width: 90%; animation: msgIn 0.3s ease;
+}
+@keyframes msgIn {
+from { opacity: 0; transform: translateY(8px) }
+to { opacity: 1; transform: translateY(0) }
+}
+.msg.user { background: var(--accent-light); align-self: flex-end; color: var(--text) }
+.msg.assistant { background: var(--glass); align-self: flex-start }
+.msg .speak-btn {
+font-size: 10px; padding: 2px 6px; border: none; background: transparent;
+color: var(--text3); cursor: pointer; float: right; border-radius: 4px;
+transition: var(--tr-fast);
+}
+.msg .speak-btn:hover { background: var(--bg3); color: var(--accent) }
+
+.main-content {
+flex: 1; overflow-y: auto; position: relative; z-index: 1;
+padding-top: 68px;
+}
+.main-content::-webkit-scrollbar { width: 6px }
+.main-content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px }
+.main-content::-webkit-scrollbar-track { background: transparent }
+#appContent { padding: 16px 24px 80px; position: relative; z-index: 1; max-width: 960px; margin: 0 auto }
+#appContent.reader-mode { max-width: var(--reader-max) }
+#appContent.reader-mode .lesson-body {
+font-family: var(--font-serif); font-size: 16px; line-height: 1.85;
+}
+#appContent.reader-mode .lesson-body p { margin-bottom: 14px }
+
+/* Course grid */
+.course-grid {
+display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+gap: 16px; padding: 4px;
+}
+.course-card {
+background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 18px;
+cursor: pointer; transition: var(--tr); box-shadow: var(--shadow-sm);
+position: relative; overflow: hidden;
+}
+.course-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--accent) }
+.course-card .mat-count {
+position: absolute; top: 8px; right: 8px; font-size: 10px; padding: 2px 8px;
+background: var(--accent-light); color: var(--accent); border-radius: 8px; font-weight: 600;
+}
+.course-card .cc-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; padding-right: 50px }
+.course-card .cc-meta { font-size: 12px; color: var(--text2); display: flex; gap: 8px; flex-wrap: wrap; align-items: center }
+
+/* Section tabs */
+.section-tabs {
+display: flex; gap: 4px; margin-bottom: 16px; overflow-x: auto; padding: 4px;
+background: var(--glass); backdrop-filter: blur(12px);
+border: 1px solid var(--glass-border); border-radius: var(--radius); width: fit-content;
+}
+.section-tab {
+padding: 8px 16px; border: none; background: transparent; color: var(--text3);
+cursor: pointer; font-size: 13px; font-weight: 500; border-radius: 10px;
+transition: var(--tr); white-space: nowrap; font-family: inherit;
+}
+.section-tab:hover { background: var(--hover); color: var(--text) }
+.section-tab.active {
+background: linear-gradient(135deg, var(--accent), var(--accent2));
+color: #fff; box-shadow: 0 2px 8px var(--accent-glow);
+}
+.slide-up { animation: slideUp 0.35s ease }
+@keyframes slideUp { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: translateY(0) } }
+
+/* Homework */
+.homework-section {
+padding: 20px; background: var(--glass); backdrop-filter: blur(8px);
+border: 1px solid var(--glass-border); border-radius: var(--radius);
+}
+
+/* Quiz */
+.quiz-container { max-width: 700px; margin: 0 auto }
+.quiz-q {
+padding: 16px; background: var(--glass); backdrop-filter: blur(8px);
+border: 1px solid var(--glass-border); border-radius: var(--radius-sm); margin-bottom: 10px;
+}
+.quiz-q .q-text { font-size: 14px; font-weight: 500; margin-bottom: 10px; line-height: 1.5; color: var(--text) }
+.quiz-q .q-meta { font-size: 11px; color: var(--text3); margin-bottom: 6px }
+.quiz-opt {
+padding: 8px 14px; margin: 4px 0; border: 1px solid var(--border2);
+border-radius: var(--radius-sm); cursor: pointer; font-size: 13px;
+transition: var(--tr-fast); background: var(--bg2);
+}
+.quiz-opt:hover { border-color: var(--accent); background: var(--accent-light) }
+.quiz-opt.sel { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 600 }
+.quiz-opt.correct { border-color: var(--green); background: var(--green-light); color: var(--green) }
+.quiz-opt.wrong { border-color: var(--red); background: var(--red-light); color: var(--red) }
+.quiz-fb { padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-top: 8px }
+.quiz-fb.correct { background: var(--green-light); color: var(--green) }
+.quiz-fb.wrong { background: var(--red-light); color: var(--red) }
+.test-ta {
+width: 100%; min-height: 80px; padding: 10px 14px; border: 1px solid var(--border2);
+border-radius: var(--radius-sm); background: var(--bg2); color: var(--text);
+font-size: 13px; resize: vertical; outline: none; transition: var(--tr-fast);
+}
+.test-ta:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow) }
+
+/* Flashcards */
+.flashcard-container { perspective: 1000px; cursor: pointer; margin: 12px auto; max-width: 400px }
+.flashcard {
+position: relative; width: 100%; min-height: 180px; transition: transform 0.5s;
+transform-style: preserve-3d; border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.flashcard.flipped { transform: rotateY(180deg) }
+.flashcard-face {
+position: absolute; top: 0; left: 0; width: 100%; min-height: 180px;
+backface-visibility: hidden; display: flex; align-items: center;
+justify-content: center; padding: 24px; border-radius: var(--radius);
+background: var(--card); border: 1px solid var(--glass-border);
+}
+.flashcard-back { transform: rotateY(180deg); background: var(--accent-light); border-color: var(--accent) }
+.flashcard-nav { display: flex; justify-content: center; gap: 12px; align-items: center; margin-top: 8px }
+.flashcard-hint { text-align: center; font-size: 12px; color: var(--text3); margin-top: 6px }
+.front-text { font-size: 18px; font-weight: 600; text-align: center; color: var(--text) }
+.back-text { font-size: 15px; text-align: center; color: var(--text); line-height: 1.5 }
+
+/* Key terms */
+.key-terms { display: flex; flex-wrap: wrap; gap: 6px }
+.key-term {
+display: inline-flex; align-items: baseline; gap: 4px; padding: 4px 10px;
+background: var(--glass); border: 1px solid var(--glass-border);
+border-radius: 12px; font-size: 12px;
+}
+.term { font-weight: 600; color: var(--accent) }
+.def { color: var(--text2) }
+
+/* Lesson body typography */
+.lesson-body { font-size: 15px; line-height: 1.75; color: var(--text) }
+.lesson-body p { margin-bottom: 12px }
+.lesson-body h2 { margin: 20px 0 10px; font-size: 18px; color: var(--text); font-weight: 700 }
+.lesson-body h3 { margin: 18px 0 8px; font-size: 16px; color: var(--accent); font-weight: 600 }
+.lesson-body h4 { margin: 14px 0 6px; font-size: 15px; color: var(--text2); font-weight: 600 }
+.lesson-body h5 { margin: 12px 0 5px; font-size: 14px; color: var(--text2); font-weight: 600 }
+.lesson-body h6 { margin: 10px 0 4px; font-size: 13px; color: var(--text3); font-weight: 600 }
+.lesson-body table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px }
+.lesson-body th, .lesson-body td { padding: 8px 12px; border: 1px solid var(--border); text-align: left }
+.lesson-body th { background: var(--bg3); font-weight: 600; color: var(--text2) }
+.lesson-body hr { border: none; border-top: 1px solid var(--border); margin: 16px 0 }
+.lesson-body img { max-width: 100%; border-radius: 8px; margin: 12px 0 }
+.lesson-body a { color: var(--accent); text-decoration: underline }
+.lesson-body ul, .lesson-body ol { padding-left: 22px; margin: 10px 0 }
+.lesson-body li { margin-bottom: 6px }
+.lesson-body blockquote {
+border-left: 3px solid var(--accent); padding: 10px 16px; margin: 14px 0;
+background: var(--glass); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+font-style: italic; color: var(--text2); font-size: 14px;
+}
+.lesson-body code {
+background: var(--bg3); padding: 2px 6px; border-radius: 4px;
+font-family: var(--font-mono); font-size: 13px;
+}
+.lesson-body pre {
+background: var(--bg3); padding: 14px; border-radius: var(--radius-sm);
+overflow-x: auto; margin: 12px 0; border: 1px solid var(--border);
+}
+.lesson-body pre code { background: none; padding: 0 }
+
+/* Ordering */
+.order-item {
+padding: 8px 12px; background: var(--bg2); border: 1px solid var(--border);
+border-radius: var(--radius-sm); margin-bottom: 4px; cursor: grab; font-size: 13px;
+}
+.order-item:active { cursor: grabbing }
+.ordering-list .order-item.dragging { opacity: 0.5 }
+.ordering-list .order-item.drag-over { border-color: var(--accent); background: var(--accent-light) }
+
+/* Material items */
+.material-item {
+display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+border-radius: var(--radius-sm); cursor: pointer; transition: var(--tr-fast); font-size: 13px;
+}
+.material-item:hover { background: var(--bg3); color: var(--accent) }
+.material-list { max-height: 300px; overflow-y: auto }
+.material-list .material-item { border-bottom: 1px solid var(--border) }
+
+/* Toast */
+#toast {
+position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 9999;
+display: none; font-size: 13px; padding: 10px 20px; border-radius: var(--radius-sm);
+box-shadow: var(--shadow-lg); max-width: 400px; text-align: center;
+animation: slideUp 0.3s ease;
+}
+#toast .ok { background: var(--green-light); color: var(--green); border: 1px solid var(--green) }
+#toast .err { background: var(--red-light); color: var(--red); border: 1px solid var(--red) }
+#toast .info { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent) }
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text3) }
+.empty-state i { font-size: 48px; display: block; margin-bottom: 16px; color: var(--text3) }
+
+.progress-bar { height: 4px; background: var(--bg4); border-radius: 4px; overflow: hidden }
+.progress-bar .fill {
+height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple));
+border-radius: 4px; transition: width 0.5s ease;
+}
+.progress-bar .fill.done { background: var(--green) }
+
+.gen-banner {
+background: var(--accent-light); border: 1px solid var(--accent); padding: 10px 16px;
+border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 12px;
+display: flex; align-items: center; gap: 8px; color: var(--accent);
+}
+.gen-progress-ring { display: flex; align-items: center; gap: 16px; flex-wrap: wrap }
+.gen-phase-dot {
+width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px;
+}
+.gen-phase-dot.done { background: var(--green) }
+.gen-phase-dot.active { background: var(--accent); animation: pulse 1.5s infinite }
+.gen-phase-dot.pending { background: var(--border2) }
+@keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.5 } }
+
+@media (max-width: 768px) {
+#appContent { padding: 12px 14px 80px }
+.course-grid { grid-template-columns: 1fr }
+.section-tabs { width: 100%; overflow-x: auto }
+}
+</style>
+<script src="/static/js/i18n.js"></script>
+<script src="/static/js/speech_config.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+<link rel="stylesheet" href="/static/fonts/site-fonts.css">
+</head>
+<body>
+<div id="readingBar">
+  <div class="rb-inner">
+    <button class="rb-btn" onclick="exitReadingMode()"><i class="fas fa-arrow-left"></i> Выйти</button>
+    <span class="rb-title" id="rbTitle">Чтение</span>
+    <button class="rb-btn" onclick="ttsLesson(S.currentId, S.lesson)"><i class="fas fa-volume-up"></i></button>
+    <button class="rb-btn primary" onclick="exitReadingMode()"><i class="fas fa-times"></i></button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ЛЕВЫЙ РЕЙЛ. Обработчики и id прежние — логика страницы не менялась;
+     иконки тулбара-таблетки стали пунктами меню, как в книгах и новостях. -->
+<div class="toolbar" id="eduRail" role="navigation" aria-label="Обучение">
+  <div class="rail-head">
+    <a class="rail-brand" href="/" title="На главную">
+      <span class="rail-logo"><i class="fas fa-infinity"></i></span>
+      <span class="rail-name"><b>Infinity</b><small id="pageTitle">Обучение</small></span>
+    </a>
+  </div>
+  <div class="rail-scroll">
+    <div class="rail-group">
+      <span class="rail-cap">Навигация</span>
+      <a class="btn" href="/"><i class="icon fas fa-house"></i><span>Главная</span></a>
+      <a class="btn" href="/notes"><i class="icon fas fa-sticky-note"></i><span>Заметки</span></a>
+      <a class="btn" href="/books"><i class="icon fas fa-book"></i><span>Книги</span></a>
+      <a class="btn" href="/news"><i class="icon fas fa-newspaper"></i><span>Новости</span></a>
+      <a class="btn active" href="/education"><i class="icon fas fa-graduation-cap"></i><span>Обучение</span></a>
+    </div>
+    <div class="rail-group">
+      <span class="rail-cap">Курс</span>
+      <button class="btn" id="toggleSidebarBtn" onclick="toggleSidebar()" title="AI-чат по курсу"><i class="icon fas fa-robot"></i><span>AI-тьютор</span></button>
+      <button class="btn" onclick="backToCourses()" title="Список курсов"><i class="icon fas fa-layer-group"></i><span>Все курсы</span></button>
+      <button class="btn" onclick="openMaterialsModal()" title="Прикрепить материалы"><i class="icon fas fa-paperclip"></i><span>Материалы</span></button>
+      <button class="btn" onclick="openVectorSearch()" title="Векторный поиск по материалам"><i class="icon fas fa-brain"></i><span>Поиск по базе</span></button>
+      <button class="btn" onclick="showGamification()" title="Достижения"><i class="icon fas fa-trophy"></i><span>Достижения</span></button>
+      <button class="btn" id="readingBtn" onclick="toggleReadingMode()" title="Режим чтения" style="display:none"><i class="icon fas fa-book-open"></i><span>Читать</span></button>
+    </div>
+    <div class="rail-group">
+      <span class="rail-cap">Инструменты</span>
+      <button class="btn" onclick="loadCourses()" title="Обновить список курсов"><i class="icon fas fa-sync"></i><span>Обновить</span></button>
+      <button class="btn-icon" onclick="cycleTheme()" id="themeBtn2" title="Сменить тему"><i class="fas fa-moon"></i><span>Тема</span></button>
+    </div>
+  </div>
+  <div class="rail-foot">
+    <button class="btn primary" onclick="showCreatePanel()" title="Создать учебный курс">
+      <i class="icon fas fa-plus"></i><span>Создать курс</span>
+    </button>
+  </div>
+</div>
+<button class="rail-fab" id="eduRailToggle" type="button" onclick="toggleEduRail()" aria-label="Открыть меню" aria-expanded="false">
+  <i class="fas fa-bars"></i>
+</button>
+
+<div class="layout">
+  <div class="edu-sidebar collapsed" id="sidebar">
+    <div class="sb-header">
+      <button class="btn-icon" onclick="toggleSidebar()" title="Закрыть"><i class="fas fa-times"></i></button>
+      <span class="sb-title"><i class="fas fa-robot" style="color:var(--accent)"></i> AI-тьютор</span>
+      <span style="flex:1"></span>
+      <button class="btn-icon" id="themeBtn" onclick="cycleTheme()" title="Тема"><i class="fas fa-moon"></i></button>
+    </div>
+    <div class="sb-chat" id="chatMessages">
+      <div style="font-size:12px;color:var(--text3);text-align:center;padding:16px"><i class="fas fa-robot" style="font-size:24px;display:block;margin-bottom:8px;color:var(--accent)"></i>Задайте вопрос по курсу</div>
+    </div>
+    <div class="sb-input-area">
+      <input type="text" class="search-inp" id="chatInput" placeholder="Спросите о курсе..." style="flex:1" onkeydown="if(event.key==='Enter')doAsk()">
+      <button class="btn-icon" id="voiceBtn" onclick="toggleVoiceRecord()" title="Голосовой ввод"><i class="fas fa-microphone"></i></button>
+      <button class="btn btn-sm btn-primary" onclick="doAsk()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+  <div class="main-content">
+    <div id="appContent"></div>
+  </div>
+</div>
+
+<!-- Create Course Panel -->
+<div class="modal-overlay" id="createPanel"><div class="modal-content" id="createPanelContent"></div></div>
+
+<script>
+// ========== STATE ==========
+const S={currentId:null,chatId:null,lesson:0,courseView:'list',_quizAnswers:{},_quizSubmitted:false,_quizPage:0,_loadingCourse:false,_fcTerms:[],_fcIdx:0,pollId:null,currentCourse:null,sidebar:false};
+let _materialBooks=[],_materialZim=[],_currentZimFile='';
+
+// ========== THEME ==========
+// Единая тема приложения: девять схем и акцент из theme.js. Старый
+// локальный ключ eduTheme переносим один раз, чтобы выбор не потерялся.
+const _THEMES=['light','dark','sepia','warm','paper','ocean','forest','midnight','rose'];
+const _THEME_ICONS={light:'fa-sun',dark:'fa-moon',sepia:'fa-book',warm:'fa-fire',paper:'fa-file',ocean:'fa-water',forest:'fa-tree',midnight:'fa-star',rose:'fa-flower'};
+
+function _migrateLegacyTheme(){
+  try{
+    const legacy=localStorage.getItem('eduTheme');
+    if(!legacy)return;
+    if(!localStorage.getItem('infinity_theme'))localStorage.setItem('infinity_theme',legacy);
+    localStorage.removeItem('eduTheme');
+  }catch(e){/* приватный режим */}
+}
+function getTheme(){
+  try{if(window.InfinityTheme)return InfinityTheme.get()}catch(e){/* */}
+  try{return document.documentElement.getAttribute('data-theme')||localStorage.getItem('infinity_theme')||'light'}
+  catch(e){return 'light'}
+}
+// theme.js сам снимает предыдущий класс; fallback не трогает другие классы
+// кузова страницы (pg-… для mobile.css), которые ставит сервер.
+function setTheme(t){
+  t=_THEMES.indexOf(t)>=0?t:'light';
+  const fb=()=>{
+    _THEMES.forEach(c=>document.body.classList.remove(c));
+    document.body.classList.add(t);
+    document.documentElement.setAttribute('data-theme',t);
+    try{localStorage.setItem('infinity_theme',t)}catch(e){/* */}
+  };
+  try{if(window.InfinityTheme)InfinityTheme.set(t);else fb()}catch(e){fb()}
+  _themeIcons(t);
+}
+function _themeIcons(t){
+  const ic=_THEME_ICONS[t]||'fa-sun';
+  // Меняем только класс иконки: рейловая кнопка несёт ещё и подпись <span>,
+  // а innerHTML с одной иконкой её затирал — в меню оставалась голотая шестерня.
+  ['themeBtn','themeBtn2'].forEach(id=>{
+    const i=document.querySelector('#'+id+' i');
+    if(i)i.className='fas '+ic;
+  });
+}
+function cycleTheme(){
+  const next=_THEMES[(_THEMES.indexOf(getTheme())+1)%_THEMES.length];
+  setTheme(next);
+  toast('Тема: '+next,'info');
+}
+_migrateLegacyTheme();
+setTheme(getTheme());
+
+// ========== UTILITY ==========
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
+function jsEsc(s){return String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function nl2br(s){return String(s).replace(/\n/g,'<br>')}
+function toast(m,t){const el=document.getElementById('toast');if(!el)return;el.innerHTML='<div class="'+(t==='ok'?'ok':t==='err'?'err':'info')+'">'+esc(m)+'</div>';el.style.display='block';setTimeout(()=>el.style.display='none',3000)}
+function diffBadge(d){const m={beginner:'Начинающий',intermediate:'Средний',advanced:'Продвинутый'};return '<span class="diff-badge diff-'+d+'">'+(m[d]||d)+'</span>'}
+function _ruPlural(n,one,few,many){const a=n%10,b=n%100;if(a===1&&b!==11)return one;if(a>=2&&a<=4&&(b<12||b>14))return few;return many}
+function toggleSidebar(){const el=document.getElementById('sidebar');S.sidebar=!S.sidebar;el.classList.toggle('collapsed')}
+function toggleReadingMode(){
+  document.body.classList.toggle('reading-mode');
+  const btn=document.getElementById('readingBtn');
+  if(btn)btn.innerHTML=document.body.classList.contains('reading-mode')?'<i class="icon fas fa-times"></i><span>Выйти из чтения</span>':'<i class="icon fas fa-book-open"></i><span>Читать</span>';
+  const ac=document.getElementById('appContent');
+  if(ac)ac.classList.toggle('reader-mode');
+  const rb=document.getElementById('rbTitle');
+  if(rb&&S.currentCourse){const l=S.currentCourse.plan?.lessons?.[S.lesson];if(l)rb.textContent=l.title||''}
+}
+function exitReadingMode(){
+  document.body.classList.remove('reading-mode');
+  const btn=document.getElementById('readingBtn');
+  if(btn)btn.innerHTML='<i class="icon fas fa-book-open"></i><span>Читать</span>';
+  const ac=document.getElementById('appContent');
+  if(ac)ac.classList.remove('reader-mode');
+}
+
+// ========== MATERIALS MODAL ==========
+function openMaterialsModal(){
+  let h='<button class="btn btn-sm" onclick="closeMaterialsModal()"><i class="fas fa-times"></i> Закрыть</button>';
+  h+='<h3><i class="fas fa-paperclip" style="color:var(--accent)"></i> Прикрепить материалы</h3>';
+  h+='<div style="display:flex;gap:8px;margin-bottom:12px">';
+  h+='<button class="btn btn-sm" onclick="showBookSearch()"><i class="fas fa-book"></i> Книги</button>';
+  h+='<button class="btn btn-sm" onclick="showZimSearch()"><i class="fas fa-archive"></i> ZIM</button>';
+  h+='<button class="btn btn-sm" onclick="showFileUpload()"><i class="fas fa-upload"></i> Файл с ПК</button>';
+  h+='</div>';
+  h+='<div id="materialModalBody"><p style="font-size:13px;color:var(--text3);text-align:center;padding:30px">Выберите источник материалов</p></div>';
+  h+='<div id="materialBadge" style="font-size:11px;color:var(--text3);margin-top:8px"></div>';
+  const modal=document.createElement('div');modal.id='matModal';
+  modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1001;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  modal.innerHTML='<div class="modal-content">'+h+'</div>';
+  modal.onclick=e=>{if(e.target===modal)closeMaterialsModal()};
+  document.body.appendChild(modal);
+  updateMaterialBadge();
+}
+function closeMaterialsModal(){const m=document.getElementById('matModal');if(m)m.remove()}
+function updateMaterialBadge(){const el=document.getElementById('materialBadge');if(!el)return;fetch('/api/education/buffer').then(r=>r.json()).then(buf=>{const m=buf&&buf.materials?buf.materials:buf||[];if(m.length)el.innerHTML='<i class="fas fa-paperclip" style="color:var(--accent)"></i> Прикреплено: '+m.length+' ('+m.map(x=>esc(x.title||'')).join(', ')+')';else el.innerHTML='<i class="fas fa-paperclip"></i> Нет прикреплённых материалов'}).catch(()=>{})}
+
+// ========== BOOK SEARCH (client-side filter) ==========
+let _bookSearchTimer,_allBooks=[];
+async function showBookSearch(){
+  const body=document.getElementById('materialModalBody');
+  let h='<input type="text" class="search-inp" id="bookSearchInp" placeholder="Поиск книг..." oninput="debounceSearchBooks()">';
+  h+='<div class="material-list" id="bookList" style="max-height:300px;overflow-y:auto;margin-top:8px">';
+  h+='<div class="spinner" style="margin:10px auto;display:block"></div></div>';
+  body.innerHTML=h;
+  try{
+    const r=await fetch('/api/collection/books?page=1&page_size=200');const d=await r.json();
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    _allBooks=Array.isArray(d)?d:(d.books||d.items||[]);
+    renderBookList(document.getElementById('bookSearchInp')?.value||'');
+  }catch(e){
+    document.getElementById('bookList').innerHTML='<p style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Библиотека недоступна</p>';
+    document.getElementById('materialModalBody').innerHTML+='<input type="text" class="search-inp" id="bookManualInp" placeholder="Введите название книги..." style="margin-top:8px"><div style="margin-top:8px"><button class="btn btn-sm btn-primary" onclick="attachManualBook()"><i class="fas fa-paperclip"></i> Прикрепить</button></div><p style="color:var(--text3);font-size:11px;margin-top:4px">Или введите название вручную</p>';
+  }
+}
+function renderBookList(q){
+  const list=document.getElementById('bookList');if(!list)return;
+  const books=_allBooks||[];
+  if(!q){list.innerHTML='<p style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Всего книг: '+books.length+'. Введите название для поиска.</p>';return}
+  const ql=q.toLowerCase();
+  const filtered=books.filter(b=>(b.title||b.name||'').toLowerCase().includes(ql));
+  if(filtered.length===0){list.innerHTML='<p style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Ничего не найдено</p>';return}
+  let html='';
+  filtered.forEach((b,i)=>{
+    const title=b.title||b.name||'Книга';
+    const idx=_allBooks.indexOf(b);
+    html+='<div class="material-item" onclick="attachBook('+idx+')"><i class="fas fa-book" style="color:var(--accent)"></i><span>'+esc(title)+'</span></div>';
+  });
+  list.innerHTML=html;
+}
+function debounceSearchBooks(){clearTimeout(_bookSearchTimer);_bookSearchTimer=setTimeout(()=>renderBookList(document.getElementById('bookSearchInp')?.value||''),150)}
+function attachManualBook(){
+  const inp=document.getElementById('bookManualInp');if(!inp||!inp.value.trim())return;
+  const title=inp.value.trim();
+  fetch('/api/education/receive-material',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'book',path:'',title:title})}).then(()=>{toast('Книга прикреплена: '+title,'ok');updateMaterialBadge()}).catch(()=>toast('Ошибка','err'));
+}
+async function attachBook(idx){
+  const book=_allBooks[idx];if(!book)return;
+  const title=book.title||book.name||'Книга';const path='collection://'+(book.id||'');
+  try{await fetch('/api/education/receive-material',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'book',path:path,title:title})});toast('Книга прикреплена: '+title,'ok');updateMaterialBadge()}catch(e){toast('Ошибка','err')}
+}
+
+// ========== ZIM SEARCH (client-side filter) ==========
+let _zimSearchTimer,_zimAllEntries=[];
+async function showZimSearch(){
+  const body=document.getElementById('materialModalBody');
+  try{
+    const r=await fetch('/api/zim/files');const zips=await r.json();
+    if(!Array.isArray(zips))zips=[];_materialZim=zips;
+    let h='<select class="search-inp" id="zimSelect" onchange="onZimSelectChange()">';
+    h+='<option value="">Выберите ZIM-файл</option>';
+    if(zips.length===0)h+='<option value="" disabled>Нет ZIM-файлов</option>';
+    else (zips||[]).forEach((z,i)=>{const name=z.name||z.file||z.path||'ZIM '+(i+1);h+='<option value="'+i+'">'+esc(name)+'</option>'});
+    h+='</select><input type="text" class="search-inp" id="zimSearchInp" placeholder="Поиск по ZIM..." oninput="debounceSearchZim()" style="margin-top:8px" disabled>';
+    h+='<div id="zimResults" style="margin-top:8px;max-height:300px;overflow-y:auto"><p style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Выберите ZIM-файл и введите запрос</p></div>';
+    body.innerHTML=h;
+  }catch(e){
+    body.innerHTML='<input type="text" class="search-inp" id="zimManualInp" placeholder="Введите путь к ZIM-файлу..."><div style="margin-top:8px"><button class="btn btn-sm btn-primary" onclick="attachManualZim()"><i class="fas fa-paperclip"></i> Прикрепить</button></div><p style="color:var(--text3);font-size:11px;margin-top:8px">Не удалось загрузить список ZIM. Укажите путь вручную.</p>';
+  }
+}
+async function onZimSelectChange(){
+  const sel=document.getElementById('zimSelect');const inp=document.getElementById('zimSearchInp');
+  if(inp)inp.disabled=!sel||!sel.value;
+  if(sel&&sel.value){
+    const idx=parseInt(sel.value);const zim=_materialZim[idx];_currentZimFile=zim.path||zim.file||zim.name||'';
+    _zimAllEntries=[];const res=document.getElementById('zimResults');
+    if(res)res.innerHTML='<div class="spinner" style="margin:10px auto;display:block"></div>';
+    try{
+      const r=await fetch('/api/zim/list?f='+encodeURIComponent(_currentZimFile)+'&p=1&n=300');const d=await r.json();
+      _zimAllEntries=d.items||d||[];
+      if(res)res.innerHTML='<p style="color:var(--text3);font-size:13px;text-align:center;padding:10px">Загружено '+_zimAllEntries.length+' записей. Введите запрос.</p>';
+    }catch(e){
+      if(res)res.innerHTML='<p style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Не удалось загрузить список. Используйте поиск.</p>';
+    }
+  }
+}
+function debounceSearchZim(){clearTimeout(_zimSearchTimer);_zimSearchTimer=setTimeout(doSearchZim,200)}
+async function doSearchZim(){
+  const inp=document.getElementById('zimSearchInp');if(!inp)return;
+  const q=inp.value.trim();const res=document.getElementById('zimResults');
+  if(!q||!_currentZimFile){res.innerHTML='<p style="color:var(--text3);font-size:13px;text-align:center;padding:10px">Введите запрос</p>';return}
+  // client-side filter first
+  const ql=q.toLowerCase();
+  const local=_zimAllEntries.filter(e=>(e.title||e.path||'').toLowerCase().includes(ql));
+  if(local.length>0){
+    let html='';local.slice(0,50).forEach((e,i)=>{
+      const title=e.title||e.path||'Запись';const sel=document.getElementById('zimSelect');const idx=sel?parseInt(sel.value):0;
+      html+='<div class="material-item" onclick="attachZim('+idx+',\''+jsEsc(e.path||'')+'\',\''+jsEsc(title)+'\')"><i class="fas fa-file-alt" style="color:var(--green)"></i><span>'+esc(title)+'</span></div>';
+    });res.innerHTML=html;return;
+  }
+  // fallback to server-side search
+  res.innerHTML='<div class="spinner" style="margin:10px auto;display:block"></div>';
+  try{
+    const r=await fetch('/api/zim/search?f='+encodeURIComponent(_currentZimFile)+'&q='+encodeURIComponent(q));const d=await r.json();
+    const items=d.items||d||[];let html='';
+    if(items.length===0)html='<p style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Ничего не найдено</p>';
+    else{items.slice(0,50).forEach((e,i)=>{const title=e.title||e.path||'Запись '+(i+1);const sel=document.getElementById('zimSelect');const idx=sel?parseInt(sel.value):0;html+='<div class="material-item" onclick="attachZim('+idx+',\''+jsEsc(e.path||'')+'\',\''+jsEsc(title)+'\')"><i class="fas fa-file-alt" style="color:var(--green)"></i><span>'+esc(title)+'</span></div>'});}
+    res.innerHTML=html;
+  }catch(e){res.innerHTML='<p style="color:var(--red);font-size:13px;text-align:center">Ошибка поиска</p>'}
+}
+function attachManualZim(){
+  const inp=document.getElementById('zimManualInp');if(!inp||!inp.value.trim())return;
+  const path=inp.value.trim();
+  fetch('/api/education/receive-material',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'zim',file:path,path:'/',title:path})}).then(()=>{toast('ZIM прикреплён: '+path,'ok');updateMaterialBadge()}).catch(()=>toast('Ошибка','err'));
+}
+async function attachZim(zimIdx,entryPath,title){
+  const zim=_materialZim[zimIdx];if(!zim)return;const fp=zim.path||zim.file||zim.name||'';
+  try{await fetch('/api/education/receive-material',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'zim',file:fp,path:entryPath,title:title})});toast('ZIM-статья прикреплена: '+title,'ok');updateMaterialBadge()}catch(e){toast('Ошибка','err')}
+}
+
+// ========== FILE UPLOAD ==========
+function showFileUpload(){
+  const body=document.getElementById('materialModalBody');
+  let h='<p style="font-size:13px;color:var(--text2);margin-bottom:8px">Выберите файл с компьютера (.txt, .pdf, .epub, .fb2, .docx)</p>';
+  h+='<input type="file" id="fileUploadInp" class="search-inp" accept=".txt,.pdf,.epub,.fb2,.docx,.md" onchange="uploadFile()">';
+  h+='<div id="fileUploadStatus" style="font-size:12px;color:var(--text3);margin-top:8px"></div>';
+  body.innerHTML=h;
+}
+async function uploadFile(){
+  const inp=document.getElementById('fileUploadInp');if(!inp||!inp.files||!inp.files.length)return;
+  const file=inp.files[0];const status=document.getElementById('fileUploadStatus');status.textContent='Загрузка...';
+  const fd=new FormData();fd.append('file',file);
+  try{const r=await fetch('/api/education/upload-material',{method:'POST',body:fd});const d=await r.json();if(d.ok){toast('Файл прикреплён: '+file.name,'ok');updateMaterialBadge();status.textContent='Готово'}else{toast(d.error||'Ошибка','err');status.textContent=d.error||'Ошибка'}}catch(e){status.textContent='Ошибка загрузки'}
+}
+
+// ========== LIST COURSES ==========
+let _foldersCache=[];
+let _coursesCache=[];
+let _foldCollapse={};
+try{_foldCollapse=JSON.parse(localStorage.getItem('eduFoldCollapse')||'{}')}catch(e){_foldCollapse={}}
+function _saveFoldCollapse(){try{localStorage.setItem('eduFoldCollapse',JSON.stringify(_foldCollapse))}catch(e){}}
+function toggleFolderCollapse(key){_foldCollapse[key]=!_foldCollapse[key];_saveFoldCollapse();loadCourses()}
+
+function _courseCard(c){
+  const statusMap={queued:'В очереди',analyzing:'Анализ...',materials_loaded:'Загрузка материалов',analyzed:'Готово к генерации',plan_ready:'План готов',generating:'Генерация...',ready:'Готов',learning:'В процессе',completed:'Завершён',error:'Ошибка'};
+  const pct=c.progress?Math.round((c.progress.completed_lessons||[]).length/(c.lessons_count||1)*100):0;
+  const sc=statusMap[c.status]||c.status;
+  const mc=c.materials_count||0;
+  const doneCount=(c.progress&&c.progress.completed_lessons||[]).length;
+  const canContinue=['ready','learning','paused','completed'].includes(c.status)&&(c.lessons_count||0)>0;
+  return `<div class="course-card" onclick="openCourse('${c.id}')">
+        ${mc?`<span class="mat-count"><i class="fas fa-paperclip"></i> ${mc}</span>`:''}
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:6px">${esc(c.title||'Без названия')}</h3>
+        <div style="font-size:12px;color:var(--text2);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          ${diffBadge(c.difficulty||'beginner')}
+          <span><i class="fas fa-book-open" style="color:var(--accent)"></i> ${c.lessons_count||0} уроков</span>
+          <span style="color:${c.status==='error'?'var(--red)':c.status==='completed'?'var(--green)':c.status==='ready'?'var(--accent)':'var(--text3)'}"><i class="fas fa-${c.status==='error'?'exclamation-circle':c.status==='completed'?'check-circle':c.status==='ready'?'check':'spinner fa-pulse'}"></i> ${sc}</span>
+        </div>
+        <div class="progress-bar" style="margin-top:10px"><div class="fill ${c.status==='completed'?'done':''}" style="width:${pct}%"></div></div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text3)">${doneCount} из ${c.lessons_count||0} уроков пройдено</div>
+        <div style="margin-top:10px;display:flex;gap:4px">
+          ${canContinue?`<button class="btn btn-sm btn-primary" onclick="event.stopPropagation();continueCourse('${c.id}')" title="Продолжить с последнего пройденного урока"><i class="fas fa-play"></i> Продолжить</button>`:''}
+          ${['queued','analyzing','materials_loaded','analyzed','plan_ready'].includes(c.status)?`<button class="btn btn-sm" style="color:var(--yellow);border-color:var(--yellow)" onclick="event.stopPropagation();fetch('/api/education/course/'+'${c.id}'+'/pause',{method:'POST'});toast('Пауза...','info');loadCourses()"><i class="fas fa-pause"></i></button>`:''}
+          ${c.status==='paused'?`<button class="btn btn-sm" style="color:var(--green);border-color:var(--green)" onclick="event.stopPropagation();fetch('/api/education/course/'+'${c.id}'+'/resume',{method:'POST'});toast('Продолжение...','info');loadCourses()"><i class="fas fa-play"></i></button>`:''}
+          <button class="btn btn-sm" onclick="event.stopPropagation();openMoveModal('${c.id}')" title="Переместить в папку"><i class="fas fa-folder-tree" style="color:var(--yellow)"></i></button>
+          <button class="btn btn-sm" onclick="event.stopPropagation();editCourse('${c.id}')"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteCourse('${c.id}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>`;
+}
+
+async function loadCourses(){
+  const el=document.getElementById('appContent');
+  let h='<header class="edu-hero">';
+  h+='<div class="edu-hero-copy"><span class="edu-hero-kicker"><i class="fas fa-graduation-cap"></i> Лента курсов</span>';
+  h+='<h1>Мои курсы</h1><p id="eduHeroSub">Курсы генерирует AI-тьютор по вашим материалам</p></div>';
+  h+='<div class="edu-hero-actions">';
+  h+='<button class="hero-btn" onclick="showGamification()" title="Достижения"><i class="fas fa-trophy"></i><span>Достижения</span></button>';
+  h+='<button class="hero-btn" onclick="createFolderUI()" title="Создать папку для курсов"><i class="fas fa-folder-plus"></i><span>Папка</span></button>';
+  h+='<button class="hero-btn" onclick="loadCourses()" title="Обновить список"><i class="fas fa-sync"></i><span>Обновить</span></button>';
+  h+='<button class="hero-btn primary" onclick="showCreatePanel()"><i class="fas fa-plus"></i><span>Создать курс</span></button>';
+  h+='</div></header>';
+  h+='<div id="courseList">';
+  h+='<div class="spinner" style="margin:40px auto;display:block"></div></div>';
+  el.innerHTML=h;
+  try{
+    const [rC,rF]=await Promise.all([fetch('/api/education/courses'),fetch('/api/education/folders').catch(()=>null)]);
+    const resp=await rC.json();
+    const courses=resp.courses||resp||[];
+    let folders=[];
+    if(rF&&rF.ok){const fr=await rF.json();folders=fr.folders||[]}
+    _foldersCache=folders;_coursesCache=courses;
+    const list=document.getElementById('courseList');
+    if(!courses||!courses.length){list.innerHTML='<div class="empty-state"><i class="fas fa-graduation-cap"></i><h3>Нет курсов</h3><p style="font-size:13px;margin-top:8px">Создайте первый учебный курс</p><button class="btn btn-primary" style="font-size:14px;padding:10px 24px;margin-top:16px" onclick="showCreatePanel()"><i class="fas fa-plus"></i> Создать курс</button></div>';return}
+    let g='';
+    folders.forEach(f=>{
+      const fc=courses.filter(c=>c.folder_id===f.id);
+      const key='f_'+f.id;const col=_foldCollapse[key];
+      g+=`<div style="margin:${f===folders[0]?'4px':'14px'} 0 6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="toggleFolderCollapse('${key}')" title="${col?'Развернуть':'Свернуть'}"><i class="fas fa-${col?'chevron-right':'chevron-down'}"></i></button>
+        <h3 style="margin:0;font-size:15px"><i class="fas fa-folder" style="color:var(--yellow)"></i> ${esc(f.name)} <span style="color:var(--text3);font-weight:400;font-size:12px">(${fc.length})</span></h3>
+        <span style="flex:1"></span>
+        <button class="btn btn-sm" onclick="renameFolderUI('${f.id}')" title="Переименовать"><i class="fas fa-pen"></i></button>
+        <button class="btn btn-sm btn-danger" onclick="deleteFolderUI('${f.id}')" title="Удалить папку"><i class="fas fa-trash"></i></button>
+      </div>`;
+      if(col){g+='<div style="font-size:12px;color:var(--text3);padding:2px 12px 10px">Папка свернута</div>'}
+      else if(fc.length){g+='<div class="course-grid">'+fc.map(_courseCard).join('')+'</div>'}
+      else{g+='<div style="font-size:12px;color:var(--text3);padding:2px 12px 10px">Папка пуста</div>'}
+    });
+    const root=courses.filter(c=>!c.folder_id||!folders.some(f=>f.id===c.folder_id));
+    if(folders.length&&root.length){
+      g+=`<div style="margin:14px 0 6px;display:flex;align-items:center;gap:8px"><h3 style="margin:0;font-size:15px;color:var(--text2)"><i class="fas fa-folder-open" style="color:var(--text3)"></i> Без папки <span style="color:var(--text3);font-weight:400;font-size:12px">(${root.length})</span></h3></div>`;
+    }
+    if(root.length){g+='<div class="course-grid">'+root.map(_courseCard).join('')+'</div>'}
+    const done=courses.filter(c=>c.status==='completed').length;
+    const learning=courses.filter(c=>c.status==='learning'||c.status==='paused').length;
+    const sub=document.getElementById('eduHeroSub');
+    if(sub)sub.textContent=courses.length
+      ? courses.length+' '+_ruPlural(courses.length,'курс','курса','курсов')+
+        ' · пройдено '+done+' · в работе '+learning
+      : 'Курсы генерирует AI-тьютор по вашим материалам';
+    list.innerHTML=g;
+  }catch(e){document.getElementById('courseList').innerHTML='<p style="color:var(--red);text-align:center;padding:20px">Ошибка загрузки</p>'}
+}
+
+// ========== FOLDERS UI ==========
+async function createFolderUI(){
+  const name=await InfinityDialogs.prompt({label:'Название новой папки:'});if(name===null)return;
+  const n=name.trim();if(!n)return toast('Введите название папки','err');
+  try{
+    const r=await fetch('/api/education/folders/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n})});
+    const d=await r.json();
+    if(d.ok){toast('Папка создана','ok');loadCourses()}else toast(d.error||'Ошибка','err');
+  }catch(e){toast('Ошибка','err')}
+}
+async function renameFolderUI(fid){
+  const f=_foldersCache.find(x=>x.id===fid);
+  const name=await InfinityDialogs.prompt({label:'Новое название папки:', value:f?f.name:''});if(name===null)return;
+  const n=name.trim();if(!n)return;
+  try{
+    const r=await fetch('/api/education/folders/'+fid+'/rename',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n})});
+    const d=await r.json();
+    if(d.ok){toast('Папка переименована','ok');loadCourses()}else toast(d.error||'Ошибка','err');
+  }catch(e){toast('Ошибка','err')}
+}
+async function deleteFolderUI(fid){
+  const f=_foldersCache.find(x=>x.id===fid);
+  if(!confirm('Удалить папку «'+(f?f.name:'')+'»? Курсы из неё вернутся в общий список.'))return;
+  try{
+    const r=await fetch('/api/education/folders/'+fid+'/delete',{method:'POST'});
+    const d=await r.json();
+    if(d.ok){toast('Папка удалена'+(d.courses_moved?' ('+d.courses_moved+' курсов возвращено в список)':''),'ok');delete _foldCollapse['f_'+fid];_saveFoldCollapse();loadCourses()}else toast(d.error||'Ошибка','err');
+  }catch(e){toast('Ошибка','err')}
+}
+function closeMoveModal(){const m=document.getElementById('moveModal');if(m)m.remove()}
+function openMoveModal(cid){
+  const cur=_coursesCache.find(c=>c.id===cid);
+  let h='<button class="btn btn-sm" onclick="closeMoveModal()"><i class="fas fa-times"></i> Закрыть</button>';
+  h+='<h3 style="margin-top:8px"><i class="fas fa-folder-tree" style="color:var(--yellow)"></i> Переместить курс</h3>';
+  h+='<p style="font-size:12px;color:var(--text3)">«'+esc(cur?cur.title:'')+'» — выберите папку:</p>';
+  h+='<div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;max-height:50vh;overflow:auto">';
+  const isRoot=!cur||!cur.folder_id;
+  h+=`<button class="btn btn-sm" ${isRoot?'disabled':''} onclick="moveCourseTo('${cid}','')"><i class="fas fa-folder-open"></i> Без папки${isRoot?' ✓':''}</button>`;
+  _foldersCache.forEach(f=>{
+    const isCur=cur&&cur.folder_id===f.id;
+    h+=`<button class="btn btn-sm" ${isCur?'disabled':''} onclick="moveCourseTo('${cid}','${f.id}')"><i class="fas fa-folder" style="color:var(--yellow)"></i> ${esc(f.name)}${isCur?' ✓':''}</button>`;
+  });
+  if(!_foldersCache.length)h+='<p style="font-size:12px;color:var(--text3);text-align:center;padding:8px">Папок пока нет — создайте кнопку «Папка» на панели сверху</p>';
+  h+='</div>';
+  const modal=document.createElement('div');modal.id='moveModal';
+  modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1001;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  modal.innerHTML='<div class="modal-content">'+h+'</div>';
+  modal.onclick=e=>{if(e.target===modal)closeMoveModal()};
+  document.body.appendChild(modal);
+}
+async function moveCourseTo(cid,fid){
+  try{
+    const r=await fetch('/api/education/course/'+cid+'/move',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({folder_id:fid||null})});
+    const d=await r.json();
+    if(d.ok){toast('Курс перемещён','ok');closeMoveModal();loadCourses()}else toast(d.error||'Ошибка','err');
+  }catch(e){toast('Ошибка','err')}
+}
+
+// ========== CREATE COURSE ==========
+function showCreatePanel(){
+  let h='<h2 style="margin-bottom:16px"><i class="fas fa-plus-circle" style="color:var(--accent)"></i> Создать курс</h2>';
+  h+='<div style="display:flex;flex-direction:column;gap:12px">';
+  h+='<input type="text" class="search-inp" id="cq" placeholder="Тема курса...">';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  h+='<div style="flex:1;min-width:120px"><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">Сложность</label><select class="search-inp" id="cdiff"><option value="beginner">Начинающий</option><option value="intermediate">Средний</option><option value="advanced">Продвинутый</option></select></div>';
+  h+='<div style="flex:1;min-width:120px"><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">Профиль</label><div style="display:flex;gap:6px"><select class="search-inp" id="cprofile" style="flex:1;min-width:0"><option value="universal">Универсальный</option></select><button class="btn btn-sm" title="Подготовить банк из 20 тестов для профиля (локальный ИИ)" onclick="ensureProfileBank()"><i class="fas fa-wand-magic-sparkles"></i></button></div></div>';
+  h+='</div><div style="display:flex;gap:8px;flex-wrap:wrap">';
+  h+='<div style="flex:1;min-width:80px"><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">Уроков</label><input type="number" id="cnumLessons" min="1" max="100" placeholder="Авто" class="search-inp"></div>';
+  h+='<div style="flex:1;min-width:80px"><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">Тестов на урок</label><input type="number" id="cnumTests" min="1" max="50" placeholder="Авто" class="search-inp"></div>';
+  h+='<div style="flex:1;min-width:120px"><label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">Объём статей</label><select class="search-inp" id="cContentLength"><option value="short">Короткий</option><option value="medium" selected>Средний</option><option value="long">Большой</option><option value="huge">Огромный</option></select></div>';
+  h+='</div><div><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2)"><input type="checkbox" id="cai"><i class="fas fa-robot" style="color:var(--accent)"></i> Только AI (без материалов)</label></div>';
+  h+='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2)"><input type="checkbox" id="cvec"><i class="fas fa-database" style="color:var(--accent)"></i> Использовать векторную БД</label><button type="button" class="btn btn-sm" onclick="probeVectorDb()"><i class="fas fa-magnifying-glass"></i> Проверить базу</button><span id="vecProbeInfo" style="font-size:11px;color:var(--text3)"></span></div>';
+  h+='<div style="margin-top:4px"><textarea class="test-ta" id="cnotes" style="min-height:60px;font-size:13px" placeholder="Примечание для AI (пожелания, на чём сосредоточиться, особые требования...)"></textarea></div>';
+  h+='<div id="bufInfo" style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:8px;flex-wrap:wrap"></div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm" onclick="openMaterialsModal()"><i class="fas fa-paperclip"></i> Прикрепить материалы</button></div>';
+  h+='<div id="createActions"><button class="btn btn-primary" onclick="createCourse()"><i class="fas fa-rocket"></i> Создать курс</button><button class="btn btn-sm" onclick="closeCreatePanel()">Отмена</button></div></div>';
+  document.getElementById('createPanelContent').innerHTML=h;
+  document.getElementById('createPanel').classList.add('show');
+  fetch('/api/education/buffer').then(r=>r.json()).then(buf=>{
+    const info=document.getElementById('bufInfo');const m=buf&&buf.materials?buf.materials:buf||[];
+    if(m.length)info.innerHTML='<i class="fas fa-paperclip" style="color:var(--accent)"></i> Прикреплено материалов: '+m.length+'<span style="color:var(--text3)"> ('+m.map(m=>esc(m.title||'')).join(', ')+')</span>';
+    else info.innerHTML='<span style="color:var(--text3)"><i class="fas fa-info-circle"></i> Нет прикреплённых материалов</span>';
+  }).catch(()=>{});
+  fetch('/api/education/profiles').then(r=>r.json()).then(pl=>{
+    const sel=document.getElementById('cprofile');
+    if(sel&&pl&&pl.length)sel.innerHTML='<option value="universal">Универсальный</option>'+pl.filter(p=>p.id!=='universal').map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');
+  }).catch(()=>{});
+}
+function closeCreatePanel(){document.getElementById('createPanel').classList.remove('show')}
+
+// Опция «взять материал из векторной базы»: сначала проверяем, что по теме
+// курса там вообще что-то есть, иначе генерация пойдёт без контекста.
+async function probeVectorDb(){
+  const q=document.getElementById('cq')?.value?.trim();
+  const box=document.getElementById('vecProbeInfo');
+  if(!q){toast('Сначала введите тему курса','info');if(box)box.textContent='Сначала введите тему';return}
+  if(box)box.textContent='Поиск...';
+  try{
+    const r=await fetch('/api/qdrant/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q,k:5})});
+    const d=await r.json();
+    if(d.error){if(box)box.textContent='Ошибка: '+d.error;return}
+    const res=d.results||[];
+    if(box)box.innerHTML=res.length
+      ?('<i class="fas fa-check" style="color:var(--green)"></i> Найдено фрагментов: '+res.length+' · '+esc(d.collection||''))
+      :('<i class="fas fa-circle-info"></i> В базе «'+esc(d.collection||'')+'» по теме ничего нет');
+    if(res.length){const cb=document.getElementById('cvec');if(cb)cb.checked=true}
+  }catch(e){if(box)box.textContent='Ошибка сети: '+e}
+}
+
+async function createCourse(){
+  const q=document.getElementById('cq')?.value?.trim();if(!q){toast('Введите тему курса','err');return}
+  const diff=document.getElementById('cdiff')?.value||'beginner';const aiOnly=document.getElementById('cai')?.checked||false;
+  const numLessons=document.getElementById('cnumLessons')?.value;const numTests=document.getElementById('cnumTests')?.value;
+  const profileId=document.getElementById('cprofile')?.value||'universal';
+  const contentLength=document.getElementById('cContentLength')?.value||'medium';
+  const userNotes=document.getElementById('cnotes')?.value?.trim()||'';
+  const useVector=document.getElementById('cvec')?.checked||false;
+  document.getElementById('createActions').innerHTML='<div class="spinner" style="margin:0 auto"></div><p style="font-size:13px;color:var(--text3);text-align:center;margin-top:8px">Создание курса...</p>';
+  try{
+    const r=await fetch('/api/education/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_query:q,difficulty:diff,ai_only:aiOnly,num_lessons:numLessons?parseInt(numLessons):null,tests_per_lesson:numTests?parseInt(numTests):null,profile_id:profileId,content_length:contentLength,user_notes:userNotes,use_vector:useVector})});
+    const d=await r.json();
+    if(d.id){toast('Курс создаётся...','ok');closeCreatePanel();await loadCourses();setTimeout(()=>openCourse(d.id),500)}
+    else toast(d.error||'Ошибка','err');
+  }catch(e){toast('Ошибка создания','err')}
+  document.getElementById('createActions').innerHTML='<button class="btn btn-primary" onclick="createCourse()"><i class="fas fa-rocket"></i> Создать курс</button><button class="btn btn-sm" onclick="closeCreatePanel()">Отмена</button>';
+}
+
+function renderContent(text){
+  if(!text)return'';
+  // Нормализация «мусорных» управляющих последовательностей из старых генераций
+  text=String(text).replace(/\\n/g,'\n').replace(/\\t/g,'\t');
+  // Escape HTML first
+  let s=esc(text);
+  // Code blocks ```
+  s=s.replace(/```(\w*)\n([\s\S]*?)```/g,'<pre><code class="lang-$1">$2</code></pre>');
+  // Inline code
+  s=s.replace(/`([^`]+)`/g,'<code>$1</code>');
+  // Bold **text**
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  // Italic *text*
+  s=s.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  // Links [text](url)
+  s=s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // Images ![alt](url)
+  s=s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,'<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:12px 0">');
+  // Unordered lists - lines starting with * or -
+  const lines=s.split('\n');
+  let out='',inList=false,inOl=false;
+  lines.forEach((line,i)=>{
+    const ulMatch=line.match(/^(\s*)[*\-]\s+(.*)/);
+    const olMatch=line.match(/^(\s*)\d+\.\s+(.*)/);
+    const isHeader=line.match(/^#{1,6}\s/);
+    const isEmpty=!line.trim();
+    if(ulMatch){
+      if(inOl){out+='</ol>\n';inOl=false}
+      if(!inList){out+='<ul>\n';inList=true}
+      out+=`<li>${ulMatch[2]}</li>\n`;
+    }else if(olMatch){
+      if(inList){out+='</ul>\n';inList=false}
+      if(!inOl){out+='<ol>\n';inOl=true}
+      out+=`<li>${olMatch[2]}</li>\n`;
+    }else if(isHeader){
+      if(inList){out+='</ul>\n';inList=false}
+      if(inOl){out+='</ol>\n';inOl=false}
+      const level=line.match(/^(#+)\s/)[1].length;
+      const hText=line.replace(/^#+\s/,'');
+      const tag='h'+(level+2>6?6:level+2);
+      out+=`<${tag}>${hText}</${tag}>\n`;
+    }else if(isEmpty){
+      if(inList){out+='</ul>\n';inList=false}
+      if(inOl){out+='</ol>\n';inOl=false}
+      out+='\n';
+    }else{
+      if(inList){out+='</ul>\n';inList=false}
+      if(inOl){out+='</ol>\n';inOl=false}
+      // Check if line is a blockquote
+      if(line.trim().startsWith('&gt;')){
+        out+=`<blockquote>${line.trim().replace(/^&gt;\s?/,'')}</blockquote>\n`;
+      }else{
+        out+=`<p>${line}</p>\n`;
+      }
+    }
+  });
+  if(inList)out+='</ul>\n';
+  if(inOl)out+='</ol>\n';
+  return out;
+}
+
+async function deleteCourse(id){if(!confirm('Удалить курс?'))return;try{await fetch('/api/education/course/'+id,{method:'DELETE'});loadCourses()}catch(e){}}
+async function editCourse(id){
+  try{
+    const r=await fetch('/api/education/course/'+id);const c=await r.json();if(!c)return;
+    const t=await InfinityDialogs.prompt({label:'Название:', value:c.title||''});if(!t)return;
+    const d=await InfinityDialogs.prompt({label:'Сложность (beginner/intermediate/advanced):', value:c.difficulty||'beginner'});if(!d)return;
+    await fetch('/api/education/course/'+id+'/edit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:t,difficulty:d})});loadCourses();
+  }catch(e){}
+}
+
+// ========== OPEN / LOAD COURSE ==========
+// Продолжить обучение: открыть курс и перейти к первому НЕпройденному уроку.
+async function continueCourse(id){
+  try{
+    const r=await fetch('/api/education/course/'+id);const c=await r.json();
+    if(!c||c.id===undefined){toast('Курс не найден','err');return}
+    const done=c.progress?.completed_lessons||[];
+    const ls=c.plan?.lessons||[];
+    // Первый урок, который ещё не пройден
+    let target=ls.findIndex((_,i)=>!done.includes(i));
+    if(target<0)target=Math.max(0,ls.length-1);       // всё пройдено — на последний
+    else if(done.length===0)target=0;
+    await openCourse(id);
+    // openCourse ставит S.lesson из current_lesson — переопределяем на нужный
+    if(S.currentCourse&&target>0){S.lesson=target;renderLesson(S.currentCourse,target)}
+    toast(done.length?`Продолжаем с урока ${target+1}`:'Начинаем курс','ok');
+  }catch(e){toast('Ошибка: '+e.message,'err')}
+}
+
+async function openCourse(id){
+  S.currentId=id;S.chatId=id;if(S.pollId){clearInterval(S.pollId);S.pollId=null}S._loadingCourse=false;
+  // Тьютор раскрываем только когда для него есть докованное место: на
+  // узком экране панель — наложение и легла бы поверх урока.
+  const sb=document.getElementById('sidebar');
+  const docked=window.matchMedia('(min-width: 1361px)').matches;
+  if(sb)sb.classList.toggle('collapsed',!docked);
+  S.sidebar=docked;
+  await loadCourseView(id);
+  S.pollId=setInterval(async()=>{
+    if(!S.pollId||S._loadingCourse)return;
+    try{const r=await fetch('/api/education/course/'+id);const d=await r.json();if(d.status==='ready'||d.status==='learning'||d.status==='completed'||d.status==='error'){clearInterval(S.pollId);S.pollId=null;if(!S._loadingCourse)loadCourseView(id)}}catch(e){}
+  },2000);
+}
+
+const _PHASE_LABELS={notes:'Анализ материалов',syllabus:'План курса',lessons:'Уроки',quizzes:'Тесты',homework:'ДЗ',flashcards:'Карточки',exam:'Финальный экзамен',bibliography:'Библиография',done:'Готово'};
+
+// ========== SSE ==========
+let _sseTimer=null,_sseRetries=0,_sseCurrentId=null,_sseReconnectTimer=null;
+const _SSE_MAX_RETRIES=15;
+function startSSE(id){
+  _sseCurrentId=id;_sseRetries=0;_connectSSE(id);
+}
+function _connectSSE(id){
+  if(_sseTimer){clearInterval(_sseTimer);_sseTimer=null}
+  const el=document.getElementById('appContent');
+  try{
+    const es=new EventSource('/api/education/course/'+id+'/stream');
+    let timeout=setTimeout(()=>{es.close();if(_sseCurrentId){_sseRetries++;if(_sseRetries<_SSE_MAX_RETRIES){const d=Math.min(30,1500*Math.pow(1.5,_sseRetries)/1000);_sseReconnectTimer=setTimeout(()=>_connectSSE(id),d*1000);const ph=document.getElementById('ssePhaseLabel');if(ph)ph.textContent='⚠️ Соединение прервано, восстановление...'}}},30000);
+    es.onmessage=e=>{
+      clearTimeout(timeout);timeout=setTimeout(()=>{es.close();if(_sseCurrentId){_sseRetries++;if(_sseRetries<_SSE_MAX_RETRIES){const d=Math.min(30,1500*Math.pow(1.5,_sseRetries)/1000);_sseReconnectTimer=setTimeout(()=>_connectSSE(id),d*1000)}}},30000);
+      try{const d=JSON.parse(e.data);handleSSEEvent(d)}catch(err){}
+    };
+    es.onerror=()=>{es.close();if(_sseCurrentId){_sseRetries++;if(_sseRetries<_SSE_MAX_RETRIES){const d=Math.min(30,1500*Math.pow(1.5,_sseRetries)/1000);_sseReconnectTimer=setTimeout(()=>_connectSSE(id),d*1000);const ph=document.getElementById('ssePhaseLabel');if(ph)ph.textContent='⚠️ Соединение прервано, восстановление...'}}};
+  }catch(e){}
+}
+
+function _updateLessonListState(lList, currentIdx, subphaseLabel){
+  if(!lList)return;
+  for(let i=0;i<lList.children.length;i++){
+    const el=lList.children[i];
+    el.classList.remove('done','active','pending');
+    const badge=el.querySelector('.sse-subphase-badge');
+    if(i<currentIdx){
+      el.classList.add('done');
+      el.style.background='var(--green-light)';el.style.color='var(--green)';el.style.border='none';
+      el.querySelector('i').className='fas fa-check-circle';el.querySelector('i').style.color='var(--green)';
+      if(badge){badge.textContent='✓';badge.style.opacity='1';badge.style.color='var(--green)'}
+    }else if(i===currentIdx){
+      el.classList.add('active');
+      el.style.background='var(--accent-light)';el.style.color='var(--accent)';el.style.border='1px solid var(--accent)';
+      el.querySelector('i').className='fas fa-spinner fa-pulse';el.querySelector('i').style.color='var(--accent)';
+      if(badge){badge.textContent=subphaseLabel||'...';badge.style.opacity='1';badge.style.color='var(--accent)'}
+    }else{
+      el.classList.add('pending');
+      el.style.background='var(--bg3)';el.style.color='var(--text3)';el.style.border='none';
+      el.querySelector('i').className='fas fa-circle';el.querySelector('i').style.color='var(--text3)';
+      if(badge){badge.textContent='';badge.style.opacity='0'}
+    }
+  }
+}
+
+function _updateCounters(lcEl, pfEl, done, total){
+  if(lcEl)lcEl.textContent=done+'/'+total;
+  if(pfEl)pfEl.style.width=total?Math.round(done/total*100)+'%':'0%';
+}
+
+function handleSSEEvent(d){
+  const phLabel=document.getElementById('ssePhaseLabel');const statusMsg=document.getElementById('sseStatusMsg');
+  const subMsg=document.getElementById('sseSubMsg');const phNotes=document.getElementById('sseNotes');
+  const phLessons=document.getElementById('sseLessons');const lcEl=document.getElementById('sseLessonCount');
+  const lList=document.getElementById('sseLessonList');const pfEl=document.getElementById('sseProgressFill');
+  if(d.type==='phase'){
+    const label=_PHASE_LABELS[d.phase]||d.phase;
+    const icon=_PHASE_ICONS[d.phase]||'circle';
+    if(phLabel)phLabel.textContent=label;
+    if(statusMsg)statusMsg.innerHTML='<i class="fas fa-'+icon+'" style="color:var(--accent)"></i> '+(d.message||label);
+    if(subMsg&&d.message)subMsg.textContent=d.message;
+    if(phNotes)phNotes.style.display=d.phase==='notes'?'block':'none';
+    const showLessons=d.phase==='lessons'||d.phase==='quizzes'||d.phase==='homework'||d.phase==='flashcards';
+    if(phLessons)phLessons.style.display=showLessons?'block':'none';
+    if(lcEl)lcEl.style.display=showLessons?'flex':'none';
+    if(showLessons&&d.current!=null&&d.total){
+      const subphaseMap={lessons:'Контент',quizzes:'Тест',homework:'ДЗ',flashcards:'Карточки'};
+      const sp=subphaseMap[d.phase]||'...';
+      _updateLessonListState(lList, d.current, sp);
+      _updateCounters(lcEl, pfEl, d.current, d.total);
+    }
+    // Update gen-progress-ring dots
+    const ring=document.querySelector('.gen-progress-ring');
+    if(ring){
+      const dots=ring.querySelectorAll('.gen-phase-dot');
+      const curIdx=_PHASE_ORDER.indexOf(d.phase);
+      _PHASE_ORDER.forEach((ph,i)=>{
+        const dot=dots[i];if(!dot)return;
+        const di=dot.querySelector('i');
+        if(i<curIdx){dot.className='gen-phase-dot done';if(di)di.style.color='var(--green)'}
+        else if(i===curIdx){dot.className='gen-phase-dot active';if(di)di.style.color='var(--accent)'}
+        else{dot.className='gen-phase-dot pending';if(di)di.style.color='var(--text3)'}
+      });
+    }
+  }else if(d.type==='notes_done'&&phNotes){
+    phNotes.innerHTML='<div class="fb ok"><i class="fas fa-check-circle"></i> Материалы проанализированы</div>';
+  }else if(d.type==='lesson_done'&&lList){
+    const idx=d.index;const total=lList.children.length;
+    const el=lList.children[idx];
+    if(el){
+      el.classList.remove('active');el.classList.add('done');
+      el.style.background='var(--green-light)';el.style.color='var(--green)';el.style.border='none';
+      el.querySelector('i').className='fas fa-check-circle';el.querySelector('i').style.color='var(--green)';
+      const badge=el.querySelector('.sse-subphase-badge');
+      if(badge){badge.textContent='✓';badge.style.opacity='1';badge.style.color='var(--green)'}
+    }
+    // Move active to next lesson if there is one
+    if(idx+1<total){
+      const next=lList.children[idx+1];
+      next.classList.remove('pending');next.classList.add('active');
+      next.style.background='var(--accent-light)';next.style.color='var(--accent)';next.style.border='1px solid var(--accent)';
+      next.querySelector('i').className='fas fa-spinner fa-pulse';next.querySelector('i').style.color='var(--accent)';
+      const badge=next.querySelector('.sse-subphase-badge');
+      if(badge){badge.textContent='Контент';badge.style.opacity='1';badge.style.color='var(--accent)'}
+    }
+    const done=document.querySelectorAll('#sseLessonList .done').length;
+    _updateCounters(lcEl, pfEl, done, total);
+    const previewBtn=document.getElementById('previewReadyBtn');
+    if(previewBtn&&done>0){previewBtn.style.display='block';previewBtn.querySelector('button').innerHTML='<i class="fas fa-eye"></i> Смотреть готовые уроки ('+done+'/'+total+')'}
+  }else if(d.type==='progress'){
+    if(subMsg)subMsg.textContent=d.message||'';
+    if(statusMsg&&d.message)statusMsg.innerHTML='<i class="fas fa-spinner fa-pulse" style="color:var(--accent)"></i> '+esc(d.message);
+  }else if(d.type==='error'){
+    if(statusMsg)statusMsg.innerHTML='<span style="color:var(--red)">⚠️ Ошибка: '+esc(d.message||'')+'</span>';
+  }else if(d.type==='done'){
+    const el=document.getElementById('appContent');
+    if(phLabel)phLabel.textContent='Готово!';
+    if(statusMsg)statusMsg.innerHTML='<i class="fas fa-check-circle" style="color:var(--green)"></i> Курс готов!';
+    if(pfEl)pfEl.style.width='100%';
+    // Mark all lessons done
+    if(lList)for(let i=0;i<lList.children.length;i++){
+      const li=lList.children[i];
+      li.classList.remove('active','pending');li.classList.add('done');
+      li.style.background='var(--green-light)';li.style.color='var(--green)';li.style.border='none';
+      li.querySelector('i').className='fas fa-check-circle';li.querySelector('i').style.color='var(--green)';
+      const badge=li.querySelector('.sse-subphase-badge');
+      if(badge){badge.textContent='✓';badge.style.opacity='1';badge.style.color='var(--green)'}
+    }
+    const banner=document.getElementById('genBanner');if(banner)banner.remove();
+    if(el)loadCourseView(S.currentId);
+  }else if(d.type==='resume'){
+    const phase=d.phase;const done=d.lessons_done||0;const total=d.total_lessons||0;
+    if(phLabel)phLabel.textContent=_PHASE_LABELS[phase]||phase;
+    _updateCounters(lcEl, pfEl, done, total);
+    // Update gen-progress-ring
+    const ring=document.querySelector('.gen-progress-ring');
+    if(ring){
+      const dots=ring.querySelectorAll('.gen-phase-dot');
+      const curIdx=_PHASE_ORDER.indexOf(phase);
+      _PHASE_ORDER.forEach((ph,i)=>{
+        const dot=dots[i];if(!dot)return;
+        const di=dot.querySelector('i');
+        if(i<curIdx){dot.className='gen-phase-dot done';if(di)di.style.color='var(--green)'}
+        else if(i===curIdx){dot.className='gen-phase-dot active';if(di)di.style.color='var(--accent)'}
+        else{dot.className='gen-phase-dot pending';if(di)di.style.color='var(--text3)'}
+      });
+    }
+    if(lList){
+      for(let i=0;i<lList.children.length;i++){
+        const li=lList.children[i];
+        const badge=li.querySelector('.sse-subphase-badge');
+        if(i<done){
+          li.className='done';li.style.background='var(--green-light)';li.style.color='var(--green)';li.style.border='none';
+          li.querySelector('i').className='fas fa-check-circle';li.querySelector('i').style.color='var(--green)';
+          if(badge){badge.textContent='✓';badge.style.opacity='1';badge.style.color='var(--green)'}
+        }else if(i===done){
+          li.className='active';li.style.background='var(--accent-light)';li.style.color='var(--accent)';li.style.border='1px solid var(--accent)';
+          li.querySelector('i').className='fas fa-spinner fa-pulse';li.querySelector('i').style.color='var(--accent)';
+          if(badge){badge.textContent='Контент';badge.style.opacity='1';badge.style.color='var(--accent)'}
+        }else{
+          li.className='pending';li.style.background='var(--bg3)';li.style.color='var(--text3)';li.style.border='none';
+          li.querySelector('i').className='fas fa-circle';li.querySelector('i').style.color='var(--text3)';
+          if(badge){badge.textContent='';badge.style.opacity='0'}
+        }
+      }
+    }
+  }else if(d.type==='paused'){
+    if(statusMsg)statusMsg.innerHTML='<i class="fas fa-pause-circle" style="color:var(--yellow)"></i> ⏸ Генерация приостановлена';
+    const banner=document.getElementById('genBanner');if(banner)banner.remove();
+    const pBtn=document.getElementById('previewReadyBtn');
+    if(pBtn){pBtn.style.display='block';const btn=pBtn.querySelector('button');if(btn)btn.innerHTML='<i class="fas fa-eye"></i> Смотреть готовые уроки'}
+  }
+}
+
+// ========== SSE VIEW ==========
+const _PHASE_ICONS={notes:'file-alt',syllabus:'list',lessons:'book-open',quizzes:'question-circle',homework:'pencil-alt',flashcards:'layer-group',exam:'graduation-cap',bibliography:'bookmark'};
+const _PHASE_ORDER=['notes','syllabus','lessons','quizzes','homework','flashcards','exam','bibliography'];
+function sseViewHTML(id,c){
+  const gp=c.generation_progress||{};const p=gp.phase||'notes';
+  const icon=_PHASE_ICONS[p]||'circle';const label=_PHASE_LABELS[p]||p;
+  const ls=c.plan?.lessons||[];const ld=gp.lessons_done||0;const total=ls.length||1;
+  const pct=Math.round(ld/total*100);
+  const pi=_PHASE_ORDER.indexOf(p);
+  let h='<button class="btn btn-sm" onclick="backToCourses()"><i class="fas fa-arrow-left"></i> К курсам</button>';
+  h+=`<div class="card" style="margin-top:12px;padding:24px">`;
+  // Phase progress ring
+  h+=`<div class="gen-progress-ring" style="margin-bottom:16px">`;
+  _PHASE_ORDER.forEach((ph,i)=>{
+    const cls=i<pi?'done':i==pi?'active':'pending';
+    const ic=_PHASE_ICONS[ph]||'circle';
+    h+=`<span class="gen-phase-dot ${cls}" title="${_PHASE_LABELS[ph]||ph}"><i class="fas fa-${ic}" style="font-size:10px;color:${i<pi?'var(--green)':i==pi?'var(--accent)':'var(--text3)'}"></i></span>`;
+    if(i<_PHASE_ORDER.length-1)h+=`<span style="font-size:10px;color:var(--text3)">─</span>`;
+  });
+  h+=`</div>`;
+  h+=`<div style="text-align:center;margin-bottom:20px">`;
+  h+=`<i class="fas fa-${icon}" style="font-size:32px;color:var(--accent);margin-bottom:8px;display:block"></i>`;
+  h+=`<h3 id="ssePhaseLabel" style="font-size:16px;font-weight:700">${label}</h3>`;
+  h+=`<p id="sseStatusMsg" style="font-size:13px;color:var(--text2);margin:8px 0 16px">${p==='done'?'Курс готов!':'Генерация курса...'}</p>`;
+  h+=`<div class="progress-bar" style="height:8px;border-radius:4px;background:var(--bg4);margin-bottom:6px"><div class="fill" id="sseProgressFill" style="width:${pct}%;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),#a78bfa);transition:width 0.5s ease"></div></div>`;
+  h+=`<span id="sseSubMsg" style="font-size:11px;color:var(--text3)">${esc(gp.message||'')}</span>`;
+  h+=`</div>`;
+  h+=`<div id="sseNotes" style="${p==='notes'?'':'display:none'};margin-top:4px"><textarea class="test-ta" style="min-height:50px" placeholder="Заметки к материалам..."></textarea></div>`;
+  h+=`<div id="sseLessons" style="${p==='lessons'||p==='quizzes'||p==='homework'||p==='flashcards'?'':'display:none'};margin-top:12px">`;
+  h+=`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text3);margin-bottom:6px"><span>Прогресс уроков</span><span id="sseLessonCount">${ld}/${total}</span></div>`;
+  h+=`<div id="sseLessonList" style="display:flex;flex-direction:column;gap:3px">`;
+  (ls||[]).forEach((l,i)=>{
+    const cls=i<ld?'done':i===ld?'active':'pending';
+    const icon=i<ld?'fa-check-circle':i===ld?'fa-spinner fa-pulse':'fa-circle';
+    const bg=i<ld?'var(--green-light)':i===ld?'var(--accent-light)':'var(--bg3)';
+    const col=i<ld?'var(--green)':i===ld?'var(--accent)':'var(--text3)';
+    const border=i===ld?'1px solid var(--accent)':'none';
+    h+=`<div class="sse-lesson-item ${cls}" data-idx="${i}" data-subphase="" style="padding:6px 10px;font-size:12px;border-radius:6px;background:${bg};color:${col};border:${border};display:flex;align-items:center;gap:8px;transition:all 0.3s ease">
+      <i class="fas ${icon}" style="font-size:11px;width:14px;text-align:center;color:${col}"></i>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:${i===ld?'600':'400'}">${esc(l.title||'')}</span>
+      <span class="sse-subphase-badge" style="font-size:10px;opacity:${i<=ld?'1':'0'};white-space:nowrap">${i<ld?'✓':'<span style="color:var(--accent)">...</span>'}</span>
+    </div>`;
+  });
+  h+=`</div>`;
+  h+=`<div id="previewReadyBtn" style="text-align:center;margin-top:16px;${ld>0?'':'display:none'}">
+    <button class="btn btn-primary" onclick="showPartialCourse('${id}')" style="font-size:14px;padding:10px 24px">
+      <i class="fas fa-eye"></i> Смотреть готовые уроки (${ld}/${total})
+    </button>
+    <p style="font-size:11px;color:var(--text3);margin-top:6px">Генерация продолжится в фоне</p>
+  </div>`;
+  h+=`</div>`;
+  return h;
+}
+
+let _ssePersist=false;
+function checkCourseReady(id){/* polling handles this */}
+
+async function showPartialCourse(id){
+  if(_sseCurrentId===id)_ssePersist=true;
+  await loadCourseView(id,true);
+}
+
+async function loadCourseView(id,partial){
+  if(!id)return;S._loadingCourse=true;
+  try{
+    const r=await fetch('/api/education/course/'+id);const c=await r.json();
+    if(!c||c.id===undefined){S._loadingCourse=false;toast('Ошибка загрузки','err');loadCourses();return}
+    S.currentId=c.id;S.chatId=c.id;S.lesson=c.progress?.current_lesson||0;
+    S._quizAnswers={};S._quizSubmitted=false;S._quizPage=0;
+    const chat=document.getElementById('chatMessages');chat.innerHTML='';
+    if(c.chat_history&&c.chat_history.length>0)c.chat_history.forEach(m=>{chat.innerHTML+=`<div class="msg ${m.role}">${nl2br(m.content)}<div class="t">${new Date(m.time*1000).toLocaleTimeString()}</div></div>`});
+    else chat.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center;padding:16px"><i class="fas fa-robot" style="font-size:24px;display:block;margin-bottom:8px;color:var(--accent)"></i>Задайте вопрос по курсу</div>';
+    chat.scrollTop=chat.scrollHeight;
+    const el=document.getElementById('appContent');
+    if(c.status==='error'){
+      el.innerHTML=`<button class="btn btn-sm" onclick="backToCourses()"><i class="fas fa-arrow-left"></i> К курсам</button>
+        <div class="card" style="margin-top:12px;border-color:var(--red)"><div class="card-title"><i class="fas fa-exclamation-triangle" style="color:var(--red)"></i> Ошибка</div>
+        <p>${esc(c.error||'Неизвестная ошибка')}</p><div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn btn-sm btn-danger" onclick="deleteCourse('${id}')">Удалить</button>
+        <button class="btn btn-sm" onclick="retryCourse('${id}')">Повторить</button></div></div>`;
+      S._loadingCourse=false;return;
+    }
+    const gp=c.generation_progress||{};const ld=gp.lessons_done||0;const total=(c.plan?.lessons||[]).length;
+    const isGenerating=c.status==='queued'||c.status==='analyzing'||c.status==='materials_loaded'||c.status==='analyzed'||c.status==='plan_ready'||(gp.phase&&gp.phase!=='done');
+    const canPreview=partial||(total>0&&ld>0&&isGenerating);
+    if(isGenerating&&!canPreview){
+      const rb=document.getElementById('readingBtn');if(rb)rb.style.display='none';
+      el.innerHTML=sseViewHTML(id,c);startSSE(id);checkCourseReady(id);
+      S._loadingCourse=false;return;
+    }
+    S.courseView='content';S.currentCourse=c;
+    // Show generation banner if course is still being generated
+    if(isGenerating&&canPreview&&ld<total){
+      if(!_ssePersist&&_sseCurrentId!==id){startSSE(id)}
+      renderLesson(c,S.lesson,true);
+      // Add banner
+      const banner=document.createElement('div');banner.id='genBanner';banner.className='gen-banner';
+      banner.innerHTML='<i class="fas fa-spinner fa-pulse"></i> <span>Курс ещё генерируется ('+ld+'/'+total+' уроков). </span><a href="#" onclick="backToSSEView(\''+id+'\')" style="margin-left:auto;font-weight:600">Следить за генерацией →</a>';
+      el.insertBefore(banner,el.firstChild);
+    }else{
+      renderLesson(c,S.lesson);
+    }
+  }catch(e){toast('Ошибка загрузки курса','err')}
+  S._loadingCourse=false;
+}
+function backToSSEView(id){
+  _ssePersist=false;if(_sseCurrentId!==id)startSSE(id);
+  loadCourseView(id);
+}
+
+function backToCourses(){
+  if(S.pollId){clearInterval(S.pollId);S.pollId=null}
+  if(_sseTimer){clearInterval(_sseTimer);_sseTimer=null}
+  if(_sseReconnectTimer){clearTimeout(_sseReconnectTimer);_sseReconnectTimer=null}
+  _sseCurrentId=null;_sseRetries=0;
+  S.currentId=null;S.chatId=null;
+  const rb=document.getElementById('readingBtn');if(rb)rb.style.display='none';
+  exitReadingMode();
+  loadCourses();
+}
+
+async function retryCourse(id){try{await fetch('/api/education/course/'+id+'/retry',{method:'POST'});openCourse(id)}catch(e){}}
+
+// ========== RENDER LESSON ==========
+function renderLesson(c,idx,partial){
+  const el=document.getElementById('appContent');
+  const ls=c.plan?.lessons||[];if(!ls.length){el.innerHTML='<p style="text-align:center;padding:40px;color:var(--text3)">Нет уроков</p>';return}
+  const i=Math.max(0,Math.min(idx,ls.length-1));const l=ls[i];const done=c.progress?.completed_lessons||[];const ts=c.progress?.total_score||0;const ms=c.progress?.max_score||100;
+  S.lesson=i;const pct=ls.length?Math.round(done.length/ls.length*100):0;
+  const rb=document.getElementById('readingBtn');if(rb)rb.style.display='inline-flex';
+  exitReadingMode();
+  let h='<button class="btn btn-sm" onclick="backToCourses()"><i class="fas fa-arrow-left"></i> К курсам</button>';
+  h+=` <button class="btn btn-sm" onclick="showProgressChart(S.currentCourse)" title="Прогресс"><i class="fas fa-chart-bar"></i></button>`;
+  h+=` <button class="btn btn-sm" onclick="showGamification()" title="Достижения"><i class="fas fa-trophy"></i></button>`;
+  h+=` <button class="btn btn-sm" onclick="repairCourse('${c.id}')" title="Починить: исправить форматирование контента и догенерировать недостающие тесты/ДЗ/карточки"><i class="fas fa-wrench" style="color:var(--yellow)"></i> Починить</button>`;
+  h+=`<h2 style="margin:12px 0 4px;font-size:18px">${esc(c.title||'')}</h2>`;
+  h+=`<div style="font-size:12px;color:var(--text3);margin-top:2px">Урок ${i+1} из ${ls.length} • <i class="fas fa-star" style="color:var(--yellow)"></i> ${ts}/${ms} • ${diffBadge(c.difficulty||'beginner')}</div>`;
+  h+=`<div class="progress-bar" style="margin:12px 0"><div class="fill ${c.status==='completed'?'done':''}" style="width:${pct}%"></div></div>`;
+  h+=`<div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap">`;
+  h+=`<button class="btn btn-sm" onclick="navL(-1)" ${i<=0?'disabled':''}><i class="fas fa-chevron-left"></i> Назад</button>`;
+  h+=`<span style="flex:1"></span>`;
+  h+=`<button class="btn btn-sm" onclick="navL(1)" ${i>=ls.length-1?'disabled':''}>Вперёд <i class="fas fa-chevron-right"></i></button>`;
+  h+=`</div>`;
+  const qCount=(l.quiz||[]).length;
+  h+=`<div class="section-tabs">
+    <button class="section-tab active" id="stabContent" onclick="switchSection('content')"><i class="fas fa-book-open"></i> Материал</button>
+    <button class="section-tab" id="stabQuiz" onclick="switchSection('quiz')"><i class="fas fa-question-circle"></i> Тест <span style="font-size:10px;color:var(--text3)">(${qCount})</span></button>
+    <button class="section-tab" id="stabHomework" onclick="switchSection('homework')"><i class="fas fa-pencil-alt"></i> ДЗ</button>
+    <button class="section-tab" id="stabFlashcards" onclick="switchSection('flashcards')"><i class="fas fa-layer-group"></i> Карточки</button>
+    <button class="section-tab" id="stabBibliography" onclick="showBibliography(S.currentCourse)" style="border-left:1px solid var(--border);margin-left:4px"><i class="fas fa-bookmark"></i> Лит-ра</button>
+  </div>`;
+  h+=`<div id="sectionContent">`;
+  const isDone=done.includes(i);
+  // CONTENT SECTION
+  h+=`<div id="lessonContent">`;
+  h+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h3 style="margin:0;font-size:16px">${esc(l.title||'')}</h3><button class="btn btn-sm" onclick="ttsLesson('${c.id}',${i})"><i class="fas fa-volume-up" style="color:var(--accent)"></i> Озвучить</button></div>`;
+  if(l.content_sections&&l.content_sections.length){
+    l.content_sections.forEach((sec,si)=>{
+      const c2={concept:'var(--accent)',code:'var(--green)',example:'var(--yellow)',note:'var(--purple)'}[sec.type||'concept']||'var(--accent)';
+      h+=`<div class="card" style="margin-bottom:12px;border-left:3px solid ${c2}"><div class="card-title" style="color:${c2}">${esc(sec.title||'')}</div><div class="lesson-body">${sec.type==='code'?'<pre><code>'+esc(sec.body||'')+'</code></pre>':renderContent(sec.body||'')}</div></div>`;
+    });
+  }else{
+    h+=`<div class="card" style="margin-bottom:12px"><div class="lesson-body">${renderContent(l.content||'')}</div></div>`;
+  }
+  if(l.key_terms&&l.key_terms.length){
+    h+=`<div class="card"><div class="card-title" style="display:flex;justify-content:space-between;align-items:center"><span><i class="fas fa-bookmark" style="color:var(--yellow)"></i> Ключевые термины</span></div><div class="key-terms">`;
+    l.key_terms.forEach(kt=>{h+=`<div class="key-term"><span class="term">${esc(kt.term||'')}</span> <span class="def">— ${esc(kt.definition||'')}</span></div>`});
+    h+=`</div></div>`;
+  }
+  if(l.practice){h+=`<div class="card"><div class="card-title"><i class="fas fa-tools" style="color:var(--orange)"></i> Практика</div><div class="lesson-body">${renderContent(l.practice)}</div></div>`}
+  const pd=l.practice_data||{};
+  if(pd.exercises&&pd.exercises.length){
+    h+=`<div class="card"><div class="card-title"><i class="fas fa-dumbbell" style="color:var(--orange)"></i> Упражнения</div>`;
+    pd.exercises.forEach((ex,ei)=>{h+=`<div style="padding:8px;background:var(--bg3);border-radius:4px;margin-bottom:6px"><strong style="font-size:13px">${ei+1}. ${esc(ex.title||'')}</strong><p style="font-size:12px;color:var(--text2);margin:4px 0 0">${nl2br(esc(ex.description||''))}</p></div>`});
+    h+=`</div>`;
+  }
+  if(pd.mini_project&&pd.mini_project.title){
+    h+=`<div class="card"><div class="card-title"><i class="fas fa-project-diagram" style="color:var(--accent)"></i> Мини-проект: ${esc(pd.mini_project.title)}</div>`;
+    if(pd.mini_project.steps){h+=`<ol style="font-size:13px">`;pd.mini_project.steps.forEach(s=>{h+=`<li style="margin-bottom:4px">${esc(s)}</li>`});h+=`</ol>`}
+    if(pd.mini_project.evaluation_criteria){h+=`<div style="font-size:12px;color:var(--text3);margin-top:8px"><strong>Критерии:</strong> `+pd.mini_project.evaluation_criteria.map(c=>'<span style="display:inline-block;padding:2px 8px;background:var(--bg2);border-radius:12px;margin:2px;font-size:11px">'+esc(c)+'</span>').join('')+`</div>`}
+    h+=`</div>`;
+  }
+  if(pd.case_studies&&pd.case_studies.length){
+    pd.case_studies.forEach((cs,ci)=>{h+=`<div class="card" style="border-left:3px solid var(--yellow)"><div class="card-title"><i class="fas fa-briefcase" style="color:var(--yellow)"></i> Кейс ${ci+1}</div><p style="font-size:13px;color:var(--text2)">${nl2br(esc(cs.scenario||''))}</p>`;if(cs.questions){h+=`<ul style="font-size:12px;color:var(--text3)">`;cs.questions.forEach(q=>{h+=`<li>${esc(q)}</li>`});h+=`</ul>`}h+=`</div>`});
+  }
+  if(pd.discussion_questions&&pd.discussion_questions.length){
+    h+=`<div class="card"><div class="card-title"><i class="fas fa-comments" style="color:var(--purple)"></i> Вопросы для обсуждения</div><ul style="font-size:13px">`;pd.discussion_questions.forEach(q=>{h+=`<li style="margin-bottom:4px">${esc(q)}</li>`});h+=`</ul></div>`;
+  }
+  h+=`<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-sm" onclick="switchSection('quiz')"><i class="fas fa-check-circle" style="color:var(--green)"></i> Тест</button>
+  </div></div>`;
+  // QUIZ SECTION
+  h+=`<div id="lessonQuiz" style="display:none" class="slide-up"><div id="quizTimer" style="text-align:center;font-size:16px;font-weight:700;color:var(--text2);margin-bottom:8px"></div><div class="quiz-container" id="quizContainer">`;
+  if(l.quiz&&l.quiz.length){
+    const qpp=5;
+    h+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h3 style="margin:0"><i class="fas fa-question-circle" style="color:var(--accent)"></i> Тест (${l.quiz.length} вопросов)</h3><div style="display:flex;gap:6px"><button class="btn btn-sm" id="regenQuizBtn" onclick="regenQuiz('${c.id}',${i})" title="Перегенерировать"><i class="fas fa-sync"></i></button><button class="btn btn-sm" onclick="openGenerateTestsModal('${c.id}',${i})" title="Сгенерировать тесты через локальный ИИ"><i class="fas fa-wand-magic-sparkles"></i> ИИ</button></div></div>`;
+    const storedQuiz=S._quizAnswers||{};
+    l.quiz.forEach((q,qi)=>{
+      const qp=S._quizPage||0;const style=qi>=qp*qpp&&qi<(qp+1)*qpp?'':'display:none';
+      const qType=q.type||'choice';const qDone=S._quizSubmitted||false;const userAns=storedQuiz[qi];
+      h+=`<div class="quiz-q" id="qq_${qi}" style="${style}">
+        <div class="q-meta"><i class="fas fa-${qType==='choice'?'dot-circle':qType==='multiple'?'check-double':qType==='fill_in'?'keyboard':qType==='true_false'?'toggle-on':qType==='matching'?'arrows-alt-h':qType==='ordering'?'sort-amount-down':qType==='ai_open'?'brain':'question'}"></i> ${qType==='ai_open'?'Открытый вопрос':qType==='true_false'?'Верно/Неверно':qType==='matching'?'Сопоставление':qType==='ordering'?'Порядок':qType==='fill_in'?'Ввод ответа':qType==='multiple'?'Несколько вариантов':'Выбор'} ${qi+1}/${l.quiz.length}</div>
+        <div class="q-text">${esc(q.question||'')}</div>`;
+      if(qType==='choice'&&q.options){q.options.forEach((o,oi)=>{const cls='quiz-opt'+((!qDone&&userAns==oi)?' sel':'')+(qDone?(oi==q.correct?' correct':(userAns==oi?' wrong':'')):'');h+=`<div class="${cls}" onclick="${qDone?'':`selectQuizAns(${qi},${oi})`}">${esc(o)}</div>`})}
+      else if(qType==='multiple'&&q.options){const correctSet=(q.correct||[]).map(String);const userSet=userAns?String(userAns).split(','):[];q.options.forEach((o,oi)=>{const isCorrect=correctSet.includes(String(oi));const isSelected=userSet.includes(String(oi));const cls='quiz-opt'+((!qDone&&isSelected)?' sel':'')+(qDone?(isCorrect?' correct':(isSelected?' wrong':'')):'');h+=`<div class="${cls}" onclick="${qDone?'':`toggleQuizMultiple(${qi},${oi})`}">${qDone&&isCorrect&&!isSelected?'✅ ':''}${esc(o)}</div>`})}
+      else if(qType==='fill_in'){h+=`<input type="text" class="search-inp" id="qfill_${qi}" placeholder="Введите ответ..." ${qDone?'disabled':''} value="${esc(userAns||'')}" onchange="saveQuizFill(${qi},this.value)">`}
+      else if(qType==='true_false'){const selVal=userAns!=null?String(userAns):'';h+=`<div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-sm ${selVal==='true'?'btn-primary':''}" onclick="selectQuizAns(${qi},'true')" ${qDone?'disabled':''}>Верно</button><button class="btn btn-sm ${selVal==='false'?'btn-primary':''}" onclick="selectQuizAns(${qi},'false')" ${qDone?'disabled':''}>Неверно</button></div>`}
+      else if(qType==='matching'){h+=`<div style="margin-top:8px">`;(q.pairs||[]).forEach((p,pi)=>{h+=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:13px"><span style="flex:1;font-weight:500">${esc(p.left||'')}</span><select class="search-inp" style="width:auto" onchange="saveQuizMatch(${qi},this,${pi})" ${qDone?'disabled':''}><option value="">---</option>${(q.pairs||[]).map((_,oi)=>'<option value="'+oi+'"'+(userAns&&userAns[pi]==oi?' selected':'')+'>'+esc(q.pairs[oi].right||'')+'</option>').join('')}</select></div>`});h+=`</div>`}
+      else if(qType==='ordering'){h+=`<div class="ordering-list" id="ol_${qi}" style="margin-top:8px">`;const items=q.items||[];const order=userAns||items.map((_,oi)=>oi);order.forEach((oi,pos)=>{h+=`<div class="order-item" draggable="true" style="padding:8px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;margin-bottom:4px;cursor:grab;font-size:13px"><i class="fas fa-grip-vertical" style="color:var(--text3);margin-right:8px"></i><span>${pos+1}. ${esc(items[oi]||'')}</span></div>`});h+=`</div>`}
+      else if(qType==='ai_open'){h+=`<div style="margin-top:8px"><textarea class="test-ta" id="aiAnswer_${qi}" placeholder="Напишите развёрнутый ответ..." style="min-height:100px">${esc(userAns||'')}</textarea><div style="margin-top:6px;display:flex;gap:8px;align-items:center"><button class="btn btn-sm btn-primary" id="aiSubmit_${qi}" onclick="submitAiAnswer('${c.id}',${i},${qi})"><i class="fas fa-paper-plane"></i> Проверить</button><span style="font-size:11px;color:var(--text3)">Оценка через AI</span></div><div id="aiResult_${qi}"></div></div>`}
+      if(qDone){const isCorrect=userAns!=null&&(qType==='fill_in'?userAns.toLowerCase().trim()===(q.correct_answer||'').toLowerCase().trim():userAns==q.correct);const qr=S._quizResults?S._quizResults.find(r=>r.question===qi):null;const expl=(qr&&qr.explanation)?qr.explanation:(q.explanation||(isCorrect?'Верно!':'Неправильно.'));h+=`<div class="quiz-fb ${isCorrect?'correct':'wrong'}"><div style="margin-bottom:4px"><strong>${isCorrect?'✅ Верно':'❌ Неверно'}</strong></div><div style="font-size:13px;line-height:1.5;white-space:pre-wrap">${esc(expl)}</div></div>`}
+      h+=`</div>`;
+    });
+    if(l.quiz.length>5){
+      const maxP=Math.ceil(l.quiz.length/qpp)-1;
+      h+=`<div style="display:flex;justify-content:center;gap:8px;margin-top:12px;align-items:center">
+        <button class="btn btn-sm" onclick="prevQuizPage()" ${(S._quizPage||0)<=0?'disabled':''}><i class="fas fa-chevron-left"></i></button>
+        <span id="quizPageInfo" style="font-size:12px;color:var(--text3)">Стр. ${(S._quizPage||0)+1} из ${maxP+1}</span>
+        <button class="btn btn-sm" onclick="nextQuizPage()" ${(S._quizPage||0)>=maxP?'disabled':''}><i class="fas fa-chevron-right"></i></button>
+      </div>`;
+    }
+    const qSub=S._quizSubmitted||false;
+    if(qSub){
+      h+=`<div class="fb" style="margin-bottom:10px"><i class="fas fa-info-circle"></i> Ответы проверены — правильные и неправильные отмечены выше. Перейдите к следующему уроку самостоятельно.</div>`;
+      h+=`<button class="btn btn-primary" onclick="navL(1)"><i class="fas fa-arrow-right"></i> Следующий урок</button>`;
+    }
+    else if(!isDone){h+=`<button class="btn btn-primary" onclick="submitQuiz('${c.id}',${i})" id="quizSubmitBtn"><i class="fas fa-paper-plane"></i> Отправить</button>`}
+    else{h+=`<div class="fb ok"><i class="fas fa-check-circle"></i> Тест пройден!</div><button class="btn btn-sm" onclick="navL(1)"><i class="fas fa-arrow-right"></i> Следующий урок</button>`}
+  }else{h+=`<div style="text-align:center;padding:30px;color:var(--text3)"><i class="fas fa-check-circle" style="font-size:32px;display:block;margin-bottom:8px;color:var(--green)"></i>Нет вопросов</div>`}
+  h+=`</div></div>`;
+  // HOMEWORK SECTION
+  h+=`<div id="lessonHomework" style="display:none" class="slide-up">`;
+  if(l.homework||pd.exercises||pd.mini_project){
+    const hwText=l.homework;
+    const isJSON=hwText&&(hwText.trim().startsWith('{')||hwText.trim().startsWith('['));
+    h+=`<div class="homework-section"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0"><i class="fas fa-pencil-alt"></i> ДЗ</h3><button class="btn btn-sm" id="regenHWBtn" onclick="regenHW('${c.id}',${i})"><i class="fas fa-sync"></i></button></div>`;
+    if(pd.exercises&&pd.exercises.length){
+      pd.exercises.forEach((ex,ei)=>{h+=`<div style="padding:10px;background:var(--bg2);border-radius:var(--radius-sm);margin-bottom:8px;border:1px solid var(--border)"><div style="font-size:13px;font-weight:600;margin-bottom:4px">${ei+1}. ${esc(ex.title||'')}</div><div style="font-size:12px;color:var(--text2);margin-bottom:4px">${nl2br(esc(ex.description||''))}</div><div style="font-size:11px;color:var(--text3);padding:6px;background:var(--bg3);border-radius:4px"><strong>Ответ:</strong> ${nl2br(esc(ex.expected_answer||''))}</div></div>`});
+    }
+    if(pd.mini_project&&pd.mini_project.title){
+      h+=`<div style="padding:10px;background:var(--bg2);border-radius:var(--radius-sm);margin:8px 0;border:1px solid var(--border)"><div style="font-size:13px;font-weight:600;margin-bottom:4px"><i class="fas fa-project-diagram" style="color:var(--accent)"></i> ${esc(pd.mini_project.title)}</div>`;
+      if(pd.mini_project.steps){h+=`<ol style="font-size:12px;padding-left:16px">`;pd.mini_project.steps.forEach(s=>{h+=`<li style="margin-bottom:4px">${esc(s)}</li>`});h+=`</ol>`}
+      h+=`</div>`;
+    }
+    if(!isJSON&&hwText&&!(pd.exercises&&pd.exercises.length)){h+=`<div style="font-size:14px;line-height:1.6;margin-bottom:12px">${nl2br(esc(hwText))}</div>`}
+    if(!isDone){h+=`<textarea class="test-ta" id="ha_${i}" placeholder="Ваше решение..." style="margin-top:8px"></textarea><div style="margin-top:8px"><button class="btn btn-primary btn-sm" onclick="submitHW('${c.id}',${i})"><i class="fas fa-paper-plane"></i> Отправить ДЗ</button></div><div id="hf"></div>`}
+    else{h+=`<div class="fb ok" style="margin-top:8px"><i class="fas fa-check-circle"></i> ДЗ выполнено!</div>`}
+    h+=`</div>`;
+  }else{h+=`<div style="text-align:center;padding:30px;color:var(--text3)">ДЗ не задано</div>`}
+  h+=`</div>`;
+  // FLASHCARDS SECTION
+  h+=`<div id="lessonFlashcards" style="display:none" class="slide-up">`;
+  const fcTerms=l.flashcards&&l.flashcards.length?l.flashcards:l.key_terms&&l.key_terms.length?l.key_terms:[];
+  const terms=fcTerms;const isFC=fcTerms===l.flashcards;
+  if(terms.length>0){
+    h+=`<div style="display:flex;justify-content:flex-end;margin-bottom:4px"><button class="btn btn-sm" id="regenFCBtn" onclick="regenFlashcards('${c.id}',${i+1})"><i class="fas fa-sync"></i></button></div>
+    <h3 style="margin-bottom:12px"><i class="fas fa-layer-group" style="color:var(--purple)"></i> Карточки</h3>
+    <div id="flashcardArea">
+      <div class="flashcard-container" onclick="flipCard()">
+        <div class="flashcard" id="fcCard">
+          <div class="flashcard-face" id="fcFront"><div class="front-text">${esc(isFC?terms[0].front||'':terms[0].term||'')}</div></div>
+          <div class="flashcard-face flashcard-back" id="fcBack"><div class="back-text">${esc(isFC?terms[0].back||'':terms[0].definition||'')}</div></div>
+        </div>
+      </div>
+      <div class="flashcard-hint" style="text-align:center;font-size:12px;color:var(--text3);margin-top:6px">👆 Нажмите для переворота</div>
+      <div class="flashcard-nav">
+        <button class="btn btn-sm" id="fcPrev" onclick="navFlashcard(-1)"><i class="fas fa-chevron-left"></i></button>
+        <span id="fcCounter" style="font-size:13px;color:var(--text3);padding:6px 0">1/${terms.length}</span>
+        <button class="btn btn-sm" id="fcNext" onclick="navFlashcard(1)"><i class="fas fa-chevron-right"></i></button>
+      </div>
+      ${isFC ? `<div id="fcRating" style="display:none;text-align:center;margin-top:10px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Оцените знание:</div>
+        <div style="display:flex;gap:6px;justify-content:center">
+          <button class="btn btn-xs" style="background:var(--red-light);color:var(--red)" onclick="rateFlashcard('${c.id}',${i+1},1)">Снова</button>
+          <button class="btn btn-xs" style="background:var(--yellow-light);color:var(--yellow)" onclick="rateFlashcard('${c.id}',${i+1},3)">Сложно</button>
+          <button class="btn btn-xs" style="background:var(--green-light);color:var(--green)" onclick="rateFlashcard('${c.id}',${i+1},4)">Хорошо</button>
+          <button class="btn btn-xs" style="background:var(--accent-light);color:var(--accent)" onclick="rateFlashcard('${c.id}',${i+1},5)">Легко</button>
+        </div>
+      </div>` : `<div style="text-align:center;font-size:11px;color:var(--text3);margin-top:8px">Карточки ещё не сгенерированы — это термины урока</div>`}
+    </div>`;
+    S._fcTerms=terms;S._fcIdx=0;
+  }else{h+=`<div style="text-align:center;padding:30px;color:var(--text3)">Нет карточек</div>`}
+  h+=`</div></div>`;
+  // BOTTOM BUTTONS
+  if(c.status==='completed'||c.status==='learning'){
+    h+=`<div style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+      <button class="btn btn-sm" onclick="openCourse('${c.id}')"><i class="fas fa-sync"></i> Обновить</button>
+      <button class="btn btn-sm btn-primary" onclick="extendCourse('${c.id}')"><i class="fas fa-plus-circle"></i> Продолжить курс</button>
+      <button class="btn btn-sm" onclick="exportCourse('${c.id}','json')"><i class="fas fa-download"></i> JSON</button>
+      <button class="btn btn-sm" onclick="exportCourse('${c.id}','txt')"><i class="fas fa-file-alt"></i> TXT</button>
+      <button class="btn btn-sm" onclick="exportAnki('${c.id}')" title="Экспорт в Anki"><i class="fa-solid fa-brain"></i> Anki</button>
+      <button class="btn btn-sm" onclick="exportPDF('${c.id}')" title="Экспорт в PDF"><i class="fas fa-file-pdf"></i> PDF</button>
+      <button class="btn btn-sm" onclick="showCrossword('${c.id}',${i+1})"><i class="fas fa-th"></i> Кроссворд</button>
+    </div>`;
+  }
+  if(done.length>=ls.length&&c.status==='learning'){
+    h+=`<div style="text-align:center;margin-top:20px"><button class="btn btn-success" onclick="startFinalExam('${c.id}')"><i class="fas fa-graduation-cap"></i> Финальный экзамен</button></div>`;
+  }
+  el.innerHTML=h;
+}
+
+async function exportCourse(cid,fmt){
+  try{
+    const r=await fetch('/api/education/course/'+cid+'/export/'+fmt);
+    if(!r.ok){toast('Ошибка экспорта','err');return}
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='course.'+fmt;
+    document.body.appendChild(a);a.click();a.remove();
+    URL.revokeObjectURL(url);
+  }catch(e){toast('Ошибка экспорта','err')}
+}
+
+async function exportAnki(cid){
+  try{
+    const r=await fetch('/api/education/course/'+cid+'/export/anki');
+    if(!r.ok){toast('Ошибка экспорта Anki','err');return}
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='course.apkg';
+    document.body.appendChild(a);a.click();a.remove();
+    URL.revokeObjectURL(url);
+  }catch(e){toast('Ошибка экспорта Anki','err')}
+}
+
+async function exportPDF(cid){
+  try{
+    const r=await fetch('/api/education/course/'+cid+'/export/pdf');
+    if(!r.ok){toast('Ошибка экспорта PDF','err');return}
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='course.pdf';
+    document.body.appendChild(a);a.click();a.remove();
+    URL.revokeObjectURL(url);
+  }catch(e){toast('Ошибка экспорта PDF','err')}
+}
+
+async function showCrossword(cid,ln){
+  try{
+    const r=await fetch('/api/education/course/'+cid+'/lesson/'+ln+'/crossword');
+    const d=await r.json();
+    if(d.error){toast(d.error,'err');return}
+    let html='<div style="text-align:center;margin-bottom:12px"><h3>'+esc(d.title||'Кроссворд')+'</h3></div>';
+    if(d.grid){
+      html+='<div style="display:flex;justify-content:center">';
+      html+='<table style="border-collapse:collapse;border:2px solid var(--border2)">';
+      for(let r=0;r<d.size;r++){
+        html+='<tr>';
+        for(let c=0;c<d.size;c++){
+          const ch=d.grid[r][c];
+          const isLetter=ch!==' ';
+          html+='<td style="width:28px;height:28px;border:1px solid var(--border);text-align:center;font-size:14px;font-weight:600;background:'+(isLetter?'var(--accent-light)':'var(--bg3)')+'">';
+          html+=isLetter?esc(ch):'';
+          html+='</td>';
+        }
+        html+='</tr>';
+      }
+      html+='</table></div>';
+    }
+    if(d.placed&&d.placed.length){
+      html+='<div style="margin-top:12px;text-align:left;columns:2;column-gap:20px">';
+      d.placed.forEach((p,pi)=>{
+        html+='<div style="margin-bottom:6px;break-inside:avoid"><b>'+(pi+1)+'.</b> ';
+        html+=esc(p.word)+' — '+(p.hint?esc(p.hint):'?');
+        html+=' <span style="font-size:10px;color:var(--text3)">('+p.direction+')</span></div>';
+      });
+      html+='</div>';
+    }
+    showModal(html,'Кроссворд');
+  }catch(e){toast('Ошибка','err')}
+}
+
+// ========== QUIZ PAGINATION ==========
+function prevQuizPage(){
+  S._quizPage=Math.max(0,(S._quizPage||0)-1);
+  updateQuizVisibility();
+}
+function nextQuizPage(){
+  const l=S.currentCourse?.plan?.lessons?.[S.lesson];if(!l)return;
+  const maxP=Math.ceil((l.quiz||[]).length/5)-1;
+  S._quizPage=Math.min(maxP,(S._quizPage||0)+1);
+  updateQuizVisibility();
+}
+function updateQuizVisibility(){
+  const qpp=5;const qp=S._quizPage||0;
+  const l=S.currentCourse?.plan?.lessons?.[S.lesson];
+  const qlen=(l?.quiz||[]).length;
+  if(!qlen)return;
+  for(let qi=0;qi<qlen;qi++){
+    const el=document.getElementById('qq_'+qi);
+    if(el)el.style.display=qi>=qp*qpp&&qi<(qp+1)*qpp?'':'none';
+  }
+  const info=document.getElementById('quizPageInfo');
+  const maxP=Math.ceil(qlen/qpp)-1;
+  if(info)info.textContent='Стр. '+(qp+1)+' из '+(maxP+1);
+  const prevBtn=document.querySelector('#lessonQuiz .btn-sm[onclick*="prevQuizPage"]');
+  if(prevBtn)prevBtn.disabled=qp<=0;
+  const nextBtn=document.querySelector('#lessonQuiz .btn-sm[onclick*="nextQuizPage"]');
+  if(nextBtn)nextBtn.disabled=qp>=maxP;
+}
+
+// ========== SECTION SWITCHING ==========
+function switchSection(s){
+  document.querySelectorAll('.section-tab').forEach(el=>el.classList.remove('active'));
+  const tab=document.getElementById('stab'+(s.charAt(0).toUpperCase()+s.slice(1)));
+  if(tab)tab.classList.add('active');
+  ['lessonContent','lessonQuiz','lessonHomework','lessonFlashcards'].forEach(id=>{
+    document.getElementById(id).style.display=(id==='lesson'+s.charAt(0).toUpperCase()+s.slice(1))?'':'none';
+  });
+  if(s==='flashcards'&&S._fcTerms)renderFlashcard();
+  if(s==='quiz'&&S.currentCourse){
+    const tl=S.currentCourse.settings?.quiz_time_limit;
+    if(tl>0)startQuizTimer(tl);
+  }
+}
+
+// ========== QUIZ HELPERS ==========
+function selectQuizAns(qi,oi){
+  if(!S._quizAnswers)S._quizAnswers={};
+  S._quizAnswers[qi]=oi;
+  document.querySelectorAll(`#qq_${qi} .quiz-opt`).forEach((el,idx)=>{el.classList.toggle('sel',idx===oi)});
+}
+function toggleQuizMultiple(qi,oi){
+  if(!S._quizAnswers)S._quizAnswers={};const cur=S._quizAnswers[qi];const arr=cur?String(cur).split(',').map(Number):[];
+  const i=arr.indexOf(oi);if(i>=0)arr.splice(i,1);else arr.push(oi);
+  S._quizAnswers[qi]=arr.join(',');document.querySelectorAll(`#qq_${qi} .quiz-opt`).forEach((el,idx)=>{el.classList.toggle('sel',arr.includes(idx))});
+}
+function saveQuizFill(qi,v){if(!S._quizAnswers)S._quizAnswers={};S._quizAnswers[qi]=v}
+function saveQuizMatch(qi,sel,pi){if(!S._quizAnswers)S._quizAnswers={};if(!S._quizAnswers[qi])S._quizAnswers[qi]={};S._quizAnswers[qi][pi]=parseInt(sel.value)}
+async function submitQuiz(cid,li){
+  if(S._quizSubmitted)return;S._quizSubmitted=true;
+  if(S._quizTimer){clearInterval(S._quizTimer);S._quizTimer=null}
+  toast('Проверка...','info');
+  try{const r=await fetch('/api/education/course/'+cid+'/lesson/'+li+'/quiz',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answers:S._quizAnswers})});const d=await r.json();S._quizPassed=!!d.passed;S._quizResults=d.results||[];toast('Результат: '+(d.score||0)+'% ('+(d.correct_count||0)+'/'+(d.total||'?')+') '+(d.passed?'✅':'❌'),'ok');if(S.currentCourse)renderLesson(S.currentCourse,S.lesson)}catch(e){toast('Ошибка','err');S._quizSubmitted=false}
+}
+function startQuizTimer(minutes){
+  if(!minutes||minutes<=0)return;
+  S._quizTimeLeft=minutes*60;
+  const el=document.getElementById('quizTimer');
+  if(!el)return;
+  S._quizTimer=setInterval(()=>{
+    S._quizTimeLeft--;
+    const m=Math.floor(S._quizTimeLeft/60);
+    const s=S._quizTimeLeft%60;
+    el.textContent=m+':'+(s<10?'0':'')+s;
+    el.style.color=S._quizTimeLeft<30?'var(--red)':'var(--text2)';
+    if(S._quizTimeLeft<=0){
+      clearInterval(S._quizTimer);
+      S._quizTimer=null;
+      toast('Время вышло!','err');
+      if(S.currentId&&S.lesson!==undefined)submitQuiz(S.currentId,S.lesson);
+    }
+  },1000);
+}
+async function submitTest(cid,li){
+  const ta=document.getElementById('oa_'+li);const ans=ta?.value?.trim();if(!ans)return;
+  try{const r=await fetch('/api/education/course/'+cid+'/lesson/'+li+'/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answer:ans,is_homework:false})});const d=await r.json();const isGood=d.score>0;let h='<div class="fb '+(isGood?'ok':'err')+'" style="line-height:1.6">';h+='<div style="font-size:15px;font-weight:700;margin-bottom:6px">Оценка: '+(d.score||0)+'/10</div>';if(d.feedback){h+='<div style="white-space:pre-wrap">'+esc(d.feedback)+'</div>'}h+='</div>';document.getElementById('tf').innerHTML=h}catch(e){}
+}
+async function submitAiAnswer(cid,li,qi){
+  const ta=document.getElementById('aiAnswer_'+qi);const ans=ta?.value?.trim();if(!ans)return;
+  const btn=document.getElementById('aiSubmit_'+qi);btn.disabled=true;btn.textContent='Проверка...';
+  try{const r=await fetch('/api/education/course/'+cid+'/lesson/'+li+'/ai-check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question_idx:qi,answer:ans})});const d=await r.json();const el=document.getElementById('aiResult_'+qi);const score=d.score||0;const isGood=score>=50;let h='<div class="fb '+(isGood?'ok':'err')+'" style="line-height:1.6">';h+='<div style="font-size:16px;font-weight:700;margin-bottom:8px">Оценка: '+score+'/100</div>';if(d.strengths&&d.strengths.length){h+='<div style="margin-bottom:6px"><strong style="color:var(--green)">✅ Сильные стороны:</strong><ul style="margin:4px 0 0 18px;padding:0">';d.strengths.forEach(s=>{h+='<li>'+esc(s)+'</li>'});h+='</ul></div>'}if(d.weaknesses&&d.weaknesses.length){h+='<div style="margin-bottom:6px"><strong style="color:var(--red)">❌ Слабые стороны:</strong><ul style="margin:4px 0 0 18px;padding:0">';d.weaknesses.forEach(s=>{h+='<li>'+esc(s)+'</li>'});h+='</ul></div>'}if(d.improvements&&d.improvements.length){h+='<div style="margin-bottom:6px"><strong style="color:var(--accent)">📝 Рекомендации:</strong><ul style="margin:4px 0 0 18px;padding:0">';d.improvements.forEach(s=>{h+='<li>'+esc(s)+'</li>'});h+='</ul></div>'}if(d.corrected_answer){h+='<div style="margin-top:6px;padding:8px;background:var(--bg2);border-radius:6px"><strong>💡 Правильный ответ:</strong><div style="margin-top:4px;white-space:pre-wrap">'+esc(d.corrected_answer)+'</div></div>'}if(d.feedback){h+='<div style="margin-top:8px;font-size:12px;color:var(--text2);white-space:pre-wrap">'+esc(d.feedback)+'</div>'}h+='</div>';el.innerHTML=h;btn.textContent='Проверено';}catch(e){btn.disabled=false;btn.textContent='Проверить';toast('Ошибка','err')}
+}
+
+// ========== AI TEST GENERATION ==========
+let _genTestsCtx=null;
+function currentProfileId(){return (S.currentCourse&&S.currentCourse.profile)||document.getElementById('cprofile')?.value||'universal'}
+function openGenerateTestsModal(cid,li){
+  _genTestsCtx={cid,li,profile:currentProfileId(),tests:[]};
+  const pid=currentProfileId();
+  const m=document.createElement('div');m.id='genTestsModal';m.className='modal-overlay show';
+  m.innerHTML=`<div class="card" style="max-width:680px;width:100%;max-height:85vh;overflow:auto;padding:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><h3 style="margin:0"><i class="fas fa-wand-magic-sparkles" style="color:var(--accent)"></i> Генерация тестов через ИИ</h3><button class="btn btn-sm" onclick="closeGenTestsModal()"><i class="fas fa-times"></i></button></div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Профиль: <strong>${esc(pid)}</strong></div>
+    <label style="font-size:12px;color:var(--text3)">Описание (что хотите протестировать):</label>
+    <textarea class="test-ta" id="gtDesc" style="min-height:70px;margin-top:4px" placeholder="Например: базовые теоремы и примеры применения"></textarea>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+      <label style="font-size:12px;color:var(--text3)">Кол-во тестов:</label>
+      <input type="number" id="gtCount" min="1" max="50" value="20" class="search-inp" style="width:90px">
+      <button class="btn btn-primary btn-sm" id="gtGenBtn" onclick="genTestsGenerate()"><i class="fas fa-bolt"></i> Сгенерировать</button>
+      <span id="gtStatus" style="font-size:12px;color:var(--text3)"></span>
+    </div>
+    <div id="gtResult" style="margin-top:12px"></div>
+  </div>`;
+  m.onclick=e=>{if(e.target===m)closeGenTestsModal()};
+  document.body.appendChild(m);
+}
+function closeGenTestsModal(){const m=document.getElementById('genTestsModal');if(m)m.remove()}
+async function genTestsGenerate(){
+  const desc=document.getElementById('gtDesc').value.trim();
+  const count=parseInt(document.getElementById('gtCount').value)||20;
+  const pid=currentProfileId();
+  const btn=document.getElementById('gtGenBtn');btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-pulse"></i> Генерация...';
+  const res=document.getElementById('gtResult');const st=document.getElementById('gtStatus');
+  st.textContent='Запрос к локальному ИИ...';
+  try{
+    const r=await fetch('/api/education/generate-tests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile_id:pid,description:desc,count})});
+    const d=await r.json();
+    if(d.error){res.innerHTML='<div class="fb err">'+esc(d.error)+'</div>';st.textContent='';return}
+    const tests=d.tests||[];
+    if(!tests.length){res.innerHTML='<div class="fb err">ИИ не вернул тесты</div>';st.textContent='';return}
+    _genTestsCtx.tests=tests;
+    let h='<div class="fb ok" style="margin-bottom:8px">Сгенерировано: '+tests.length+' тестов. Проверьте и сохраните.</div>';
+    h+='<div style="max-height:300px;overflow:auto;border:1px solid var(--border);border-radius:6px;padding:8px">';
+    tests.forEach((t,i)=>{h+='<div style="padding:6px 8px;border-bottom:1px solid var(--border);font-size:13px"><strong>'+(i+1)+'.</strong> ['+esc(t.type||'')+'] '+esc(t.question||'')+'</div>'});
+    h+='</div>';
+    h+='<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="genTestsSave()"><i class="fas fa-save"></i> Сохранить в банк профиля</button><button class="btn btn-sm" onclick="genTestsApplyToLesson()">Применить к этому уроку</button></div>';
+    res.innerHTML=h;st.textContent='Готово';
+  }catch(e){res.innerHTML='<div class="fb err">Ошибка: '+esc(e.message||e)+'</div>';st.textContent=''}finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-bolt"></i> Сгенерировать'}
+}
+async function genTestsSave(){
+  const pid=currentProfileId();const tests=_genTestsCtx?.tests||[];
+  if(!tests.length){toast('Нет тестов для сохранения','err');return}
+  try{
+    const r=await fetch('/api/education/profile-tests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile_id:pid,tests})});
+    const d=await r.json();
+    if(d.ok){toast('Сохранено в банк профиля: '+d.total+' тестов','ok');closeGenTestsModal()}
+    else toast(d.error||'Ошибка сохранения','err');
+  }catch(e){toast('Ошибка сети','err')}
+}
+async function genTestsApplyToLesson(){
+  const ctx=_genTestsCtx;if(!ctx||!ctx.tests||!ctx.tests.length)return;
+  const pid=currentProfileId();
+  try{
+    const r=await fetch('/api/education/course/'+ctx.cid+'/lesson/'+ctx.li+'/add-tests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tests:ctx.tests})});
+    const d=await r.json();
+    if(d.ok){
+      if(S.currentCourse&&S.currentCourse.plan&&S.currentCourse.plan.lessons[ctx.li]){
+        const tl=S.currentCourse.plan.lessons[ctx.li];
+        tl.quiz=(tl.quiz||[]).concat(ctx.tests);
+      }
+      toast('Тесты добавлены в урок','ok');closeGenTestsModal();if(S.currentCourse)renderLesson(S.currentCourse,S.lesson)
+    }
+    else toast(d.error||'Ошибка','err');
+  }catch(e){toast('Ошибка сети','err')}
+}
+async function ensureProfileBank(){
+  const pid=document.getElementById('cprofile')?.value||'universal';
+  if(!confirm('Сгенерировать банк из 20 тестов для профиля «'+pid+'» через локальный ИИ?'))return;
+  toast('Генерация банка тестов...','info');
+  try{
+    const r=await fetch('/api/education/profile-bank/ensure',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile_id:pid,count:20})});
+    const d=await r.json();
+    if(d.error)toast(d.error,'err');
+    else toast('Банк профиля «'+pid+'»: '+d.total+' тестов (добавлено '+d.added+')','ok');
+  }catch(e){toast('Ошибка','err')}
+}
+
+// ========== NAVIGATION ==========
+async function navL(d){
+  if(!S.currentId)return;
+  try{const r=await fetch('/api/education/course/'+S.currentId);const c=await r.json();if(!c||!c.plan)return;S.lesson=Math.max(0,Math.min(S.lesson+d,(c.plan.lessons||[]).length-1));S._quizAnswers={};S._quizSubmitted=false;S._quizPage=0;S.currentCourse=c;renderLesson(c,S.lesson)}catch(e){}
+}
+
+// ========== FLASHCARDS ==========
+function flipCard(){
+  const card=document.getElementById('fcCard');
+  if(!card)return;
+  const isFlipped=card.classList.toggle('flipped');
+  const rating=document.getElementById('fcRating');
+  if(rating)rating.style.display=isFlipped?'block':'none';
+}
+function navFlashcard(d){
+  if(!S._fcTerms||!S._fcTerms.length)return;
+  S._fcIdx=(S._fcIdx+d+S._fcTerms.length)%S._fcTerms.length;
+  renderFlashcard();
+  const rating=document.getElementById('fcRating');
+  if(rating)rating.style.display='none';
+}
+function renderFlashcard(){
+  const t=S._fcTerms[S._fcIdx];if(!t)return;
+  const card=document.getElementById('fcCard');if(card)card.classList.remove('flipped');
+  const front=document.getElementById('fcFront');
+  if(front)front.innerHTML='<div class="front-text">'+esc(t.front||t.term||'')+'</div>';
+  const back=document.getElementById('fcBack');
+  if(back)back.innerHTML='<div class="back-text">'+esc(t.back||t.definition||'')+'</div>';
+  const ctr=document.getElementById('fcCounter');
+  if(ctr)ctr.textContent=(S._fcIdx+1)+'/'+S._fcTerms.length;
+  const rating=document.getElementById('fcRating');
+  if(rating)rating.style.display='none';
+}
+async function rateFlashcard(cid,lessonNum,quality){
+  const idx=S._fcIdx||0;
+  try{
+    const r=await fetch('/api/education/course/'+cid+'/flashcard/review',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({lesson_num:lessonNum,card_index:idx,quality:quality})
+    });
+    const d=await r.json();
+    if(d.ok){
+      const labels={1:'Снова',3:'Сложно',4:'Хорошо',5:'Легко'};
+      toast('SM-2: '+labels[quality],'ok');
+      navFlashcard(1);
+    }else toast(d.error||'Ошибка','err');
+  }catch(e){toast('Ошибка сети','err')}
+}
+function ttsLesson(cid,li){
+  const btn=event?.target?.closest?.('button')||document.querySelector(`[onclick*="ttsLesson('${cid}',${li})"]`);
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-pulse"></i>'}
+  fetch('/api/education/course/'+cid+'/lesson/'+li+'/tts')
+    .then(r=>{if(!r.ok)throw new Error('TTS error');return r.blob()})
+    .then(blob=>{
+      const url=URL.createObjectURL(blob);const audio=new Audio(url);
+      audio.onended=()=>{URL.revokeObjectURL(url);if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-volume-up" style="color:var(--accent)"></i> Озвучить'}};
+      audio.play().catch(()=>{toast('Ошибка воспроизведения','err');if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-volume-up" style="color:var(--accent)"></i> Озвучить'}});
+    })
+    .catch(()=>{toast('Озвучивание недоступно','err');if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-volume-up" style="color:var(--accent)"></i> Озвучить'}});
+}
+
+// ========== BIBLIOGRAPHY ==========
+function showBibliography(c){
+  const bib=c.plan?.bibliography;
+  if(!bib||(!bib.sources_used&&!bib.recommended_reading&&!bib.online_resources)){toast('Нет библиографии','err');return}
+  let h='<button class="btn btn-sm" onclick="document.getElementById(\'bibModal\').remove()"><i class="fas fa-times"></i> Закрыть</button>';
+  if(bib.sources_used&&bib.sources_used.length){
+    h+='<h3 style="margin:16px 0 8px"><i class="fas fa-bookmark" style="color:var(--accent)"></i> Использованные источники</h3>';
+    bib.sources_used.forEach(s=>{h+='<div style="padding:8px;background:var(--bg3);border-radius:4px;margin-bottom:4px;font-size:13px"><strong>'+esc(s.title||'')+'</strong> <span style="color:var(--text3)">'+esc(s.author||'')+' ('+esc(s.type||'')+')</span></div>'});
+  }
+  if(bib.recommended_reading&&bib.recommended_reading.length){
+    h+='<h3 style="margin:16px 0 8px"><i class="fas fa-star" style="color:var(--yellow)"></i> Рекомендуемая литература</h3>';
+    bib.recommended_reading.forEach(s=>{h+='<div style="padding:8px;background:var(--bg3);border-radius:4px;margin-bottom:4px;font-size:13px"><strong>'+esc(s.title||'')+'</strong> &mdash; '+esc(s.author||'')+'<br><span style="color:var(--text2);font-size:12px">'+esc(s.reason||s.why||'')+'</span></div>'});
+  }
+  if(bib.online_resources&&bib.online_resources.length){
+    h+='<h3 style="margin:16px 0 8px"><i class="fas fa-globe" style="color:var(--green)"></i> Онлайн-ресурсы</h3>';
+    bib.online_resources.forEach(s=>{h+='<div style="padding:8px;background:var(--bg3);border-radius:4px;margin-bottom:4px;font-size:13px"><strong>'+esc(s.title||s.name||'')+'</strong> &mdash; <a href="'+esc(s.url||'')+'" target="_blank" style="color:var(--accent)">'+esc(s.url||'')+'</a><br><span style="color:var(--text2);font-size:12px">'+esc(s.description||'')+'</span></div>'});
+  }
+  const modal=document.createElement('div');modal.id='bibModal';
+  modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML='<div class="card" style="max-width:600px;max-height:80vh;overflow-y:auto;padding:20px;margin:20px">'+h+'</div>';
+  modal.onclick=e=>{if(e.target===modal)modal.remove()};
+  document.body.appendChild(modal);
+}
+
+// ========== REGENERATE HELPERS ==========
+async function regenQuiz(cid,li){try{const r=await fetch('/api/education/course/'+cid+'/lesson/'+li+'/regenerate/quiz',{method:'POST'});const d=await r.json();if(d.ok){toast('Тест перегенерирован!','ok');loadCourseView(cid)}else toast(d.error||'Ошибка','err')}catch(e){toast('Ошибка','err')}}
+async function regenHW(cid,li){try{const r=await fetch('/api/education/course/'+cid+'/lesson/'+li+'/regenerate/homework',{method:'POST'});const d=await r.json();if(d.ok){toast('ДЗ перегенерировано!','ok');loadCourseView(cid)}else toast(d.error||'Ошибка','err')}catch(e){toast('Ошибка','err')}}
+async function regenFlashcards(cid,ln){try{const r=await fetch('/api/education/course/'+cid+'/lesson/'+ln+'/regenerate/flashcards',{method:'POST'});const d=await r.json();if(d.ok){toast('Карточки перегенерированы!','ok');loadCourseView(cid)}else toast(d.error||'Ошибка','err')}catch(e){toast('Ошибка','err')}}
+async function repairCourse(cid){if(!confirm('Запустить починку курса в фоне? Будет исправлено форматирование контента и догенерированы недостающие тесты, ДЗ и карточки.'))return;try{const r=await fetch('/api/education/course/'+cid+'/repair',{method:'POST'});const d=await r.json();if(d.ok){toast('Починка запущена в фоне. Курс обновится автоматически.','ok');loadCourseView(cid)}else toast(d.error||'Ошибка','err')}catch(e){toast('Ошибка','err')}}
+async function submitHW(cid,li){const ta=document.getElementById('ha_'+li);const ans=ta?.value?.trim();if(!ans)return;try{const r=await fetch('/api/education/course/'+cid+'/lesson/'+li+'/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answer:ans,is_homework:true})});const d=await r.json();toast('ДЗ проверено! Оценка: '+d.score,'ok');openCourse(cid)}catch(e){}}
+
+// ========== EXTEND COURSE ==========
+async function extendCourse(id){
+  const n=await InfinityDialogs.prompt({label:'Сколько уроков добавить? (1-10)', value:3});if(!n)return;
+  const cnt=parseInt(n);if(cnt<1||cnt>10||isNaN(cnt)){toast('От 1 до 10','err');return}
+  try{const r=await fetch('/api/education/course/'+id+'/extend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({additional:cnt})});const d=await r.json();if(d.error){toast(d.error,'err');return}toast('Добавлено '+d.additional+' уроков. Генерация...','ok');loadCourseView(id)}catch(e){toast('Ошибка','err')}
+}
+
+// ========== FINAL EXAM ==========
+async function startFinalExam(id){
+  let c;
+  try{const r=await fetch('/api/education/course/'+id);c=await r.json();if(!c||!c.plan){toast('Ошибка загрузки','err');return}}catch(e){toast('Ошибка','err');return}
+  const exam=c.plan.final_exam;const allQ=exam?.questions||[];
+  // fallback: collect all quiz questions from all lessons
+  const ls=c.plan.lessons||[];
+  const fallbackQ=[];
+  if(!allQ.length){ls.forEach(l=>{(l.quiz||[]).forEach(q=>{fallbackQ.push(q)})})}
+  const questions=allQ.length?allQ:fallbackQ;
+  if(!questions.length){toast('Нет вопросов для экзамена','err');return}
+  let h='<button class="btn btn-sm" onclick="document.getElementById(\'examModal\').remove()"><i class="fas fa-times"></i> Закрыть</button>';
+  h+='<h2 style="margin:12px 0"><i class="fas fa-graduation-cap" style="color:var(--accent)"></i> Финальный экзамен</h2>';
+  h+='<p style="font-size:13px;color:var(--text3);margin-bottom:16px">'+questions.length+' вопросов</p>';
+  h+='<div id="examQuestions">';
+  questions.forEach((q,qi)=>{
+    h+=`<div class="quiz-q" id="eq_${qi}">
+      <div class="q-meta">Вопрос ${qi+1}/${questions.length}</div>
+      <div class="q-text">${esc(q.question||'')}</div>`;
+    const qType=q.type||'choice';
+    if(qType==='choice'&&q.options){q.options.forEach((o,oi)=>{h+=`<div class="quiz-opt" onclick="examSelect(${qi},${oi})" id="eqo_${qi}_${oi}">${esc(o)}</div>`})}
+    else if(qType==='multiple'&&q.options){q.options.forEach((o,oi)=>{h+=`<div class="quiz-opt" onclick="examToggle(${qi},${oi})" id="eqo_${qi}_${oi}">${esc(o)}</div>`})}
+    else if(qType==='true_false'){h+=`<div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-sm" onclick="examSelect(${qi},'true')" id="eqo_${qi}_true">Верно</button><button class="btn btn-sm" onclick="examSelect(${qi},'false')" id="eqo_${qi}_false">Неверно</button></div>`}
+    else if(qType==='fill_in'){h+=`<input type="text" class="search-inp" id="eqi_${qi}" placeholder="Ваш ответ..." style="margin-top:8px">`}
+    else{h+=`<textarea class="test-ta" id="eqi_${qi}" placeholder="Ваш ответ..."></textarea>`}
+    h+=`</div>`;
+  });
+  h+='</div>';
+  h+=`<button class="btn btn-primary" onclick="submitExam('${id}')" id="examSubmitBtn"><i class="fas fa-paper-plane"></i> Завершить экзамен</button>`;
+  h+=`<div id="examResult" style="margin-top:12px"></div>`;
+  const modal=document.createElement('div');modal.id='examModal';
+  modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  modal.innerHTML='<div class="modal-content" style="max-width:700px;max-height:85vh;overflow-y:auto">'+h+'</div>';
+  modal.onclick=e=>{if(e.target===modal)modal.remove()};
+  document.body.appendChild(modal);
+  window._examAnswers={};window._examQCount=questions.length;
+}
+function examSelect(qi,val){window._examAnswers[qi]=val;document.querySelectorAll('[id^="eqo_'+qi+'_"]').forEach(el=>el.classList.remove('sel'));const el=document.getElementById('eqo_'+qi+'_'+val);if(el)el.classList.add('sel')}
+function examToggle(qi,oi){if(!window._examAnswers[qi])window._examAnswers[qi]=[];const arr=window._examAnswers[qi];const i=arr.indexOf(oi);if(i>=0)arr.splice(i,1);else arr.push(oi);document.getElementById('eqo_'+qi+'_'+oi).classList.toggle('sel')}
+async function submitExam(id){
+  const btn=document.getElementById('examSubmitBtn');if(!btn)return;btn.disabled=true;btn.innerHTML='<div class="spinner" style="width:16px;height:16px;margin:0 auto"></div>';
+  try{
+    const r=await fetch('/api/education/course/'+id+'/final-exam',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answers:window._examAnswers||{}})});
+    const d=await r.json();
+    const el=document.getElementById('examResult');
+    if(d.error){el.innerHTML='<div class="fb err">'+esc(d.error)+'</div>';return}
+    let h='<div class="fb '+(d.passed?'ok':'err')+'" style="line-height:1.6">';h+='<div style="font-size:16px;font-weight:700;margin-bottom:6px">'+(d.passed?'🎉 Экзамен сдан!':'❌ Экзамен не сдан')+'</div>';h+='<div>'+d.correct_count+'/'+d.total+' ('+d.score+'%)</div>';h+='</div>';
+    if(d.results){const wrongs=d.results.filter(r=>!r.correct);if(wrongs.length){h+='<div style="margin-top:12px"><strong>Разбор ошибок:</strong>';wrongs.forEach(r=>{const qi=r.question;const qr=document.getElementById('eq_'+qi);const qText=qr?qr.querySelector('.q-text')?.textContent||('Вопрос '+(qi+1)):('Вопрос '+(qi+1));h+='<div style="margin:8px 0;padding:10px;background:var(--red-light);border:1px solid var(--red);border-radius:6px;border-left:3px solid var(--red)"><div style="font-weight:600;margin-bottom:4px">❌ '+esc(qText)+'</div>';if(r.explanation){h+='<div style="font-size:13px;white-space:pre-wrap">'+esc(r.explanation)+'</div>'}h+='</div>'});h+='</div>'}}
+    el.innerHTML=h;
+    btn.textContent='Завершено';
+    if(d.results){d.results.forEach((r,qi)=>{const qel=document.getElementById('eq_'+qi);if(qel)qel.style.borderLeft='3px solid '+(r.correct?'var(--green)':'var(--red)')})}
+  }catch(e){document.getElementById('examResult').innerHTML='<div class="fb err">Ошибка отправки</div>';btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> Завершить экзамен'}
+}
+
+// ========== VOICE INPUT ==========
+let _mediaRecorder=null,_voiceChunks=[],_voiceBtnEl=null;
+async function toggleVoiceRecord(){
+  const btn=document.getElementById('voiceBtn');
+  if(_mediaRecorder&&_mediaRecorder.state==='recording'){_mediaRecorder.stop();return}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    _mediaRecorder=new MediaRecorder(stream);_voiceChunks=[];
+    _mediaRecorder.ondataavailable=e=>_voiceChunks.push(e.data);
+    _mediaRecorder.onstop=async()=>{
+      const blob=new Blob(_voiceChunks,{type:'audio/webm'});
+      stream.getTracks().forEach(t=>t.stop());_mediaRecorder=null;
+      if(btn)btn.innerHTML='<i class="fas fa-microphone"></i>';btn?.classList?.remove('recording');
+      if(blob.size<100)return;
+      const inp=document.getElementById('chatInput');if(inp)inp.placeholder='Распознавание...';if(inp)inp.disabled=true;
+      try{
+        const fd=new FormData();fd.append('file',blob,'voice.webm');
+        const r=await fetch('/api/stt/transcribe',{method:'POST',body:fd});const d=await r.json();
+        const text=(d.text||d.result||'').trim();
+        if(text&&inp){inp.value=text;inp.placeholder='Спросите о курсе...';inp.disabled=false;doAsk()}
+        else{if(inp)inp.placeholder='Спросите о курсе...';if(inp)inp.disabled=false;toast('Не удалось распознать','err')}
+      }catch(e){if(inp){inp.placeholder='Спросите о курсе...';inp.disabled=false}toast('Ошибка распознавания','err')}
+    };
+    _mediaRecorder.start();
+    if(btn){btn.innerHTML='<i class="fas fa-stop" style="color:var(--red)"></i>';btn.classList.add('recording')}
+  }catch(e){toast('Нет доступа к микрофону','err')}
+}
+
+// ========== TEXT-TO-SPEECH ==========
+function ttsPlayText(t){
+  if(!t||t.length<2)return;
+  const btn=event?.target?.closest?.('.speak-btn');if(btn)btn.innerHTML='<i class="fas fa-spinner fa-pulse"></i>';
+  const _eng=window.SpeechConfig?SpeechConfig.ttsEngine():'silero';
+  const _spk=window.SpeechConfig?SpeechConfig.ttsSpeaker():'xenia';
+  fetch('/api/tts?text='+encodeURIComponent(t.slice(0,500))+'&engine='+_eng+'&speaker='+encodeURIComponent(_spk))
+    .then(r=>{if(!r.ok)throw new Error();return r.blob()})
+    .then(blob=>{const url=URL.createObjectURL(blob);const audio=new Audio(url);audio.onended=()=>{URL.revokeObjectURL(url);if(btn)btn.innerHTML='<i class="fas fa-volume-up"></i>'};audio.play().catch(()=>{if(btn)btn.innerHTML='<i class="fas fa-volume-up"></i>'})})
+    .catch(()=>{if(btn)btn.innerHTML='<i class="fas fa-volume-up"></i>';toast('Озвучивание недоступно','err')});
+}
+async function doAsk(){
+  const inp=document.getElementById('chatInput');const q=inp?.value?.trim();
+  if(!q||!S.currentId)return;
+  const chat=document.getElementById('chatMessages');chat.innerHTML+=`<div class="msg user">${nl2br(q)}<div class="t">сейчас</div></div>`;inp.value='';
+  chat.innerHTML+=`<div class="msg assistant" id="tutorThinking"><i class="fas fa-spinner fa-pulse" style="color:var(--accent)"></i> Думаю...</div>`;chat.scrollTop=chat.scrollHeight;inp.disabled=true;
+  try{const r=await fetch('/api/education/course/'+S.currentId+'/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});const d=await r.json();const th=document.getElementById('tutorThinking');if(th)th.remove();const ans=d.answer||'Нет ответа';chat.innerHTML+=`<div class="msg assistant">${nl2br(ans)}<div class="t"><button class="speak-btn" onclick="ttsPlayText('${jsEsc(ans).replace(/'/g,"\\'")}')"><i class="fas fa-volume-up"></i></button> сейчас</div></div>`;chat.scrollTop=chat.scrollHeight}catch(e){const th=document.getElementById('tutorThinking');if(th)th.remove();chat.innerHTML+=`<div class="msg assistant" style="color:var(--red)">Ошибка соединения</div>`}
+  inp.disabled=false;inp.focus();
+}
+
+// ========== PROGRESS CHART ==========
+function showProgressChart(c){
+  const p=c.progress||{};
+  const ls=c.plan?.lessons||[];
+  const total=ls.length||1;
+  const done=p.completed_lessons?.length||0;
+  const pct=Math.round(done/total*100);
+  const scores=p.quiz_scores||[];
+  const avg=scores.length?scores.reduce((a,b)=>a+b.score,0)/scores.length:0;
+
+  let html='<div style="text-align:center">';
+  // Donut chart
+  const r=50;const circ=2*Math.PI*r;
+  const fillLen=circ*pct/100;
+  const gapLen=circ-fillLen;
+  html+=`<svg width="140" height="140" viewBox="0 0 120 120">
+    <circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--bg4)" stroke-width="12"/>
+    <circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--accent)" stroke-width="12"
+      stroke-dasharray="${fillLen} ${gapLen}" transform="rotate(-90 60 60)" style="transition:stroke-dasharray 0.5s"/>
+    <text x="60" y="55" text-anchor="middle" font-size="22" font-weight="700" fill="var(--text)">${pct}%</text>
+    <text x="60" y="72" text-anchor="middle" font-size="11" fill="var(--text3)">прогресс</text>
+  </svg>`;
+
+  // Mini bars for quiz scores
+  if(scores.length){
+    html+='<div style="margin-top:12px;text-align:left">';
+    html+='<div style="font-size:12px;color:var(--text3);margin-bottom:6px">Результаты тестов:</div>';
+    scores.forEach((s,si)=>{
+      const bw=Math.min(s.score,100);
+      const color=s.score>=80?'var(--green)':s.score>=50?'var(--yellow)':'var(--red)';
+      html+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px">
+        <span style="width:40px;color:var(--text3)">Урок ${s.lesson+1}</span>
+        <div style="flex:1;height:14px;background:var(--bg4);border-radius:7px;overflow:hidden">
+          <div style="height:100%;width:${bw}%;background:${color};border-radius:7px;transition:width 0.5s"></div>
+        </div>
+        <span style="width:30px;text-align:right;font-weight:600">${s.score}%</span>
+      </div>`;
+    });
+    html+='</div>';
+  }
+
+  // Stats grid
+  html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;font-size:12px">
+    <div style="background:var(--bg3);border-radius:8px;padding:8px"><div style="color:var(--text3)">Пройдено</div><div style="font-weight:700;font-size:16px">${done}/${total}</div></div>
+    <div style="background:var(--bg3);border-radius:8px;padding:8px"><div style="color:var(--text3)">Средний балл</div><div style="font-weight:700;font-size:16px">${avg>0?Math.round(avg)+'%':'—'}</div></div>
+    <div style="background:var(--bg3);border-radius:8px;padding:8px"><div style="color:var(--text3)">Экзамен</div><div style="font-weight:700;font-size:16px">${p.exam_score!=null?(p.exam_passed?'✅ '+p.exam_score+'%':'❌ '+p.exam_score+'%'):'—'}</div></div>
+    <div style="background:var(--bg3);border-radius:8px;padding:8px"><div style="color:var(--text3)">Статус</div><div style="font-weight:700;font-size:16px">${c.status==='completed'?'✅ Завершён':c.status==='learning'?'📖 В процессе':'⏳ Начат'}</div></div>
+  </div>`;
+  html+='</div>';
+  showModal(html,'📊 Прогресс курса');
+}
+
+// ========== GAMIFICATION PANEL ==========
+async function showGamification(){
+  try{
+    const r=await fetch('/api/education/gamification');
+    const d=await r.json();
+    let html='<div style="font-size:14px">';
+    // XP & streak
+    html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="background:var(--bg3);border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:28px;font-weight:800;color:var(--accent)">${d.xp||0}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px">Опыт (XP)</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:12px;padding:16px;text-align:center">
+        <div style="font-size:28px;font-weight:800;color:var(--orange)">🔥 ${d.streak_current||0}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:4px">Дней подряд</div>
+        <div style="font-size:11px;color:var(--text3)">Рекорд: ${d.streak_longest||0}</div>
+      </div>
+    </div>`;
+    // Stats
+    html+=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;font-size:12px;text-align:center">
+      <div><div style="font-weight:700">${d.total_courses_started||0}</div><div style="color:var(--text3)">Курсов начато</div></div>
+      <div><div style="font-weight:700">${d.total_courses_completed||0}</div><div style="color:var(--text3)">Курсов завершено</div></div>
+      <div><div style="font-weight:700">${d.total_flashcards_reviewed||0}</div><div style="color:var(--text3)">Карточек</div></div>
+    </div>`;
+    // Badges
+    const badges=d.badges||[];
+    if(badges.length){
+      html+='<div style="font-size:12px;color:var(--text3);margin-bottom:8px">🏅 Достижения ('+badges.length+'):</div>';
+      html+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+      badges.forEach(b=>{
+        html+=`<div style="background:var(--accent-light);border-radius:8px;padding:6px 10px;font-size:12px">${b.name||b.id}</div>`;
+      });
+      html+='</div>';
+    }else{html+='<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">Пока нет достижений. Начните учиться!</div>'}
+    html+='</div>';
+    showModal(html,'🏆 Достижения');
+  }catch(e){toast('Ошибка загрузки','err')}
+}
+
+// ========== MODAL HELPER ==========
+function showModal(html,title){
+  const modal=document.createElement('div');
+  modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1001;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  modal.innerHTML='<div class="card" style="max-width:550px;width:90%;max-height:85vh;overflow-y:auto;padding:24px;margin:20px;position:relative">'
+    +(title?'<h3 style="margin-bottom:16px">'+title+'</h3>':'')
+    +html
+    +'<button class="btn btn-sm" style="margin-top:16px;width:100%" onclick="this.closest(\'div[style*=\\"position:fixed\\"]\').remove()">Закрыть</button></div>';
+  modal.onclick=e=>{if(e.target===modal)modal.remove()};
+  document.body.appendChild(modal);
+}
+
+// ========== ВЕКТОРНЫЙ ПОИСК ПО МАТЕРИАЛАМ (этап 21) ==========
+let _vecCourseId=null,_vecPollTimer=null,_vecQuery='',_vecResults=null;
+function _vecCourseTitle(cid){
+  const c=(_coursesCache||[]).find(x=>x.id===cid);
+  return c?(c.title||'Курс'):'Курс';
+}
+function openVectorSearch(courseId){
+  _vecCourseId=courseId||S.currentId||null;
+  _vecQuery='';_vecResults=null;
+  const old=document.getElementById('vecModal');if(old)old.remove();
+  const m=document.createElement('div');
+  m.id='vecModal';
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1001;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+  m.innerHTML='<div class="card" style="max-width:660px;width:94%;max-height:88vh;overflow-y:auto;padding:22px;margin:20px">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><h3 style="margin:0"><i class="fas fa-brain" style="color:var(--accent)"></i> Векторный поиск</h3><span style="flex:1"></span><button class="btn-icon" onclick="closeVectorSearch()" title="Закрыть"><i class="fas fa-times"></i></button></div>'
+    +'<div id="vecBody"><div class="spinner" style="margin:30px auto"></div></div></div>';
+  m.onclick=e=>{if(e.target===m)closeVectorSearch()};
+  document.body.appendChild(m);
+  _vecRefresh();
+}
+function closeVectorSearch(){
+  if(_vecPollTimer){clearInterval(_vecPollTimer);_vecPollTimer=null}
+  const m=document.getElementById('vecModal');if(m)m.remove();
+}
+function _vecOpenIndex(el){_vecCourseId=el.getAttribute('data-cid')||null;_vecResults=null;_vecRefresh()}
+async function _vecRefresh(){
+  const body=document.getElementById('vecBody');if(!body)return;
+  if(_vecPollTimer){clearInterval(_vecPollTimer);_vecPollTimer=null}
+  try{
+    const r=await fetch('/api/education/vector/status?course_id='+encodeURIComponent(_vecCourseId||''));
+    const d=await r.json();
+    _vecRender(d);
+  }catch(e){
+    body.innerHTML='<div style="color:var(--red)">Ошибка соединения: '+esc(e.message||'')+'</div>';
+  }
+}
+function _vecRender(d){
+  const body=document.getElementById('vecBody');if(!body)return;
+  if(!d.enabled){
+    body.innerHTML='<div style="font-size:13px;line-height:1.6;color:var(--text2)">'
+      +'<p style="margin:0 0 10px">Векторный поиск находит ответ <b>в материалах курса по смыслу</b>, а не по совпадению слов. Индекс и эмбеддинги считаются локально на этом компьютере.</p>'
+      +'<div style="background:var(--bg3);border-radius:10px;padding:12px;font-size:12px;margin-bottom:14px">'
+      +'<div><i class="fas fa-lock"></i> Функция выключена по умолчанию.</div>'
+      +'<div style="margin-top:6px"><i class="fas fa-database"></i> При включении создаётся каталог <code>data/education/vector</code> — его можно удалить в любой момент.</div></div>'
+      +'<button class="btn btn-primary" style="width:100%" onclick="vecSetEnabled(true)"><i class="fas fa-power-off"></i> Включить векторный поиск</button></div>';
+    return;
+  }
+  const st=d.state||{};
+  const building=!!st.building&&st.course_id===_vecCourseId;
+  if(building){
+    const total=st.total||0, done=st.processed||0;
+    const pct=total?Math.round(done*100/total):0;
+    body.innerHTML='<div style="font-size:13px;color:var(--text2);margin-bottom:8px"><i class="fas fa-spinner fa-pulse" style="color:var(--accent)"></i> '
+      +(total?('Строю индекс: '+done+' из '+total+' фрагментов'):'Читаю материалы курса…')+'</div>'
+      +'<div style="height:8px;border-radius:6px;background:var(--bg3);overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--accent);transition:width .4s"></div></div>'
+      +'<div style="font-size:11px;color:var(--text3);margin-top:8px">Считаются эмбеддинги на этом ПК. Окно можно закрыть — индексация продолжится.</div>';
+    if(!_vecPollTimer)_vecPollTimer=setInterval(_vecRefresh,1200);
+    return;
+  }
+  if(!_vecCourseId){
+    const idx=d.indexes||[];
+    let opt=(_coursesCache||[]).map(c=>'<option value="'+c.id+'">'+esc(c.title||'Курс')+'</option>').join('');
+    let h='<div style="font-size:12px;color:var(--text3);margin-bottom:6px">Курс</div>';
+    h+='<select class="search-inp" style="width:100%;margin-bottom:12px" onchange="_vecCourseId=this.value;_vecRefresh()"><option value="">— выберите курс —</option>'+opt+'</select>';
+    if(idx.length){
+      h+='<div style="font-size:12px;color:var(--text3);margin:10px 0 6px">Готовые индексы</div>';
+      idx.forEach(m=>{
+        h+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;margin-bottom:6px;font-size:12px">'
+          +'<i class="fas fa-database" style="color:var(--accent)"></i><b style="flex:1">'+esc(m.title||_vecCourseTitle(m.course_id))+'</b>'
+          +'<span style="color:var(--text3)">'+m.chunks+' фрагм.</span>'
+          +'<button class="btn btn-sm" data-cid="'+esc(m.course_id)+'" onclick="_vecOpenIndex(this)">Открыть</button></div>';
+      });
+    }else{
+      h+='<div style="font-size:12px;color:var(--text3)">Откройте курс или выберите его выше, чтобы построить индекс.</div>';
+    }
+    body.innerHTML=h;
+    return;
+  }
+  const meta=d.index||null;
+  let h='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">'
+    +'<div style="font-size:13px;font-weight:600;flex:1">'+esc(meta&&meta.title||_vecCourseTitle(_vecCourseId))+'</div>'
+    +'<button class="btn btn-sm" onclick="_vecCourseId=S.currentId;_vecRefresh()" title="Выбрать другой курс"><i class="fas fa-arrow-right-arrow-left"></i> Курс</button>'
+    +'<button class="btn btn-sm" onclick="vecSetEnabled(false)" title="Выключить функцию"><i class="fas fa-power-off"></i></button>'
+    +'</div>';
+  if(meta){
+    const dt=meta.built_at?new Date(meta.built_at*1000).toLocaleString('ru-RU'):'';
+    h+='<div style="background:var(--bg3);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2);margin-bottom:10px">'
+      +'<div><i class="fas fa-database" style="color:var(--accent)"></i> Индекс: <b>'+meta.chunks+'</b> фрагментов · '+esc(dt)+'</div>'
+      +'<div style="color:var(--text3);margin-top:3px">Модель: '+esc(meta.model||'')+' · '+meta.dim+' измерений</div>'
+      +(meta.truncated?'<div style="color:var(--yellow);margin-top:4px">Материалов больше лимита — проиндексирована равномерная выборка ('+d.max_chunks+' фрагм.).</div>':'')
+      +'</div>';
+  }else{
+    h+='<div style="background:var(--bg3);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text3);margin-bottom:10px">Индекс этого курса ещё не построен.</div>';
+  }
+  h+='<div style="display:flex;gap:8px;margin-bottom:12px">'
+    +'<button class="btn btn-sm btn-primary" onclick="vecBuild()"><i class="fas fa-rotate"></i> '+(meta?'Перестроить индекс':'Построить индекс')+'</button>'
+    +(meta?'<button class="btn btn-sm btn-danger" onclick="vecPurge()"><i class="fas fa-trash"></i> Удалить индекс</button>':'')
+    +'</div>';
+  if(meta){
+    h+='<div style="display:flex;gap:8px;margin-bottom:10px">'
+      +'<input class="search-inp" id="vecQuery" style="flex:1" placeholder="Например: как работает фотосинтез?" value="'+esc(_vecQuery).replace(/"/g,'&quot;')+'" onkeydown="if(event.key===\'Enter\')vecSearchGo()">'
+      +'<button class="btn btn-primary" onclick="vecSearchGo()"><i class="fas fa-magnifying-glass"></i></button></div>'
+      +'<div id="vecResults"></div>';
+  }
+  if(st.error&&(!st.course_id||st.course_id===_vecCourseId))h+='<div style="color:var(--red);font-size:12px;margin-top:8px">Ошибка индексации: '+esc(st.error)+'</div>';
+  body.innerHTML=h;
+  if(meta&&_vecResults)_vecPaintResults(_vecResults);
+}
+function _vecPaintResults(data){
+  const box=document.getElementById('vecResults');if(!box)return;
+  if(!data)return;
+  if(!data.ok){
+    box.innerHTML='<div style="font-size:12px;color:var(--red)">'+esc(data.message||data.error||'Ошибка поиска')+'</div>';
+    return;
+  }
+  const rows=data.results||[];
+  if(!rows.length){box.innerHTML='<div style="font-size:12px;color:var(--text3)">Ничего не найдено.</div>';return}
+  box.innerHTML=rows.map(r=>'<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px">'
+    +'<div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);margin-bottom:4px">'
+    +'<i class="fas '+(r.kind==='lesson'?'fa-book-open':'fa-file-lines')+'"></i>'
+    +'<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.source||'')+'</span>'
+    +'<span style="color:var(--accent)">'+r.score+'%</span></div>'
+    +'<div style="font-size:12.5px;line-height:1.55;white-space:pre-wrap">'+esc(r.text||'')+'</div></div>').join('');
+}
+async function vecSetEnabled(v){
+  try{
+    const r=await fetch('/api/education/vector/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!!v})});
+    const d=await r.json();
+    if(!d.ok){toast('Не удалось переключить','err');return}
+    toast(v?'Векторный поиск включён':'Векторный поиск выключен',v?'ok':'info');
+    _vecRefresh();
+  }catch(e){toast('Ошибка соединения','err')}
+}
+async function vecBuild(){
+  if(!_vecCourseId){toast('Выберите курс','info');return}
+  try{
+    const r=await fetch('/api/education/vector/build',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({course_id:_vecCourseId})});
+    const d=await r.json();
+    if(!d.ok){toast(d.message||d.error||'Не удалось запустить','err');return}
+    _vecResults=null;
+    toast('Индексация запущена','info');
+    _vecRefresh();
+  }catch(e){toast('Ошибка соединения','err')}
+}
+async function vecPurge(){
+  if(!_vecCourseId)return;
+  if(!confirm('Удалить векторный индекс этого курса? Материалы курса не пострадают.'))return;
+  try{
+    const r=await fetch('/api/education/vector/purge',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({course_id:_vecCourseId})});
+    const d=await r.json();
+    if(!d.ok){toast(d.error||'Ошибка','err');return}
+    _vecResults=null;toast('Индекс удалён','ok');_vecRefresh();
+  }catch(e){toast('Ошибка соединения','err')}
+}
+async function vecSearchGo(){
+  const inp=document.getElementById('vecQuery');
+  const q=(inp&&inp.value||'').trim();
+  if(!q||!_vecCourseId)return;
+  _vecQuery=q;
+  const box=document.getElementById('vecResults');
+  if(box)box.innerHTML='<div style="font-size:12px;color:var(--text3)"><i class="fas fa-spinner fa-pulse"></i> Ищу…</div>';
+  try{
+    const r=await fetch('/api/education/vector/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({course_id:_vecCourseId,query:q,limit:8})});
+    const d=await r.json();
+    _vecResults=d;_vecPaintResults(d);
+  }catch(e){
+    if(box)box.innerHTML='<div style="font-size:12px;color:var(--red)">Ошибка соединения</div>';
+  }
+}
+
+// ========== INIT ==========
+document.addEventListener('DOMContentLoaded',()=>{loadCourses()});
+</script>
+<link rel="stylesheet" href="/static/css/module_rail.css">
+<link rel="stylesheet" href="/static/css/education_next.css">
+<script src="/static/js/module_rail.js" defer></script>
+<script src="/static/js/education_next.js" defer></script>
+</body>
+</html>

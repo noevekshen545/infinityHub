@@ -1,0 +1,49 @@
+{
+  "name": "infinity-search-desktop",
+  "productName": "Infinity Search",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Окно приложения Infinity Search: локальный сервер + веб-интерфейс, трей, кнопки управления окном",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --win --x64 --dir",
+    "dist": "electron-builder --win --x64"
+  },
+  "dependencies": {
+    "yauzl": "^2.10.0"
+  },
+  "devDependencies": {
+    "electron": "^44.7.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.infinity.search",
+    "productName": "Infinity Search",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "extensions.js",
+      "preload.js",
+      "icon.png",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.png"
+    },
+    "extraMetadata": {
+      "description": "Infinity Search — поиск, книги, заметки и AI-агент"
+    }
+  }
+}

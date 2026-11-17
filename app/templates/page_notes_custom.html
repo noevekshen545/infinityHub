@@ -1,0 +1,2044 @@
+<!DOCTYPE html>
+<html class="pg-page_notes_custom" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Режим Custom</title>
+<link rel="stylesheet" href="/static/fonts/google-fonts.css">
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<style>
+/* Страница намеренно пустая: одно поле, две кнопки слева вверху. Никаких
+   панелей, панелей инструментов, превью и счётчиков — режим нужен, чтобы
+   писать текст и отдать его ИИ, а не чтобы снова собрать редактор. */
+:root {
+  --bg: #fafbfc; --bg2: #ffffff; --bg3: #f3f4f6;
+  --border: rgba(0,0,0,0.08); --border2: rgba(0,0,0,0.14);
+  --text: #1f2937; --text2: #4b5563; --text3: #9aa3af;
+  --accent: #4f46e5; --accent-light: rgba(79,70,229,0.1);
+  --red: #dc2626; --radius: 12px;
+  --font-sans: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+body.dark {
+  --bg: #15171c; --bg2: #1d2026; --bg3: #262a32;
+  --border: rgba(255,255,255,0.09); --border2: rgba(255,255,255,0.16);
+  --text: #e8eaed; --text2: #a8b0bd; --text3: #6f7784;
+  --accent: #6366f1; --accent-light: rgba(99,102,241,0.16);
+  --red: #ef4444;
+}
+body.sepia {
+  --bg: #f5f0e8; --bg2: #ede5d8; --bg3: #e2d8c9;
+  --border: rgba(91,70,54,0.12); --border2: rgba(91,70,54,0.2);
+  --text: #3d2f21; --text2: #5c4a3a; --text3: #8b7560;
+  --accent: #8b5e3c; --accent-light: rgba(139,94,60,0.12);
+  --red: #9b2c2c;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--font-sans); font-size: 16px; line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Две кнопки слева вверху ── */
+.topbar {
+  position: fixed; top: 14px; left: 14px; z-index: 40;
+  display: flex; gap: 6px;
+}
+.iconbtn {
+  width: 38px; height: 38px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg2);
+  color: var(--text2); cursor: pointer; font-size: 15px;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.iconbtn:hover { border-color: var(--accent); color: var(--accent); }
+.iconbtn:active { background: var(--accent-light); }
+
+/* Плашка текущего режима. Без неё страница выглядела одинаково для любого
+   режима: непонятно, какой режим сейчас выбран и что вообще что-то
+   подставилось из списка редактора. */
+.modechip {
+  align-self: center; margin-left: 6px; padding: 6px 12px;
+  border: 1px solid var(--border); border-radius: 999px;
+  background: var(--bg2); color: var(--text2);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.modechip:hover { border-color: var(--accent); color: var(--accent); }
+.modechip:empty { display: none; }
+
+/* ── Переключатель вида: «Заметка» / «HTML-режим» ── */
+.viewswitch {
+  align-self: center; margin-left: 6px;
+  display: flex; gap: 2px; padding: 3px;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--bg2);
+}
+.viewbtn {
+  font: inherit; font-size: 12.5px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border: none; border-radius: 7px;
+  background: transparent; color: var(--text2); cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.viewbtn:hover { color: var(--accent); }
+.viewbtn.on { background: var(--accent); color: #fff; }
+
+/* HTML-режим: приложение на всю страницу. Появляется вместо поля ввода,
+   чтобы результат можно было не только править внизу, но и просто открыть. */
+.appview {
+  position: fixed; inset: 0; z-index: 30;
+  display: none; flex-direction: column;
+  padding: 64px 14px 14px; background: var(--bg);
+}
+.appview.on { display: flex; }
+.appview-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; margin-bottom: 10px;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--bg2);
+  font-size: 12.5px; color: var(--text2);
+}
+.appview-bar .sp { flex: 1; }
+.appview-bar strong { color: var(--text); font-size: 13px; }
+.appview iframe {
+  flex: 1; width: 100%; min-height: 0;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: #fff;
+}
+.appview-empty {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+  color: var(--text3); font-size: 14px; text-align: center;
+  border: 1px dashed var(--border); border-radius: var(--radius);
+}
+.appview-empty i { font-size: 30px; opacity: .5; }
+
+/* ── Поле ввода: WYSIWYG ──
+   Было <textarea>: в нём нельзя показать картинку «по текку» и нельзя
+   потянуть её за угол. Теперь contenteditable — текст и картинки живут в
+   одном потоке, как в заметке. Разметка при сохранении нормализуется
+   в markdown (см. fieldToMarkdown), поэтому в файле заметки остаётся
+   читаемый текст, а не браузерный мусор. */
+.editor {
+  width: 100%; height: 100%; border: none; outline: none;
+  background: transparent; color: var(--text);
+  font-family: var(--font-sans); font-size: 17px; line-height: 1.8;
+  padding: 74px 24px 120px;
+  max-width: 860px; margin: 0 auto; display: block;
+  caret-color: var(--accent);
+  overflow-y: auto; word-wrap: break-word;
+}
+.editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text3); pointer-events: none;
+}
+.editor img {
+  max-width: 100%; height: auto; border-radius: 8px;
+  margin: 8px 0; display: block; vertical-align: middle;
+}
+.editor img.sel {
+  outline: 2px solid var(--accent); outline-offset: 2px;
+}
+/* Ручка ресайза: появляется у выбранной картинки в правом нижнем углу. */
+.img-resizer {
+  position: absolute; width: 14px; height: 14px;
+  border: 2px solid #fff; border-radius: 50%;
+  background: var(--accent); cursor: nwse-resize; z-index: 60;
+  box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+
+/* ── Кнопка ИИ-правки в HTML-режиме ── */
+.btn.ai-edit { color: var(--accent); border-color: var(--accent); }
+.btn.ai-edit:hover { background: var(--accent-light); }
+
+/* ── Нижняя панель результата ── */
+.result {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  background: var(--bg2); border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.10);
+  transform: translateY(100%); transition: transform .25s ease;
+  display: flex; flex-direction: column;
+  max-height: 72vh;
+}
+.result.open { transform: translateY(0); }
+.result-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.result-title { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); }
+.result-body { overflow: auto; padding: 12px 16px; background: var(--bg); }
+.result-body iframe {
+  width: 100%; height: 46vh; border: 1px solid var(--border);
+  border-radius: var(--radius); background: #fff;
+}
+.tabs { display: flex; align-items: center; gap: 6px; margin-bottom: 10px }
+.tabs .spacer { flex: 1 }
+.tab {
+  font: inherit; font-size: 12.5px; padding: 6px 12px; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 7px;
+  background: transparent; color: var(--text2);
+}
+.tab:hover { border-color: var(--accent); color: var(--accent) }
+.tab.on { border-color: var(--accent); color: var(--accent); background: var(--accent-light); font-weight: 600 }
+#codeEditor {
+  width: 100%; height: 46vh; font-family: var(--font-mono); font-size: 12.5px;
+  line-height: 1.55; padding: 12px; border: 1px solid var(--border);
+  border-radius: var(--radius); background: var(--bg2); color: var(--text);
+  resize: vertical; outline: none; white-space: pre; overflow: auto;
+}
+.btn {
+  font: inherit; font-size: 13px; font-weight: 500;
+  border-radius: 8px; padding: 7px 13px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg3); color: var(--text);
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.primary {
+  background: var(--accent); border-color: transparent; color: #fff; font-weight: 600;
+}
+.btn.primary:hover { filter: brightness(1.08); color: #fff; }
+.btn:disabled { opacity: .55; cursor: default; }
+
+/* ── Модальное окно настроек ── */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 16px; width: 560px; max-width: 100%;
+  max-height: 86vh; overflow: auto; padding: 22px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.modal h3 {
+  font-size: 16px; font-weight: 700; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 8px;
+}
+.modal .sub { font-size: 12.5px; color: var(--text3); margin-bottom: 16px; }
+label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin: 12px 0 6px; }
+input[type=text], textarea, select {
+  width: 100%; font: inherit; font-size: 14px;
+  padding: 10px 12px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); outline: none;
+}
+textarea { resize: vertical; line-height: 1.6; min-height: 120px; }
+input:focus, textarea:focus { border-color: var(--accent); }
+.hint { font-size: 11.5px; color: var(--text3); margin-top: 5px; line-height: 1.5; }
+
+/* Галерея шаблонов режимов */
+.templates { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; margin-top: 6px; }
+.tpl {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 11px; border: 1px solid var(--border); border-radius: 9px;
+  background: var(--bg3); cursor: pointer; font-size: 13px; color: var(--text);
+  transition: border-color .15s, color .15s;
+}
+.tpl:hover { border-color: var(--accent); color: var(--accent); }
+.tpl.on { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
+.modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+.modal-actions .btn { flex: 1; padding: 10px; }
+
+/* Модалка ИИ-правки готового приложения. Поле промпта — основное, поэтому
+   оно крупное; подсказка объясняет, что ИИ правит существующий HTML, а не
+   собирает приложение заново. */
+#aiEditModal .modal { width: 640px; }
+#aiEditPrompt {
+  min-height: 140px; font-size: 14px; line-height: 1.6;
+}
+.ai-edit-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.ai-edit-presets .btn { padding: 5px 10px; font-size: 12px; flex: 0 0 auto; }
+
+/* ── Статус и уведомления ── */
+.status {
+  position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+  z-index: 60; font-size: 12.5px; color: var(--text2);
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  display: none;
+}
+.status.show { display: block; }
+.save-ind {
+  position: fixed; bottom: 18px; right: 18px; z-index: 55;
+  font-size: 12.5px; color: var(--green, #16a34a);
+  background: var(--bg2); border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  opacity: 0; transition: opacity .25s; pointer-events: none;
+}
+.save-ind.show { opacity: 1; }
+.save-ind.err { color: var(--red); }
+
+/* ── Предпросмотр текста от ИИ ── */
+.text-preview-box {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: 18px; z-index: 58; width: min(720px, calc(100vw - 28px));
+  max-height: 52vh; display: none; flex-direction: column;
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 14px; overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0,0,0,.28);
+}
+.text-preview-box.open { display: flex; }
+.tp-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  font-size: 13px; flex-shrink: 0;
+}
+.tp-head .sp { flex: 1; }
+.tp-hint { font-size: 11.5px; color: var(--text3); }
+.text-preview {
+  margin: 0; padding: 14px; overflow: auto; flex: 1; min-height: 0;
+  font-family: var(--font-sans); font-size: 13.5px; line-height: 1.65;
+  white-space: pre-wrap; word-wrap: break-word; color: var(--text);
+}
+.runbar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+  display: none; justify-content: center; padding: 0 16px 18px;
+  pointer-events: none;
+}
+.runbar.show { display: flex; }
+.runbox {
+  pointer-events: auto;
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px; border-radius: 14px;
+  background: var(--bg2); border: 1px solid var(--border2);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.28);
+  max-width: 560px; width: 100%;
+}
+.runbox > i { color: var(--accent); font-size: 18px }
+.runtitle { font-size: 13.5px; font-weight: 600; color: var(--text) }
+.runhint { font-size: 11.5px; color: var(--text3); margin-top: 2px }
+.runsec {
+  margin-left: auto; font-size: 12.5px; color: var(--text2);
+  font-variant-numeric: tabular-nums; min-width: 42px; text-align: right;
+}
+@media (max-width: 640px) {
+  .editor { padding: 96px 16px 120px; font-size: 16px; }
+  .templates { grid-template-columns: 1fr; }
+
+  /* Верхняя строка на телефоне: две иконки, переключатель вида с подписями
+     и плашка режима в один ряд не влезали — правый край уезжал за экран.
+     Разрешаем перенос: переключатель остаётся иконками, плашка режима
+     занимает вторую строку целиком. */
+  .topbar {
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    left: 8px; right: 8px;
+    flex-wrap: wrap; gap: 6px;
+  }
+  .viewswitch { margin-left: 0; }
+  .viewbtn { font-size: 0; padding: 9px 11px; gap: 0; }
+  .viewbtn i { font-size: 14px; }
+  .modechip {
+    margin-left: 0; max-width: 100%;
+    order: 9; flex: 1 1 100%; text-align: center;
+  }
+
+  /* HTML-режим и панель результата: меньше отступов, превью компактнее,
+     чтобы на телефоне оставалось место самому содержимому. */
+  .appview { padding: 92px 10px 10px; }
+  .appview-bar { flex-wrap: wrap; gap: 6px; }
+  .result { max-height: 78vh; }
+  .result-body iframe { height: 34vh; }
+  .runbar { padding: 0 10px 10px; }
+  .runbox { gap: 10px; padding: 10px 12px; }
+  .runsec { min-width: 34px; }
+}
+</style>
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+
+<!-- Слева вверху: назад, настройки и две кнопки переключения вида.
+     «HTML-режим» показывает готовое приложение, «Заметка» — исходный текст,
+     который написал пользователь. Раньше после «Вставить в заметку»
+     посмотреть результат было негде: панель результата закрывалась, и
+     приложение оставалось только в превью другой страницы. -->
+<div class="topbar">
+  <button class="iconbtn" onclick="goBack()" title="Назад к редактору"><i class="fa-solid fa-arrow-left"></i></button>
+  <button class="iconbtn" onclick="openSettings()" title="Настройки режима"><i class="fa-solid fa-sliders"></i></button>
+  <div class="viewswitch">
+    <button class="viewbtn on" id="viewNoteBtn" onclick="setView('note')" title="Текст заметки, который вы написали">
+      <i class="fa-solid fa-note-sticky"></i> Заметка
+    </button>
+    <button class="viewbtn" id="viewHtmlBtn" onclick="setView('html')" title="Готовое приложение, созданное из заметки">
+      <i class="fa-solid fa-code"></i> HTML-режим
+    </button>
+  </div>
+  <span class="modechip" id="modeChip" onclick="openSettings()" title="Текущий режим — нажмите, чтобы изменить"></span>
+</div>
+
+<div class="editor" id="text" contenteditable="true" spellcheck="false"
+     data-placeholder="Напишите текст, который нужно обработать…&#10;&#10;Например, список позиций, если режим «Таблица».&#10;Перетащите сюда картинку — она встанет по тексту, и её можно растянуть.&#10;Ctrl+Enter — применить режим."></div>
+
+<!-- HTML-режим: готовое приложение заметки. Тот же URL, что использует
+     превью заметки, поэтому здесь и там показывается один и тот же файл. -->
+<div class="appview" id="appView">
+  <div class="appview-bar">
+    <i class="fa-solid fa-cubes" style="color:var(--accent)"></i>
+    <strong id="appViewTitle">Приложение</strong>
+    <span id="appViewSlug" style="color:var(--text3)"></span>
+    <span class="sp"></span>
+    <button class="btn" id="appEditBtn" onclick="toggleAppEdit()"><i class="fa-solid fa-pen-to-square"></i> Редактировать</button>
+    <button class="btn ai-edit" id="appAiBtn" onclick="openAiEdit()" title="Править приложение через ИИ: опишите, что изменить"><i class="fa-solid fa-wand-magic-sparkles"></i> ИИ</button>
+    <button class="btn" onclick="reloadAppView()" title="Перезагрузить"><i class="fa-solid fa-rotate"></i></button>
+  </div>
+  <div class="appview-empty" id="appViewEmpty">
+    <i class="fa-solid fa-cube"></i>
+    <div>Приложение ещё не создано</div>
+    <div style="font-size:12px;max-width:380px">
+      Вернитесь в «Заметку», опишите режим и нажмите Ctrl+Enter.
+      Когда приложение будет создано, оно откроется здесь.
+    </div>
+  </div>
+  <iframe id="appViewFrame" sandbox="allow-scripts allow-forms allow-modals" style="display:none"></iframe>
+</div>
+
+<!-- Результат: ИИ отдаёт приложение, оно работает здесь же и дальше без ИИ. -->
+<div class="result" id="result">
+  <div class="result-head">
+    <i class="fa-solid fa-cubes" style="color:var(--accent)"></i>
+    <span class="result-title" id="resultTitle">Результат</span>
+    <button class="btn" id="templateSaveBtn" style="display:none"
+            title="Запомнить этот вид приложения: следующая заметка с таким же режимом получит его с новыми данными">
+      <i class="fa-solid fa-clone"></i> Сохранить как шаблон режима
+    </button>
+    <button class="btn" onclick="copyResult()"><i class="fa-solid fa-copy"></i> Код</button>
+    <button class="btn primary" onclick="insertMarker()"><i class="fa-solid fa-check"></i> Вставить в заметку</button>
+    <button class="iconbtn" onclick="closeResult()" title="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+<div class="result-body">
+    <div class="tabs">
+      <button class="tab on" id="tabPreview" onclick="showTab('preview')">Приложение</button>
+      <button class="tab" id="tabCode" onclick="showTab('code')">Код</button>
+      <span class="spacer"></span>
+      <button class="btn" id="btnReload" onclick="reloadFrame()"><i class="fa-solid fa-rotate"></i> Обновить</button>
+      <button class="btn" id="btnSave" onclick="saveEdited()"><i class="fa-solid fa-floppy-disk"></i> Сохранить правку</button>
+    </div>
+    <div id="panePreview">
+      <!-- sandbox без allow-same-origin: скрипт внутри не видит cookies и
+           localStorage приложения и не может вызвать его API. -->
+      <iframe id="resultFrame" sandbox="allow-scripts allow-forms allow-modals"></iframe>
+    </div>
+    <div id="paneCode" style="display:none">
+      <textarea id="codeEditor" spellcheck="false" placeholder="HTML приложения"></textarea>
+    </div>
+  </div>
+</div>
+
+<div class="runbar" id="runbar">
+  <div class="runbox">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <div>
+      <div class="runtitle" id="runText">AI создаёт приложение…</div>
+      <div class="runhint" id="runHint">Обычно занимает 10–30 секунд</div>
+    </div>
+    <span class="runsec" id="runSec">0 с</span>
+    <button class="btn" onclick="stopRun()">Отмена</button>
+  </div>
+</div>
+
+<div class="status" id="status"></div>
+
+<!-- Индикатор автосохранения текста заметки. Раньше текст из этого поля
+     нигде не сохранялся: «Сохранить» писал только настройки режима,
+     «Назад» уходил сразу — и весь набранный текст терялся. -->
+<div class="save-ind" id="saveInd"><i class="fa-solid fa-check"></i> Сохранено</div>
+
+<!-- Предпросмотр текста от ИИ в режиме «Только текст». Живёт над полем,
+     чтобы новый текст был виден рядом с текущим, а не вместо него. -->
+<div class="text-preview-box" id="textPreview">
+  <div class="tp-head">
+    <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent)"></i>
+    <strong>Новый текст от ИИ</strong>
+    <span class="tp-hint">Проверьте и примените, если верно</span>
+    <span class="sp"></span>
+    <button class="btn" onclick="closeTextResult()">Отмена</button>
+    <button class="btn primary" id="textApplyBtn" onclick="applyTextResult()">
+      <i class="fa-solid fa-check"></i> Применить к тексту
+    </button>
+  </div>
+  <pre class="text-preview" id="textPreviewBody"></pre>
+</div>
+
+<!-- ИИ-правка готового приложения. Открывается кнопкой «ИИ» в HTML-режиме:
+     ИИ получает текущий HTML и промпт и правит существующее приложение,
+     а не собирает его заново. -->
+<div class="modal-bg" id="aiEditModal">
+  <div class="modal">
+    <h3><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent)"></i> Правка приложения через ИИ</h3>
+    <div class="sub">
+      ИИ изменит <strong>текущее</strong> приложение, а не соберёт новое.
+      Опишите, что поправить: добавить колонку, переименовать заголовок,
+      поменять цвета, убрать лишнее.
+    </div>
+
+    <label>Что изменить</label>
+    <textarea id="aiEditPrompt" spellcheck="false"
+              placeholder="Например: добавь колонку «Скидка» и посчитай цену со скидкой. Заголовок сделай «Мои товары»."></textarea>
+    <div class="hint">
+      Всё, что не упомянуто, останется как есть: данные, поиск, сортировка,
+      оформление. Если хотите собрать приложение заново — опишите режим в
+      настройках и нажмите «Создать».
+    </div>
+
+    <label>Быстрые правки</label>
+    <div class="ai-edit-presets" id="aiEditPresets"></div>
+
+    <div class="modal-actions">
+      <button class="btn" id="aiEditCancel" onclick="closeAiEdit()">Отмена</button>
+      <button class="btn primary" id="aiEditRun" onclick="runAiEdit()">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Применить
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Плашка о шаблоне приложения. Показывает, получит заметка ту же вёрстку,
+     что и прошлая, или ИИ соберёт приложение заново. -->
+<div id="templateChip" style="position:fixed;left:14px;bottom:18px;z-index:35;display:none;
+     padding:6px 14px;border:1px solid var(--border);border-radius:20px;
+     background:var(--bg2);font-size:12px;color:var(--text2);box-shadow:0 4px 16px rgba(0,0,0,.1)"></div>
+
+<!-- Настройки режима -->
+<div class="modal-bg" id="settingsModal">
+  <div class="modal">
+    <h3><i class="fa-solid fa-sliders" style="color:var(--accent)"></i> Настройки режима</h3>
+    <div class="sub">Опишите, что ИИ должен сделать с текстом заметки. Сохраняется в самой заметке.</div>
+
+    <label>Готовые режимы</label>
+    <div class="templates" id="templates"></div>
+
+    <label>Название режима</label>
+    <input type="text" id="modeName" placeholder="Например: Таблица" maxlength="60"
+           oninput="modeName=this.value;updateModeChip();refreshModeTemplate()">
+
+    <label>Что делать с текстом (описание для ИИ)</label>
+    <textarea id="modePrompt" placeholder="Это режим таблиц: собери из текста интерактивную таблицу с поиском и сортировкой…"></textarea>
+    <div class="hint">Чем конкретнее описание, тем полезнее результат. ИИ собирает полноценное приложение, которое потом работает без ИИ.</div>
+
+    <label>Бюджет токенов на ответ</label>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="number" id="modeTokens" min="512" max="200000" step="512" style="flex:1"
+             oninput="modeTokens=clampTokens(this.value);updateTokensHint();updateModeChip()">
+      <button class="btn" type="button" onclick="applyTokenPreset(8192)" title="Хватит для таблицы или списка">8k</button>
+      <button class="btn" type="button" onclick="applyTokenPreset(16384)" title="Хватит для базы данных">16k</button>
+      <button class="btn" type="button" onclick="applyTokenPreset(50000)" title="Максимум, если данных очень много">50k</button>
+    </div>
+    <div class="hint" id="tokensHint">
+      Сколько токенов модель может потратить на приложение. Стандартный ответ —
+      2048 токенов, и на большой базе данных он обрывался на середине.
+      Если окно контекста llama.cpp меньше этого числа, сервер отдаёт сборку
+      автоматически на меньшем бюджете.
+    </div>
+
+    <label style="display:flex;align-items:flex-start;gap:8px;font-weight:500;margin-top:16px;cursor:pointer">
+      <input type="checkbox" id="modeTextOnly" style="width:auto;margin-top:2px;accent-color:var(--accent)">
+      <span>Только текст — ИИ правит текст заметки, не создавая приложение
+        <span class="hint" style="display:block;margin-top:2px">
+          Промпт вида «отформатируй», «переведи», «сделай список» вернёт
+          новый текст прямо в поле, а не HTML-приложение. Результат можно
+          применить к тексту кнопкой или отменить.
+        </span>
+      </span>
+    </label>
+
+    <label style="display:flex;align-items:flex-start;gap:8px;font-weight:500;margin-top:16px;cursor:pointer">
+      <input type="checkbox" id="modeSave" style="width:auto;margin-top:2px;accent-color:var(--accent)">
+      <span>Сохранить этот режим в списке режимов
+        <span class="hint" style="display:block;margin-top:2px">
+          Он появится в выпадающем списке на странице редактора рядом с
+          Markdown и Logseq, и его можно будет выбрать как режим по умолчанию.
+        </span>
+      </span>
+    </label>
+    <div class="hint" id="savedModesHint" style="margin-top:8px"></div>
+
+    <div class="modal-actions">
+      <button class="btn" id="cancelBtn" onclick="closeSettings()">Отмена</button>
+      <button class="btn" id="saveSettingsBtn" onclick="saveSettings()">Сохранить</button>
+      <button class="btn primary" id="createBtn" onclick="createAndRun()">Создать</button>
+    </div>
+    <div class="hint" style="margin-top:10px">
+      «Создать» сохраняет настройки в заметке и сразу отдаёт текст ИИ: приложение
+      появится в изолированном поле внизу. ИИ можно не запускать — тогда просто
+      «Сохранить».
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* Настройки режима живут в YAML-шапке заметки (поля custom_mode и
+   custom_prompt) — тем же способом, что и остальные свойства. Поэтому
+   режим переезжает вместе с заметкой и виден в Obsidian. */
+var noteId = new URLSearchParams(location.search).get('id') || '';
+var modeName = 'Таблица';
+var modePrompt = '';
+/* Бюджет токенов на ответ. Хранится в заметке рядом с описанием режима,
+   чтобы переживать перезапуск страницы, но пользователь может его менять. */
+var modeTokens = 50000;
+var TOKEN_MIN = 512;
+var TOKEN_MAX = 200000;
+var lastArtifact = null;
+var busy = false;
+/* «Только текст»: ИИ правит текст заметки, а не собирает приложение. */
+var modeTextOnly = false;
+
+/* Заметка как файл. Настройки режима — это свойства (custom_mode и прочие),
+   а сам текст — поле content. Оба нужны при сохранении: /api/notes/save
+   принимает content целиком, поэтому без сохранённой шапки заметка
+   потеряла бы YAML-свойства, включая режим, который мы только что задали. */
+var noteState = { title: '', folder: 'inbox', frontmatter: '' };
+var saveTextTimer = null;
+var saveTextBusy = false;
+var textDirty = false;
+/* Текст от ИИ, ждущий применения. null — предпросмотр закрыт. */
+var pendingText = null;
+
+function el(id) { return document.getElementById(id); }
+
+/* ── Текст поля: <div contenteditable> вместо <textarea> ──
+   Единая точка доступа к содержимому. Для value был бы textarea.value;
+   здесь — innerText для ИИ и markdown для сохранения. Остальной код
+   работает через эти функции и не знает, что внутри. */
+function getFieldText() {
+  var f = el('text');
+  return f ? (f.innerText || '').replace(/\u00a0/g, ' ').replace(/\n{3,}/g, '\n\n') : '';
+}
+
+function setFieldText(text) {
+  var f = el('text');
+  if (!f) return;
+  /* Разбиваем по абзацам: contenteditable без блочной разметки склеит
+     строки в одну, и переносы из markdown пропадут.
+     Картинки ![alt|ширина](url) превращаем в <img>, чтобы их было видно
+     в поле и можно было потянуть; ширина уходит в data-w и возвращается
+     обратно в markdown при сохранении. */
+  var src = String(text || '');
+  var blocks = src.split(/\n{2,}/).map(function (p) {
+    var safe = p
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>');
+    return safe.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s*=\s*(\d+)(?:x(\d+))?)?\)/g,
+      function (m, altRaw, url, w, h) {
+        /* Размер задают двумя способами: Obsidian — ![alt|300](url), где
+           ширина лежит внутри alt после «|», и привычный markdown —
+           ![alt](url =300x200). Оба должны вернуться в data-w, иначе после
+           перезагрузки ширина сбрасывается. «|» убираем из alt — иначе
+           размер утечёт в подпись картинки. */
+        var alt = altRaw, obsW = '';
+        var bar = altRaw.indexOf('|');
+        if (bar !== -1) {
+          alt = altRaw.slice(0, bar);
+          var maybeW = altRaw.slice(bar + 1).trim();
+          if (/^\d+$/.test(maybeW)) obsW = maybeW;
+        }
+        var width = obsW || w || '';
+        return '<img src="' + url + '" alt="' + alt + '" data-w="' + width + '">';
+      });
+  });
+  f.innerHTML = blocks.map(function (b) { return '<div>' + b + '</div>'; }).join('');
+}
+
+/* ── Разметка поля → markdown для сохранения ──
+   Браузер при вводе вставляет свой HTML: <div> вместо абзаца, <b> вместо
+   **, &nbsp; вместо пробела. Если писать innerHTML как есть, файл заметки
+   превратится в мусор, который не читается ни в превью, ни в Obsidian.
+   Поэтому нормализуем: блочные теги → перевод строки, известная
+   разметка → markdown, картинки → ![alt|ширина](url).
+   Полной чистоты не обещаем: браузер делает что хочет, но основную грязь
+   это убирает. */
+function fieldToMarkdown() {
+  var f = el('text');
+  if (!f) return '';
+  var out = [];
+  walkField(f, out);
+  return out.join('')
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/^\n+|\n+$/g, '');
+}
+
+function walkField(node, out) {
+  for (var i = 0; i < node.childNodes.length; i++) {
+    var n = node.childNodes[i];
+    if (n.nodeType === 3) { out.push(n.nodeValue || ''); continue; }
+    if (n.nodeType !== 1) continue;
+    var tag = n.tagName.toLowerCase();
+    if (tag === 'br') { out.push('\n'); continue; }
+    if (tag === 'img') {
+      /* Ширину пишем в разметку Obsidian: ![alt|300](url). Её понимает
+         превью заметки (renderMarkdown), поэтому размер переживёт
+         перезагрузку. Пустая ширина — обычная ссылка без размера. */
+      var w = n.getAttribute('data-w');
+      var alt = n.getAttribute('alt') || '';
+      var src = n.getAttribute('src') || '';
+      if (src) out.push('\n![' + alt + (w ? '|' + w : '') + '](' + src + ')\n');
+      continue;
+    }
+    var inner = [];
+    walkField(n, inner);
+    var txt = inner.join('');
+    if (tag === 'div' || tag === 'p') { out.push('\n' + txt + '\n'); continue; }
+    if (tag === 'b' || tag === 'strong') { out.push('**' + txt + '**'); continue; }
+    if (tag === 'i' || tag === 'em') { out.push('*' + txt + '*'); continue; }
+    if (tag === 's' || tag === 'strike' || tag === 'del') { out.push('~~' + txt + '~~'); continue; }
+    if (tag === 'h1') { out.push('\n# ' + txt + '\n'); continue; }
+    if (tag === 'h2') { out.push('\n## ' + txt + '\n'); continue; }
+    if (tag === 'h3') { out.push('\n### ' + txt + '\n'); continue; }
+    if (tag === 'li') { out.push('\n- ' + txt); continue; }
+    if (tag === 'ul' || tag === 'ol') { out.push('\n' + txt + '\n'); continue; }
+    if (tag === 'pre') { out.push('\n```\n' + txt + '\n```\n'); continue; }
+    if (tag === 'code') { out.push('`' + txt + '`'); continue; }
+    if (tag === 'a') {
+      var href = n.getAttribute('href') || '';
+      out.push('[' + txt + '](' + href + ')');
+      continue;
+    }
+    if (tag === 'hr') { out.push('\n---\n'); continue; }
+    /* Неизвестный тег: оставляем текст, разметку выбрасываем — она почти
+       всегда браузерный шум. */
+    out.push(txt);
+  }
+}
+
+function toast(msg, ms) {
+  var s = el('status');
+  s.textContent = msg;
+  s.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function () { s.classList.remove('show'); }, ms || 2600);
+}
+
+async function goBack() {
+  /* Уходя, досохраняем текст и ЖДЁМ записи: раньше запрос уходил вместе с
+     навигацией, браузер его обрывал, и набранное терялось — заметка
+     оставалась пустой. */
+  if (textDirty) {
+    var ok = await saveNoteText({ force: true });
+    if (!ok) {
+      toast('Текст не сохранён — останьтесь на странице и попробуйте ещё раз', 8000);
+      return;
+    }
+  }
+  /* manual=1 говорит редактору не применять режим по умолчанию: иначе он
+     тут же возвращает нас сюда, и стрелка «Назад» не даёт ни отменить
+     режим по умолчанию, ни сменить его. */
+  location.href = '/notes/edit' + (noteId
+    ? '?id=' + encodeURIComponent(noteId) + '&manual=1'
+    : '');
+}
+
+/* ── Переключение вида: «Заметка» / «HTML-режим» ──
+   Кнопки наверху. «Заметка» — исходный текст, который написал пользователь;
+   «HTML-режим» — приложение, собранное из этого текста. Одно окно вместо
+   двух, поэтому переключаться можно без ухода со страницы. */
+var currentView = 'note';
+
+function setView(which) {
+  currentView = which;
+  el('viewNoteBtn').classList.toggle('on', which === 'note');
+  el('viewHtmlBtn').classList.toggle('on', which === 'html');
+  el('text').style.display = which === 'note' ? '' : 'none';
+  el('appView').classList.toggle('on', which === 'html');
+  if (which === 'html') loadAppView();
+}
+
+/* Показываем приложение заметки. Берём маркеры [CUSTOM]имя из текста — тот
+   же способ, что и у превью, — и открываем последний по списку артефакт. */
+async function loadAppView() {
+  if (!noteId) return;
+  var frame = el('appViewFrame'), empty = el('appViewEmpty');
+  try {
+    var list = await fetch('/api/custom-mode/list?id=' + encodeURIComponent(noteId))
+      .then(function (x) { return x.json(); });
+    var arts = (list && list.artifacts) || [];
+    if (!arts.length) {
+      frame.style.display = 'none';
+      empty.style.display = '';
+      appSlug = '';
+      return;
+    }
+    /* Свежий артефакт — последний в списке: он и есть результат последней
+       сборки, даже если в тексте заметки остались старые маркеры. */
+    var last = arts[arts.length - 1];
+    appSlug = last.slug || '';
+    el('appViewTitle').textContent = last.title || 'Приложение';
+    el('appViewSlug').textContent = appSlug;
+    empty.style.display = 'none';
+    frame.style.display = '';
+    appEditOn = false;
+    paintAppEditBtn();
+    frame.src = '/api/custom-mode/artifact?id=' + encodeURIComponent(noteId) +
+                '&slug=' + encodeURIComponent(appSlug) + '&edit=1';
+  } catch (e) {
+    toast('Не удалось загрузить приложение', 4000);
+  }
+}
+
+function reloadAppView() {
+  if (!appSlug) { loadAppView(); return; }
+  var frame = el('appViewFrame');
+  frame.src = '/api/custom-mode/artifact?id=' + encodeURIComponent(noteId) +
+              '&slug=' + encodeURIComponent(appSlug) + '&edit=1' +
+              '&t=' + Date.now();
+}
+
+/* ── Правка приложения прямо в самом HTML ──
+   Пользователю не нужно читать код, чтобы поправить число в таблице или
+   подпись. Включаем contenteditable внутри приложения и забираем наружу
+   его HTML — тот же postMessage-канал, что уже использует Excalidraw.
+
+   Правки сохраняются через /api/custom-mode/save, где разметка проходит
+   ту же чистку, что и ответ ИИ: из отредактированного руками документа
+   нельзя протащить обращение к сети. */
+var appSlug = '';
+var appEditOn = false;
+
+function toggleAppEdit() {
+  if (!appSlug) { toast('Сначала создайте приложение'); return; }
+  appEditOn = !appEditOn;
+  if (appEditOn) startAppEdit(); else finishAppEdit();
+  paintAppEditBtn();
+}
+
+function paintAppEditBtn() {
+  var b = el('appEditBtn');
+  if (!b) return;
+  b.classList.toggle('primary', appEditOn);
+  b.innerHTML = appEditOn
+    ? '<i class="fa-solid fa-floppy-disk"></i> Сохранить правку'
+    : '<i class="fa-solid fa-pen-to-square"></i> Редактировать';
+}
+
+function startAppEdit() {
+  var frame = el('appViewFrame');
+  if (!frame || !frame.contentWindow) { appEditOn = false; return; }
+  try {
+    frame.contentWindow.postMessage({ type: 'inf_edit_on' }, '*');
+  } catch (e) { /* песочница может не пустить — тогда править нечем */ }
+  toast('Правка включена: меняйте текст прямо в приложении', 4500);
+}
+
+/* Выключаем правку и забираем готовый HTML. Инъекция редактирования не
+   попадает в файл: её добавляет служебный скрипт страницы, а не артефакт. */
+function finishAppEdit() {
+  var frame = el('appViewFrame');
+  if (!frame || !frame.contentWindow) return;
+  frame.contentWindow.postMessage({ type: 'inf_edit_off' }, '*');
+  collectEditedHtml();
+}
+
+var collectPending = null;
+
+function collectEditedHtml() {
+  var frame = el('appViewFrame');
+  collectPending = new Promise(function (resolve) {
+    var timer = setTimeout(function () {
+      window.removeEventListener('message', onCollect);
+      resolve(null);
+    }, 3000);
+    function onCollect(ev) {
+      if (!ev.data || ev.data.type !== 'inf_edit_html') return;
+      clearTimeout(timer);
+      window.removeEventListener('message', onCollect);
+      resolve(ev.data.html || null);
+    }
+    window.addEventListener('message', onCollect);
+    frame.contentWindow.postMessage({ type: 'inf_edit_collect' }, '*');
+  });
+  return collectPending.then(function (html) {
+    if (!html) { toast('Не удалось получить правки', 'warning'); return null; }
+    return saveAppEdit(html);
+  });
+}
+/* ── Картинки в поле: перетаскивание, вставка, ресайз ──
+   Файл уходит на сервер через тот же /api/notes/upload, что использует
+   обычный редактор заметок, и в тексте остаётся ссылка вида
+   ![имя|ширина](url) — она читается и в превью, и в Obsidian. Сама
+   картинка в поле — <img>, чтобы её было видно и можно было потянуть. */
+var imgResizer = null;
+var imgResizing = null;
+
+function isImageFile(f) {
+  return /^image\//.test(f.type || '') || /\.(png|jpe?g|gif|webp|svg|bmp|avif)$/i.test(f.name || '');
+}
+
+async function uploadNoteImage(file) {
+  if (!noteId) { toast('Сначала откройте заметку'); return null; }
+  if (!isImageFile(file)) { toast('Это не изображение'); return null; }
+  if (file.size > 20 * 1024 * 1024) { toast('Файл слишком большой (макс. 20 МБ)'); return null; }
+  try {
+    var fd = new FormData();
+    fd.append('file', file);
+    fd.append('note_id', noteId);
+    var r = await fetch('/api/notes/upload', { method: 'POST', body: fd });
+    var d = await r.json();
+    if (d && d.ok) return d;
+    toast((d && d.error) || 'Не удалось загрузить картинку', 'error');
+  } catch (e) {
+    toast('Ошибка загрузки: ' + e.message, 'error');
+  }
+  return null;
+}
+
+/* Вставка картинки в точку курсора. Через execCommand — он помечен
+   устаревшим, но работает во всех браузерах и уже используется в проекте
+   (insertFormat). Ручная сборка Range ломает отмену (Ctrl+Z). */
+function insertImageAtCaret(src, alt) {
+  var f = el('text');
+  f.focus();
+  var img = document.createElement('img');
+  img.src = src;
+  img.alt = alt || '';
+  img.setAttribute('data-w', '');
+  if (!document.execCommand('insertHTML', false, img.outerHTML)) {
+    /* Фолбэк, если execCommand отключён: добавляем в конец. */
+    f.appendChild(img);
+  }
+  markTextDirty();
+}
+
+async function handleImageFiles(files) {
+  for (var i = 0; i < files.length; i++) {
+    var f = files[i];
+    if (!isImageFile(f)) continue;
+    var d = await uploadNoteImage(f);
+    if (d) insertImageAtCaret(d.url, d.filename || f.name);
+  }
+}
+/* ── Ресайз картинки руками ──
+   Клик по картинке показывает обводку и ручку в правом нижнем углу.
+   Тяганье меняет ширину в пикселях и записывает её в data-w — оттуда
+   fieldToMarkdown соберёт ![alt|ширина](url), и размер переживёт
+   перезагрузку. Без записи в разметку ширина жила бы до перезагрузки. */
+function selectImage(img) {
+  clearImageSelection();
+  img.classList.add('sel');
+  if (!imgResizer) {
+    imgResizer = document.createElement('div');
+    imgResizer.className = 'img-resizer';
+    document.body.appendChild(imgResizer);
+  }
+  imgResizer.style.display = '';
+  placeResizer(img);
+}
+
+function placeResizer(img) {
+  if (!imgResizer) return;
+  var r = img.getBoundingClientRect();
+  /* position: absolute → координаты относительно документа, поэтому
+     добавляем прокрутку страницы. */
+  imgResizer.style.left = (r.right + window.scrollX - 7) + 'px';
+  imgResizer.style.top = (r.bottom + window.scrollY - 7) + 'px';
+}
+
+function clearImageSelection() {
+  document.querySelectorAll('#text img.sel').forEach(function (n) {
+    n.classList.remove('sel');
+  });
+  if (imgResizer) imgResizer.style.display = 'none';
+  imgResizing = null;
+}
+
+function initImageEditing() {
+  var f = el('text');
+  if (!f) return;
+
+  /* Перетаскивание файла в поле. preventDefault обязателен: без него
+     браузер вместо вставки откроет картинку отдельной страницей. */
+  f.addEventListener('dragover', function (e) {
+    if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1) {
+      e.preventDefault();
+    }
+  });
+  f.addEventListener('drop', function (e) {
+    if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
+    e.preventDefault();
+    handleImageFiles(e.dataTransfer.files);
+  });
+
+  /* Вставка из буфера (скриншот Ctrl+V, копирование картинки). */
+  f.addEventListener('paste', function (e) {
+    var items = (e.clipboardData && e.clipboardData.items) || [];
+    var imgs = [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].kind === 'file' && /^image\//.test(items[i].type || '')) {
+        var file = items[i].getAsFile();
+        if (file) imgs.push(file);
+      }
+    }
+    if (imgs.length) {
+      e.preventDefault();
+      handleImageFiles(imgs);
+    }
+  });
+
+  /* Выбор картинки и снятие выбора кликом мимо. */
+  f.addEventListener('click', function (e) {
+    if (e.target && e.target.tagName === 'IMG') selectImage(e.target);
+    else clearImageSelection();
+  });
+
+  if (imgResizer) return;
+  imgResizer = document.createElement('div');
+  imgResizer.className = 'img-resizer';
+  imgResizer.style.display = 'none';
+  document.body.appendChild(imgResizer);
+
+  imgResizer.addEventListener('mousedown', function (e) {
+    var sel = document.querySelector('#text img.sel');
+    if (!sel) return;
+    e.preventDefault();
+    e.stopPropagation();
+    imgResizing = { img: sel, startX: e.clientX, startW: sel.getBoundingClientRect().width };
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', function (e) {
+    if (!imgResizing) return;
+    var w = Math.max(48, Math.round(imgResizing.startW + (e.clientX - imgResizing.startX)));
+    imgResizing.img.style.width = w + 'px';
+    imgResizing.img.style.height = 'auto';
+    placeResizer(imgResizing.img);
+  });
+
+  document.addEventListener('mouseup', function () {
+    if (!imgResizing) return;
+    var img = imgResizing.img;
+    var w = parseInt(img.style.width, 10);
+    /* Ширину пишем в разметку: иначе после перезагрузки размер сбросится. */
+    if (isFinite(w) && w > 0) img.setAttribute('data-w', String(w));
+    imgResizing = null;
+    document.body.style.userSelect = '';
+    markTextDirty();
+  });
+
+  /* Прокрутка страницы уводит ручку от картинки — переставляем. */
+  window.addEventListener('scroll', function () {
+    var sel = document.querySelector('#text img.sel');
+    if (sel && imgResizer && imgResizer.style.display !== 'none') placeResizer(sel);
+  }, true);
+
+  /* Ctrl+S в этом режиме тоже сохраняет заметку: привычка с редактора. */
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      clearTimeout(saveTextTimer);
+      saveNoteText();
+    }
+  });
+
+  /* Уход со страницы с несохранённым текстом — предупреждаем. */
+  window.addEventListener('beforeunload', function (e) {
+    if (!textDirty) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+}
+
+/* ── ИИ-правка готового приложения ──
+   Кнопка «ИИ» в HTML-режиме. Отличие от «Создать» в настройках: там ИИ
+   собирает приложение заново из текста заметки, здесь он получает текущий
+   HTML и промпт и правит существующее — добавляет колонку, меняет
+   заголовок, подправляет оформление. Без этого любую мелкую правку
+   приходилось делать вручную в коде или терять при новой сборке. */
+var AI_EDIT_PRESETS = [
+  'Добавь колонку и посчитай значения',
+  'Переименуй заголовок',
+  'Сделай шрифт и отступы крупнее',
+  'Добавь кнопку «Сбросить»',
+  'Убери лишние элементы',
+  'Поменяй цвета на синие'
+];
+
+function initAiEditPresets() {
+  var box = el('aiEditPresets');
+  if (!box) return;
+  box.innerHTML = '';
+  AI_EDIT_PRESETS.forEach(function (t) {
+    var b = document.createElement('button');
+    b.className = 'btn';
+    b.type = 'button';
+    b.textContent = t;
+    b.title = 'Подставить этот текст в поле';
+    b.onclick = function () {
+      var ta = el('aiEditPrompt');
+      ta.value = ta.value.trim() ? ta.value.trim() + '\n' + t : t;
+      ta.focus();
+    };
+    box.appendChild(b);
+  });
+}
+
+function openAiEdit() {
+  if (!appSlug) { toast('Сначала создайте приложение'); return; }
+  el('aiEditPrompt').value = '';
+  el('aiEditModal').classList.add('open');
+  setTimeout(function () { el('aiEditPrompt').focus(); }, 60);
+}
+
+function closeAiEdit() {
+  el('aiEditModal').classList.remove('open');
+}
+
+/* Правка идёт по текущему HTML, который уже сохранён на диске, а не по
+   тому, что в поле contenteditable: незаконченные ручные правки не должны
+   попадать в промпт. Сам HTML сервер берёт из файла по id и slug. */
+async function runAiEdit() {
+  var prompt = el('aiEditPrompt').value.trim();
+  if (!prompt) { toast('Опишите, что изменить'); return; }
+  if (!noteId || !appSlug) { toast('Приложение не открыто'); return; }
+  if (busy) { toast('Дождитесь окончания предыдущего запроса'); return; }
+
+  busy = true;
+  var btn = el('aiEditRun');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Правлю…';
+  try {
+    var r = await fetch('/api/custom-mode/edit', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: noteId, slug: appSlug, prompt: prompt,
+        title: el('appViewTitle').textContent || appSlug,
+        max_tokens: modeTokens
+      })
+    });
+    var d = await r.json();
+    if (d.error) {
+      toast(d.error, 9000);
+      return;
+    }
+    closeAiEdit();
+    /* Правка уже сохранена на диске — показываем свежую версию. */
+    if (currentView === 'html') reloadAppView();
+    else setView('html');
+    var sec = d.seconds != null ? ' за ' + d.seconds + ' с' : '';
+    toast('Приложение обновлено' + sec, 5000);
+  } catch (e) {
+    toast('Ошибка: ' + e.message, 6000);
+  } finally {
+    busy = false;
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Применить';
+  }
+}
+
+/* ── Автосохранение текста заметки ──
+   Главный баг этого режима: текст из поля нигде не сохранялся. «Сохранить»
+   в настройках писал только custom_mode/custom_prompt/custom_tokens,
+   а «Назад» уходил сразу — набранный текст пропадал. Теперь текст уходит
+   в заметку сам, с задержкой после последнего нажатия клавиши.
+
+   /api/notes/save принимает content целиком, поэтому шапку заметки
+   (YAML-свойства, включая только что сохранённый режим) обязательно
+   возвращаем на место — иначе сохранение стёрло бы настройки режима. */
+function markTextDirty() {
+  textDirty = true;
+  clearTimeout(saveTextTimer);
+  saveTextTimer = setTimeout(saveNoteText, 800);
+}
+
+function showSaveInd(ok) {
+  var ind = el('saveInd');
+  if (!ind) return;
+  ind.classList.toggle('err', !ok);
+  ind.innerHTML = ok
+    ? '<i class="fa-solid fa-check"></i> Сохранено'
+    : '<i class="fa-solid fa-triangle-exclamation"></i> Не сохранено';
+  ind.classList.add('show');
+  clearTimeout(showSaveInd._t);
+  showSaveInd._t = setTimeout(function () { ind.classList.remove('show'); }, 2200);
+}
+
+var saveTextPromise = null;
+
+/* opts.force — дождаться уже идущего сохранения и записать поле ещё раз.
+   Нужен тем, кто зависит от записи: сборке, вставке в заметку, уходу со
+   страницы. Без этого шаг выполнялся, пока запись ещё летела, и работал
+   с пустой заметкой: ИИ получал текст из поля, а на диске его не было. */
+async function saveNoteText(opts) {
+  clearTimeout(saveTextTimer);
+  var force = !!(opts && opts.force);
+  if (saveTextBusy) {
+    if (saveTextPromise) { try { await saveTextPromise; } catch (e) { } }
+    if (!force) return true;
+  }
+  /* Пустую заметку не пишем: иначе первый же вход в режим Create на новой
+     заметке создал бы её с пустым content раньше времени. */
+  var md = fieldToMarkdown();
+  if (!md.trim() && !textDirty) return true;
+
+  saveTextBusy = true;
+  saveTextPromise = writeNoteText(md);
+  try {
+    return await saveTextPromise;
+  } finally {
+    saveTextBusy = false;
+    saveTextPromise = null;
+  }
+}
+
+async function writeNoteText(md) {
+  try {
+    /* Заметка могла быть не создана: переход в Custom из нового несохранённого
+       редактора ведёт сюда с пустым id. Есть текст — создаём заметку, иначе
+       набранное потеряется при уходе со страницы. */
+    if (!noteId) {
+      var r0 = await fetch('/api/notes/save', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: '', title: 'Без названия', content: md, folder: 'inbox' })
+      });
+      var d0 = await r0.json();
+      if (!(d0 && d0.ok && d0.id)) {
+        showSaveInd(false);
+        return false;
+      }
+      noteId = d0.id;
+      var u0 = new URL(location.href);
+      u0.searchParams.set('id', noteId);
+      history.replaceState(null, '', u0.pathname + u0.search);
+      noteState.frontmatter = '';
+      textDirty = false;
+      showSaveInd(true);
+      return true;
+    }
+    var r = await fetch('/api/notes/get?id=' + encodeURIComponent(noteId));
+    var d = await r.json();
+    if (d && !d.error) {
+      noteState.title = d.title || noteState.title;
+      noteState.folder = d.folder || noteState.folder;
+    }
+    var content = (noteState.frontmatter ? noteState.frontmatter.replace(/\s*$/, '') + '\n' : '') + md;
+    var r2 = await fetch('/api/notes/save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: noteId, title: noteState.title || 'Без названия', content: content, folder: noteState.folder })
+    });
+    var d2 = await r2.json();
+    if (d2 && d2.ok) {
+      textDirty = false;
+      showSaveInd(true);
+      return true;
+    }
+    showSaveInd(false);
+    return false;
+  } catch (e) {
+    showSaveInd(false);
+    return false;
+  }
+}
+
+/* ── Сохранение ручной правки приложения (HTML-режим) ──
+    Правка идёт из iframe редактора; после записи перечитываем артефакт,
+    чтобы показать уже сохранённую версию. */
+async function saveAppEdit(html) {
+  if (!noteId || !appSlug) return;
+  try {
+    var r = await fetch('/api/custom-mode/save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: noteId,
+        slug: appSlug,
+        title: el('appViewTitle').textContent || appSlug,
+        html: html
+      })
+    });
+    var d = await r.json();
+    if (d.error) { toast(d.error, 'error'); return; }
+    toast(d.blocked && d.blocked.length
+      ? 'Сохранено, заблокировано небезопасного: ' + d.blocked.length
+      : 'Правка сохранена', 4000);
+    /* Правки сохранены — показываем обновлённую версию. */
+    appEditOn = false;
+    paintAppEditBtn();
+    reloadAppView();
+  } catch (e) {
+    toast('Ошибка сохранения: ' + e.message, 'error');
+  }
+}
+
+/* ── Загрузка заметки и настроек режима ── */
+async function load() {
+  /* Слушатели поля и панели инструментов нужны и без id: заметку из
+     Custom можно создать первым же вводом. Раньше load() выходил здесь,
+     и набранный текст не попадал ни в заметку, ни в автосохранение. */
+  if (noteId) {
+    try {
+      var r = await fetch('/api/notes/get?id=' + encodeURIComponent(noteId));
+      var d = await r.json();
+      if (d && !d.error) {
+        setFieldText(stripFrontmatter(d.content || ''));
+        /* Заголовок и папку запоминаем: автосохранение текста перезаписывает
+           заметку целиком, и без них заметка потеряла бы название. */
+        noteState.title = d.title || 'Без названия';
+        noteState.folder = d.folder || 'inbox';
+        noteState.frontmatter = frontmatterBlock(d.content || '');
+        var props = await fetch('/api/notes/properties?id=' + encodeURIComponent(noteId))
+          .then(function (x) { return x.json(); });
+        var p = (props && props.properties) || {};
+        modeName = p.custom_mode || 'Таблица';
+        modePrompt = p.custom_prompt || '';
+        modeTokens = clampTokens(p.custom_tokens != null ? p.custom_tokens : 50000);
+        modeTextOnly = !!p.custom_text_only;
+      } else {
+        /* Заметки без настроек: бюджет из localStorage, чтобы не сбрасывать
+           его при каждом открытии новой заметки. */
+        try {
+          modeTokens = clampTokens(localStorage.getItem('customTokens') || 50000);
+        } catch (e) { /* localStorage может быть недоступен */ }
+      }
+    } catch (e) { toast('Не удалось загрузить заметку'); }
+  } else {
+    try {
+      modeTokens = clampTokens(localStorage.getItem('customTokens') || 50000);
+    } catch (e) { /* localStorage может быть недоступен */ }
+  }
+
+  await applyRequestedMode();
+  await loadModeTemplate();
+  renderSavedModesHint();
+  markSavedModeCheckbox();
+  syncSettingsFields();
+  renderTemplateChip();
+  el('text').addEventListener('input', markTextDirty);
+  initImageEditing();
+  initAiEditPresets();
+}
+
+/* Режим мог прийти из списка на странице редактора: ?mode=идентификатор
+   для своего режима или ?tpl=ключ для готового шаблона. Тогда он важнее
+   настроек самой заметки — иначе открытый «Базы данных» показывал бы
+   описание, записанное в другой заметке. */
+async function applyRequestedMode() {
+  var q = new URLSearchParams(location.search);
+  var want = q.get('mode');
+  var tpl = q.get('tpl');
+  if (!want && !tpl) return;
+
+  if (want) {
+    var found = null;
+    var list = loadSavedModes();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === want || list[i].name === want) { found = list[i]; break; }
+    }
+    if (found) {
+      modeName = found.name;
+      modePrompt = found.prompt || '';
+      modeTokens = clampTokens(found.tokens || 50000);
+      modeTextOnly = !!found.text_only;
+      /* Режим пришёл по ?mode=, значит ключ шаблона считаем от его имени,
+         а ?tpl= (если он вдруг тоже есть в URL) больше не про этот режим. */
+      modeRenamed = true;
+    }
+    return;
+  }
+
+  var all = await getServerTemplates();
+  var t = null;
+  for (var j = 0; j < all.length; j++) { if (all[j].key === tpl) { t = all[j]; break; } }
+  if (!t) return;
+  /* Готовый шаблон не подменяет уже настроенную заметку: если в ней есть
+     своё описание, пользователь настраивал его осознанно. */
+  if (!modePrompt) {
+    modeName = t.name || modeName;
+    modePrompt = t.prompt || '';
+  }
+  /* Пришли по ?tpl= — ключ готового шаблона (table, cards…) прочитается из
+     URL, потому что режим пользователь ещё не менял. */
+  presetTpl = tpl;
+  modeRenamed = false;
+}
+
+/* Галочка показывается включённой, если такой режим уже в списке. */
+function markSavedModeCheckbox() {
+  var box = el('modeSave');
+  if (!box) return;
+  var list = loadSavedModes();
+  box.checked = list.some(function (m) { return m.name === modeName; });
+}
+
+/* Заполняем поля настроек сразу при открытии страницы, а не только когда
+   открыли окно: иначе режим из списка редактора подставлялся в переменные,
+   но визуально поле «Название режима» оставалось пустым и казалось, что
+   ничего не выбралось. */
+function syncSettingsFields() {
+  if (el('modeName')) el('modeName').value = modeName;
+  if (el('modePrompt')) el('modePrompt').value = modePrompt;
+  if (el('modeTokens')) el('modeTokens').value = modeTokens;
+  if (el('modeTextOnly')) el('modeTextOnly').checked = modeTextOnly;
+  updateModeChip();
+}
+
+/* Смена режима в окне настроек меняет и ключ шаблона: у каждого режима свой
+   шаблон приложения, иначе «Таблица» получила бы вёрстку «Карточек».
+   fromPreset=true — режим выбран из галереи целиком (имя+описание+ключ),
+   переименования нет, и ключ берём из пресета. */
+async function refreshModeTemplate(fromPreset) {
+  if (!fromPreset) modeRenamed = true;
+  await loadModeTemplate();
+  renderTemplateChip();
+}
+
+function updateModeChip() {
+  var chip = el('modeChip');
+  if (chip) chip.textContent = modeName
+    ? (modeName + (modeTextOnly ? ' · только текст' : '') + ' · ' + formatTokens(modeTokens))
+    : '';
+}
+
+function clampTokens(v) {
+  var n = parseInt(v, 10);
+  if (!isFinite(n) || n <= 0) return 50000;
+  return Math.min(TOKEN_MAX, Math.max(TOKEN_MIN, n));
+}
+
+/* ── Хранилище сохранённых режимов ──
+   Режим — это просто связка «название + описание для ИИ + бюджет», поэтому
+   он помещается в localStorage. Он общий для всех заметок: вы описали
+   «Таблицу» один раз, и она доступна в любой заметке через список режимов
+   на странице редактора. */
+var MODES_KEY = 'infinityCustomModes';
+
+function loadSavedModes() {
+  try {
+    var raw = localStorage.getItem(MODES_KEY);
+    var arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr.filter(function (m) { return m && m.name; }) : [];
+  } catch (e) { return []; }
+}
+
+function storeSavedModes(list) {
+  try { localStorage.setItem(MODES_KEY, JSON.stringify(list)); return true; }
+  catch (e) { return false; }
+}
+
+function modeId(name) {
+  return String(name || '').trim().toLowerCase()
+    .replace(/[^a-zа-я0-9]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'custom';
+}
+
+/* ── Шаблоны режимов ──
+   У режима есть два уровня. Первый — готовый шаблон из коробки
+   (Таблица, Карточки…): приложение уже собрано, ИИ только вписывает в него
+   данные заметки. Второй — свой режим: ИИ один раз собирает приложение, и
+   если результат понравился, его сохраняют как шаблон этого режима. Тогда
+   следующая заметка с тем же режимом получает ту же вёрстку с новыми
+   данными, а не новое приложение с нуля.
+
+   Свой режим и шаблон — разные вещи: режим (название + описание для ИИ +
+   бюджет) живёт в localStorage и в шапке заметки, шаблон (готовый HTML) —
+   на сервере, потому что он общий для всех заметок и не влезает разумно в
+   localStorage. Связь по ключу: modeId(название режима). */
+var modeTemplateKey = '';
+var modeTemplateHtml = '';
+var modeTemplateFromServer = false;
+/* Ключ готового шаблона из галереи пресетов (tpl: из URL или выбор пользователя).
+   Пока пользователь не переименовал режим, именно он задаёт ключ шаблона —
+   иначе по имени «Карточки» не найти файл cards.html. */
+var presetTpl = '';
+
+/* Ключ шаблона приложения. Пока режим не меняли руками, точный источник —
+   presetTpl: он проставляется и при приходе по ?tpl= из списка редактора, и
+   при выборе пресета в галерее окна настроек. Ключ готового шаблона
+   (table, cards…) точнее любого угадываемого из названия: «Моя таблица»
+   получит свой шаблон по id названия, а «Карточки» из галереи — готовый
+   cards.html, потому что modeId('Карточки') дало бы 'kartochki'. */
+function resolveTemplateKey() {
+  if (modeRenamed) return modeId(modeName);
+  if (presetTpl) return presetTpl;
+  var q = new URLSearchParams(location.search);
+  var tpl = q.get('tpl');
+  if (tpl) return tpl;
+  return modeId(modeName);
+}
+
+var modeRenamed = false;
+
+async function loadModeTemplate() {
+  modeTemplateKey = resolveTemplateKey();
+  modeTemplateHtml = '';
+  modeTemplateFromServer = false;
+  if (!modeTemplateKey) return;
+  try {
+    var r = await fetch('/api/custom-mode/template?key=' + encodeURIComponent(modeTemplateKey));
+    if (!r.ok) return;
+    var d = await r.json();
+    if (d && d.html) {
+      modeTemplateHtml = d.html;
+      modeTemplateFromServer = true;
+    }
+  } catch (e) { /* шаблона нет — соберём приложение с нуля */ }
+}
+
+/* Сохранить текущий результат как шаблон режима. Предлагается сразу после
+   успешной сборки: иначе шаблон остаётся тем, что было вчера, а сегодняшний
+   удачный вид приложения теряется. */
+async function saveModeTemplate(html) {
+  if (!modeTemplateKey) return false;
+  try {
+    var r = await fetch('/api/custom-mode/template/save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: modeTemplateKey, html: html })
+    });
+    var d = await r.json();
+    if (d.error) { toast(d.error, 'error'); return false; }
+    modeTemplateHtml = d.html || html;
+    modeTemplateFromServer = true;
+    renderTemplateChip();
+    toast('Шаблон режима сохранён: следующая заметка получит такое же приложение', 5000);
+    return true;
+  } catch (e) {
+    toast('Не удалось сохранить шаблон: ' + e.message, 'error');
+    return false;
+  }
+}
+
+/* Плашка о том, откуда взято приложение: из готового шаблона, из своего
+   сохранённого или сгенерировано заново. Без этого непонятно, почему
+   вторая заметка выглядит точно как первая. */
+function renderTemplateChip() {
+  var box = el('templateChip');
+  if (!box) return;
+  if (modeTemplateFromServer) {
+    box.style.display = '';
+    box.innerHTML = '<i class="fa-solid fa-clone"></i> Режим использует сохранённый шаблон приложения';
+  } else {
+    box.style.display = '';
+    box.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Шаблона нет — ИИ соберёт приложение заново';
+  }
+}
+
+function useTemplate() {
+  return !!(modeTemplateHtml && modeTemplateHtml.trim());
+}
+
+/* Сохранить режим в общий список. Режим с тем же именем обновляется,
+   чтобы «Создать» дважды подряд не плодил дубликаты. */
+function saveModeToRegistry() {
+  var list = loadSavedModes();
+  var id = modeId(modeName);
+  var entry = { id: id, name: modeName, prompt: modePrompt, tokens: modeTokens, text_only: modeTextOnly };
+  var idx = -1;
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].id === id || list[i].name === modeName) { idx = i; break; }
+  }
+  if (idx >= 0) list[idx] = entry; else list.push(entry);
+  if (!storeSavedModes(list)) { toast('Не удалось сохранить режим'); return false; }
+  return true;
+}
+
+function renderSavedModesHint() {
+  var box = el('savedModesHint');
+  if (!box) return;
+  var list = loadSavedModes();
+  box.textContent = list.length
+    ? 'Сохранённые режимы: ' + list.map(function (m) { return m.name; }).join(', ')
+    : 'Сохранённых режимов пока нет.';
+}
+
+/* Отрезать YAML-шапку: в этом поле она не нужна, свойства живут
+   отдельно и показываются в настройках режима. */
+function stripFrontmatter(text) {
+  var src = String(text || '').replace(/^\uFEFF/, '');
+  var lines = src.split('\n');
+  if (lines[0] !== '---') return text || '';
+  for (var i = 1; i < lines.length; i++) {
+    var t = lines[i].trim();
+    if (t === '---' || t === '...') return lines.slice(i + 1).join('\n');
+  }
+  return text || '';
+}
+
+/* Обратная операция: сама шапка вместе с обрамляющими ---. Нужна
+   автосохранению, потому что /api/notes/save принимает content целиком —
+   без шапки заметка потеряла бы все свойства, включая режим. */
+function frontmatterBlock(text) {
+  var src = String(text || '').replace(/^\uFEFF/, '');
+  var lines = src.split('\n');
+  if (lines[0] !== '---') return '';
+  for (var i = 1; i < lines.length; i++) {
+    var t = lines[i].trim();
+    if (t === '---' || t === '...') return lines.slice(0, i + 1).join('\n');
+  }
+  return '';
+}
+
+/* ── Окно настроек ── */
+async function openSettings() {
+  el('modeName').value = modeName;
+  el('modePrompt').value = modePrompt;
+  el('modeTokens').value = modeTokens;
+  el('modeTextOnly').checked = modeTextOnly;
+  updateTokensHint();
+  el('settingsModal').classList.add('open');
+  await renderTemplates();
+  setTimeout(function () { el('modeName').focus(); }, 60);
+}
+
+/* Кнопки-пресеты 8k / 16k / 50k. */
+function applyTokenPreset(n) {
+  modeTokens = clampTokens(n);
+  el('modeTokens').value = modeTokens;
+  updateTokensHint();
+  updateModeChip();
+}
+
+function updateTokensHint() {
+  var n = clampTokens(el('modeTokens').value);
+  var note;
+  if (n < 4096) {
+    note = 'Мало: на большой базе данных модель оборвётся на середине.';
+  } else if (n >= 50000) {
+    note = 'Максимум. Подойдёт, если в заметке очень много данных.';
+  } else {
+    note = 'Обычно хватает для таблицы, списка или базы на 10–15 записей.';
+  }
+  var box = el('tokensHint');
+  if (box) box.textContent = note;
+}
+
+function closeSettings() { el('settingsModal').classList.remove('open'); }
+
+/* Шаблоны режимов приходят с сервера один раз и переиспользуются: их
+   показывает и галерея в окне настроек, и ?tpl= из списка на странице
+   редактора. */
+var serverTemplates = null;
+
+async function getServerTemplates() {
+  if (serverTemplates) return serverTemplates;
+  try {
+    var d = await fetch('/api/custom-mode/templates').then(function (x) { return x.json(); });
+    serverTemplates = (d && d.templates) || [];
+  } catch (e) { serverTemplates = []; }
+  return serverTemplates;
+}
+
+async function renderTemplates() {
+  var box = el('templates');
+  box.innerHTML = '';
+  var list = await getServerTemplates();
+  list.forEach(function (t) {
+    var b = document.createElement('div');
+    b.className = 'tpl';
+    b.innerHTML = '<i class="fa-solid ' + (t.icon || 'fa-wand-magic-sparkles') + '"></i> ' +
+                  esc(t.name || '');
+    b.title = t.prompt || '';
+    b.onclick = function () {
+      modeName = t.name || '';
+      modePrompt = t.prompt || '';
+      presetTpl = t.key || '';
+      /* Режим выбран из галереи целиком: он ровно тот, что в пресете, —
+         ключ готового шаблона (table, cards…) берём из самого пресета,
+         иначе по имени «Карточки» файл cards.html не найти. */
+      modeRenamed = false;
+      el('modeName').value = modeName;
+      el('modePrompt').value = modePrompt;
+      box.querySelectorAll('.tpl').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      refreshModeTemplate(true);
+    };
+    box.appendChild(b);
+  });
+}
+
+async function saveSettings() {
+  modeName = el('modeName').value.trim() || 'Custom';
+  modePrompt = el('modePrompt').value.trim();
+  modeTokens = clampTokens(el('modeTokens').value);
+  el('modeTokens').value = modeTokens;
+  modeTextOnly = el('modeTextOnly').checked;
+  /* Бюджет держим ещё и в localStorage: заметка может быть новая, а
+     подходящее значение обычно одно и то же от запуска к запуску. */
+  try { localStorage.setItem('customTokens', String(modeTokens)); } catch (e) { /* не критично */ }
+  /* Галочка «сохранить в списке режимов»: режим становится общим и
+     появляется в выпадающем списке редактора. */
+  var toRegistry = el('modeSave').checked;
+  var savedOk = true;
+  if (toRegistry) savedOk = saveModeToRegistry();
+  /* Заметка могла быть не создана: переход в Custom из нового несохранённого
+     редактора ведёт сюда с пустым id, и без заметки режим некуда писать.
+     Создаём заметку прямо здесь — с текстом из поля, чтобы он не потерялся. */
+  if (!noteId) {
+    try {
+      var md0 = fieldToMarkdown();
+      var r0 = await fetch('/api/notes/save', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: '', title: 'Без названия', content: md0, folder: 'inbox' })
+      });
+      var d0 = await r0.json();
+      if (d0 && d0.ok && d0.id) {
+        noteId = d0.id;
+        var u0 = new URL(location.href);
+        u0.searchParams.set('id', noteId);
+        history.replaceState(null, '', u0.pathname + u0.search);
+        noteState.frontmatter = frontmatterBlock((await (await fetch(
+          '/api/notes/get?id=' + encodeURIComponent(noteId)
+        )).json()).content || '');
+      } else {
+        toast('Не удалось создать заметку: ' + ((d0 && d0.error) || 'ошибка сохранения'), 'error');
+        return;
+      }
+    } catch (e) {
+      toast('Не удалось создать заметку: ' + e.message, 'error');
+      return;
+    }
+  }
+  try {
+    await fetch('/api/notes/property', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: noteId, key: 'custom_mode', value: modeName })
+    });
+    await fetch('/api/notes/property', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: noteId, key: 'custom_prompt', value: modePrompt })
+    });
+    await fetch('/api/notes/property', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: noteId, key: 'custom_tokens', value: modeTokens })
+    });
+    await fetch('/api/notes/property', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: noteId, key: 'custom_text_only', value: modeTextOnly })
+    });
+    /* Свойства пишутся через notes_set_property, а он меняет YAML-шапку
+       внутри файла заметки. Наша копия шапки в noteState после этого
+       устарела — перечитаем, иначе автосохранение текста вернуло бы
+       старую шапку и отменило только что сохранённый режим. */
+    noteState.frontmatter = frontmatterBlock((await (await fetch(
+      '/api/notes/get?id=' + encodeURIComponent(noteId)
+    )).json()).content || '');
+    closeSettings();
+    renderSavedModesHint();
+    syncSettingsFields();
+    toast(savedOk ? 'Режим сохранён' + (toRegistry ? ' и добавлен в список режимов' : '')
+                  : 'Режим сохранён в заметке');
+  } catch (e) { toast('Не удалось сохранить режим'); }
+}
+
+/* «Создать» из окна настроек: сначала сохраняем режим в заметке, потом
+   сразу запускаем сборку. Отдельная кнопка «Сохранить» остаётся для
+   случая, когда правка режима не требует запуска ИИ. */
+async function createAndRun() {
+  /* Индикатор включаем ДО сохранения настроек. Раньше createAndRun сначала
+     ждал два запроса к /api/notes/property и только потом запускал сборку,
+     поэтому первые секунды (а на медленном диске — десятки) страница
+     выглядела мёртвой: ни надписи, ни вращения, ни кнопки «Отмена». */
+  beginRun();
+  try {
+    await saveSettings();
+  } finally {
+    endRunHint();
+  }
+  run();
+}
+
+/* ── Индикатор работы модели ── */
+var runTimer = null;
+
+function beginRun() {
+  el('runbar').classList.add('show');
+  var btn = el('createBtn');
+  if (btn) btn.disabled = true;
+  startTicker();
+}
+
+function startTicker() {
+  var t0 = Date.now();
+  stopTicker();
+  el('runSec').textContent = '0 с';
+  runTimer = setInterval(function () {
+    var s = Math.round((Date.now() - t0) / 1000);
+    el('runSec').textContent = s + ' с';
+    /* Если модель думает дольше минуты, подсказываем, что это не зависание. */
+    if (s >= 60) el('runHint').textContent = 'Модель отвечает медленно, это бывает на больших текстах';
+  }, 250);
+}
+
+function stopTicker() {
+  if (runTimer) { clearInterval(runTimer); runTimer = null; }
+}
+
+function endRunHint() {
+  /* Меняем подпись на время сборки — сохранение режима уже позади. */
+  el('runText').textContent = 'AI создаёт приложение…';
+  el('runHint').textContent = 'Бюджет ' + formatTokens(modeTokens) + ' · обычно 10–60 секунд';
+}
+
+function formatTokens(n) {
+  n = clampTokens(n);
+  if (n >= 1000) return Math.round(n / 1000) + 'k токенов';
+  return n + ' токенов';
+}
+
+function finishRun() {
+  stopTicker();
+  busy = false;
+  el('runbar').classList.remove('show');
+  var btn = el('createBtn');
+  if (btn) btn.disabled = false;
+}
+
+/* ── Просмотр и правка результата ── */
+function showTab(which) {
+  var isPreview = which === 'preview';
+  el('panePreview').style.display = isPreview ? '' : 'none';
+  el('paneCode').style.display = isPreview ? 'none' : '';
+  el('tabPreview').classList.toggle('on', isPreview);
+  el('tabCode').classList.toggle('on', !isPreview);
+}
+
+function reloadFrame() {
+  if (!lastArtifact) return;
+  el('resultFrame').srcdoc = lastArtifact.html || '';
+}
+
+/* Правка кода: сервер прогоняет разметку через ту же чистку, что и ответ
+   модели, поэтому в приложение нельзя положить обращение к сети. */
+async function saveEdited() {
+  if (!lastArtifact || !noteId) return;
+  var html = el('codeEditor').value;
+  if (!html.trim()) { toast('Пустой код'); return; }
+  var btn = el('btnSave');
+  btn.disabled = true;
+  try {
+    var r = await fetch('/api/custom-mode/save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: noteId, slug: lastArtifact.slug, title: lastArtifact.title, html: html })
+    });
+    var d = await r.json();
+    if (d.error) { toast(d.error); return; }
+    lastArtifact.html = d.html;
+    showTab('preview');
+    reloadFrame();
+    toast(d.blocked && d.blocked.length
+      ? 'Сохранено, заблокировано небезопасного: ' + d.blocked.length
+      : 'Правка сохранена');
+  } catch (e) {
+    toast('Ошибка: ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function esc(s) {
+  var d = document.createElement('div');
+  d.textContent = s == null ? '' : String(s);
+  return d.innerHTML;
+}
+
+/* ── Сборка приложения через ИИ ── */
+async function run() {
+  if (busy) return;
+  /* fieldToMarkdown, а не getFieldText: картинки — тоже материал. Они уходят
+     в ИИ ссылками вида ![alt](url), поэтому заметка без текста, но с
+     изображениями, должна собираться как обычно, а не упираться в
+     «Сначала напишите текст». */
+  var text = fieldToMarkdown();
+  if (!text.trim()) { toast('Сначала напишите текст или добавьте изображение'); return; }
+  if (!modePrompt.trim()) {
+    toast('Опишите режим в настройках');
+    openSettings();
+    return;
+  }
+  /* ИИ читает текст из поля, а артефакт привязан к заметке. Без записи
+     заметка оставалась пустой: модель текст видела, а при следующем
+     открытии он пропадал. Сохраняем несохранённое и только потом собираем. */
+  var saved = (!textDirty && noteId) ? true : await saveNoteText({ force: true });
+  if (!saved || !noteId) {
+    toast('Не удалось сохранить текст заметки — сборка отменена', 9000);
+    return;
+  }
+
+  busy = true;
+  beginRun();
+  var t0 = Date.now();
+  try {
+    /* «Только текст» — другой запрос и другой ответ: ИИ возвращает
+       переработанный текст, а не приложение. Дальше показываем его
+       предпросмотром, чтобы применить к полю по желанию. */
+    var url = modeTextOnly ? '/api/custom-mode/text' : '/api/custom-mode/build';
+    var payload = {
+      id: noteId, name: modeName, prompt: modePrompt,
+      text: text, max_tokens: modeTokens
+    };
+    if (!modeTextOnly) {
+      payload.template_html = useTemplate() ? modeTemplateHtml : '';
+      payload.template_key = modeTemplateKey;
+    }
+    var r = await fetch(url, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    var d = await r.json();
+    if (d.error) {
+      toast(d.error, 9000);
+      /* Обрезанный ответ не выбрасываем: показываем в редакторе кода, чтобы
+         можно было доредактировать руками и сохранить, а не искать его
+         в консоли браузера. */
+      if (d.raw) {
+        console.warn('Ответ модели:', d.raw);
+        el('resultTitle').textContent = 'Черновик от модели';
+        el('codeEditor').value = d.raw;
+        el('result').classList.add('open');
+        showTab('code');
+        if (d.truncated) toast('Открыт черновик: допишите его и нажмите «Сохранить правку»', 9000);
+      }
+      return;
+    }
+
+    /* Текстовый режим: приложение не создаётся. Панель результата с
+       превью/кодом не нужна — показываем предпросмотр текста. */
+    if (modeTextOnly) {
+      lastArtifact = null;
+      finishRun();
+      showTextResult(d.text || '');
+      var sec = ((Date.now() - t0) / 1000).toFixed(1);
+      toast('Готово за ' + sec + ' с. Примените текст или отмените', 6000);
+      return;
+    }
+
+    lastArtifact = d;
+    showResult(d);
+    var sec = ((Date.now() - t0) / 1000).toFixed(1);
+    /* Явно говорим, что заметка ещё не изменена: приложение попадёт в текст
+       только после «Вставить в заметку». Раньше об этом не было сказано,
+       и выглядело так, будто ИИ ничего не сделал. */
+    var msg = 'Готово за ' + sec + ' с. Нажмите «Вставить в заметку»';
+    if (d.blocked && d.blocked.length) {
+      msg += ' · заблокировано небезопасного: ' + d.blocked.length;
+    }
+    toast(msg, 6000);
+    offerTemplateSave(d);
+  } catch (e) {
+    toast('Ошибка: ' + e.message, 6000);
+  } finally {
+    finishRun();
+  }
+}
+
+/* Шаблон приложения для режима. Если он уже есть — значит, это повторный
+   запуск, и вторая заметка получит ту же вёрстку: сообщать не о чем.
+   Если шаблона не было и ИИ собрал приложение заново, предлагаем закрепить
+   этот вид — иначе следующий запуск снова начнёт с нуля и получит другую
+   вёрстку. Кнопка появляется в шапке панели результата. */
+function offerTemplateSave(d) {
+  var box = el('templateSaveBtn');
+  if (!box || !d || !d.html) return;
+  if (modeTemplateFromServer) { box.style.display = 'none'; return; }
+  box.style.display = '';
+  box.onclick = async function () {
+    box.disabled = true;
+    await saveModeTemplate(d.html);
+    box.style.display = 'none';
+    box.disabled = false;
+  };
+}
+
+function stopRun() {
+  /* Сервер всё равно досочит запрос до конца; отменяем только ожидание. */
+  stopTicker();
+  busy = true;
+  finishRun();
+  toast('Показано только окно результата — сервер всё равно закончит сборку');
+}
+
+/* ── Предпросмотр текстового результата ──
+   «Только текст»: ИИ вернул переработанный текст. Показываем его рядом с
+   текущим, чтобы применить по желанию — иначе ИИ молча затирал бы
+   набранное, и откатить было бы нечем. */
+function showTextResult(newText) {
+  var box = el('textPreview');
+  if (!box) return;
+  pendingText = newText;
+  box.innerHTML = '<pre class="text-preview">' + esc(newText) + '</pre>';
+  box.classList.add('open');
+  var btn = el('textApplyBtn');
+  if (btn) btn.disabled = !newText.trim();
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closeTextResult() {
+  var box = el('textPreview');
+  if (box) box.classList.remove('open');
+  pendingText = null;
+}
+
+/* Применить текст ИИ к полю. setFieldText + markTextDirty: изменение
+   уйдёт в заметку тем же автосохранением, что и ручной ввод. */
+function applyTextResult() {
+  if (pendingText == null) return;
+  setFieldText(pendingText);
+  markTextDirty();
+  closeTextResult();
+  toast('Текст применён', 'success');
+}
+
+function showResult(d) {
+  el('resultTitle').textContent = d.title || 'Приложение';
+  el('resultFrame').srcdoc = d.html || '';
+  el('codeEditor').value = d.html || '';
+  showTab('preview');
+  el('result').classList.add('open');
+}
+
+function closeResult() { el('result').classList.remove('open'); }
+
+function copyResult() {
+  if (!lastArtifact) return;
+  var ta = document.createElement('textarea');
+  ta.value = lastArtifact.html || '';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); toast('Код скопирован'); } catch (e) { toast('Не удалось скопировать'); }
+  ta.remove();
+}
+
+/* Пометить заметку найденным приложением: в текст добавляется
+   [CUSTOM]имя, и превью заметки показывает его как живой блок. */
+async function insertMarker() {
+  if (!lastArtifact || !noteId) return;
+  try {
+    var marker = lastArtifact.marker;
+    /* Тело берём из поля, а не с диска: автосохранение могло ещё не
+       сработать, и маркер затирал только что набранный текст. YAML-заголовок
+       (custom_mode и прочие свойства) возвращаем на место. */
+    var body = fieldToMarkdown();
+    if (body.indexOf(marker) === -1) {
+      body = body.replace(/\s*$/, '') + '\n\n' + marker + '\n';
+    }
+    var content = (noteState.frontmatter ? noteState.frontmatter.replace(/\s*$/, '') + '\n' : '') + body;
+    var r = await fetch('/api/notes/save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: noteId, title: noteState.title || 'Без названия', content: content, folder: noteState.folder })
+    });
+    var d = await r.json();
+    if (!(d && d.ok)) { toast('Не удалось добавить: заметка не сохранилась'); return; }
+    textDirty = false;
+    showSaveInd(true);
+    toast('Приложение добавлено в заметку');
+  } catch (e) { toast('Не удалось добавить: ' + e.message); }
+}
+
+/* Ctrl+Enter — применить режим */
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    if (el('settingsModal').classList.contains('open')) closeSettings();
+    else if (el('aiEditModal').classList.contains('open')) closeAiEdit();
+    else closeResult();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    run();
+  }
+});
+
+load();
+</script>
+</body>
+</html>

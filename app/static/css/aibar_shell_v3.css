@@ -1,0 +1,420 @@
+/* ============================================================================
+   Мини-приложение Shift+Space — оболочка v3.
+   ----------------------------------------------------------------------------
+   Зачем отдельный файл: палитры приложения объявлены на body.<тема>
+   (design.css), а отдельное окно мини-приложения живёт на <html
+   class="aibar-solo <тема>"> — body.<тема> там не срабатывает никогда.
+   Поэтому окно всегда получало светлые :root-значения, а слой v2 жёстко
+   красил всё в индиго #6366f1. Здесь токены темы переносятся на html,
+   акцент берётся из --accent, и добавляется полоса вкладок
+   «Чат / Заметки / Плеер / Диалоги».
+   Подключается последним, перекрывает ai_bar.css / ai_bar_v2.css /
+   quick_notes.css / aibar_messenger.css. Встроенный чат админки не
+   затрагивается: всё под html.aibar-solo.
+   ========================================================================== */
+
+/* ---------- Палитры тем (те же значения, что в design.css) ---------- */
+html.aibar-solo {
+  --bg: #f7f8fa; --bg2: #ffffff; --bg3: #f1f3f6; --bg4: #e7eaef;
+  --border: #e3e7ec; --border-2: #d3d9e0;
+  --text: #1f2937; --text-2: #333333; --text-3: #333333;
+  --accent: #3b6ef5; --accent-2: #2d55c9;
+  --hover: rgba(15, 23, 42, .04);
+  --danger: #d64545; --success: #1f9254; --warning: #c98a12;
+  --glass: rgba(255, 255, 255, .82);
+  --glass-border: rgba(15, 23, 42, .07);
+  --text2: var(--text-2); --text3: var(--text-3);
+}
+html.aibar-solo[data-theme="dark"] {
+  --bg: #0f1319; --bg2: #161b23; --bg3: #1d232d; --bg4: #262d39;
+  --border: #262d39; --border-2: #39414f;
+  --text: #e6eaf0; --text-2: #9aa5b4; --text-3: #8a94a6;
+  --accent: #5b8cff; --accent-2: #3d6ce4;
+  --hover: rgba(255, 255, 255, .05);
+  --danger: #fca5a5; --success: #6ee7b7; --warning: #fcd34d;
+  --glass: rgba(22, 27, 35, .85);
+  --glass-border: rgba(255, 255, 255, .08);
+  --text2: var(--text-2); --text3: var(--text-3);
+}
+html.aibar-solo[data-theme="midnight"] {
+  --bg: #08090f; --bg2: #0e1018; --bg3: #141824; --bg4: #1c2130;
+  --border: #1c2130; --border-2: #2a3145;
+  --text: #dfe3f0; --text-2: #9aa3bf; --text-3: #8b93b0;
+  --accent: #7c8cff; --accent-2: #5b6bdd;
+  --hover: rgba(140, 160, 255, .05);
+  --danger: #fca5a5; --success: #6ee7b7; --warning: #fcd34d;
+  --glass: rgba(14, 16, 24, .88);
+  --glass-border: rgba(255, 255, 255, .07);
+  --text2: var(--text-2); --text3: var(--text-3);
+}
+html.aibar-solo[data-theme="sepia"] {
+  --bg: #f4ecd8; --bg2: #fbf6ea; --bg3: #ece1ca; --bg4: #e0d3b6;
+  --border: #ded0b2; --border-2: #cbb894;
+  --text: #4a3a28; --text-2: #6d5b46; --text-3: #786755;
+  --accent: #8a6a1f; --accent-2: #6d5316;
+  --hover: rgba(91, 70, 54, .05);
+  --danger: #dc2626; --success: #047857; --warning: #b45309;
+  --glass: rgba(251, 246, 234, .88);
+  --glass-border: rgba(91, 70, 54, .12);
+  --text2: var(--text-2); --text3: var(--text-3);
+}
+html.aibar-solo[data-theme="warm"] {
+  --bg: #faf6f2; --bg2: #fffdfb; --bg3: #f3ebe3; --bg4: #e8dacd;
+  --border: #e8dbcd; --border-2: #d5c2ae;
+  --text: #33261b; --text-2: #5f4b3b; --text-3: #7f6d5d;
+  --accent: #b07a3c; --accent-2: #8c5d2b;
+  --hover: rgba(176, 122, 60, .06);
+  --danger: #dc2626; --success: #047857; --warning: #b45309;
+  --glass: rgba(255, 253, 251, .88);
+  --glass-border: rgba(95, 75, 59, .10);
+  --text2: var(--text-2); --text3: var(--text-3);
+}
+html.aibar-solo[data-theme="paper"] {
+  --bg: #fbf9f4; --bg2: #fffdf9; --bg3: #f3efe4; --bg4: #e7e0d0;
+  --border: #e4dccb; --border-2: #d0c5ae;
+  --text: #2c2418; --text-2: #5a4a38; --text-3: #7e6f5f;
+  --accent: #a0522d; --accent-2: #803818;
+  --hover: rgba(160, 82, 45, .05);
+  --danger: #dc2626; --success: #047857; --warning: #b45309;
+  --glass: rgba(255, 253, 249, .9);
+  --glass-border: rgba(90, 74, 56, .10);
+  --text2: var(--text-2); --text3: var(--text-3);
+}
+html.aibar-solo[data-theme="rose"] {
+  --bg: #fdf3f6; --bg2: #fffafb; --bg3: #f9e9ee; --bg4: #f1dae2;
+  --border: #f0dce3; --border-2: #e0c2ce;
+  --text: #3a1f2b; --text-2: #6b4353; --text-3: #8a6572;
+  --accent: #d6397a; --accent-2: #b02463;
+  --hover: rgba(214, 57, 122, .05);
+  --danger: #dc2626; --success: #047857; --warning: #b45309;
+  --glass: rgba(255, 250, 251, .9);
+  --glass-border: rgba(107, 67, 83, .10);
+  --text2: var(--text-2); --text3: var(--text-3);
+}
+html.aibar-solo[data-theme="ocean"] {
+  --bg: #f4f8fc; --bg2: #ffffff; --bg3: #eaf1f8; --bg4: #dce8f3;
+  --border: #d9e4f0; --border-2: #bfd1e2;
+  --text: #132b42; --text-2: #3d5b76; --text-3: #5a738a;
+  --accent: #2d7fc4; --accent-2: #1f66a0;
+  --hover: rgba(45, 127, 196, .05);
+  --danger: #dc2626; --success: #047857; --warning: #b45309;
+  --glass: rgba(255, 255, 255, .88);
+  --glass-border: rgba(61, 91, 118, .10);
+  --text2: var(--text-2); --text3: var(--text-3);
+}
+html.aibar-solo[data-theme="forest"] {
+  --bg: #0f1a14; --bg2: #16241c; --bg3: #1e3028; --bg4: #263c32;
+  --border: #1e3028; --border-2: #2a4034;
+  --text: #c8e0d0; --text-2: #88b098; --text-3: #72907e;
+  --accent: #4aa878; --accent-2: #2a8858;
+  --hover: rgba(80, 200, 120, .05);
+  --danger: #fca5a5; --success: #6ee7b7; --warning: #fcd34d;
+  --glass: rgba(22, 36, 28, .88);
+  --glass-border: rgba(255, 255, 255, .08);
+  --text2: var(--text-2); --text3: var(--text-3);
+}
+
+/* ---------- Слой v2: акцент из темы вместо фиксированного индиго ---------- */
+html.aibar-solo {
+  --ab-accent: var(--accent);
+  --ab-accent-2: var(--accent-2, var(--accent));
+  --ab-accent-3: var(--accent);
+  --ab-text: var(--text);
+  --ab-muted: var(--text-2);
+  --ab-bg: linear-gradient(155deg,
+      color-mix(in srgb, var(--bg2) 97%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 96%, transparent) 100%);
+  --ab-card: color-mix(in srgb, var(--bg2) 84%, transparent);
+  --ab-field: color-mix(in srgb, var(--bg3) 88%, transparent);
+  --ab-border: var(--glass-border);
+  --ab-line: var(--border);
+  --ab-line-strong: var(--border-2);
+  --ab-shadow: 0 26px 80px rgba(9, 14, 28, .34), 0 8px 22px rgba(9, 14, 28, .14);
+  --ab-inset: inset 0 1px 0 color-mix(in srgb, #fff 70%, transparent);
+}
+html.aibar-solo[data-theme="dark"],
+html.aibar-solo[data-theme="midnight"],
+html.aibar-solo[data-theme="forest"] {
+  --ab-shadow: 0 30px 100px rgba(0, 0, 0, .6), 0 8px 26px rgba(0, 0, 0, .36);
+  --ab-inset: inset 0 1px 0 rgba(255, 255, 255, .07);
+}
+
+/* Тени кнопок/сообщений в v2 были «индиго навсегда» — делаем их акцентными. */
+html.aibar-solo .aibar-iconbtn.active,
+html.aibar-solo .aibar-iconbtn.on,
+html.aibar-solo .aibar-session-chip.on {
+  background: linear-gradient(135deg, var(--ab-accent), var(--ab-accent-2));
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 34%, transparent);
+}
+html.aibar-solo .aibar-msg.user {
+  background: linear-gradient(135deg, var(--ab-accent), var(--ab-accent-2));
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+html.aibar-solo .aibar-panel .aibar-input-row > i {
+  background: linear-gradient(135deg, var(--ab-accent), var(--ab-accent-2));
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--accent) 36%, transparent);
+}
+html.aibar-solo .aibar-thread-foot .aibar-input:focus {
+  border-color: var(--ab-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+/* ---------- Каркас окна: одна карточка «вкладки + контент» ----------
+   Полоса вкладок раньше была отдельной белой «пилюлей» над карточкой —
+   на узком окне без подписей она выглядела чужим элементом поверх окна.
+   Теперь вкладки прозрачные и лежат ВНУТРИ общей карточки: фон и рамку
+   рисует карточка контента, которая начинается от верхнего края окна,
+   а её первая строка отведена под вкладки. Шапка и содержимое выглядят
+   одним окном. */
+html.aibar-solo .aibar-nav {
+  position: absolute;
+  top: 8px; left: 8px; right: 8px;
+  height: 56px;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 10px;
+  border: 0;
+  border-bottom: 1px solid var(--ab-line);
+  border-radius: 18px 18px 0 0;
+  background: transparent;
+  box-shadow: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+html.aibar-solo .aibar-nav::-webkit-scrollbar { display: none; }
+html.aibar-solo .aibar-nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 15px;
+  border-radius: 12px;
+  border: 0;
+  background: transparent;
+  color: var(--ab-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .16s ease, color .16s ease, box-shadow .16s ease;
+}
+html.aibar-solo .aibar-nav-tab:hover {
+  background: var(--ab-field);
+  color: var(--ab-text);
+}
+html.aibar-solo .aibar-nav-tab.on,
+html.aibar-solo .aibar-nav-tab.on:hover {
+  color: #fff;
+  background: linear-gradient(135deg, var(--ab-accent), var(--ab-accent-2));
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+html.aibar-solo .aibar-nav-tab i { font-size: 13px; opacity: .95; }
+html.aibar-solo .aibar-nav-tab.playing i { animation: abNavPulse 1.5s ease-in-out infinite; }
+html.aibar-solo .aibar-nav-tab.unread::after {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--ab-accent);
+  animation: abNavPulse 1.6s ease-in-out infinite;
+}
+@keyframes abNavPulse {
+  0%, 100% { opacity: .55; transform: scale(.94); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+/* Контент — та же карточка окна: она начинается от верхнего края и
+   уступает первые 58px полосе вкладок. Внутренние панели (плеер,
+   заметки, диалоги) получают такой же отступ сверху, чтобы вкладки не
+   наезжали на их заголовки. */
+html.aibar-solo .aibar-thread,
+html.aibar-solo .aibar-player,
+html.aibar-solo .aibar-notes,
+html.aibar-solo .aibar-msgs {
+  top: 8px;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  background: var(--ab-bg);
+  border: 1px solid var(--ab-border);
+  border-radius: var(--ab-radius);
+  box-shadow: var(--ab-shadow), var(--ab-inset);
+  backdrop-filter: blur(26px) saturate(165%);
+  -webkit-backdrop-filter: blur(26px) saturate(165%);
+}
+html.aibar-solo .aibar-thread { padding-top: 60px; }
+/* Акцентная полоска сверху карточки раньше пряталась под полосой вкладок.
+   Теперь вкладки лежат на самой карточке — полоска стала бы отдельной
+   линией над ними. */
+html.aibar-solo .aibar-thread::before { display: none; }
+/* Собственные «назад» у панелей дублируют вкладку «Чат». */
+html.aibar-solo .aibar-player .p-back,
+html.aibar-solo .aibar-notes .aibar-notes-back,
+html.aibar-solo .aibar-msgs .aibar-msgs-back { display: none; }
+/* Прежние кнопки в шапке дублируют вкладки — прячем, но оставляем в DOM:
+   на них завязаны обработчики и индикатор непрочитанных. */
+html.aibar-solo .aibar-thread-head .aibar-music,
+html.aibar-solo .aibar-thread-head .aibar-notes-btn,
+html.aibar-solo .aibar-thread-head .aibar-msgs-btn { display: none; }
+
+/* ---------- Чат: пустое состояние и лента ---------- */
+html.aibar-solo .aibar-empty {
+  margin: auto;
+  padding: 26px 20px;
+  text-align: center;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ab-muted);
+  max-width: 340px;
+}
+html.aibar-solo .aibar-log { scroll-behavior: smooth; }
+
+/* ---------- Заметки ---------- */
+html.aibar-solo .aibar-notes { padding: 14px; gap: 10px; }
+html.aibar-solo .aibar-notes-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--ab-text);
+}
+html.aibar-solo .qn-panel { gap: 10px; }
+html.aibar-solo .qn-input {
+  background: var(--ab-field);
+  border: 1px solid var(--ab-line);
+  border-radius: 14px;
+  color: var(--ab-text);
+  padding: 11px 13px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+html.aibar-solo .qn-input:focus {
+  background: var(--ab-card);
+  border-color: var(--ab-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+html.aibar-solo .qn-add {
+  width: 42px; height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--ab-accent), var(--ab-accent-2));
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+html.aibar-solo .qn-card {
+  background: var(--ab-card);
+  border: 1px solid var(--ab-line);
+  border-left: 3px solid transparent;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+html.aibar-solo .qn-card.pinned {
+  border-left-color: var(--ab-accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--ab-card));
+}
+html.aibar-solo .qn-card-text { font-size: 13.4px; line-height: 1.55; color: var(--ab-text); }
+html.aibar-solo .qn-time { color: var(--ab-muted); }
+html.aibar-solo .qn-card-foot button { color: var(--ab-muted); border-radius: 8px; }
+html.aibar-solo .qn-card-foot button:hover {
+  color: var(--ab-accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+html.aibar-solo .qn-empty { color: var(--ab-muted); }
+
+/* ---------- Плеер ---------- */
+html.aibar-solo .aibar-player { padding: 14px; gap: 10px; }
+html.aibar-solo .aibar-phead-title { font-size: 14px; font-weight: 700; color: var(--ab-text); }
+html.aibar-solo .aibar-ptabs button { color: var(--ab-muted); border-radius: 10px; }
+html.aibar-solo .aibar-ptabs button:hover { background: var(--ab-field); }
+html.aibar-solo .aibar-ptabs button.on {
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  color: var(--ab-accent);
+}
+html.aibar-solo .aibar-psearch {
+  background: var(--ab-field);
+  border-color: var(--ab-line);
+  border-radius: 12px;
+}
+html.aibar-solo .aibar-psearch input { color: var(--ab-text); }
+html.aibar-solo .aibar-prow { border-radius: 12px; padding: 7px 9px; }
+html.aibar-solo .aibar-prow:hover { background: var(--ab-field); }
+html.aibar-solo .aibar-prow-title { color: var(--ab-text); font-size: 13.2px; }
+html.aibar-solo .aibar-prow-cover { border-radius: 9px; background: var(--ab-field); }
+html.aibar-solo .aibar-pnow { border-top-color: var(--ab-line); padding-top: 10px; }
+html.aibar-solo .aibar-pcover { border-radius: 10px; background: var(--ab-field); }
+html.aibar-solo .aibar-ptitle { color: var(--ab-text); }
+html.aibar-solo .aibar-pseek { height: 5px; background: var(--ab-line); }
+html.aibar-solo .aibar-pfill { background: linear-gradient(90deg, var(--ab-accent), var(--ab-accent-2)); }
+html.aibar-solo .aibar-eq {
+  background: var(--ab-card);
+  border-color: var(--ab-line);
+  border-radius: 14px;
+}
+
+/* ---------- Диалоги ---------- */
+html.aibar-solo .aibar-msgs { padding: 14px; gap: 10px; }
+html.aibar-solo .aibar-msgs-title { font-size: 14px; font-weight: 700; color: var(--ab-text); }
+html.aibar-solo .aibar-msgs-chip {
+  border-color: var(--ab-line);
+  color: var(--ab-muted);
+  border-radius: 999px;
+  background: transparent;
+}
+html.aibar-solo .aibar-msgs-chip:hover { background: var(--ab-field); color: var(--ab-text); }
+html.aibar-solo .aibar-msgs-chip.on {
+  color: var(--ab-accent);
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+html.aibar-solo .aibar-msgs-badge { background: var(--ab-accent); }
+
+/* Внутренние панели получают тот же отступ под вкладки. Правило стоит
+   после их собственных padding, иначе padding:14px его перекрывает. */
+html.aibar-solo .aibar-player,
+html.aibar-solo .aibar-notes,
+html.aibar-solo .aibar-msgs { padding-top: 72px; }
+
+/* ---------- Кнопка остановки агента ----------
+   Показывается только во время ответа (body.aibar-busy), встаёт справа
+   в строке ввода — на месте заблокированного поля её не пропустить. */
+html.aibar-solo .aibar-stop {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--danger) 42%, transparent);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .16s ease, border-color .16s ease, transform .12s ease;
+}
+html.aibar-solo .aibar-stop:hover {
+  background: color-mix(in srgb, var(--danger) 20%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 65%, transparent);
+}
+html.aibar-solo .aibar-stop:active { transform: scale(.93); }
+body.aibar-busy .aibar-stop { display: inline-flex; }
+
+/* Пометка у недописанного ответа, который прервали кнопкой. */
+html.aibar-solo .aibar-stopped {
+  display: block;
+  margin-top: 6px;
+  font-size: 11.5px;
+  font-style: italic;
+  opacity: .65;
+}
+
+/* ---------- Узкое окно ----------
+   Подписи вкладок держим до последнего: 4 кнопки с текстом укладываются
+   в ~460px. Только на совсем узком окне остаются одни иконки. */
+@media (max-width: 480px) {
+  html.aibar-solo .aibar-nav { padding: 0 8px; gap: 0; }
+  html.aibar-solo .aibar-nav-tab { padding: 0 12px; gap: 0; }
+  html.aibar-solo .aibar-nav-tab span:not(.aibar-nav-badge) { display: none; }
+}

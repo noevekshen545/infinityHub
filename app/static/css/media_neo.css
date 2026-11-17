@@ -1,0 +1,3936 @@
+/* ============================================================================
+   Infinity Media — Neo design layer
+   ----------------------------------------------------------------------------
+   Основной дизайн /media. Все правила ограничены html.media-neo, поэтому
+   классическая вёрстка (templates_backup/page_media.html, /media/classic)
+   не меняется. Цвета берутся из темы приложения (theme.js), производные
+   считаются от var(--accent) через color-mix().
+   ========================================================================== */
+
+html.media-neo {
+  --mneo-accent: var(--accent, #4f46e5);
+  --mneo-accent-2: var(--accent2, #4338ca);
+  --mneo-soft: rgba(79, 70, 229, .12);
+  --mneo-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  --mneo-softer: rgba(79, 70, 229, .07);
+  --mneo-softer: color-mix(in srgb, var(--accent) 7%, transparent);
+  --mneo-glow: rgba(79, 70, 229, .28);
+  --mneo-glow: color-mix(in srgb, var(--accent) 30%, transparent);
+  --mneo-line: rgba(127, 127, 127, .18);
+  --mneo-line: color-mix(in srgb, var(--text) 12%, transparent);
+  --mneo-line-soft: rgba(127, 127, 127, .1);
+  --mneo-line-soft: color-mix(in srgb, var(--text) 7%, transparent);
+  --mneo-surface: rgba(255, 255, 255, .72);
+  --mneo-surface: color-mix(in srgb, var(--bg2) 86%, transparent);
+  --mneo-surface-2: rgba(255, 255, 255, .5);
+  --mneo-surface-2: color-mix(in srgb, var(--bg3) 62%, transparent);
+  --mneo-dark: #080b14;
+  --mneo-dark-2: #111726;
+  --mneo-r-xl: 28px;
+  --mneo-r-lg: 22px;
+  --mneo-r-md: 16px;
+  --mneo-r-sm: 12px;
+  --mneo-shadow: 0 18px 50px rgba(0, 0, 0, .16);
+  --mneo-shadow-soft: 0 10px 30px rgba(0, 0, 0, .1);
+  --mneo-ease: cubic-bezier(.22, .8, .28, 1);
+}
+
+/* ---------- Базовая сцена ---------- */
+
+html.media-neo body {
+  background: var(--bg);
+  color: var(--text);
+  letter-spacing: -.01em;
+}
+
+html.media-neo body::before {
+  background:
+    radial-gradient(1000px 520px at 8% -8%, var(--mneo-glow), transparent 62%),
+    radial-gradient(900px 520px at 100% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%),
+    radial-gradient(800px 600px at 50% 110%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 65%);
+  opacity: .75;
+}
+
+html.media-neo ::selection { background: var(--accent); color: #fff; }
+
+html.media-neo ::-webkit-scrollbar { width: 10px; height: 10px; }
+html.media-neo ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text) 18%, transparent);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 99px;
+}
+html.media-neo ::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--accent) 65%, transparent);
+  background-clip: padding-box;
+}
+
+/* ---------- Верхнее меню: оставляем плавающим, но собираем в единую панель ---------- */
+
+html.media-neo .toolbar {
+  top: 16px;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  width: min(1560px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  padding: 8px 10px;
+  gap: 5px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--bg2) 76%, transparent);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .16), inset 0 1px 0 rgba(255, 255, 255, .06);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  transition: background .25s ease, box-shadow .25s ease, top .25s ease;
+}
+
+html.media-neo .toolbar.mneo-scrolled {
+  top: 8px;
+  background: color-mix(in srgb, var(--bg2) 92%, transparent);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255, 255, 255, .07);
+}
+
+html.media-neo .mneo-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 14px 3px 4px;
+  margin-right: 4px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+html.media-neo .mneo-brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 15px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  box-shadow: 0 8px 20px var(--mneo-glow), inset 0 1px 0 rgba(255, 255, 255, .25);
+}
+
+html.media-neo .mneo-brand-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+html.media-neo .mneo-brand-copy b {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  color: var(--text);
+}
+
+html.media-neo .mneo-brand-copy small {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-top: 3px;
+}
+
+html.media-neo .toolbar .btn {
+  padding: 9px 14px;
+  border-radius: 13px;
+  color: var(--text2);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  gap: 8px;
+  transition: background .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+html.media-neo .toolbar .btn i { font-size: 13px; opacity: .9; }
+
+html.media-neo .toolbar .btn:hover {
+  background: var(--mneo-soft);
+  color: var(--text);
+  transform: none;
+}
+
+html.media-neo .toolbar .btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  box-shadow: 0 8px 20px var(--mneo-glow), inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+
+html.media-neo .toolbar .btn.active i { color: #fff; opacity: 1; }
+
+html.media-neo .toolbar .btn .badge {
+  background: rgba(255, 255, 255, .22);
+  color: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2);
+}
+
+html.media-neo .toolbar .sep {
+  width: 1px;
+  height: 22px;
+  margin: 0 5px;
+  background: linear-gradient(to bottom, transparent, var(--mneo-line), transparent);
+}
+
+html.media-neo .toolbar .btn-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  color: var(--text2);
+  border: 1px solid transparent;
+}
+
+html.media-neo .toolbar .btn-icon:hover {
+  background: var(--mneo-soft);
+  color: var(--accent);
+  transform: none;
+}
+
+html.media-neo .toolbar .more-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+html.media-neo .toolbar .more[open] > .more-btn,
+html.media-neo .toolbar .more-btn:hover {
+  background: var(--mneo-soft);
+  color: var(--text);
+}
+
+html.media-neo .more-pop {
+  top: calc(100% + 12px);
+  right: 0;
+  min-width: 230px;
+  padding: 8px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg2) 96%, transparent);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .24);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+html.media-neo .more-pop .btn {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 10px 12px;
+  border-radius: 11px;
+}
+
+html.media-neo .more-sep {
+  height: 1px;
+  margin: 6px 4px;
+  background: var(--mneo-line-soft);
+}
+
+/* ---------- Контент ---------- */
+
+html.media-neo .main-content {
+  max-width: 1560px;
+  padding: 112px 32px 220px;
+  transition: padding-right .3s var(--mneo-ease);
+}
+
+html.media-neo .section { animation: mneoSectionIn .35s var(--mneo-ease); }
+
+@keyframes mneoSectionIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Hero-баннеры для основных разделов */
+
+html.media-neo #music > .page-header,
+html.media-neo #movies > .page-header,
+html.media-neo #series > .page-header,
+html.media-neo #photos > .page-header,
+html.media-neo #continue > .page-header {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  align-items: flex-end;
+  min-height: 230px;
+  margin-bottom: 28px;
+  padding: 34px 38px;
+  border-radius: var(--mneo-r-xl);
+  border: 1px solid rgba(255, 255, 255, .08);
+  background:
+    radial-gradient(900px 380px at 12% -10%, color-mix(in srgb, var(--accent) 78%, transparent), transparent 62%),
+    radial-gradient(700px 380px at 92% 10%, color-mix(in srgb, var(--accent-2, var(--accent2)) 45%, transparent), transparent 60%),
+    linear-gradient(120deg, #080b14 0%, #101728 58%, color-mix(in srgb, var(--accent) 26%, #080b14) 100%);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .28);
+  color: #fff;
+}
+
+html.media-neo #music > .page-header::before,
+html.media-neo #movies > .page-header::before,
+html.media-neo #series > .page-header::before,
+html.media-neo #photos > .page-header::before,
+html.media-neo #continue > .page-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(90deg, rgba(4, 7, 14, .82) 0%, rgba(4, 7, 14, .52) 46%, rgba(4, 7, 14, .18) 100%),
+    linear-gradient(0deg, rgba(4, 7, 14, .72) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+html.media-neo #music > .page-header::after,
+html.media-neo #movies > .page-header::after,
+html.media-neo #series > .page-header::after,
+html.media-neo #photos > .page-header::after,
+html.media-neo #continue > .page-header::after {
+  content: "";
+  position: absolute;
+  inset: auto -80px -120px auto;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 50%, transparent), transparent 68%);
+  filter: blur(8px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+html.media-neo #music > .page-header > *,
+html.media-neo #movies > .page-header > *,
+html.media-neo #series > .page-header > *,
+html.media-neo #photos > .page-header > *,
+html.media-neo #continue > .page-header > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Когда JS подставил реальный постер — ослабляем затемнение, чтобы кадр было видно */
+html.media-neo .mneo-has-photo::before {
+  background:
+    linear-gradient(90deg, rgba(4, 7, 14, .74) 0%, rgba(4, 7, 14, .34) 46%, rgba(4, 7, 14, .12) 100%),
+    linear-gradient(0deg, rgba(4, 7, 14, .64) 0%, transparent 58%);
+}
+
+/* Hero с цветомузыкой: постера нет, вместо него canvas-визуализатор.
+   z-index ниже контента (у прямых детей баннера он 2). */
+html.media-neo #music > .page-header > .mneo-hero-viz,
+html.media-neo #movies > .page-header > .mneo-hero-viz,
+html.media-neo #series > .page-header > .mneo-hero-viz,
+html.media-neo #photos > .page-header > .mneo-hero-viz,
+html.media-neo #continue > .page-header > .mneo-hero-viz {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+html.media-neo #music > .page-header h1,
+html.media-neo #movies > .page-header h1,
+html.media-neo #series > .page-header h1,
+html.media-neo #photos > .page-header h1,
+html.media-neo #continue > .page-header h1,
+html.media-neo .page-header.hero h1 {
+  font-size: clamp(38px, 4.2vw, 66px);
+  font-weight: 800;
+  line-height: .98;
+  letter-spacing: -.055em;
+  color: #fff;
+  -webkit-text-fill-color: currentColor;
+  background: none;
+  text-shadow: 0 8px 32px rgba(0, 0, 0, .35);
+  margin-bottom: 12px;
+}
+
+html.media-neo #music > .page-header .subtitle,
+html.media-neo #movies > .page-header .subtitle,
+html.media-neo #series > .page-header .subtitle,
+html.media-neo #photos > .page-header .subtitle,
+html.media-neo #continue > .page-header .subtitle {
+  color: rgba(255, 255, 255, .72);
+  font-size: 14.5px;
+  max-width: 66ch;
+  line-height: 1.55;
+}
+
+html.media-neo #music > .page-header .btn,
+html.media-neo #movies > .page-header .btn,
+html.media-neo #series > .page-header .btn,
+html.media-neo #photos > .page-header .btn,
+html.media-neo #continue > .page-header .btn {
+  background: rgba(255, 255, 255, .1);
+  border: 1px solid rgba(255, 255, 255, .16);
+  color: #fff;
+  box-shadow: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+html.media-neo #music > .page-header .btn:hover,
+html.media-neo #movies > .page-header .btn:hover,
+html.media-neo #series > .page-header .btn:hover,
+html.media-neo #photos > .page-header .btn:hover,
+html.media-neo #continue > .page-header .btn:hover {
+  background: rgba(255, 255, 255, .18);
+  border-color: rgba(255, 255, 255, .3);
+  color: #fff;
+}
+
+html.media-neo #music > .page-header .btn i,
+html.media-neo #movies > .page-header .btn i,
+html.media-neo #series > .page-header .btn i,
+html.media-neo #photos > .page-header .btn i,
+html.media-neo #continue > .page-header .btn i {
+  color: rgba(255, 255, 255, .82);
+}
+
+/* Заголовки вторичных разделов */
+
+html.media-neo .section > .page-header {
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--mneo-line-soft);
+}
+
+html.media-neo .section > .page-header h1 {
+  font-size: clamp(26px, 2.4vw, 36px);
+  font-weight: 800;
+  letter-spacing: -.04em;
+  color: var(--text);
+  -webkit-text-fill-color: currentColor;
+  background: none;
+}
+
+html.media-neo .section > .page-header .subtitle {
+  color: var(--text3);
+  font-size: 13.5px;
+  margin-top: 6px;
+}
+
+/* ---------- Поиск, табы, чипы ---------- */
+
+html.media-neo .search-container { margin-bottom: 20px; }
+
+html.media-neo .search-bar {
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+html.media-neo .search-bar:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 0 4px var(--mneo-softer), 0 12px 30px rgba(0, 0, 0, .08);
+}
+
+html.media-neo .search-bar input {
+  font-size: 14px;
+  color: var(--text);
+}
+
+html.media-neo .search-bar input::placeholder { color: var(--text3); }
+
+html.media-neo .search-bar .search-shortcut {
+  border: 1px solid var(--mneo-line);
+  background: var(--mneo-surface-2);
+  color: var(--text3);
+  border-radius: 7px;
+  padding: 3px 7px;
+  font-size: 10px;
+}
+
+html.media-neo .view-tabs {
+  gap: 4px;
+  padding: 5px;
+  border-radius: 15px;
+  width: fit-content;
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.media-neo .view-tab {
+  padding: 9px 15px;
+  border-radius: 11px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text2);
+}
+
+html.media-neo .view-tab:hover {
+  background: var(--mneo-soft);
+  color: var(--text);
+}
+
+html.media-neo .view-tab.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  box-shadow: 0 6px 16px var(--mneo-glow);
+}
+
+html.media-neo .genre-filter {
+  padding: 0;
+  gap: 7px;
+  background: none;
+  border: none;
+  width: 100%;
+  margin-bottom: 22px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.media-neo .genre-chip {
+  padding: 8px 15px;
+  border-radius: 999px;
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+html.media-neo .genre-chip:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: var(--mneo-soft);
+  color: var(--accent);
+}
+
+html.media-neo .genre-chip.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 6px 18px var(--mneo-glow);
+}
+
+html.media-neo .genre-chip .chip-count { opacity: .7; }
+
+/* ---------- Кнопки ---------- */
+
+html.media-neo .btn {
+  border-radius: 13px;
+  padding: 11px 18px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  box-shadow: 0 8px 20px var(--mneo-glow);
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+}
+
+html.media-neo .btn:hover { transform: translateY(-1px); }
+
+html.media-neo .btn-outline {
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  color: var(--text);
+  box-shadow: none;
+}
+
+html.media-neo .btn-outline:hover {
+  background: var(--mneo-soft);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  color: var(--accent);
+}
+
+html.media-neo .btn-icon {
+  border-radius: 11px;
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+  color: var(--text2);
+}
+
+html.media-neo .btn-icon:hover {
+  background: var(--mneo-soft);
+  color: var(--accent);
+}
+
+html.media-neo .btn-danger {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  border: none;
+  color: #fff;
+}
+
+/* ---------- Музыка ---------- */
+
+html.media-neo .tracks-list {
+  gap: 2px;
+  padding: 10px;
+  border-radius: var(--mneo-r-lg);
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: var(--mneo-shadow-soft);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.media-neo .track-item {
+  gap: 14px;
+  padding: 9px 14px;
+  border-radius: 13px;
+  border: 1px solid transparent;
+}
+
+html.media-neo .track-item:hover {
+  background: var(--mneo-soft);
+  border-color: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+html.media-neo .track-item.playing {
+  background: linear-gradient(90deg, var(--mneo-soft), transparent 80%);
+  border-color: color-mix(in srgb, var(--accent) 26%, transparent);
+}
+
+html.media-neo .track-item.playing::before {
+  width: 3px;
+  height: 54%;
+  border-radius: 99px;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--mneo-glow);
+}
+
+html.media-neo .track-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .16);
+}
+
+html.media-neo .track-title { font-size: 13.5px; font-weight: 650; }
+html.media-neo .track-artist { font-size: 11.5px; }
+html.media-neo .track-duration { font-size: 12px; }
+html.media-neo .track-num { width: 26px; font-size: 12px; }
+
+html.media-neo .track-actions { gap: 4px; }
+html.media-neo .action-btn { border-radius: 9px; }
+
+/* ---------- Чекбокс выбора трека ---------- */
+
+html.media-neo .track-item .track-sel-chk {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0 8px 0 4px;
+  border-radius: 6px;
+  border: 1.5px solid color-mix(in srgb, var(--text3) 48%, transparent);
+  background-color: var(--mneo-surface-2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+  cursor: pointer;
+  flex-shrink: 0;
+  align-self: center;
+  transition: background-color .16s ease, border-color .16s ease,
+              box-shadow .16s ease, transform .12s ease;
+}
+
+html.media-neo .track-item .track-sel-chk:hover {
+  border-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 13%, transparent);
+}
+
+html.media-neo .track-item .track-sel-chk:active { transform: scale(.9); }
+
+html.media-neo .track-item .track-sel-chk:checked {
+  border-color: transparent;
+  background-color: var(--accent);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.6 4.6L19 7.6'/%3E%3C/svg%3E"),
+    linear-gradient(135deg, var(--accent), var(--accent2));
+  background-size: 12px 12px, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  box-shadow: 0 4px 12px var(--mneo-glow);
+}
+
+html.media-neo .track-item .track-sel-chk:checked:hover {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent), 0 4px 14px var(--mneo-glow);
+}
+
+html.media-neo .track-item .track-sel-chk:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+html.media-neo .albums-grid {
+  grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+  gap: 18px;
+}
+
+html.media-neo .album-card {
+  border-radius: var(--mneo-r-lg);
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .07);
+  transition: transform .24s var(--mneo-ease), box-shadow .24s var(--mneo-ease), border-color .24s ease;
+}
+
+html.media-neo .album-card:hover {
+  transform: translateY(-6px);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, .18), 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+html.media-neo .album-poster {
+  border-radius: 0;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+}
+
+html.media-neo .album-info { padding: 14px 15px 16px; }
+html.media-neo .album-title { font-size: 13.5px; font-weight: 700; }
+html.media-neo .album-artist { font-size: 11.5px; }
+html.media-neo .album-meta { font-size: 10.5px; }
+
+html.media-neo .album-play-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, .3);
+}
+
+html.media-neo .album-play-btn:hover { background: var(--accent); color: #fff; }
+
+html.media-neo .artists-grid {
+  grid-template-columns: repeat(auto-fill, minmax(154px, 1fr));
+  gap: 16px;
+}
+
+html.media-neo .artist-card {
+  padding: 26px 16px;
+  border-radius: var(--mneo-r-lg);
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .06);
+}
+
+html.media-neo .artist-card:hover {
+  transform: translateY(-5px);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 22px 46px rgba(0, 0, 0, .16);
+}
+
+html.media-neo .artist-avatar {
+  width: 86px;
+  height: 86px;
+  font-size: 30px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, .2);
+}
+
+html.media-neo .artist-name { font-size: 13.5px; font-weight: 700; }
+html.media-neo .artist-tracks { font-size: 11.5px; }
+
+/* ---------- Фильмы и сериалы: сетка ---------- */
+
+html.media-neo .video-grid {
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 22px;
+}
+
+html.media-neo .video-card {
+  border-radius: var(--mneo-r-lg);
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .1);
+  transition: transform .26s var(--mneo-ease), box-shadow .26s var(--mneo-ease), border-color .26s ease;
+}
+
+html.media-neo .video-card:hover {
+  transform: translateY(-8px);
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, .26), 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+html.media-neo .video-poster {
+  aspect-ratio: 2 / 3;
+  background: var(--mneo-dark-2);
+}
+
+html.media-neo .video-poster img { transition: transform .5s var(--mneo-ease), filter .4s ease; }
+html.media-neo .video-card:hover .video-poster img { transform: scale(1.06); filter: brightness(.8); }
+
+html.media-neo .video-play-overlay {
+  background: linear-gradient(180deg, transparent 30%, rgba(3, 6, 12, .72) 100%);
+  opacity: 0;
+}
+
+html.media-neo .video-card:hover .video-play-overlay { opacity: 1; }
+
+html.media-neo .video-play-overlay i {
+  width: 58px;
+  height: 58px;
+  font-size: 18px;
+  background: rgba(255, 255, 255, .16);
+  border: 1px solid rgba(255, 255, 255, .35);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .35);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #fff;
+}
+
+html.media-neo .video-duration-badge {
+  bottom: 9px;
+  right: 9px;
+  padding: 4px 9px;
+  border-radius: 8px;
+  background: rgba(4, 7, 14, .72);
+  border: 1px solid rgba(255, 255, 255, .12);
+  font-size: 10.5px;
+}
+
+html.media-neo .series-badge {
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 9.5px;
+  letter-spacing: .08em;
+  background: rgba(255, 255, 255, .14);
+  border: 1px solid rgba(255, 255, 255, .24);
+  box-shadow: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+html.media-neo .video-fav-btn {
+  top: 9px;
+  right: 9px;
+  width: 34px;
+  height: 34px;
+  background: rgba(4, 7, 14, .48);
+  border: 1px solid rgba(255, 255, 255, .16);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+html.media-neo .video-fav-btn:hover { background: rgba(4, 7, 14, .72); }
+
+html.media-neo .video-card-info { padding: 14px 15px 16px; }
+html.media-neo .video-card-title { font-size: 13.5px; font-weight: 700; margin-bottom: 5px; }
+html.media-neo .video-card-meta { font-size: 11px; margin-bottom: 7px; gap: 8px; }
+html.media-neo .video-genre-tag {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--mneo-soft);
+  color: color-mix(in srgb, var(--accent) 78%, var(--text));
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+html.media-neo .video-overview { font-size: 11.5px; line-height: 1.5; }
+html.media-neo .video-share-btn {
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11px;
+}
+
+html.media-neo .video-share-btn:hover { background: var(--mneo-soft); color: var(--accent); }
+
+html.media-neo .transcode-btn { border-radius: 9px; }
+
+/* ---------- Продолжить ---------- */
+
+html.media-neo .continue-grid {
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 16px;
+}
+
+html.media-neo .continue-card {
+  border-radius: var(--mneo-r-lg);
+  padding: 14px;
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .08);
+}
+
+html.media-neo .continue-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 22px 46px rgba(0, 0, 0, .16);
+}
+
+html.media-neo .continue-poster { width: 54px; height: 76px; border-radius: 10px; }
+html.media-neo .continue-title { font-size: 13.5px; font-weight: 700; }
+html.media-neo .continue-progress-bar { height: 4px; background: var(--mneo-line-soft); }
+html.media-neo .continue-progress-fill { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+/* ---------- Детальная страница сериала ---------- */
+
+html.media-neo .series-detail { max-width: 1240px; }
+
+html.media-neo .series-header {
+  position: relative;
+  overflow: hidden;
+  gap: 28px;
+  padding: 26px;
+  border-radius: var(--mneo-r-xl);
+  background:
+    radial-gradient(700px 320px at 0% 0%, color-mix(in srgb, var(--accent) 35%, transparent), transparent 62%),
+    linear-gradient(120deg, var(--mneo-dark), color-mix(in srgb, var(--accent) 16%, var(--mneo-dark)));
+  border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, .28);
+  color: #fff;
+}
+
+html.media-neo .series-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(4, 7, 14, .7), rgba(4, 7, 14, .18));
+  pointer-events: none;
+}
+
+html.media-neo .series-header > * { position: relative; z-index: 1; }
+
+html.media-neo .series-poster {
+  width: 220px;
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .45);
+  border: 1px solid rgba(255, 255, 255, .12);
+}
+
+html.media-neo .series-info h1 {
+  font-size: clamp(28px, 3.2vw, 44px);
+  font-weight: 800;
+  letter-spacing: -.045em;
+  color: #fff;
+}
+
+html.media-neo .series-meta { color: rgba(255, 255, 255, .68); font-size: 12.5px; }
+html.media-neo .series-overview { color: rgba(255, 255, 255, .74); font-size: 13.5px; line-height: 1.7; }
+html.media-neo .series-header .btn-outline {
+  background: rgba(255, 255, 255, .1);
+  border-color: rgba(255, 255, 255, .2);
+  color: #fff;
+}
+html.media-neo .series-header .btn-outline:hover { background: rgba(255, 255, 255, .18); color: #fff; }
+
+html.media-neo .season-tabs {
+  gap: 5px;
+  padding: 5px;
+  border-radius: 14px;
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+  width: fit-content;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.media-neo .season-tab {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+html.media-neo .season-tab.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  box-shadow: 0 6px 16px var(--mneo-glow);
+}
+
+html.media-neo .episode-list {
+  gap: 4px;
+  padding: 10px;
+  border-radius: var(--mneo-r-lg);
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: var(--mneo-shadow-soft);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.media-neo .episode-item {
+  padding: 12px 14px;
+  border-radius: 13px;
+  border: 1px solid transparent;
+}
+
+html.media-neo .episode-item:hover {
+  background: var(--mneo-soft);
+  border-color: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+html.media-neo .episode-num {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--mneo-soft);
+  color: var(--accent);
+  font-size: 12px;
+}
+
+html.media-neo .episode-play-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--mneo-soft);
+  color: var(--accent);
+}
+
+html.media-neo .episode-item:hover .episode-play-icon { background: var(--accent); color: #fff; }
+
+/* ---------- Плеер видео ---------- */
+
+html.media-neo .video-player-page { max-width: 1400px; }
+
+html.media-neo .video-back-btn {
+  margin-bottom: 18px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  font-size: 12.5px;
+  font-weight: 600;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.media-neo .video-back-btn:hover {
+  background: var(--mneo-soft);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  color: var(--accent);
+}
+
+html.media-neo .video-player-wrapper {
+  position: relative;
+  border-radius: var(--mneo-r-xl);
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: 0 36px 90px rgba(0, 0, 0, .42);
+  overflow: hidden;
+}
+
+html.media-neo .video-player-wrapper video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 82vh;
+  object-fit: contain;
+  background: #000;
+}
+
+html.media-neo .video-player-info {
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 30px;
+  margin-top: 26px;
+}
+
+html.media-neo .video-player-detail h1 {
+  font-size: clamp(28px, 3vw, 42px);
+  font-weight: 800;
+  letter-spacing: -.045em;
+  margin-bottom: 14px;
+}
+
+html.media-neo .video-player-detail .meta span {
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+  font-size: 11.5px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.media-neo .video-player-detail .overview {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text2);
+}
+
+html.media-neo .video-player-sidebar {
+  padding: 20px;
+  border-radius: var(--mneo-r-lg);
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: var(--mneo-shadow-soft);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.media-neo .cast-card-small img { border-radius: 12px; }
+html.media-neo .cast-grid { gap: 10px; }
+
+/* Кинематографичная обложка видео до запуска (добавляется JS) */
+
+html.media-neo .mneo-video-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: flex-end;
+  padding: 34px;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  transition: opacity .35s ease, visibility .35s ease;
+}
+
+html.media-neo .mneo-video-cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(3, 6, 12, .82) 0%, rgba(3, 6, 12, .38) 55%, rgba(3, 6, 12, .5) 100%),
+    linear-gradient(0deg, rgba(3, 6, 12, .88) 0%, transparent 55%);
+}
+
+html.media-neo .mneo-video-cover.mneo-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+html.media-neo .mneo-video-cover-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  color: #fff;
+}
+
+html.media-neo .mneo-video-cover-title {
+  font-size: clamp(24px, 3vw, 44px);
+  font-weight: 800;
+  letter-spacing: -.045em;
+  line-height: 1.05;
+  margin-bottom: 10px;
+  text-shadow: 0 8px 30px rgba(0, 0, 0, .5);
+}
+
+html.media-neo .mneo-video-cover-sub {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, .68);
+  margin-bottom: 18px;
+}
+
+html.media-neo .mneo-video-cover-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 22px;
+  border: none;
+  border-radius: 14px;
+  background: #fff;
+  color: #0b1020;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .35);
+  transition: transform .18s ease, background .18s ease;
+}
+
+html.media-neo .mneo-video-cover-play:hover { transform: translateY(-2px); background: var(--accent); color: #fff; }
+
+html.media-neo .mneo-fullscreen-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 8;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(4, 7, 14, .55);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background .18s ease, transform .18s ease;
+}
+
+html.media-neo .mneo-fullscreen-btn:hover { background: rgba(4, 7, 14, .82); transform: scale(1.05); }
+
+/* ---------- Аудио-плеер: нижний док ---------- */
+
+html.media-neo .audio-player {
+  left: 50%;
+  right: auto;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: min(980px, calc(100vw - 32px));
+  max-width: min(980px, calc(100vw - 32px));
+  padding: 12px 18px;
+  gap: 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  background:
+    radial-gradient(600px 180px at 0% 0%, color-mix(in srgb, var(--accent) 50%, transparent), transparent 70%),
+    linear-gradient(120deg, color-mix(in srgb, var(--accent) 62%, #080b14) 0%, #111726 55%, color-mix(in srgb, var(--accent) 34%, #080b14) 100%);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, .38), inset 0 1px 0 rgba(255, 255, 255, .12);
+  color: #fff;
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+}
+
+html.media-neo .audio-player .player-thumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 13px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .34);
+  transition: transform .18s ease;
+}
+
+html.media-neo .audio-player .player-thumb:hover { transform: scale(1.06); }
+
+html.media-neo .audio-player .player-title { color: #fff; font-size: 13px; font-weight: 700; }
+html.media-neo .audio-player .player-artist { color: rgba(255, 255, 255, .66); font-size: 11.5px; }
+html.media-neo .audio-player .player-btn { color: rgba(255, 255, 255, .78); }
+html.media-neo .audio-player .player-btn:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+html.media-neo .audio-player .player-btn.active { color: #fff; }
+html.media-neo .audio-player .player-btn.primary {
+  background: #fff;
+  color: #0b1020;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .3);
+}
+html.media-neo .audio-player .player-btn.primary:hover { background: var(--accent); color: #fff; }
+
+html.media-neo .audio-player .player-time { color: rgba(255, 255, 255, .68); }
+html.media-neo .audio-player .progress-bar { background: rgba(255, 255, 255, .18); height: 5px; }
+html.media-neo .audio-player .progress-fill {
+  background: linear-gradient(90deg, #fff, color-mix(in srgb, var(--accent) 40%, #fff));
+  box-shadow: 0 0 12px rgba(255, 255, 255, .4);
+}
+html.media-neo .audio-player .volume-slider { background: rgba(255, 255, 255, .18); }
+html.media-neo .audio-player .volume-fill { background: #fff; }
+html.media-neo .audio-player .speed-btn {
+  color: rgba(255, 255, 255, .8);
+  border-color: rgba(255, 255, 255, .16);
+  background: rgba(255, 255, 255, .08);
+}
+html.media-neo .audio-player .speed-btn:hover { background: rgba(255, 255, 255, .16); color: #fff; }
+
+/* На широком экране — правая панель Now Playing (SoundFly) */
+
+@media (min-width: 1500px) {
+  html.media-neo .audio-player {
+    top: 106px;
+    bottom: auto;
+    right: 24px;
+    left: auto;
+    transform: none;
+    width: 342px;
+    max-width: 342px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 18px;
+    border-radius: 26px;
+    background:
+      radial-gradient(420px 280px at 50% 0%, color-mix(in srgb, var(--accent) 42%, transparent), transparent 70%),
+      linear-gradient(160deg, color-mix(in srgb, var(--accent) 40%, #080b14) 0%, #0b1020 55%, #080b14 100%);
+  }
+
+  html.media-neo .audio-player .player-thumb {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 20px;
+    font-size: 42px;
+  }
+
+  html.media-neo .audio-player .player-info {
+    max-width: none;
+    text-align: center;
+  }
+
+  html.media-neo .audio-player .player-title { font-size: 16px; }
+  html.media-neo .audio-player .player-artist { font-size: 12.5px; }
+  html.media-neo .audio-player .player-controls { justify-content: center; gap: 8px; }
+  html.media-neo .audio-player .player-progress-container { width: 100%; }
+  html.media-neo .audio-player .volume-control { justify-content: center; }
+  html.media-neo .audio-player > .player-btn { align-self: center; }
+
+  html.media-neo body.mneo-has-track .main-content {
+    padding-right: 392px;
+    max-width: 1780px;
+  }
+}
+
+/* Невысокие широкие экраны: правая панель не должна упираться в низ */
+@media (min-width: 1500px) and (max-height: 820px) {
+  html.media-neo .audio-player {
+    padding: 14px;
+    gap: 10px;
+  }
+  html.media-neo .audio-player .player-thumb {
+    aspect-ratio: 1.25 / 1;
+    max-height: 240px;
+    font-size: 34px;
+  }
+  html.media-neo .audio-player .player-title { font-size: 14px; }
+}
+
+/* ---------- Полноэкранный аудио-плеер ---------- */
+
+html.media-neo .mneo-now {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  overflow: hidden;
+  background: #05070d;
+  transition: opacity .32s ease, visibility .32s ease;
+}
+
+html.media-neo .mneo-now.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+html.media-neo .mneo-now-bg {
+  position: absolute;
+  inset: -40px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(56px) saturate(140%);
+  opacity: .55;
+  transform: scale(1.12);
+}
+
+html.media-neo .mneo-now::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(900px 600px at 20% 0%, rgba(255, 255, 255, .1), transparent 60%),
+    linear-gradient(180deg, rgba(4, 7, 14, .55), rgba(4, 7, 14, .9));
+}
+
+html.media-neo .mneo-now-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 3;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: background .18s ease, transform .18s ease;
+}
+
+html.media-neo .mneo-now-close:hover { background: rgba(255, 255, 255, .2); transform: scale(1.05); }
+
+html.media-neo .mneo-now-card {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(280px, 460px) minmax(320px, 520px);
+  gap: clamp(32px, 6vw, 90px);
+  align-items: center;
+  width: min(1120px, 100%);
+  color: #fff;
+}
+
+html.media-neo .mneo-now-art {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 28px;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  box-shadow: 0 50px 120px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .14);
+  display: grid;
+  place-items: center;
+  font-size: 72px;
+  color: rgba(255, 255, 255, .85);
+  position: relative;
+}
+
+html.media-neo .mneo-now-art img { width: 100%; height: 100%; object-fit: cover; }
+html.media-neo .mneo-now-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+html.media-neo .mneo-now-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .5);
+  margin-bottom: 14px;
+}
+
+html.media-neo .mneo-now-title {
+  font-size: clamp(28px, 3.4vw, 48px);
+  font-weight: 800;
+  letter-spacing: -.05em;
+  line-height: 1.03;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+html.media-neo .mneo-now-artist {
+  font-size: 15px;
+  color: rgba(255, 255, 255, .62);
+  margin-bottom: 30px;
+}
+
+html.media-neo .mneo-now-progress {
+  width: 100%;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, .16);
+  cursor: pointer;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+html.media-neo .mneo-now-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #fff, color-mix(in srgb, var(--accent) 30%, #fff));
+  box-shadow: 0 0 16px rgba(255, 255, 255, .35);
+  transition: width .15s linear;
+}
+
+html.media-neo .mneo-now-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, .55);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 26px;
+}
+
+html.media-neo .mneo-now-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+html.media-neo .mneo-now-btn {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .14);
+  background: rgba(255, 255, 255, .08);
+  color: rgba(255, 255, 255, .82);
+  font-size: 15px;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+
+html.media-neo .mneo-now-btn:hover { background: rgba(255, 255, 255, .18); color: #fff; transform: scale(1.05); }
+html.media-neo .mneo-now-btn.active { background: var(--accent); border-color: transparent; color: #fff; }
+
+html.media-neo .mneo-now-btn.mneo-now-play {
+  width: 72px;
+  height: 72px;
+  font-size: 22px;
+  background: #fff;
+  border-color: transparent;
+  color: #0b1020;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .4);
+}
+
+html.media-neo .mneo-now-btn.mneo-now-play:hover { background: var(--accent); color: #fff; }
+
+html.media-neo .mneo-now-extra {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+html.media-neo .mneo-now-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  background: rgba(255, 255, 255, .06);
+  color: rgba(255, 255, 255, .72);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+html.media-neo .mneo-now-chip:hover { background: rgba(255, 255, 255, .14); color: #fff; }
+html.media-neo .mneo-now-chip.active { background: var(--accent); border-color: transparent; color: #fff; }
+
+html.media-neo body.mneo-now-open { overflow: hidden; }
+
+/* ---------- Продолжить / статистика / достижения / настройки ---------- */
+
+html.media-neo .stat-card,
+html.media-neo .achievement-card,
+html.media-neo .settings-section,
+html.media-neo .indexing-progress {
+  border-radius: var(--mneo-r-lg);
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: var(--mneo-shadow-soft);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.media-neo .stat-card { padding: 24px; }
+html.media-neo .stat-card .value { font-size: 34px; letter-spacing: -.04em; }
+html.media-neo .stat-card .stat-icon { font-size: 26px; }
+
+html.media-neo .achievement-card { padding: 18px; }
+html.media-neo .achievement-icon { width: 56px; height: 56px; font-size: 22px; }
+
+html.media-neo .settings-section { padding: 22px; margin-bottom: 18px; }
+html.media-neo .settings-section h3 { font-size: 15px; font-weight: 750; margin-bottom: 14px; }
+html.media-neo .settings-input,
+html.media-neo .input,
+html.media-neo .settings-form-row input[type=text],
+html.media-neo .settings-form-row input[type=number] {
+  border-radius: 12px;
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+}
+html.media-neo .settings-input:focus,
+html.media-neo .input:focus {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: 0 0 0 4px var(--mneo-softer);
+}
+
+html.media-neo .empty-state {
+  border-radius: var(--mneo-r-lg);
+  background: var(--mneo-surface);
+  border: 1px dashed var(--mneo-line);
+  padding: 46px 24px;
+}
+
+/* ---------- Фото ---------- */
+
+html.media-neo .photo-grid {
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+html.media-neo .photo-card {
+  border-radius: 18px;
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  overflow: hidden;
+  transition: transform .22s var(--mneo-ease), box-shadow .22s var(--mneo-ease), border-color .22s ease;
+}
+
+html.media-neo .photo-card:hover {
+  transform: translateY(-5px);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 22px 46px rgba(0, 0, 0, .2);
+}
+
+html.media-neo .photo-thumb { aspect-ratio: 1 / 1; }
+html.media-neo .photo-info { padding: 11px 12px 13px; }
+html.media-neo .photo-name { font-size: 12.5px; font-weight: 650; }
+
+/* ---------- Торренты / загрузки ---------- */
+
+html.media-neo .torrent-item,
+html.media-neo .dl-card,
+html.media-neo .repo-card,
+html.media-neo .repo-item-card {
+  border-radius: 16px;
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+}
+
+html.media-neo .chip {
+  border-radius: 999px;
+  border-color: var(--mneo-line);
+  background: var(--mneo-surface-2);
+  font-size: 11.5px;
+}
+html.media-neo .chip.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+}
+html.media-neo .torrent-tab { border-radius: 10px; background: var(--mneo-surface-2); border-color: var(--mneo-line); }
+html.media-neo .torrent-tab.active { background: var(--accent); border-color: var(--accent); }
+
+/* ---------- Модалки ---------- */
+
+html.media-neo .modal-overlay {
+  background: rgba(4, 6, 12, .58);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html.media-neo .modal {
+  border-radius: var(--mneo-r-xl);
+  background: var(--bg2);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, .35);
+  padding: 26px;
+}
+
+html.media-neo .modal-header {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--mneo-line-soft);
+  margin-bottom: 18px;
+}
+
+html.media-neo .modal-title,
+html.media-neo .modal-header h2 {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+}
+
+html.media-neo .modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+  color: var(--text2);
+}
+
+html.media-neo .modal-close:hover { background: var(--mneo-soft); color: var(--accent); }
+
+/* ---------- Очередь ---------- */
+
+html.media-neo .queue-panel {
+  top: 92px;
+  bottom: 108px;
+  width: 390px;
+  border-radius: var(--mneo-r-xl);
+  background: color-mix(in srgb, var(--bg2) 94%, transparent);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 36px 90px rgba(0, 0, 0, .3);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+html.media-neo .queue-item {
+  border-radius: 12px;
+  background: transparent;
+}
+html.media-neo .queue-item:hover { background: var(--mneo-soft); border-color: transparent; }
+html.media-neo .queue-item.current {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+}
+
+/* ---------- Служебные элементы ---------- */
+
+html.media-neo .scroll-top-btn,
+html.media-neo .sleep-timer-indicator,
+html.media-neo .notification {
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg2) 92%, transparent);
+  border: 1px solid var(--mneo-line);
+  box-shadow: var(--mneo-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+html.media-neo .scroll-top-btn:hover { background: var(--accent); color: #fff; }
+
+html.media-neo .auto-next-notice {
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg2) 94%, transparent);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, .32);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+html.media-neo .global-search {
+  border-radius: var(--mneo-r-xl);
+  border: 1px solid var(--mneo-line);
+  background: var(--bg2);
+}
+
+html.media-neo .global-search-header { border-bottom-color: var(--mneo-line-soft); }
+html.media-neo .search-result { border-radius: 11px; }
+html.media-neo .search-result:hover { background: var(--mneo-soft); }
+html.media-neo .search-result.selected { background: var(--accent); }
+
+/* ---------- Адаптив (десктоп → планшет) ---------- */
+
+@media (max-width: 1280px) {
+  html.media-neo .mneo-brand-copy small { display: none; }
+  html.media-neo .toolbar .btn { padding: 8px 11px; }
+  html.media-neo .main-content { padding-left: 22px; padding-right: 22px; }
+}
+
+@media (max-width: 1080px) {
+  html.media-neo .mneo-brand-copy { display: none; }
+  html.media-neo .toolbar { width: calc(100vw - 20px); }
+  html.media-neo .video-player-info { grid-template-columns: 1fr; }
+  html.media-neo .mneo-now-card { grid-template-columns: 1fr; gap: 26px; max-width: 520px; }
+  html.media-neo .mneo-now-art { max-width: 340px; margin: 0 auto; }
+  html.media-neo .mneo-now-copy { text-align: center; }
+  html.media-neo .mneo-now-extra { justify-content: center; }
+}
+
+@media (max-width: 820px) {
+  html.media-neo .toolbar .btn span { display: none; }
+  html.media-neo .toolbar .btn { padding: 9px 11px; }
+  html.media-neo .mneo-brand { padding-right: 8px; }
+  html.media-neo .main-content { padding-top: 96px; }
+  html.media-neo #music > .page-header,
+  html.media-neo #movies > .page-header,
+  html.media-neo #series > .page-header,
+  html.media-neo #photos > .page-header,
+  html.media-neo #continue > .page-header {
+    min-height: 200px;
+    padding: 24px;
+  }
+  html.media-neo .video-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  html.media-neo .albums-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 14px; }
+  html.media-neo .artists-grid { grid-template-columns: repeat(auto-fill, minmax(125px, 1fr)); gap: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.media-neo *,
+  html.media-neo *::before,
+  html.media-neo *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+/* ============================================================================
+   DESKTOP V2 — богатый десктопный слой
+   ----------------------------------------------------------------------------
+   Всё, что ниже, добавляет новые элементы (группа навигации, командный поиск,
+   hero-обложки, дашборд, таблица треков, правая панель Now Playing и меню
+   «Ещё»). Правила ограничены html.media-neo.
+   ========================================================================== */
+
+/* ---------- Верхнее меню: бренд + капсула разделов + командный поиск ---------- */
+
+html.media-neo .toolbar {
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+html.media-neo .toolbar > .sep { display: none; }
+
+html.media-neo .mneo-brand {
+  padding: 2px 16px 2px 2px;
+}
+
+html.media-neo .mneo-brand-mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  font-size: 16px;
+}
+
+html.media-neo .mneo-brand-copy b {
+  font-size: 14px;
+  letter-spacing: -.02em;
+}
+
+html.media-neo .mneo-brand-copy small {
+  font-size: 9.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+/* «Главная» вне капсулы (мобильный тулбар) — тоже только иконка;
+   на десктопе ссылка переезжает внутрь .mneo-nav-group (см. media_neo.js). */
+html.media-neo .toolbar > a.btn[href="/"] {
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+}
+
+html.media-neo .toolbar > a.btn[href="/"] span { display: none; }
+
+html.media-neo .mneo-nav-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  margin: 0 4px;
+  border-radius: 15px;
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line-soft);
+  flex-shrink: 0;
+}
+
+html.media-neo .mneo-nav-group .btn {
+  position: relative;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 11px;
+  background: transparent;
+  border: 1px solid transparent;
+  box-shadow: none;
+  color: var(--text2);
+  font-weight: 650;
+  transform: none;
+}
+
+/* Навигация разделами — только иконки: подписи остаются в title/aria-label. */
+html.media-neo .mneo-nav-group .btn > span:not(.badge) { display: none; }
+
+html.media-neo .mneo-nav-group .btn:hover {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--text);
+  transform: none;
+}
+
+html.media-neo .mneo-nav-group .btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 8px 20px var(--mneo-glow);
+}
+
+html.media-neo .mneo-nav-group .btn i {
+  font-size: 13px;
+  opacity: .9;
+}
+
+html.media-neo .mneo-nav-group .btn.active i { opacity: 1; }
+
+html.media-neo .toolbar .mneo-nav-group .btn .badge {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  margin: 0;
+  padding: 0 4px;
+  min-width: 13px;
+  border-radius: 99px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 8.5px;
+  line-height: 13px;
+  text-align: center;
+  box-shadow: 0 0 0 1.5px var(--mneo-surface-2);
+}
+
+html.media-neo .toolbar .mneo-search-original { display: none; }
+
+html.media-neo .mneo-cmd {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 190px;
+  max-width: 270px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--mneo-line);
+  background: var(--mneo-surface-2);
+  color: var(--text3);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color .18s ease, background .18s ease, color .18s ease;
+}
+
+html.media-neo .mneo-cmd:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: var(--mneo-soft);
+  color: var(--text2);
+}
+
+html.media-neo .mneo-cmd i { font-size: 12px; }
+
+html.media-neo .mneo-cmd span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  text-align: left;
+}
+
+html.media-neo .mneo-cmd kbd {
+  font-family: inherit;
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--text) 7%, transparent);
+  border: 1px solid var(--mneo-line-soft);
+  color: var(--text3);
+}
+
+html.media-neo .toolbar .more { position: relative; flex-shrink: 0; }
+
+html.media-neo .toolbar .more-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text2);
+}
+
+/* ---------- Меню «Ещё»: плитки ---------- */
+
+html.media-neo .more-pop {
+  top: calc(100% + 14px);
+  right: 0;
+  min-width: 348px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  padding: 12px;
+  border-radius: 22px;
+  background:
+    radial-gradient(320px 200px at 100% 0%, var(--mneo-soft), transparent 70%),
+    color-mix(in srgb, var(--bg2) 96%, transparent);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .32), inset 0 1px 0 rgba(255, 255, 255, .06);
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  transform-origin: top right;
+  animation: mneoPopIn .18s var(--mneo-ease);
+}
+
+@keyframes mneoPopIn {
+  from { opacity: 0; transform: translateY(-6px) scale(.97); }
+  to { opacity: 1; transform: none; }
+}
+
+html.media-neo .mneo-more-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 4px 8px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid var(--mneo-line-soft);
+}
+
+html.media-neo .mneo-more-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--text);
+}
+
+html.media-neo .mneo-more-hint {
+  font-size: 10px;
+  letter-spacing: .04em;
+  color: var(--text3);
+}
+
+html.media-neo .more-pop .btn,
+html.media-neo .more-pop .mneo-more-tile {
+  width: 100%;
+  min-height: 78px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px;
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--bg3) 55%, transparent);
+  border: 1px solid var(--mneo-line-soft);
+  box-shadow: none;
+  color: var(--text2);
+  text-align: left;
+  font-size: 12px;
+  font-weight: 650;
+  transform: none;
+}
+
+html.media-neo .more-pop .btn:hover,
+html.media-neo .more-pop .mneo-more-tile:hover {
+  background: var(--mneo-soft);
+  border-color: color-mix(in srgb, var(--accent) 38%, transparent);
+  color: var(--text);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .12);
+}
+
+html.media-neo .more-pop .btn i {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--mneo-soft);
+  color: var(--accent);
+  font-size: 13px;
+}
+
+html.media-neo .more-pop .btn:hover i {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+}
+
+html.media-neo .more-pop .btn span {
+  display: block;
+  line-height: 1.25;
+}
+
+html.media-neo .more-pop .more-sep {
+  grid-column: 1 / -1;
+  margin: 4px 2px;
+}
+
+/* ---------- Hero: художественная стопка обложек ---------- */
+
+html.media-neo #music > .page-header,
+html.media-neo #movies > .page-header,
+html.media-neo #series > .page-header,
+html.media-neo #photos > .page-header {
+  min-height: 306px;
+  padding: 38px 40px;
+  align-items: center;
+}
+
+html.media-neo .mneo-hero-rich { padding-right: 350px !important; }
+
+html.media-neo .mneo-hero-art {
+  position: absolute;
+  top: 50%;
+  right: 46px;
+  z-index: 2;
+  width: 252px;
+  height: 240px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+html.media-neo .mneo-art-glow {
+  position: absolute;
+  inset: -30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 55%, transparent), transparent 68%);
+  filter: blur(26px);
+  opacity: .8;
+}
+
+html.media-neo .mneo-art-card {
+  position: absolute;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #0b1020;
+  border: 1px solid rgba(255, 255, 255, .14);
+  box-shadow: 0 26px 54px rgba(0, 0, 0, .45);
+  transition: transform .4s var(--mneo-ease);
+}
+
+html.media-neo .mneo-art-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Пока статистика не подставила обложку — не показываем битую картинку. */
+html.media-neo .mneo-art-card img:not([src]) { opacity: 0; }
+
+html.media-neo .mneo-art-back-2 {
+  top: 18px;
+  right: 148px;
+  width: 118px;
+  height: 160px;
+  transform: rotate(-11deg);
+  opacity: .55;
+  filter: saturate(.7) brightness(.8);
+}
+
+html.media-neo .mneo-art-back-1 {
+  top: 8px;
+  right: 76px;
+  width: 132px;
+  height: 176px;
+  transform: rotate(-5deg);
+  opacity: .82;
+  filter: brightness(.9);
+}
+
+html.media-neo .mneo-art-main {
+  right: 0;
+  top: 0;
+  width: 172px;
+  height: 216px;
+  border-radius: 20px;
+  pointer-events: auto;
+  cursor: pointer;
+  border-color: rgba(255, 255, 255, .22);
+  box-shadow: 0 32px 60px rgba(0, 0, 0, .55);
+}
+
+html.media-neo .mneo-art-main:hover { transform: translateY(-5px) rotate(-1deg); }
+html.media-neo .mneo-art-main:hover ~ .mneo-art-back-1 { transform: rotate(-8deg) translateX(-4px); }
+
+html.media-neo .mneo-art-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(4, 7, 14, .55), transparent 55%);
+  pointer-events: none;
+}
+
+html.media-neo .mneo-art-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%) scale(.86);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .2);
+  border: 1px solid rgba(255, 255, 255, .5);
+  color: #fff;
+  font-size: 15px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  opacity: 0;
+  transition: opacity .25s ease, transform .25s ease;
+}
+
+html.media-neo .mneo-art-main:hover .mneo-art-play { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+html.media-neo .mneo-art-chip {
+  position: absolute;
+  left: 0;
+  bottom: 2px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: rgba(4, 7, 14, .62);
+  border: 1px solid rgba(255, 255, 255, .18);
+  color: rgba(255, 255, 255, .88);
+  font-size: 10.5px;
+  font-weight: 650;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+html.media-neo .mneo-art-chip i { color: #fff; font-size: 10px; }
+
+/* CTA в hero */
+
+html.media-neo .mneo-hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+html.media-neo .mneo-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 20px;
+  border-radius: 13px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 750;
+  letter-spacing: -.01em;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+html.media-neo .mneo-cta:hover { transform: translateY(-2px); }
+
+html.media-neo .mneo-cta-primary {
+  background: #fff;
+  color: #0b1020;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, .3);
+}
+
+html.media-neo .mneo-cta-primary:hover {
+  background: linear-gradient(135deg, #fff, color-mix(in srgb, var(--accent) 30%, #fff));
+  box-shadow: 0 18px 38px rgba(0, 0, 0, .36);
+}
+
+html.media-neo .mneo-cta-ghost {
+  background: rgba(255, 255, 255, .1);
+  border-color: rgba(255, 255, 255, .22);
+  color: #fff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+html.media-neo .mneo-cta-ghost:hover {
+  background: rgba(255, 255, 255, .18);
+  border-color: rgba(255, 255, 255, .36);
+}
+
+/* ---------- Дашборд быстрых показателей ---------- */
+
+html.media-neo .mneo-dash {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: -8px 0 26px;
+}
+
+html.media-neo .mneo-dash-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 16px;
+  border-radius: 17px;
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .06);
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .2s var(--mneo-ease), box-shadow .2s ease, border-color .2s ease;
+}
+
+html.media-neo .mneo-dash-card:hover:not([disabled]) {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, .13);
+}
+
+html.media-neo .mneo-dash-card[disabled] { cursor: default; }
+
+html.media-neo .mneo-dash-ico {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  font-size: 15px;
+  box-shadow: 0 10px 22px var(--mneo-glow);
+}
+
+html.media-neo .mneo-dash-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+html.media-neo .mneo-dash-meta b {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+html.media-neo .mneo-dash-meta small {
+  margin-top: 3px;
+  font-size: 10.5px;
+  letter-spacing: .03em;
+  color: var(--text3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Таблица треков ---------- */
+
+html.media-neo .mneo-track-head {
+  display: flex;
+  align-items: center;
+  padding: 0 14px 10px 160px;
+  color: var(--text3);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+html.media-neo .mneo-th-title { flex: 1; }
+html.media-neo .mneo-th-time { width: 270px; }
+
+html.media-neo .tracks-list {
+  padding: 8px;
+  border-radius: 22px;
+}
+
+html.media-neo .track-item {
+  padding: 8px 14px;
+}
+
+html.media-neo .track-item .track-title { font-size: 13.5px; }
+
+html.media-neo .track-item .track-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+html.media-neo .track-item .track-num { width: 30px; }
+
+html.media-neo .track-item:hover {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+/* ---------- Переключатель режима списка треков ---------- */
+
+html.media-neo .mneo-tabs-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+html.media-neo .mneo-tabs-row > .view-tabs { margin-bottom: 0; }
+
+html.media-neo .mneo-view-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 13px;
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+html.media-neo .mneo-view-mode.is-hidden { display: none; }
+
+html.media-neo .mneo-view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: none;
+  color: var(--text3);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .18s ease, color .18s ease, border-color .18s ease;
+}
+
+html.media-neo .mneo-view-btn:hover {
+  background: var(--mneo-soft);
+  color: var(--accent);
+}
+
+html.media-neo .mneo-view-btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 6px 16px var(--mneo-glow);
+}
+
+/* ---------- Треки карточками ---------- */
+
+html.media-neo .mneo-tracks-cards .mneo-track-head { display: none; }
+
+html.media-neo .mneo-tracks-cards .tracks-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(186px, 1fr));
+  gap: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+html.media-neo .mneo-tracks-cards .track-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "thumb thumb"
+    "info dur"
+    "actions actions";
+  align-items: center;
+  align-content: start;
+  column-gap: 8px;
+  row-gap: 8px;
+  padding: 10px 10px 12px;
+  border-radius: 18px;
+  border: 1px solid var(--mneo-line);
+  background: var(--mneo-surface);
+  box-shadow: var(--mneo-shadow-soft);
+  transition: transform .24s var(--mneo-ease), box-shadow .24s var(--mneo-ease), border-color .24s ease;
+}
+
+html.media-neo .mneo-tracks-cards .track-item:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: 0 20px 42px rgba(0, 0, 0, .16), 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+html.media-neo .mneo-tracks-cards .track-item .track-thumb {
+  grid-area: thumb;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  box-shadow: none;
+  font-size: 40px;
+}
+
+html.media-neo .mneo-tracks-cards .track-item .track-num { display: none; }
+
+html.media-neo .mneo-tracks-cards .track-item .track-info {
+  grid-area: info;
+  min-width: 0;
+}
+
+html.media-neo .mneo-tracks-cards .track-item .track-title {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.34;
+}
+
+html.media-neo .mneo-tracks-cards .track-item .track-artist { font-size: 11px; }
+
+html.media-neo .mneo-tracks-cards .track-item .track-duration {
+  grid-area: dur;
+  align-self: start;
+  font-size: 11px;
+  color: var(--text3);
+  font-variant-numeric: tabular-nums;
+}
+
+html.media-neo .mneo-tracks-cards .track-item .track-actions {
+  grid-area: actions;
+  opacity: 1;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+html.media-neo .mneo-tracks-cards .track-item .action-btn {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+  border-radius: 8px;
+  background: var(--mneo-surface-2);
+}
+
+html.media-neo .mneo-tracks-cards .track-item .track-sel-chk {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 3;
+  margin: 0;
+  width: 18px;
+  height: 18px;
+}
+
+html.media-neo .mneo-tracks-cards .track-item .track-sel-chk:not(:checked) {
+  background-color: rgba(8, 10, 18, .5);
+  border-color: rgba(255, 255, 255, .7);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+html.media-neo .mneo-tracks-cards .track-item .track-sel-chk:checked {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .5), 0 0 12px var(--mneo-glow);
+}
+
+/* На карточках невыбранный чекбокс показываем только при наведении
+   (и по фокусу с клавиатуры); отмеченный остаётся видимым. */
+html.media-neo .mneo-tracks-cards .track-item .track-sel-chk:not(:checked) {
+  opacity: 0;
+  transition: opacity .16s ease, background-color .16s ease, border-color .16s ease,
+              box-shadow .16s ease, transform .12s ease;
+}
+
+html.media-neo .mneo-tracks-cards .track-item:hover .track-sel-chk:not(:checked),
+html.media-neo .mneo-tracks-cards .track-item .track-sel-chk:focus-visible {
+  opacity: 1;
+}
+
+html.media-neo .mneo-tracks-cards .track-item.playing {
+  background: linear-gradient(165deg, color-mix(in srgb, var(--accent) 12%, var(--mneo-surface)), var(--mneo-surface) 62%);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+html.media-neo .mneo-tracks-cards .track-item.playing::before {
+  left: 14px;
+  right: 14px;
+  top: auto;
+  bottom: 0;
+  width: auto;
+  height: 3px;
+  transform: none;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  box-shadow: 0 0 14px var(--mneo-glow);
+}
+
+/* ---------- Правая панель Now Playing ---------- */
+
+html.media-neo .mneo-desk-top,
+html.media-neo .mneo-desk-extras { display: none; }
+
+html.media-neo .mneo-desk-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1200px) {
+  html.media-neo .audio-player {
+    position: fixed;
+    top: 100px;
+    right: 22px;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    width: 348px;
+    max-width: 348px;
+    max-height: calc(100vh - 124px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 13px;
+    padding: 18px;
+    border-radius: 28px;
+    background:
+      radial-gradient(460px 300px at 50% -6%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 70%),
+      linear-gradient(165deg, color-mix(in srgb, var(--accent) 42%, #080b14) 0%, #0b1020 52%, #080b14 100%);
+    box-shadow: 0 36px 90px rgba(0, 0, 0, .42), inset 0 1px 0 rgba(255, 255, 255, .14);
+    scrollbar-width: none;
+  }
+
+  html.media-neo .audio-player::-webkit-scrollbar { display: none; }
+
+  html.media-neo .mneo-desk-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  html.media-neo .mneo-desk-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .62);
+  }
+
+  html.media-neo .mneo-desk-live i {
+    color: #fff;
+    font-size: 11px;
+    animation: mneoPulse 2.2s ease-in-out infinite;
+  }
+
+  @keyframes mneoPulse {
+    0%, 100% { opacity: .55; transform: scale(.94); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+
+  html.media-neo .mneo-desk-expand {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    border: 1px solid rgba(255, 255, 255, .16);
+    background: rgba(255, 255, 255, .08);
+    color: rgba(255, 255, 255, .8);
+    font-size: 11px;
+    cursor: pointer;
+    transition: background .18s ease, color .18s ease;
+  }
+
+  html.media-neo .mneo-desk-expand:hover {
+    background: rgba(255, 255, 255, .2);
+    color: #fff;
+  }
+
+  html.media-neo .audio-player .player-thumb {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    max-height: 292px;
+    border-radius: 21px;
+    font-size: 46px;
+    border: 1px solid rgba(255, 255, 255, .16);
+    box-shadow: 0 24px 50px rgba(0, 0, 0, .45);
+  }
+
+  html.media-neo .audio-player .player-thumb::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(0deg, rgba(4, 7, 14, .35), transparent 45%);
+    pointer-events: none;
+  }
+
+  html.media-neo .audio-player .player-thumb img { border-radius: inherit; }
+
+  html.media-neo .audio-player .player-info {
+    max-width: none;
+    text-align: center;
+    min-width: 0;
+  }
+
+  html.media-neo .audio-player .player-title {
+    font-size: 16.5px;
+    font-weight: 750;
+    letter-spacing: -.02em;
+    white-space: normal;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.3;
+  }
+
+  html.media-neo .audio-player .player-artist {
+    margin-top: 5px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, .62);
+  }
+
+  html.media-neo .audio-player .player-controls {
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+  }
+
+  html.media-neo .audio-player .player-controls .player-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+
+  html.media-neo .audio-player .player-controls .player-btn.primary {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    font-size: 18px;
+    margin: 0 4px;
+  }
+
+  html.media-neo .audio-player .player-progress-container {
+    width: 100%;
+    gap: 9px;
+  }
+
+  html.media-neo .audio-player .player-time {
+    font-size: 10.5px;
+    min-width: 32px;
+  }
+
+  html.media-neo .audio-player .progress-bar {
+    height: 5px;
+    border-radius: 99px;
+  }
+
+  html.media-neo .mneo-desk-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid rgba(255, 255, 255, .1);
+  }
+
+  html.media-neo .audio-player .speed-btn {
+    order: -1;
+    width: 42px;
+    height: 30px;
+    padding: 0;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, .85);
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .14);
+  }
+
+  html.media-neo .audio-player .volume-control {
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  html.media-neo .audio-player .volume-slider { flex: 1; height: 4px; }
+
+  html.media-neo .audio-player .mneo-desk-tools > .player-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    font-size: 13px;
+  }
+
+  html.media-neo .mneo-desk-extras {
+    display: block;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, .1);
+  }
+
+  html.media-neo .mneo-desk-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .55);
+  }
+
+  html.media-neo .mneo-desk-label span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  html.media-neo .mneo-desk-all {
+    border: none;
+    background: none;
+    padding: 0;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    text-transform: none;
+    color: rgba(255, 255, 255, .68);
+    cursor: pointer;
+  }
+
+  html.media-neo .mneo-desk-all:hover { color: #fff; }
+
+  html.media-neo .mneo-desk-next {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  html.media-neo .mneo-desk-track {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px;
+    border: none;
+    border-radius: 11px;
+    background: transparent;
+    color: #fff;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background .16s ease;
+  }
+
+  html.media-neo .mneo-desk-track:hover { background: rgba(255, 255, 255, .1); }
+
+  html.media-neo .mneo-desk-track-art {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, .12);
+    color: rgba(255, 255, 255, .7);
+    font-size: 13px;
+  }
+
+  html.media-neo .mneo-desk-track-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  html.media-neo .mneo-desk-track-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  html.media-neo .mneo-desk-track-copy b,
+  html.media-neo .mneo-desk-track-copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  html.media-neo .mneo-desk-track-copy b {
+    font-size: 12px;
+    font-weight: 650;
+    color: rgba(255, 255, 255, .94);
+  }
+
+  html.media-neo .mneo-desk-track-copy small {
+    font-size: 10.5px;
+    color: rgba(255, 255, 255, .5);
+  }
+
+  html.media-neo .mneo-desk-track-play {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .1);
+    color: rgba(255, 255, 255, .7);
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity .16s ease, background .16s ease;
+  }
+
+  html.media-neo .mneo-desk-track:hover .mneo-desk-track-play {
+    opacity: 1;
+    background: #fff;
+    color: #0b1020;
+  }
+
+  html.media-neo .mneo-desk-empty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 6px;
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, .48);
+  }
+
+  html.media-neo body.mneo-has-track .main-content {
+    padding-right: 402px;
+    max-width: 1780px;
+  }
+}
+
+/* Невысокие экраны — уменьшаем обложку, панель должна помещаться */
+@media (min-width: 1200px) and (max-height: 900px) {
+  html.media-neo .audio-player { gap: 10px; padding: 15px; }
+  html.media-neo .audio-player .player-thumb {
+    max-height: 218px;
+    aspect-ratio: 1.15 / 1;
+    font-size: 38px;
+  }
+  html.media-neo .mneo-desk-extras { padding-top: 9px; }
+}
+
+/* ---------- Иконки вместо эмодзи ---------- */
+
+html.media-neo .mneo-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: -.08em;
+  margin: 0 .12em;
+  color: currentColor;
+}
+
+html.media-neo .empty-state .icon .mneo-ico {
+  width: 78px;
+  height: 78px;
+  margin: 0 auto 16px;
+  border-radius: 24px;
+  background: var(--mneo-soft);
+  color: var(--accent);
+  font-size: 30px;
+}
+
+html.media-neo .empty-state .icon .mneo-ico i { font-size: 30px; }
+
+html.media-neo .page-header h1 .mneo-ico {
+  margin-right: .18em;
+  color: rgba(255, 255, 255, .92);
+  font-size: .82em;
+}
+
+html.media-neo .section > .page-header h1 .mneo-ico { color: var(--accent); }
+
+html.media-neo .btn .mneo-ico,
+html.media-neo .view-tab .mneo-ico { display: none; }
+
+/* ---------- Адаптив верхнего меню ---------- */
+
+@media (max-width: 1420px) {
+  html.media-neo .mneo-cmd { min-width: 150px; max-width: 190px; }
+  html.media-neo .mneo-cmd span { display: none; }
+  html.media-neo .mneo-cmd kbd { margin-left: auto; }
+}
+
+@media (max-width: 1280px) {
+  html.media-neo .mneo-brand-copy { display: none; }
+}
+
+@media (max-width: 1024px) {
+  html.media-neo .mneo-cmd { max-width: none; min-width: 0; }
+  html.media-neo .mneo-cmd span { display: none; }
+  html.media-neo .mneo-cmd kbd { display: none; }
+}
+
+@media (max-width: 760px) {
+  html.media-neo .mneo-cmd span { display: none; }
+  html.media-neo .mneo-dash { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html.media-neo .mneo-hero-rich { padding-right: 40px !important; }
+  html.media-neo .mneo-hero-art { display: none; }
+}
+
+
+/* Кнопки, перенесённые из правого угла hero под описание */
+html.media-neo .mneo-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+html.media-neo .mneo-hero-actions .btn {
+  padding: 9px 14px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .16);
+  color: rgba(255, 255, 255, .86);
+  box-shadow: none;
+  font-size: 11.5px;
+  font-weight: 650;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+html.media-neo .mneo-hero-actions .btn:hover {
+  background: rgba(255, 255, 255, .16);
+  border-color: rgba(255, 255, 255, .3);
+  color: #fff;
+}
+
+html.media-neo .mneo-hero-actions .btn i { color: rgba(255, 255, 255, .75); }
+
+html.media-neo .mneo-hero-cta + .mneo-hero-actions { margin-top: 12px; }
+
+/* Коллаж должен быть позиционирован абсолютно, несмотря на общее правило
+   hero «все прямые дети — relative» (у него выше специфичность). */
+html.media-neo #music > .page-header > .mneo-hero-art,
+html.media-neo #movies > .page-header > .mneo-hero-art,
+html.media-neo #series > .page-header > .mneo-hero-art,
+html.media-neo #photos > .page-header > .mneo-hero-art,
+html.media-neo #continue > .page-header > .mneo-hero-art {
+  position: absolute;
+  z-index: 2;
+}
+
+/* Уведомления не должны перекрывать правую панель плеера */
+@media (min-width: 1200px) {
+  html.media-neo body.mneo-has-track .notification { right: 394px; }
+}
+
+/* Чуть больше места тексту на средних десктопах */
+@media (min-width: 1025px) and (max-width: 1360px) {
+  html.media-neo .mneo-hero-rich { padding-right: 300px !important; }
+  html.media-neo .mneo-hero-art {
+    right: 30px;
+    width: 220px;
+    height: 210px;
+  }
+  html.media-neo .mneo-art-main { width: 152px; height: 192px; }
+  html.media-neo .mneo-art-back-1 { width: 118px; height: 156px; right: 66px; }
+  html.media-neo .mneo-art-back-2 { width: 104px; height: 140px; right: 130px; }
+}
+
+/* В исходной вёрстке прогресс и громкость скрыты до 1380px —
+   в правой панели они нужны всегда. */
+@media (min-width: 1200px) {
+  html.media-neo .audio-player .player-progress-container {
+    display: flex;
+  }
+  html.media-neo .audio-player .volume-control {
+    display: flex;
+  }
+  html.media-neo .audio-player .player-info {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+}
+
+/* ============================================================================
+   THEME-AWARE SURFACES
+   ----------------------------------------------------------------------------
+   Панели, hero и плеер больше не «прибиты» к тёмно-синему. Фон собирается
+   из --bg2/--bg3 и акцента текущей темы (light, dark, sepia, warm, paper,
+   ocean, forest, midnight, rose), текст — из --text/--text2/--text3.
+   ========================================================================== */
+
+/* ---------- Hero: тема вместо фиксированного тёмного фона ---------- */
+
+html.media-neo #music > .page-header,
+html.media-neo #movies > .page-header,
+html.media-neo #series > .page-header,
+html.media-neo #photos > .page-header,
+html.media-neo #continue > .page-header {
+  background:
+    radial-gradient(900px 420px at 8% -16%, color-mix(in srgb, var(--accent) 46%, transparent), transparent 64%),
+    radial-gradient(720px 380px at 96% 4%, color-mix(in srgb, var(--accent2, var(--accent)) 30%, transparent), transparent 62%),
+    linear-gradient(120deg,
+      color-mix(in srgb, var(--accent) 16%, var(--bg2)) 0%,
+      color-mix(in srgb, var(--accent) 7%, var(--bg2)) 54%,
+      color-mix(in srgb, var(--accent) 18%, var(--bg3)) 100%);
+  border-color: var(--mneo-line);
+  box-shadow: var(--mneo-shadow);
+  color: var(--text);
+}
+
+html.media-neo #music > .page-header::before,
+html.media-neo #movies > .page-header::before,
+html.media-neo #series > .page-header::before,
+html.media-neo #photos > .page-header::before,
+html.media-neo #continue > .page-header::before {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--bg2) 62%, transparent) 0%, color-mix(in srgb, var(--bg2) 26%, transparent) 55%, transparent 100%),
+    linear-gradient(0deg, color-mix(in srgb, var(--bg2) 40%, transparent) 0%, transparent 62%);
+}
+
+html.media-neo #music > .page-header h1,
+html.media-neo #movies > .page-header h1,
+html.media-neo #series > .page-header h1,
+html.media-neo #photos > .page-header h1,
+html.media-neo #continue > .page-header h1 {
+  color: var(--text);
+  text-shadow: none;
+}
+
+html.media-neo #music > .page-header .subtitle,
+html.media-neo #movies > .page-header .subtitle,
+html.media-neo #series > .page-header .subtitle,
+html.media-neo #photos > .page-header .subtitle,
+html.media-neo #continue > .page-header .subtitle {
+  color: var(--text2);
+}
+
+/* Когда подставлен реальный постер, возвращаем кинематографичный тёмный слой */
+html.media-neo #music > .page-header.mneo-has-photo::before,
+html.media-neo #movies > .page-header.mneo-has-photo::before,
+html.media-neo #series > .page-header.mneo-has-photo::before,
+html.media-neo #photos > .page-header.mneo-has-photo::before,
+html.media-neo #continue > .page-header.mneo-has-photo::before {
+  background:
+    linear-gradient(90deg, rgba(4, 7, 14, .8) 0%, rgba(4, 7, 14, .42) 48%, rgba(4, 7, 14, .12) 100%),
+    linear-gradient(0deg, rgba(4, 7, 14, .72) 0%, transparent 60%);
+}
+
+html.media-neo #music > .page-header.mneo-has-photo h1,
+html.media-neo #movies > .page-header.mneo-has-photo h1,
+html.media-neo #series > .page-header.mneo-has-photo h1,
+html.media-neo #photos > .page-header.mneo-has-photo h1,
+html.media-neo #continue > .page-header.mneo-has-photo h1 {
+  color: #fff;
+  text-shadow: 0 8px 32px rgba(0, 0, 0, .4);
+}
+
+html.media-neo #music > .page-header.mneo-has-photo .subtitle,
+html.media-neo #movies > .page-header.mneo-has-photo .subtitle,
+html.media-neo #series > .page-header.mneo-has-photo .subtitle,
+html.media-neo #photos > .page-header.mneo-has-photo .subtitle,
+html.media-neo #continue > .page-header.mneo-has-photo .subtitle {
+  color: rgba(255, 255, 255, .76);
+}
+
+html.media-neo #music > .page-header.mneo-has-photo .btn,
+html.media-neo #movies > .page-header.mneo-has-photo .btn,
+html.media-neo #series > .page-header.mneo-has-photo .btn,
+html.media-neo #photos > .page-header.mneo-has-photo .btn,
+html.media-neo #continue > .page-header.mneo-has-photo .btn {
+  background: rgba(255, 255, 255, .1);
+  border-color: rgba(255, 255, 255, .18);
+  color: #fff;
+}
+
+/* CTA: в обычной теме — акцент, на фото — белая кнопка */
+html.media-neo .mneo-cta-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  box-shadow: 0 14px 30px var(--mneo-glow);
+}
+
+html.media-neo .mneo-cta-primary:hover {
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color: #fff;
+}
+
+html.media-neo .mneo-cta-ghost {
+  background: var(--mneo-surface-2);
+  border-color: var(--mneo-line);
+  color: var(--text2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+html.media-neo .mneo-cta-ghost:hover {
+  background: var(--mneo-soft);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent);
+}
+
+html.media-neo .mneo-has-photo .mneo-cta-primary {
+  background: #fff;
+  color: #0b1020;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, .32);
+}
+
+html.media-neo .mneo-has-photo .mneo-cta-primary:hover {
+  background: linear-gradient(135deg, #fff, color-mix(in srgb, var(--accent) 26%, #fff));
+  color: #0b1020;
+}
+
+html.media-neo .mneo-has-photo .mneo-cta-ghost {
+  background: rgba(255, 255, 255, .1);
+  border-color: rgba(255, 255, 255, .22);
+  color: #fff;
+}
+
+html.media-neo .mneo-has-photo .mneo-cta-ghost:hover {
+  background: rgba(255, 255, 255, .18);
+  border-color: rgba(255, 255, 255, .36);
+  color: #fff;
+}
+
+/* Кнопки-чипы в hero — обычная тема */
+html.media-neo .mneo-hero-actions .btn {
+  background: var(--mneo-surface-2);
+  border-color: var(--mneo-line);
+  color: var(--text2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+html.media-neo .mneo-hero-actions .btn:hover {
+  background: var(--mneo-soft);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  color: var(--accent);
+}
+
+html.media-neo .mneo-hero-actions .btn i { color: currentColor; opacity: .8; }
+
+html.media-neo .mneo-has-photo .mneo-hero-actions .btn {
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .16);
+  color: rgba(255, 255, 255, .86);
+}
+
+html.media-neo .mneo-has-photo .mneo-hero-actions .btn:hover {
+  background: rgba(255, 255, 255, .16);
+  border-color: rgba(255, 255, 255, .3);
+  color: #fff;
+}
+
+/* ---------- Аудиоплеер: панель из темы ---------- */
+
+html.media-neo .audio-player {
+  background:
+    radial-gradient(520px 330px at 50% -12%, color-mix(in srgb, var(--accent) 34%, transparent), transparent 72%),
+    linear-gradient(160deg,
+      color-mix(in srgb, var(--accent) 14%, var(--bg2)) 0%,
+      var(--bg2) 54%,
+      color-mix(in srgb, var(--accent) 9%, var(--bg3)) 100%);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 26px 64px rgba(0, 0, 0, .26), inset 0 1px 0 rgba(255, 255, 255, .1);
+  color: var(--text);
+}
+
+html.media-neo .audio-player .player-title { color: var(--text); }
+html.media-neo .audio-player .player-artist { color: var(--text3); }
+html.media-neo .audio-player .player-btn { color: var(--text2); }
+html.media-neo .audio-player .player-btn:hover { background: var(--mneo-soft); color: var(--accent); }
+html.media-neo .audio-player .player-btn.active { color: var(--accent); }
+
+html.media-neo .audio-player .player-btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  box-shadow: 0 12px 26px var(--mneo-glow);
+}
+
+html.media-neo .audio-player .player-btn.primary:hover {
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+html.media-neo .audio-player .player-time { color: var(--text3); }
+html.media-neo .audio-player .progress-bar { background: var(--mneo-line); }
+html.media-neo .audio-player .progress-fill {
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  box-shadow: 0 0 10px var(--mneo-glow);
+}
+html.media-neo .audio-player .volume-slider { background: var(--mneo-line); }
+html.media-neo .audio-player .volume-fill { background: var(--accent); }
+
+html.media-neo .audio-player .speed-btn {
+  color: var(--text2);
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+}
+
+html.media-neo .audio-player .speed-btn:hover {
+  background: var(--mneo-soft);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent);
+}
+
+/* Правая панель: все мелкие подписи из темы */
+html.media-neo .mneo-desk-live { color: var(--text3); }
+html.media-neo .mneo-desk-live i { color: var(--accent); }
+
+html.media-neo .mneo-desk-expand {
+  background: var(--mneo-surface-2);
+  border-color: var(--mneo-line);
+  color: var(--text2);
+}
+
+html.media-neo .mneo-desk-expand:hover {
+  background: var(--mneo-soft);
+  color: var(--accent);
+}
+
+html.media-neo .mneo-desk-tools {
+  background: var(--mneo-surface-2);
+  border-color: var(--mneo-line);
+}
+
+html.media-neo .mneo-desk-extras { border-top-color: var(--mneo-line); }
+html.media-neo .mneo-desk-label { color: var(--text3); }
+html.media-neo .mneo-desk-all { color: var(--text2); }
+html.media-neo .mneo-desk-all:hover { color: var(--accent); }
+
+html.media-neo .mneo-desk-track { color: var(--text); }
+html.media-neo .mneo-desk-track:hover { background: var(--mneo-soft); }
+
+html.media-neo .mneo-desk-track-art {
+  background: var(--mneo-surface-2);
+  color: var(--text3);
+}
+
+html.media-neo .mneo-desk-track-copy b { color: var(--text); }
+html.media-neo .mneo-desk-track-copy small { color: var(--text3); }
+
+html.media-neo .mneo-desk-track-play {
+  background: var(--mneo-surface-2);
+  color: var(--text2);
+}
+
+html.media-neo .mneo-desk-track:hover .mneo-desk-track-play {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+}
+
+html.media-neo .mneo-desk-empty { color: var(--text3); }
+
+/* В тёмной теме оставляем лёгкое свечение сверху, в светлой — чистая панель */
+html.media-neo[data-theme="dark"] .audio-player,
+html.media-neo[data-theme="warm"] .audio-player,
+html.media-neo[data-theme="ocean"] .audio-player,
+html.media-neo[data-theme="forest"] .audio-player,
+html.media-neo[data-theme="midnight"] .audio-player {
+  border-color: var(--mneo-line);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .42), inset 0 1px 0 rgba(255, 255, 255, .12);
+}
+
+/* ============================================================================
+   UI POLISH V3 — карточки, модалки, поиск, очередь, пустые состояния
+   ========================================================================== */
+
+/* ---------- Альбомы ---------- */
+
+html.media-neo .albums-grid {
+  grid-template-columns: repeat(auto-fill, minmax(186px, 1fr));
+  gap: 20px;
+}
+
+html.media-neo .album-card {
+  border-radius: 22px;
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .07);
+  transition: transform .26s var(--mneo-ease), box-shadow .26s var(--mneo-ease), border-color .2s ease;
+}
+
+html.media-neo .album-card:hover {
+  transform: translateY(-7px);
+  border-color: color-mix(in srgb, var(--accent) 48%, transparent);
+  box-shadow: 0 26px 56px rgba(0, 0, 0, .18), 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+html.media-neo .album-poster {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+}
+
+html.media-neo .album-poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(4, 7, 14, .46), transparent 56%);
+  opacity: 0;
+  transition: opacity .28s ease;
+  pointer-events: none;
+}
+
+html.media-neo .album-card:hover .album-poster::after { opacity: 1; }
+
+html.media-neo .album-poster img {
+  transition: transform .55s var(--mneo-ease), filter .3s ease;
+}
+
+html.media-neo .album-card:hover .album-poster img {
+  transform: scale(1.06);
+  filter: brightness(.92);
+}
+
+html.media-neo .album-play-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  bottom: 14px;
+  right: 14px;
+  background: #fff;
+  color: #0b1020;
+  opacity: 0;
+  transform: translateY(10px) scale(.9);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, .34);
+  transition: opacity .22s ease, transform .22s var(--mneo-ease), background .18s ease, color .18s ease;
+  z-index: 2;
+}
+
+html.media-neo .album-card:hover .album-play-btn {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+html.media-neo .album-play-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.06) !important;
+}
+
+html.media-neo .album-actions {
+  top: 10px;
+  right: 10px;
+  gap: 6px;
+  z-index: 2;
+}
+
+html.media-neo .album-act {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(8, 11, 20, .54);
+  border: 1px solid rgba(255, 255, 255, .14);
+  color: #fff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-size: 12px;
+}
+
+html.media-neo .album-act:hover {
+  background: var(--accent);
+  border-color: transparent;
+  transform: translateY(-1px);
+}
+
+html.media-neo .album-info { padding: 15px 16px 17px; }
+html.media-neo .album-title { font-size: 14px; font-weight: 750; letter-spacing: -.02em; }
+html.media-neo .album-artist { font-size: 12px; }
+html.media-neo .album-meta {
+  margin-top: 8px;
+  font-size: 10.5px;
+  gap: 7px;
+}
+
+html.media-neo .album-meta i { color: var(--accent); }
+
+/* ---------- Исполнители ---------- */
+
+html.media-neo .artists-grid {
+  grid-template-columns: repeat(auto-fill, minmax(162px, 1fr));
+  gap: 18px;
+}
+
+html.media-neo .artist-card {
+  border-radius: 22px;
+  padding: 26px 16px 22px;
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .06);
+  transition: transform .24s var(--mneo-ease), box-shadow .24s ease, border-color .2s ease;
+}
+
+html.media-neo .artist-card:hover {
+  transform: translateY(-5px);
+  border-color: color-mix(in srgb, var(--accent) 46%, transparent);
+  box-shadow: 0 22px 46px rgba(0, 0, 0, .16);
+}
+
+html.media-neo .artist-avatar {
+  width: 88px;
+  height: 88px;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--bg2);
+  box-shadow: 0 12px 28px var(--mneo-glow);
+  transition: transform .26s var(--mneo-ease), box-shadow .26s ease;
+}
+
+html.media-neo .artist-card:hover .artist-avatar {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 5px var(--mneo-soft), 0 16px 34px var(--mneo-glow);
+}
+
+html.media-neo .artist-name { font-size: 14px; font-weight: 750; }
+html.media-neo .artist-tracks { font-size: 11.5px; }
+
+/* ---------- Продолжить ---------- */
+
+html.media-neo .continue-card {
+  border-radius: 20px;
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  transition: transform .22s var(--mneo-ease), box-shadow .22s ease, border-color .2s ease;
+}
+
+html.media-neo .continue-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, .15);
+}
+
+html.media-neo .continue-poster { border-radius: 12px; box-shadow: 0 8px 20px rgba(0, 0, 0, .2); }
+html.media-neo .continue-progress-bar { height: 5px; border-radius: 99px; overflow: hidden; }
+html.media-neo .continue-progress-fill { border-radius: 99px; }
+
+/* ---------- Модальные окна ---------- */
+
+html.media-neo .modal-overlay {
+  background: color-mix(in srgb, #05070d 58%, transparent);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+}
+
+html.media-neo .modal {
+  border-radius: 26px;
+  padding: 28px 30px;
+  background:
+    radial-gradient(520px 240px at 100% -10%, var(--mneo-soft), transparent 70%),
+    color-mix(in srgb, var(--bg2) 97%, var(--accent));
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 40px 110px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .06);
+  scrollbar-width: thin;
+}
+
+html.media-neo .modal-header {
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--mneo-line);
+}
+
+html.media-neo .modal-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+}
+
+html.media-neo .modal-header h2 i { color: var(--accent); font-size: 17px; }
+
+html.media-neo .modal-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+  color: var(--text3);
+  font-size: 15px;
+}
+
+html.media-neo .modal-close:hover {
+  background: color-mix(in srgb, #ef4444 14%, transparent);
+  border-color: color-mix(in srgb, #ef4444 40%, transparent);
+  color: #ef4444;
+  transform: rotate(90deg);
+}
+
+html.media-neo .modal-body { font-size: 13.5px; }
+
+html.media-neo .modal input[type="text"],
+html.media-neo .modal input[type="number"],
+html.media-neo .modal input[type="search"],
+html.media-neo .modal input[type="url"],
+html.media-neo .modal textarea,
+html.media-neo .modal select,
+html.media-neo .settings-input,
+html.media-neo .settings-form-row input[type="text"],
+html.media-neo .settings-form-row input[type="number"] {
+  border-radius: 12px;
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+  color: var(--text);
+  padding: 11px 13px;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+html.media-neo .modal input:focus,
+html.media-neo .modal textarea:focus,
+html.media-neo .modal select:focus,
+html.media-neo .settings-input:focus,
+html.media-neo .settings-form-row input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  box-shadow: 0 0 0 4px var(--mneo-softer);
+}
+
+/* Диалоги приложения (dialogs.js) */
+html.media-neo .idl-overlay {
+  background: color-mix(in srgb, #05070d 56%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html.media-neo .idl-box {
+  border-radius: 22px;
+  background:
+    radial-gradient(460px 220px at 100% -20%, var(--mneo-soft), transparent 70%),
+    color-mix(in srgb, var(--bg2) 97%, var(--accent));
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 36px 90px rgba(0, 0, 0, .45);
+}
+
+html.media-neo .idl-head {
+  padding: 18px 20px 12px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+
+html.media-neo .idl-head .idl-ico { color: var(--accent); font-size: 15px; }
+
+html.media-neo .idl-body { padding: 2px 20px 16px; font-size: 13px; color: var(--text2); }
+
+html.media-neo .idl-field input,
+html.media-neo .idl-field textarea,
+html.media-neo .idl-field select {
+  border-radius: 11px;
+  background: var(--mneo-surface-2);
+  border: 1px solid var(--mneo-line);
+  color: var(--text);
+  padding: 10px 12px;
+}
+
+html.media-neo .idl-foot {
+  padding: 12px 20px 18px;
+  gap: 8px;
+  border-top: 1px solid var(--mneo-line);
+}
+
+html.media-neo .idl-btn {
+  border-radius: 11px;
+  padding: 10px 18px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: 1px solid var(--mneo-line);
+  background: var(--mneo-surface-2);
+  color: var(--text2);
+  transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+html.media-neo .idl-btn:hover {
+  background: var(--mneo-soft);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+html.media-neo .idl-btn.idl-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 10px 24px var(--mneo-glow);
+}
+
+html.media-neo .idl-btn.idl-danger {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  border-color: transparent;
+  color: #fff;
+}
+
+/* ---------- Глобальный поиск ---------- */
+
+html.media-neo .global-search-overlay {
+  background: color-mix(in srgb, #05070d 60%, transparent);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  padding-top: 92px;
+}
+
+html.media-neo .global-search {
+  border-radius: 26px;
+  background:
+    radial-gradient(600px 260px at 50% -20%, var(--mneo-soft), transparent 70%),
+    color-mix(in srgb, var(--bg2) 97%, var(--accent));
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 40px 110px rgba(0, 0, 0, .5);
+}
+
+html.media-neo .global-search-header {
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--mneo-line);
+  gap: 13px;
+}
+
+html.media-neo .global-search-header i {
+  color: var(--accent);
+  font-size: 18px;
+}
+
+html.media-neo .global-search-header input {
+  font-size: 17px;
+  font-weight: 550;
+}
+
+html.media-neo .global-search-body { padding: 10px 12px 14px; }
+
+html.media-neo .search-group-title {
+  font-size: 10px;
+  letter-spacing: .12em;
+  font-weight: 800;
+  padding: 12px 12px 6px;
+}
+
+html.media-neo .search-result {
+  border-radius: 13px;
+  padding: 9px 12px;
+  gap: 12px;
+}
+
+html.media-neo .search-result:hover { background: var(--mneo-soft); }
+
+html.media-neo .search-result.selected {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  box-shadow: 0 10px 24px var(--mneo-glow);
+}
+
+html.media-neo .search-result-thumb { border-radius: 9px; }
+
+html.media-neo .search-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--mneo-line);
+  font-size: 10.5px;
+  background: color-mix(in srgb, var(--bg3) 45%, transparent);
+}
+
+html.media-neo .search-footer kbd {
+  border-radius: 6px;
+  border: 1px solid var(--mneo-line);
+  background: var(--mneo-surface-2);
+  padding: 2px 7px;
+}
+
+html.media-neo .search-empty { color: var(--text3); padding: 48px 30px; }
+
+/* ---------- Очередь ---------- */
+
+html.media-neo .queue-panel {
+  border-radius: 24px;
+  background:
+    radial-gradient(440px 240px at 100% -10%, var(--mneo-soft), transparent 70%),
+    color-mix(in srgb, var(--bg2) 96%, var(--accent));
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 36px 90px rgba(0, 0, 0, .36);
+}
+
+/* С 1200px плеер стоит правой колонкой (right:22, width:348), и открытая
+   очередь вставала ровно поверх него: «дальше», громкость и скорость
+   переставали кликоваться. Панель уезжает влево от дока — тем же приёмом,
+   что и уведомления выше. */
+@media (min-width: 1200px) {
+  html.media-neo .queue-panel.open { right: 394px; }
+}
+
+html.media-neo .queue-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--mneo-line);
+}
+
+html.media-neo .queue-header h3 {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+html.media-neo .queue-header h3 i { color: var(--accent); }
+
+html.media-neo .queue-count {
+  border-radius: 999px;
+  background: var(--mneo-soft);
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 9px;
+}
+
+html.media-neo .queue-body { padding: 10px; }
+
+html.media-neo .queue-item {
+  border-radius: 13px;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+}
+
+html.media-neo .queue-item:hover {
+  background: var(--mneo-soft);
+  border-color: transparent;
+}
+
+html.media-neo .queue-thumb { border-radius: 10px; }
+
+html.media-neo .queue-item.current {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  box-shadow: 0 10px 24px var(--mneo-glow);
+}
+
+html.media-neo .queue-item.current .queue-artist { color: rgba(255, 255, 255, .78); }
+
+html.media-neo .queue-remove { border-radius: 9px; }
+html.media-neo .queue-footer { border-top: 1px solid var(--mneo-line); padding: 12px 18px; }
+
+/* ---------- Пустые состояния ---------- */
+
+html.media-neo .empty-state {
+  padding: 64px 26px;
+  border-radius: 26px;
+  border: 1px dashed color-mix(in srgb, var(--text) 16%, transparent);
+  background:
+    radial-gradient(500px 260px at 50% 0%, var(--mneo-softer), transparent 70%),
+    var(--mneo-surface);
+  color: var(--text3);
+}
+
+html.media-neo .empty-state .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  font-size: 34px;
+  opacity: 1;
+  filter: none;
+  color: var(--accent);
+}
+
+html.media-neo .empty-state .mneo-ico {
+  width: 84px;
+  height: 84px;
+  margin: 0;
+  border-radius: 26px;
+  background: var(--mneo-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  box-shadow: 0 14px 34px var(--mneo-glow);
+  color: var(--accent);
+}
+
+html.media-neo .empty-state .mneo-ico i { font-size: 32px; }
+
+html.media-neo .empty-state h3 {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  margin-bottom: 8px;
+}
+
+html.media-neo .empty-state p { color: var(--text3); font-size: 13.5px; }
+
+/* ---------- Настройки / статистика / индексация ---------- */
+
+html.media-neo .settings-section,
+html.media-neo .stat-card,
+html.media-neo .indexing-progress {
+  border-radius: 20px;
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .06);
+}
+
+html.media-neo .settings-section { padding: 22px; }
+
+html.media-neo .settings-section h3 {
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+html.media-neo .settings-section h3 i { color: var(--accent); }
+
+html.media-neo .settings-form-row label { font-size: 12.5px; color: var(--text2); }
+
+html.media-neo .indexing-progress { padding: 18px 20px; }
+
+/* ---------- Уведомления ---------- */
+
+html.media-neo .notification {
+  border-radius: 15px;
+  padding: 13px 18px;
+  background: color-mix(in srgb, var(--bg2) 94%, transparent);
+  border: 1px solid var(--mneo-line);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .26);
+  font-size: 13px;
+  font-weight: 550;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+}
+
+html.media-neo .notification.success { border-left: 3px solid var(--green, #22c55e); }
+html.media-neo .notification.error { border-left: 3px solid var(--red, #ef4444); }
+html.media-neo .notification.info { border-left: 3px solid var(--accent); }
+
+html.media-neo .notification .mneo-ico { color: var(--accent); }
+
+/* ---------- Фокус и мелочи ---------- */
+
+html.media-neo :focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 2px;
+}
+
+html.media-neo .btn:focus-visible,
+html.media-neo .view-tab:focus-visible,
+html.media-neo .track-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+html.media-neo .track-item { scroll-margin: 110px; }
+html.media-neo .section { scroll-margin-top: 100px; }
+
+html.media-neo .track-item .track-actions .action-btn {
+  border-radius: 9px;
+  transition: background .16s ease, color .16s ease, transform .16s ease;
+}
+
+html.media-neo .track-item .track-actions .action-btn:hover {
+  background: var(--mneo-soft);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* Кнопка «убрать из плейлиста» не должна притворяться обычной: тот же клик,
+   но результат необратим для списка. */
+html.media-neo .track-item .track-actions .action-btn.danger:hover {
+  background: color-mix(in srgb, #ff6b6b 16%, transparent);
+  color: #ff6b6b;
+}
+
+/* Строка плейлиста, у которой пропал файл: список показывает, что трек в
+   плейлисте числится, а в библиотеке его нет. Раньше такой плейлист выглядел
+   просто пустым. */
+html.media-neo .track-item.playlist-lost-row { opacity: .55; }
+html.media-neo .track-item.playlist-lost-row .track-title { color: var(--text2); }
+html.media-neo .playlist-lost-note { color: var(--text3); }
+
+html.media-neo .track-item.playing .track-thumb {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent), 0 8px 20px var(--mneo-glow);
+}
+
+html.media-neo .view-tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+html.media-neo .view-tabs::-webkit-scrollbar { display: none; }
+
+html.media-neo .genre-chip .chip-count { color: inherit; opacity: .7; }
+
+html.media-neo .scroll-top-btn {
+  border-radius: 14px;
+  background: var(--mneo-surface);
+  border: 1px solid var(--mneo-line);
+  color: var(--text2);
+  box-shadow: var(--mneo-shadow-soft);
+}
+
+html.media-neo .scroll-top-btn:hover {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border-color: transparent;
+}
+
+/* Ползунки (громкость, эквалайзер) */
+html.media-neo input[type="range"] { accent-color: var(--accent); }
+
+/* Сетки на средних экранах */
+@media (max-width: 1280px) {
+  html.media-neo .albums-grid { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 16px; }
+  html.media-neo .artists-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 14px; }
+}
+
+@media (max-width: 760px) {
+  html.media-neo .empty-state { padding: 44px 18px; }
+  html.media-neo .modal { padding: 22px 18px; border-radius: 22px; }
+  html.media-neo .modal-header h2 { font-size: 18px; }
+}

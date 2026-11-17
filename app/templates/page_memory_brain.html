@@ -1,0 +1,3283 @@
+<!DOCTYPE html>
+<html class="pg-page_memory_brain" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Brain — 3D Wiki</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* Палитра объявлена на body, а не на :root. theme.js записывает свои
+   переменные инлайном в <html>, и объявление на :root проигрывало бы ему —
+   тогда акцент оставался бы светлым и подписи на тёмном фоне не читались.
+   Объявление на <body> перекрывает значение, унаследованное от <html>. */
+body {
+  --bg-deep:    #06060f;
+  --bg-mid:     #0d0d1a;
+  --bg-card:    rgba(15, 15, 30, 0.92);
+  --border:     rgba(167, 139, 250, 0.12);
+  --border-hi:  rgba(167, 139, 250, 0.35);
+  --text:       #d4d4e8;
+  --text-dim:   #8f8fbe;
+  --text-bright:#f0f0ff;
+  --accent:     #a78bfa;
+  --sidebar-w:  420px;
+  --panel-w:    380px;
+  --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+  background: var(--bg-deep);
+  overflow: hidden;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══ CANVAS ═══ */
+#canvas-container {
+  position: fixed; inset: 0; z-index: 1;
+  transition: right var(--transition);
+}
+#canvas-container.sidebar-open { right: var(--sidebar-w); }
+#canvas-container.panel-open { left: var(--panel-w); }
+#canvas-container.both-open { right: var(--sidebar-w); left: var(--panel-w); }
+
+/* ═══ LOADING ═══ */
+#loading {
+  position: fixed; inset: 0; z-index: 10000;
+  background: var(--bg-deep);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: opacity 0.8s ease;
+}
+#loading.hidden { opacity: 0; pointer-events: none; }
+#loading .icon { font-size: 72px; margin-bottom: 24px; animation: pulse 2s ease-in-out infinite; }
+#loading h2 { font-size: 18px; font-weight: 600; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+#loading p { font-size: 13px; color: var(--text-dim); margin-bottom: 28px; }
+#loading .bar { width: 240px; height: 3px; background: rgba(167,139,250,0.15); border-radius: 3px; overflow: hidden; }
+#loading .bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #a78bfa, #60a5fa, #34d399); border-radius: 3px; animation: load 2.5s ease forwards; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+@keyframes load { 0%{width:0%} 100%{width:100%} }
+
+/* ═══ HUD ═══ */
+#hud {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 24px;
+  background: linear-gradient(180deg, rgba(6,6,15,0.95) 0%, rgba(6,6,15,0) 100%);
+  pointer-events: none;
+  transition: right var(--transition), left var(--transition);
+}
+#hud.sidebar-open { right: var(--sidebar-w); }
+#hud.panel-open { left: var(--panel-w); }
+#hud.both-open { right: var(--sidebar-w); left: var(--panel-w); }
+#hud > * { pointer-events: auto; }
+
+#hud-left { display: flex; align-items: center; gap: 16px; }
+#hud h1 {
+  font-size: 20px; font-weight: 700;
+  background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; letter-spacing: 0.5px;
+}
+#hud .badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; padding: 3px 8px;
+  background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.2);
+  border-radius: 6px; color: var(--accent);
+}
+#stats { display: flex; gap: 20px; font-size: 12px; color: var(--text-dim); }
+#stats .stat-val { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ═══ SEARCH ═══ */
+#search-wrap {
+  position: fixed; top: 62px; right: 20px; z-index: 100;
+  transition: right var(--transition);
+}
+#search-wrap.sidebar-open { right: calc(var(--sidebar-w) + 20px); }
+#search {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 9px 14px 9px 36px;
+  color: var(--text); font-size: 13px; width: 240px;
+  outline: none; backdrop-filter: blur(12px);
+  transition: border-color 0.3s, width 0.3s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23555577' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.656a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: 12px center;
+}
+#search:focus { border-color: var(--border-hi); width: 300px; }
+#search::placeholder { color: #555577; }
+#search-results {
+  position: absolute; top: calc(100% + 6px); right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px; width: 300px; max-height: 400px;
+  overflow-y: auto; backdrop-filter: blur(12px);
+  display: none;
+}
+#search-results.active { display: block; }
+#search-results .result-item {
+  padding: 10px 14px; cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.2s;
+}
+#search-results .result-item:last-child { border-bottom: none; }
+#search-results .result-item:hover { background: rgba(167,139,250,0.08); }
+#search-results .result-title { font-size: 13px; font-weight: 600; color: var(--text-bright); }
+#search-results .result-section { font-size: 10px; color: var(--text-dim); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ═══ LEGEND ═══ */
+#legend {
+  position: fixed; bottom: 20px; left: 20px; z-index: 100;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 18px;
+  backdrop-filter: blur(12px);
+  transition: left var(--transition);
+}
+#legend.panel-open { left: calc(var(--panel-w) + 20px); }
+#legend h4 { font-size: 10px; color: var(--text-dim); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+#legend .item { display: flex; align-items: center; gap: 8px; margin: 5px 0; font-size: 12px; color: var(--text); cursor: pointer; transition: opacity 0.2s; user-select: none; }
+#legend .item:hover { opacity: 0.7; }
+#legend .item.filtered { opacity: 0.25; }
+#legend .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px currentColor; }
+#legend .count { font-size: 10px; color: var(--text-dim); margin-left: auto; font-variant-numeric: tabular-nums; }
+
+/* ═══ CONTROLS ═══ */
+#controls {
+  position: fixed; bottom: 20px; right: 20px; z-index: 100;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 14px;
+  font-size: 11px; color: var(--text-dim);
+  backdrop-filter: blur(12px);
+  transition: right var(--transition);
+}
+#controls.sidebar-open { right: calc(var(--sidebar-w) + 20px); }
+#controls kbd {
+  background: rgba(167,139,250,0.12); color: var(--accent);
+  padding: 2px 6px; border-radius: 4px; font-size: 10px; margin: 0 2px;
+  border: 1px solid rgba(167,139,250,0.15);
+}
+
+/* ═══ TOGGLE BUTTONS ═══ */
+#rotation-toggle, #physics-toggle {
+  position: fixed; z-index: 100;
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s;
+}
+#rotation-toggle { bottom: 60px; right: 20px; }
+#physics-toggle  { bottom: 110px; right: 20px; }
+#rotation-toggle:hover, #physics-toggle:hover {
+  border-color: var(--border-hi);
+  color: var(--text-bright);
+}
+#rotation-toggle.active, #physics-toggle.active {
+  background: rgba(167,139,250,0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(167,139,250,0.2);
+}
+#rotation-toggle.paused, #physics-toggle.paused {
+  opacity: 0.5;
+  border-color: rgba(239,68,68,0.3);
+}
+
+/* ═══ TOOLTIP ═══ */
+#tooltip {
+  position: fixed; z-index: 200;
+  background: rgba(12, 12, 25, 0.97);
+  border: 1px solid var(--border-hi);
+  border-radius: 12px; padding: 14px 18px;
+  max-width: 340px; min-width: 180px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 24px rgba(167,139,250,0.08);
+  display: none; pointer-events: none;
+  transition: opacity 0.15s;
+}
+#tooltip h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--text-bright); }
+#tooltip p { font-size: 12px; line-height: 1.6; color: var(--text-dim); }
+#tooltip .meta { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+#tooltip .tag { display: inline-block; padding: 2px 7px; border-radius: 5px; font-size: 10px; font-weight: 600; }
+#tooltip .click-hint { margin-top: 8px; font-size: 10px; color: var(--accent); opacity: 0.7; font-style: italic; }
+
+/* ═══ SIDEBAR ═══ */
+#sidebar {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: var(--sidebar-w); z-index: 300;
+  background: rgba(8, 8, 18, 0.98);
+  border-left: 1px solid var(--border);
+  backdrop-filter: blur(24px);
+  transform: translateX(100%);
+  transition: transform var(--transition);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+#sidebar.open { transform: translateX(0); }
+
+#sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+#sidebar-header .section-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; padding: 3px 8px; border-radius: 6px;
+}
+#sidebar-header h2 {
+  font-size: 16px; font-weight: 700; color: var(--text-bright);
+  flex: 1; margin: 0 12px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#sidebar-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+#sidebar-close:hover { background: rgba(167,139,250,0.1); color: var(--text-bright); border-color: var(--border-hi); }
+
+#sidebar-meta {
+  padding: 10px 20px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 16px; font-size: 11px; color: var(--text-dim);
+}
+#sidebar-meta span { display: flex; align-items: center; gap: 4px; }
+
+#sidebar-content {
+  flex: 1; overflow-y: auto; padding: 20px;
+  font-size: 14px; line-height: 1.75; color: var(--text);
+  scroll-behavior: smooth;
+}
+#sidebar-content::-webkit-scrollbar { width: 4px; }
+#sidebar-content::-webkit-scrollbar-track { background: transparent; }
+#sidebar-content::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.2); border-radius: 2px; }
+
+#sidebar-content h1 { font-size: 22px; font-weight: 800; color: var(--text-bright); margin: 24px 0 12px; line-height: 1.3; }
+#sidebar-content h2 { font-size: 18px; font-weight: 700; color: var(--text-bright); margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+#sidebar-content h3 { font-size: 15px; font-weight: 600; color: var(--text-bright); margin: 16px 0 8px; }
+#sidebar-content h4 { font-size: 13px; font-weight: 600; color: var(--text); margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+#sidebar-content p { margin: 8px 0; }
+#sidebar-content ul, #sidebar-content ol { margin: 8px 0; padding-left: 22px; }
+#sidebar-content li { margin: 4px 0; }
+#sidebar-content code { background: rgba(167,139,250,0.1); color: #c4b5fd; padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+#sidebar-content pre { background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin: 12px 0; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+#sidebar-content pre code { background: none; padding: 0; }
+#sidebar-content blockquote { border-left: 3px solid var(--accent); padding-left: 14px; margin: 12px 0; color: var(--text-dim); font-style: italic; }
+#sidebar-content a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(167,139,250,0.3); }
+#sidebar-content a:hover { border-bottom-color: var(--accent); }
+#sidebar-content hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+#sidebar-content table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+#sidebar-content th, #sidebar-content td { padding: 8px 12px; border: 1px solid var(--border); text-align: left; }
+#sidebar-content th { background: rgba(167,139,250,0.08); font-weight: 600; color: var(--text-bright); }
+#sidebar-content strong { color: var(--text-bright); }
+#sidebar-content em { color: #b0b0cc; }
+
+#sidebar-footer { padding: 12px 20px; flex-shrink: 0; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+#sidebar-footer .tag { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 5px; background: rgba(167,139,250,0.1); color: var(--accent); }
+
+/* ═══ LEFT PANEL — Add Knowledge ═══ */
+#left-panel {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: var(--panel-w); z-index: 300;
+  background: rgba(8, 8, 18, 0.98);
+  border-right: 1px solid var(--border);
+  backdrop-filter: blur(24px);
+  transform: translateX(-100%);
+  transition: transform var(--transition);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+#left-panel.open { transform: translateX(0); }
+
+#panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+#panel-header h2 { font-size: 16px; font-weight: 700; color: var(--text-bright); }
+#panel-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+#panel-close:hover { background: rgba(167,139,250,0.1); color: var(--text-bright); border-color: var(--border-hi); }
+
+#panel-content {
+  flex: 1; overflow-y: auto; padding: 20px;
+}
+#panel-content::-webkit-scrollbar { width: 4px; }
+#panel-content::-webkit-scrollbar-track { background: transparent; }
+#panel-content::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.2); border-radius: 2px; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-dim); margin-bottom: 6px;
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+  color: var(--text); font-size: 13px;
+  outline: none; font-family: inherit;
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--border-hi);
+}
+.form-group textarea { min-height: 120px; line-height: 1.6; }
+.form-group select option { background: #0d0d1a; color: var(--text); }
+
+.tags-input-wrap {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px;
+  min-height: 42px; align-items: center;
+}
+.tags-input-wrap:focus-within { border-color: var(--border-hi); }
+.tags-input-wrap .tag-chip {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(167,139,250,0.15); color: var(--accent);
+  padding: 3px 8px; border-radius: 5px;
+  font-size: 11px; font-weight: 600;
+}
+.tags-input-wrap .tag-chip .remove {
+  cursor: pointer; opacity: 0.6; font-size: 14px; line-height: 1;
+}
+.tags-input-wrap .tag-chip .remove:hover { opacity: 1; }
+.tags-input-wrap input {
+  border: none; background: transparent; padding: 3px 4px;
+  color: var(--text); font-size: 13px; outline: none;
+  flex: 1; min-width: 80px;
+}
+
+.links-input-wrap {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px;
+  min-height: 42px; align-items: center;
+}
+.links-input-wrap:focus-within { border-color: var(--border-hi); }
+.links-input-wrap .link-chip {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(96,165,250,0.15); color: #60a5fa;
+  padding: 3px 8px; border-radius: 5px;
+  font-size: 11px; font-weight: 600;
+}
+.links-input-wrap .link-chip .remove {
+  cursor: pointer; opacity: 0.6; font-size: 14px; line-height: 1;
+}
+.links-input-wrap .link-chip .remove:hover { opacity: 1; }
+.links-input-wrap input {
+  border: none; background: transparent; padding: 3px 4px;
+  color: var(--text); font-size: 13px; outline: none;
+  flex: 1; min-width: 80px;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border: none; transition: all 0.2s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  color: #fff;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(167,139,250,0.3); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-secondary {
+  background: rgba(167,139,250,0.1); color: var(--accent);
+  border: 1px solid rgba(167,139,250,0.2);
+}
+.btn-secondary:hover { background: rgba(167,139,250,0.15); }
+.btn-danger {
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.25);
+}
+.btn-danger:hover {
+  background: rgba(239,68,68,0.2);
+  border-color: rgba(239,68,68,0.4);
+}
+
+#panel-footer {
+  padding: 14px 20px; flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 10px;
+}
+
+/* ═══ ADD KNOWLEDGE BUTTON (floating) ═══ */
+#add-knowledge-btn {
+  position: fixed; bottom: 20px; left: 20px; z-index: 100;
+  width: 48px; height: 48px; border-radius: 14px;
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  border: none; color: #fff; font-size: 24px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(167,139,250,0.3);
+  transition: all 0.3s;
+}
+#add-knowledge-btn:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(167,139,250,0.4); }
+#add-knowledge-btn.hidden { transform: translateX(-100px); opacity: 0; pointer-events: none; }
+
+/* ═══ GROUP HIGHLIGHT OVERLAY ═══ */
+#group-overlay {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 50; pointer-events: none; opacity: 0; transition: opacity 0.5s;
+  text-align: center;
+}
+#group-overlay.visible { opacity: 1; }
+#group-overlay .emoji { font-size: 48px; display: block; margin-bottom: 8px; }
+#group-overlay .text {
+  font-size: 14px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--accent);
+  text-shadow: 0 0 30px rgba(167,139,250,0.5);
+}
+
+/* ═══ DRAG INDICATOR ═══ */
+#drag-indicator {
+  position: fixed; z-index: 150; pointer-events: none;
+  font-size: 11px; color: var(--accent); opacity: 0;
+  transition: opacity 0.2s;
+  background: rgba(12,12,25,0.9); padding: 4px 10px;
+  border-radius: 6px; border: 1px solid var(--border-hi);
+}
+#drag-indicator.visible { opacity: 1; }
+
+/* ═══ TOAST ═══ */
+#toast-container {
+  position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+  z-index: 500; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 18px;
+  font-size: 13px; color: var(--text);
+  backdrop-filter: blur(12px);
+  animation: toast-in 0.3s ease, toast-out 0.3s ease 2.7s forwards;
+  pointer-events: auto;
+}
+.toast.success { border-color: rgba(52,211,153,0.3); color: #34d399; }
+.toast.error { border-color: rgba(239,68,68,0.3); color: #ef4444; }
+.toast.info { border-color: rgba(167,139,250,0.3); color: var(--accent); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toast-out { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 100vw; --panel-w: 100vw; }
+  #search { width: 160px; }
+  #search:focus { width: 200px; }
+  #legend { display: none; }
+  #add-knowledge-btn { bottom: 70px; }
+  #rotation-toggle { bottom: 120px; right: 10px; }
+  #physics-toggle { bottom: 170px; right: 10px; }
+  #settings-toggle { bottom: 220px; right: 10px; }
+}
+
+/* ═══ SETTINGS PANEL ═══ */
+#settings-toggle {
+  position: fixed; z-index: 100;
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s;
+  bottom: 160px; right: 20px;
+}
+#settings-toggle:hover {
+  border-color: var(--border-hi);
+  color: var(--text-bright);
+}
+#settings-toggle.active {
+  background: rgba(167,139,250,0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(167,139,250,0.2);
+}
+
+#settings-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 360px; z-index: 350;
+  background: rgba(8, 8, 18, 0.98);
+  border-left: 1px solid var(--border);
+  backdrop-filter: blur(24px);
+  transform: translateX(100%);
+  transition: transform var(--transition);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+#settings-panel.open { transform: translateX(0); }
+
+#settings-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+#settings-header h2 { font-size: 16px; font-weight: 700; color: var(--text-bright); }
+#settings-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+#settings-close:hover { background: rgba(167,139,250,0.1); color: var(--text-bright); border-color: var(--border-hi); }
+
+#settings-content {
+  flex: 1; overflow-y: auto; padding: 20px;
+}
+#settings-content::-webkit-scrollbar { width: 4px; }
+#settings-content::-webkit-scrollbar-track { background: transparent; }
+#settings-content::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.2); border-radius: 2px; }
+
+.settings-group {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-group:last-child { border-bottom: none; margin-bottom: 0; }
+.settings-label {
+  display: block; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-dim); margin-bottom: 12px;
+}
+.settings-row {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+}
+.settings-desc { font-size: 13px; color: var(--text); }
+.settings-hint {
+  font-size: 11px; color: var(--text-dim); margin-top: 6px;
+  line-height: 1.5; padding-left: 52px;
+}
+
+/* Toggle switch */
+.toggle-switch {
+  position: relative; display: inline-block;
+  width: 44px; height: 24px; flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.08);
+  border-radius: 24px; transition: 0.3s;
+  border: 1px solid var(--border);
+}
+.toggle-slider:before {
+  position: absolute; content: "";
+  height: 18px; width: 18px;
+  left: 2px; bottom: 2px;
+  background: var(--text-dim);
+  border-radius: 50%; transition: 0.3s;
+}
+.toggle-switch input:checked + .toggle-slider {
+  background: rgba(167,139,250,0.25);
+  border-color: var(--accent);
+}
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+  background: var(--accent);
+}
+
+/* Legend "All" item */
+#legend .item.all-item {
+  margin-bottom: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+
+/* Search highlight animation */
+@keyframes nodePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.8); }
+  100% { transform: scale(1); }
+}
+
+/* Search result highlight */
+#search-results .result-item.search-highlight {
+  background: rgba(167,139,250,0.15);
+  border-left: 3px solid var(--accent);
+}
+</style>
+<script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="icon">🧠</div>
+  <h2>Memory Brain</h2>
+  <p>Loading wiki graph…</p>
+  <div class="bar"><div class="bar-fill"></div></div>
+</div>
+
+<!-- 3D Canvas -->
+<div id="canvas-container"></div>
+
+<!-- HUD -->
+<div id="hud">
+  <div id="hud-left">
+    <h1>🧠 OWL Memory Brain</h1>
+    <span class="badge">3D</span>
+  </div>
+  <div id="stats">
+    <div>Nodes: <span class="stat-val" id="stat-nodes">0</span></div>
+    <div>Links: <span class="stat-val" id="stat-links">0</span></div>
+    <div>Words: <span class="stat-val" id="stat-words">0</span></div>
+  </div>
+</div>
+
+<!-- Search -->
+<div id="search-wrap">
+  <input type="text" id="search" placeholder="Search nodes…" autocomplete="off">
+  <div id="search-results"></div>
+</div>
+
+<!-- Legend -->
+<div id="legend">
+  <h4>Sections</h4>
+  <div id="legend-items"></div>
+</div>
+
+<!-- Controls -->
+<div id="controls">
+  <kbd>Drag</kbd> Move node &nbsp; <kbd>Scroll</kbd> Zoom &nbsp; <kbd>LMB</kbd> Sidebar &nbsp; <kbd>RMB</kbd> Full Note &nbsp; <kbd>Shift+Drag</kbd> Pan &nbsp; <kbd>Esc</kbd> Close
+</div>
+
+<!-- Rotation Toggle -->
+<button id="rotation-toggle" title="Toggle auto-rotation"><i class="fa-solid fa-rotate"></i></button>
+
+<!-- Physics Toggle -->
+<button id="physics-toggle" title="Toggle physics simulation"><i class="fa-solid fa-circle-nodes"></i></button>
+
+<!-- Settings Toggle -->
+<button id="settings-toggle" title="Settings"><i class="fa-solid fa-gear"></i></button>
+
+<!-- Settings Panel -->
+<div id="settings-panel">
+  <div id="settings-header">
+    <h2>⚙️ Settings</h2>
+    <button id="settings-close" title="Close"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div id="settings-content">
+    <div class="settings-group">
+      <label class="settings-label">Data Source</label>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-skip-api">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Skip API fetch (local files only)</span>
+      </div>
+      <p class="settings-hint">When enabled, graph generation will not fetch data from the API server. Only local .md files will be used.</p>
+    </div>
+    <div class="settings-group">
+      <label class="settings-label">Display</label>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-show-labels" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Show node labels</span>
+      </div>
+    </div>
+    <div class="settings-group">
+      <label class="settings-label">Graph</label>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-auto-rotate" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Auto-rotate</span>
+      </div>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-physics" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Physics simulation</span>
+      </div>
+    </div>
+    <div class="settings-group">
+      <label class="settings-label">Actions</label>
+      <button class="btn btn-secondary" id="btn-regenerate" style="width:100%;justify-content:center;"><i class="fa-solid fa-rotate" style="margin-right:6px"></i>
+        Regenerate Graph
+      </button>
+      <p class="settings-hint" id="regenerate-status"></p>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-secondary" id="btn-load-notes" style="flex:1;justify-content:center;font-size:12px;"><i class="fa-solid fa-note-sticky" style="margin-right:6px"></i>
+          Load Notes
+        </button>
+        <button class="btn btn-secondary" id="btn-load-ai" style="flex:1;justify-content:center;font-size:12px;"><i class="fa-solid fa-robot" style="margin-right:6px"></i>
+          Load AI DB
+        </button>
+      </div>
+      <p class="settings-hint" id="load-status"></p>
+    </div>
+    <div class="settings-group">
+      <label class="settings-label">Data Filtering</label>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-include-ai" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Include AI DB in graph</span>
+      </div>
+      <p class="settings-hint">When disabled, AI Knowledge nodes are hidden from the graph.</p>
+    </div>
+    <div class="settings-group">
+      <label class="settings-label">🔄 Auto-Sync New Files</label>
+      <p class="settings-hint" style="margin-bottom:8px;">Automatically copy new .md files to Notes and/or AI DB when graph regenerates.</p>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-sync-enabled">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Enable auto-sync</span>
+      </div>
+      <div style="margin-top:8px;">
+        <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px;">Sync target:</label>
+        <select id="setting-sync-target" style="width:100%;background:rgba(15,15,30,0.9);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;outline:none;">
+          <option value="both">📝 + 🤖 Both (Notes & AI DB)</option>
+          <option value="notes">📝 Notes only</option>
+          <option value="ai">🤖 AI DB only</option>
+        </select>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;">
+        <button class="btn btn-secondary" id="btn-sync-now" style="flex:1;justify-content:center;font-size:12px;"><i class="fa-solid fa-arrows-rotate" style="margin-right:6px"></i>
+          🔄 Sync Now
+        </button>
+        <button class="btn btn-secondary" id="btn-sync-status" style="flex:1;justify-content:center;font-size:12px;">
+          📊 Status
+        </button>
+      </div>
+      <p class="settings-hint" id="sync-status-text"></p>
+    </div>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div id="tooltip">
+  <h3 id="tt-title"></h3>
+  <p id="tt-desc"></p>
+  <div class="meta" id="tt-meta"></div>
+  <div class="click-hint">Left click → sidebar · Right click → full note</div>
+</div>
+
+<!-- Drag indicator -->
+<div id="drag-indicator">Dragging…</div>
+
+<!-- Group overlay -->
+<div id="group-overlay">
+  <span class="emoji" id="sl-emoji"></span>
+  <span class="text" id="sl-text"></span>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div id="sidebar-header">
+    <span class="section-badge" id="sb-badge"></span>
+    <h2 id="sb-title"></h2>
+    <button id="sidebar-close" title="Close (Esc)">✕</button>
+  </div>
+  <div id="sidebar-meta">
+    <span id="sb-words"></span>
+    <span id="sb-modified"></span>
+    <span id="sb-filepath"></span>
+  </div>
+  <div id="sidebar-content"></div>
+  <div id="sidebar-footer" style="display:none">
+    <div id="sb-tags"></div>
+  </div>
+  <div id="sidebar-actions" style="display:none;padding:12px 18px;gap:8px;flex-wrap:wrap;">
+    <button class="btn btn-secondary" id="sb-btn-notes" style="flex:1;justify-content:center;font-size:12px;"><i class="fa-solid fa-note-sticky" style="margin-right:6px"></i>Load to Notes</button>
+    <button class="btn btn-secondary" id="sb-btn-ai" style="flex:1;justify-content:center;font-size:12px;"><i class="fa-solid fa-robot" style="margin-right:6px"></i>Load to AI DB</button>
+  </div>
+  <div id="sidebar-edit-actions" style="display:none;padding:8px 18px 14px;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);">
+    <button class="btn btn-secondary" id="sb-btn-edit" style="flex:1;justify-content:center;font-size:12px;">✏️ Редактировать</button>
+    <button class="btn btn-danger" id="sb-btn-delete" style="flex:1;justify-content:center;font-size:12px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.25);">🗑️ Удалить</button>
+  </div>
+</div>
+
+<!-- Left Panel — Add Knowledge -->
+<div id="left-panel">
+  <div id="panel-header">
+    <h2>➕ Add Knowledge</h2>
+    <button id="panel-close" title="Close">✕</button>
+  </div>
+  <div id="panel-content">
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" id="form-title" placeholder="e.g. Patterns — New Pattern">
+    </div>
+    <div class="form-group">
+      <label>Section</label>
+      <select id="form-section">
+        <option value="PATTERNS">🧩 Patterns</option>
+        <option value="PROJECT">⚙️ Project Logic</option>
+        <option value="LESSONS">📚 Lessons Learned</option>
+        <option value="FACTS">🔮 Holographic</option>
+        <option value="HOLIDAYS">🎄 Holidays</option>
+        <option value="GENERAL">📄 General</option>
+        <option value="PERSONAL">👤 Personal</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Content (Markdown)</label>
+      <textarea id="form-content" placeholder="Write knowledge in Markdown...
+
+Use [[Node Title]] to create links to other nodes.
+Use #tag to add tags."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Tags (Enter to add)</label>
+      <div class="tags-input-wrap" id="tags-wrap">
+        <input type="text" id="form-tags-input" placeholder="Type tag…">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Links to other nodes (Enter to add)</label>
+      <div class="links-input-wrap" id="links-wrap">
+        <input type="text" id="form-links-input" placeholder="Type node title…">
+      </div>
+    </div>
+  </div>
+  <div id="panel-footer">
+    <button class="btn btn-primary" id="btn-save-node">
+      💾 Save Node
+    </button>
+    <button class="btn btn-secondary" id="btn-clear-form">
+      Clear
+    </button>
+  </div>
+</div>
+
+<!-- Floating Add Button -->
+<button id="add-knowledge-btn" title="Add Knowledge">+</button>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     THREE.JS — Full 3D Brain Visualization with Force-Directed Graph
+     ═══════════════════════════════════════════════════════════════ -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "/static/three/three.module.js",
+    "three/addons/": "/static/three/addons/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+/* ═══════════════════════════════════════════════════════════════
+   CONFIG
+   ═══════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  nodeBaseSize:     0.35,
+  nodeSizeMult:     0.28,
+  linkOpacity:      0.18,
+  pulseCount:       60,
+  particleCount:    600,
+  particleSize:     0.06,
+  autoRotateSpeed:  0.15,
+  cameraDistance:   42,
+  bloomStrength:    0.7,
+  bloomRadius:      0.4,
+  bloomThreshold:   0.85,
+  // Force-directed
+  repulsion:        80,
+  attraction:       0.005,
+  damping:          0.92,
+  centerGravity:    0.01,
+  maxVelocity:      2,
+  groupSpread:      8,
+};
+
+const SECTION_COLORS = {
+  PATTERNS:     { color: '#a78bfa', hex: 0xa78bfa, label: 'Patterns',        emoji: '🧩' },
+  PROJECT:      { color: '#60a5fa', hex: 0x60a5fa, label: 'Project Logic',   emoji: '⚙️' },
+  LESSONS:      { color: '#34d399', hex: 0x34d399, label: 'Lessons Learned', emoji: '📚' },
+  FACTS:        { color: '#fbbf24', hex: 0xfbbf24, label: 'Holographic',     emoji: '🔮' },
+  HOLIDAYS:     { color: '#f472b6', hex: 0xf472b6, label: 'Holidays',        emoji: '🎄' },
+  GENERAL:      { color: '#818cf8', hex: 0x818cf8, label: 'General',         emoji: '📄' },
+  NOTES:        { color: '#22d3ee', hex: 0x22d3ee, label: 'Notes',           emoji: '📝' },
+  AI_KNOWLEDGE: { color: '#f97316', hex: 0xf97316, label: 'AI Knowledge',    emoji: '🤖' },
+  PERSONAL:     { color: '#fb923c', hex: 0xfb923c, label: 'Personal',        emoji: '👤' },
+};
+
+const LINK_TYPE_COLORS = {
+  explicit: '#ffffff',
+  tags:     '#fbbf24',
+  mention:  '#60a5fa',
+  section:  '#818cf8',
+  semantic: '#34d399',
+};
+
+const LINK_TYPE_LABELS = {
+  explicit: '🔗 Explicit',
+  tags:     '🏷️ Tags',
+  mention:  '💬 Mention',
+  section:  '📁 Section',
+  semantic: '🧠 Semantic',
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════════ */
+let graphData = null;
+let nodeObjects = new Map();   // id → { mesh, glow, label, data, velocity, force }
+let linkLines = [];
+let linkPulses = [];
+let particles = null;
+let hoveredNode = null;
+let focusedNode = null;
+let sidebarOpen = false;
+let panelOpen = false;
+let activeSectionFilter = null;
+let isDragging = false;
+let dragNode = null;
+let dragPlane = new THREE.Plane();
+let dragOffset = new THREE.Vector3();
+let forceRunning = true;
+let brainWireframe = null;
+
+const raycaster = new THREE.Raycaster();
+raycaster.params.Points.threshold = 0.5;
+const mouse = new THREE.Vector2();
+const mouse3D = new THREE.Vector3();
+
+// Form state
+let formTags = [];
+let formLinks = [];
+
+/* ═══════════════════════════════════════════════════════════════
+   SCENE SETUP
+   ═══════════════════════════════════════════════════════════════ */
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x06060f, 0.01);
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+camera.position.set(0, 12, CONFIG.cameraDistance);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.3;
+document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+// Post-processing
+const composer = new EffectComposer(renderer);
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  CONFIG.bloomStrength, CONFIG.bloomRadius, CONFIG.bloomThreshold
+);
+composer.addPass(bloomPass);
+
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.autoRotate = true;
+controls.autoRotateSpeed = CONFIG.autoRotateSpeed;
+controls.minDistance = 8;
+controls.maxDistance = 120;
+
+// Lights
+const ambientLight = new THREE.AmbientLight(0x334466, 0.6);
+scene.add(ambientLight);
+const pointLight = new THREE.PointLight(0xa78bfa, 1.5, 100);
+pointLight.position.set(0, 20, 20);
+scene.add(pointLight);
+
+/* ═══════════════════════════════════════════════════════════════
+   BRAIN WIREFRAME (decorative)
+   ═══════════════════════════════════════════════════════════════ */
+function createBrainWireframe() {
+  const group = new THREE.Group();
+
+  // Left hemisphere
+  const leftGeo = new THREE.SphereGeometry(6, 32, 24, 0, Math.PI);
+  const wireMat = new THREE.MeshBasicMaterial({
+    color: 0x1a1a3a,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.08,
+  });
+  const left = new THREE.Mesh(leftGeo, wireMat);
+  left.position.set(-3, 2, 0);
+  left.scale.set(1.2, 1, 1);
+  group.add(left);
+
+  // Right hemisphere
+  const rightGeo = new THREE.SphereGeometry(6, 32, 24, Math.PI, Math.PI);
+  const right = new THREE.Mesh(rightGeo, wireMat.clone());
+  right.position.set(3, 2, 0);
+  right.scale.set(1.2, 1, 1);
+  group.add(right);
+
+  // Cerebellum
+  const cerebGeo = new THREE.SphereGeometry(3, 16, 12);
+  const cereb = new THREE.Mesh(cerebGeo, wireMat.clone());
+  cereb.position.set(0, -3, -2);
+  cereb.scale.set(1.4, 0.8, 1);
+  group.add(cereb);
+
+  // Brain stem
+  const stemGeo = new THREE.CylinderGeometry(0.8, 1.2, 5, 12);
+  const stem = new THREE.Mesh(stemGeo, wireMat.clone());
+  stem.position.set(0, -5, -1);
+  group.add(stem);
+
+  // Corpus callosum (connecting arch)
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-1, 2, 0),
+    new THREE.Vector3(0, 3.5, 0),
+    new THREE.Vector3(1, 2, 0),
+  ]);
+  const tubeGeo = new THREE.TubeGeometry(curve, 20, 0.15, 8, false);
+  const corpus = new THREE.Mesh(tubeGeo, wireMat.clone());
+  corpus.material.opacity = 0.12;
+  group.add(corpus);
+
+  scene.add(group);
+  brainWireframe = group;
+  return group;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PARTICLES
+   ═══════════════════════════════════════════════════════════════ */
+function createParticles() {
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(CONFIG.particleCount * 3);
+  const colors = new Float32Array(CONFIG.particleCount * 3);
+
+  for (let i = 0; i < CONFIG.particleCount; i++) {
+    positions[i * 3]     = (Math.random() - 0.5) * 120;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 120;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 120;
+
+    const c = new THREE.Color().setHSL(0.7 + Math.random() * 0.15, 0.6, 0.4 + Math.random() * 0.3);
+    colors[i * 3]     = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+  const material = new THREE.PointsMaterial({
+    size: CONFIG.particleSize,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.5,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  particles = new THREE.Points(geometry, material);
+  scene.add(particles);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NODE CREATION — with group-aware positioning
+   ═══════════════════════════════════════════════════════════════ */
+function createNode(nodeData, index, total, groupCenter, groupRadius) {
+  const secColor = SECTION_COLORS[nodeData.section] || SECTION_COLORS.GENERAL;
+  const color = new THREE.Color(secColor.color);
+  const size = CONFIG.nodeBaseSize + (nodeData.size || 1) * CONFIG.nodeSizeMult;
+
+  let pos;
+  if (groupCenter) {
+    // Grouped node — place near group center with some randomness
+    const phi = Math.acos(1 - 2 * (index + 0.5) / total);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * index;
+    const r = groupRadius * (0.3 + Math.random() * 0.7);
+    pos = new THREE.Vector3(
+      groupCenter.x + r * Math.sin(phi) * Math.cos(theta) * 0.5,
+      groupCenter.y + r * Math.sin(phi) * Math.sin(theta) * 0.5,
+      groupCenter.z + r * Math.cos(phi) * 0.5
+    );
+  } else {
+    // Isolated node — place far from center, spread around edges
+    const angle = (index / total) * Math.PI * 2 + Math.random() * 0.5;
+    const radius = 25 + Math.random() * 15;
+    pos = new THREE.Vector3(
+      Math.cos(angle) * radius,
+      (Math.random() - 0.5) * 20,
+      Math.sin(angle) * radius
+    );
+  }
+
+  // Node sphere
+  const geometry = new THREE.SphereGeometry(size, 24, 24);
+  const material = new THREE.MeshStandardMaterial({
+    color: color,
+    emissive: color,
+    emissiveIntensity: 0.4,
+    metalness: 0.3,
+    roughness: 0.5,
+    transparent: true,
+    opacity: 0.9,
+  });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.copy(pos);
+  mesh.userData = { nodeId: nodeData.id, type: 'node' };
+  scene.add(mesh);
+
+  // Glow ring
+  const ringGeo = new THREE.RingGeometry(size * 1.3, size * 1.8, 32);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: color,
+    transparent: true,
+    opacity: 0.15,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.position.copy(pos);
+  scene.add(ring);
+
+  // Outer glow
+  const glowGeo = new THREE.SphereGeometry(size * 2, 16, 16);
+  const glowMat = new THREE.MeshBasicMaterial({
+    color: color,
+    transparent: true,
+    opacity: 0.06,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const glow = new THREE.Mesh(glowGeo, glowMat);
+  glow.position.copy(pos);
+  scene.add(glow);
+
+  return {
+    id: nodeData.id,
+    data: nodeData,
+    mesh, ring, glow,
+    position: pos.clone(),
+    velocity: new THREE.Vector3(),
+    force: new THREE.Vector3(),
+    color: color,
+    size: size,
+    secColor: secColor,
+    dragged: false,
+    groupCenter: groupCenter || null,
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LINK CREATION
+   ═══════════════════════════════════════════════════════════════ */
+function createLink(sourceId, targetId, weight, linkType) {
+  const source = nodeObjects.get(sourceId);
+  const target = nodeObjects.get(targetId);
+  if (!source || !target) return null;
+
+  const points = [];
+  const mid = source.position.clone().add(target.position).multiplyScalar(0.5);
+  mid.y += 1.5; // arc upward
+
+  const curve = new THREE.QuadraticBezierCurve3(
+    source.position.clone(),
+    mid,
+    target.position.clone()
+  );
+  const curvePoints = curve.getPoints(20);
+  points.push(...curvePoints);
+
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+  // Color by link type
+  const linkColor = LINK_TYPE_COLORS[linkType] || LINK_TYPE_COLORS.semantic;
+  const avgColor = new THREE.Color(linkColor);
+  const opacity = Math.min(CONFIG.linkOpacity + weight * 0.04, 0.5);
+
+  const material = new THREE.LineBasicMaterial({
+    color: avgColor,
+    transparent: true,
+    opacity: opacity,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  const line = new THREE.Line(geometry, material);
+  line.userData = { sourceId, targetId, weight, linkType };
+  scene.add(line);
+
+  return { line, sourceId, targetId, weight, linkType, curve };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PULSES along links
+   ═══════════════════════════════════════════════════════════════ */
+function createPulses() {
+  const pulseGeo = new THREE.SphereGeometry(0.08, 8, 8);
+
+  for (let i = 0; i < CONFIG.pulseCount; i++) {
+    const linkIdx = Math.floor(Math.random() * linkLines.length);
+    if (linkIdx >= linkLines.length) continue;
+    const link = linkLines[linkIdx];
+
+    const secColor = SECTION_COLORS[link.sourceId && nodeObjects.get(link.sourceId)?.data?.section] || SECTION_COLORS.GENERAL;
+    const pulseMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(secColor.color),
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+
+    const pulse = new THREE.Mesh(pulseGeo, pulseMat);
+    pulse.userData = {
+      linkIndex: linkIdx,
+      t: Math.random(),
+      speed: 0.003 + Math.random() * 0.005,
+    };
+    scene.add(pulse);
+    linkPulses.push(pulse);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FORCE-DIRECTED LAYOUT
+   ═══════════════════════════════════════════════════════════════ */
+function computeForces() {
+  const nodes = Array.from(nodeObjects.values());
+
+  // Reset forces
+  for (const node of nodes) {
+    node.force.set(0, 0, 0);
+  }
+
+  // Repulsion between all nodes
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i];
+      const b = nodes[j];
+      const diff = a.position.clone().sub(b.position);
+      const dist = diff.length();
+      if (dist < 0.1) continue;
+
+      const force = CONFIG.repulsion / (dist * dist);
+      const dir = diff.normalize();
+      a.force.add(dir.multiplyScalar(force));
+      b.force.sub(dir.multiplyScalar(force));
+    }
+  }
+
+  // Attraction along links
+  for (const link of linkLines) {
+    const source = nodeObjects.get(link.sourceId);
+    const target = nodeObjects.get(link.targetId);
+    if (!source || !target) continue;
+
+    const diff = target.position.clone().sub(source.position);
+    const dist = diff.length();
+    const idealDist = 6 + (3 - link.weight) * 1.5;
+    const force = (dist - idealDist) * CONFIG.attraction * link.weight;
+
+    const dir = diff.normalize();
+    if (!source.dragged) source.force.add(dir.multiplyScalar(force));
+    if (!target.dragged) target.force.sub(dir.multiplyScalar(force));
+  }
+
+  // Center gravity
+  for (const node of nodes) {
+    const toCenter = node.position.clone().negate();
+    node.force.add(toCenter.multiplyScalar(CONFIG.centerGravity));
+  }
+
+  // Section grouping — attract same-section nodes toward section center
+  const sectionCenters = {};
+  for (const node of nodes) {
+    const sec = node.data.section;
+    if (!sectionCenters[sec]) {
+      const secKeys = Object.keys(SECTION_COLORS);
+      const secIdx = secKeys.indexOf(sec);
+      const secAngle = (secIdx / secKeys.length) * Math.PI * 2;
+      sectionCenters[sec] = new THREE.Vector3(
+        Math.cos(secAngle) * CONFIG.groupSpread,
+        0,
+        Math.sin(secAngle) * CONFIG.groupSpread
+      );
+    }
+    const toSecCenter = sectionCenters[sec].clone().sub(node.position);
+    node.force.add(toSecCenter.multiplyScalar(0.003));
+  }
+}
+
+function updatePhysics() {
+  if (!forceRunning) return;
+
+  computeForces();
+
+  for (const node of nodeObjects.values()) {
+    if (node.dragged) continue;
+
+    // Apply damping
+    node.velocity.add(node.force);
+    node.velocity.multiplyScalar(CONFIG.damping);
+
+    // Clamp velocity
+    if (node.velocity.length() > CONFIG.maxVelocity) {
+      node.velocity.normalize().multiplyScalar(CONFIG.maxVelocity);
+    }
+
+    // Update position
+    node.position.add(node.velocity);
+
+    // Update meshes
+    node.mesh.position.copy(node.position);
+    node.ring.position.copy(node.position);
+    node.glow.position.copy(node.position);
+  }
+
+  // Update link lines
+  for (const link of linkLines) {
+    const source = nodeObjects.get(link.sourceId);
+    const target = nodeObjects.get(link.targetId);
+    if (!source || !target) continue;
+
+    const mid = source.position.clone().add(target.position).multiplyScalar(0.5);
+    mid.y += 1.5;
+
+    const curve = new THREE.QuadraticBezierCurve3(
+      source.position.clone(),
+      mid,
+      target.position.clone()
+    );
+    const points = curve.getPoints(20);
+    link.line.geometry.setFromPoints(points);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GRAPH BUILDING — with group detection & isolated nodes
+   ═══════════════════════════════════════════════════════════════ */
+function buildGraph(data) {
+  graphData = data;
+  nodeObjects.clear();
+  linkLines.forEach(l => scene.remove(l.line));
+  linkLines = [];
+  linkPulses.forEach(p => scene.remove(p));
+  linkPulses = [];
+
+  const nodes = data.nodes;
+  const links = data.links;
+
+  // ── Step 1: Detect groups via Union-Find ──
+  const parent = {};
+  nodes.forEach(n => parent[n.id] = n.id);
+  function find(x) { while (parent[x] !== x) x = parent[x]; return x; }
+  function union(a, b) { const ra = find(a), rb = find(b); if (ra !== rb) parent[ra] = rb; }
+
+  links.forEach(link => union(link.source, link.target));
+
+  // Group nodes by their root
+  const groups = {};
+  const isolated = [];
+  nodes.forEach(n => {
+    const root = find(n.id);
+    if (!groups[root]) groups[root] = [];
+    groups[root].push(n);
+  });
+  // Separate: groups with >1 node vs isolated
+  const realGroups = {};
+  for (const [root, members] of Object.entries(groups)) {
+    if (members.length > 1) realGroups[root] = members;
+    else isolated.push(members[0]);
+  }
+
+  // ── Step 2: Position groups in a circle ──
+  const groupKeys = Object.keys(realGroups);
+  const groupCenters = {};
+  groupKeys.forEach((root, idx) => {
+    const angle = (idx / groupKeys.length) * Math.PI * 2;
+    const radius = 12 + groupKeys.length * 1.5;
+    groupCenters[root] = new THREE.Vector3(
+      Math.cos(angle) * radius,
+      (Math.random() - 0.5) * 6,
+      Math.sin(angle) * radius
+    );
+  });
+
+  // ── Step 3: Create nodes ──
+  let nodeIdx = 0;
+  // Grouped nodes
+  for (const [root, members] of Object.entries(realGroups)) {
+    const center = groupCenters[root];
+    const groupRadius = Math.max(4, 2 + members.length * 0.8);
+    members.forEach((nodeData, i) => {
+      const node = createNode(nodeData, i, members.length, center, groupRadius);
+      nodeObjects.set(nodeData.id, node);
+      nodeIdx++;
+    });
+  }
+  // Isolated nodes — spread around edges
+  isolated.forEach((nodeData, i) => {
+    const node = createNode(nodeData, i, isolated.length, null, 0);
+    nodeObjects.set(nodeData.id, node);
+    nodeIdx++;
+  });
+
+  // ── Step 4: Create links ──
+  links.forEach(link => {
+    const lineObj = createLink(link.source, link.target, link.weight, link.linkType || 'semantic');
+    if (lineObj) linkLines.push(lineObj);
+  });
+
+  // Create pulses
+  createPulses();
+
+  // Update stats
+  document.getElementById('stat-nodes').textContent = nodes.length;
+  document.getElementById('stat-links').textContent = links.length;
+  document.getElementById('stat-words').textContent = data.stats.total_words;
+
+  // Build legend with link type info
+  buildLegend(data.sections);
+
+  // Build search index
+  buildSearchIndex(nodes);
+
+  // Log groups
+  console.log(`📊 Groups: ${groupKeys.length} clusters, ${isolated.length} isolated nodes`);
+}
+
+// ── Update Stats Display ──
+function updateStats() {
+  if (!graphData) return;
+  document.getElementById('stat-nodes').textContent = graphData.stats.total_nodes;
+  document.getElementById('stat-links').textContent = graphData.stats.total_links;
+  document.getElementById('stat-words').textContent = graphData.stats.total_words || 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LEGEND — sections + link types
+   ═══════════════════════════════════════════════════════════════ */
+function buildLegend(sections) {
+  const container = document.getElementById('legend-items');
+  container.innerHTML = '';
+
+  // "All" item — show all sections
+  const allItem = document.createElement('div');
+  allItem.className = 'item all-item';
+  allItem.dataset.section = '__all__';
+  const totalNodes = Object.values(sections).reduce((s, sec) => s + (sec.nodes?.length || 0), 0);
+  allItem.innerHTML = `
+    <span class="dot" style="background:#fff; color:#fff; opacity:0.5"></span>
+    <span>🌐 All Sections</span>
+    <span class="count">${totalNodes}</span>
+  `;
+  allItem.addEventListener('click', () => {
+    activeSectionFilter = null;
+    document.querySelectorAll('#legend .item').forEach(el => el.classList.remove('filtered'));
+    showAllNodes();
+    hideGroupOverlay();
+  });
+  container.appendChild(allItem);
+
+  // Section filters
+  const secTitle = document.createElement('div');
+  secTitle.style.cssText = 'font-size:9px;color:#7878a0;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:700;';
+  secTitle.textContent = 'Sections';
+  container.appendChild(secTitle);
+
+  for (const [key, sec] of Object.entries(sections)) {
+    // Look up color/emoji/label from SECTION_COLORS map, fallback to GENERAL
+    const secInfo = SECTION_COLORS[key] || SECTION_COLORS.GENERAL;
+    const nodeCount = sec.nodes?.length || 0;
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.dataset.section = key;
+    item.innerHTML = `
+      <span class="dot" style="background:${secInfo.color}; color:${secInfo.color}"></span>
+      <span>${secInfo.emoji} ${secInfo.label}</span>
+      <span class="count">${nodeCount}</span>
+    `;
+    item.addEventListener('click', () => toggleSectionFilter(key));
+    container.appendChild(item);
+  }
+
+  // Link type legend
+  const linkTitle = document.createElement('div');
+  linkTitle.style.cssText = 'font-size:9px;color:#7878a0;text-transform:uppercase;letter-spacing:1px;margin:10px 0 6px;font-weight:700;';
+  linkTitle.textContent = 'Link Types';
+  container.appendChild(linkTitle);
+
+  for (const [type, label] of Object.entries(LINK_TYPE_LABELS)) {
+    const item = document.createElement('div');
+    item.className = 'item';
+    item.style.cursor = 'default';
+    item.innerHTML = `
+      <span class="dot" style="background:${LINK_TYPE_COLORS[type]}; color:${LINK_TYPE_COLORS[type]}"></span>
+      <span>${label}</span>
+    `;
+    container.appendChild(item);
+  }
+}
+
+function toggleSectionFilter(section) {
+  const items = document.querySelectorAll('#legend .item');
+  if (activeSectionFilter === section) {
+    activeSectionFilter = null;
+    items.forEach(el => el.classList.remove('filtered'));
+    showAllNodes();
+    hideGroupOverlay();
+  } else {
+    activeSectionFilter = section;
+    items.forEach(el => {
+      el.classList.toggle('filtered', el.dataset.section !== section);
+    });
+    filterBySection(section);
+    showGroupOverlay(section);
+  }
+}
+
+function showAllNodes() {
+  for (const node of nodeObjects.values()) {
+    node.mesh.visible = true;
+    node.ring.visible = true;
+    node.glow.visible = true;
+  }
+  for (const link of linkLines) {
+    link.line.visible = true;
+  }
+}
+
+function filterBySection(section) {
+  for (const node of nodeObjects.values()) {
+    const match = node.data.section === section;
+    node.mesh.visible = match;
+    node.ring.visible = match;
+    node.glow.visible = match;
+  }
+  for (const link of linkLines) {
+    const source = nodeObjects.get(link.sourceId);
+    const target = nodeObjects.get(link.targetId);
+    link.line.visible = source?.data?.section === section && target?.data?.section === section;
+  }
+}
+
+function showGroupOverlay(section) {
+  const sec = SECTION_COLORS[section] || SECTION_COLORS.GENERAL;
+  const overlay = document.getElementById('group-overlay');
+  document.getElementById('sl-emoji').textContent = sec.emoji;
+  document.getElementById('sl-text').textContent = sec.label;
+  overlay.classList.add('visible');
+  setTimeout(() => overlay.classList.remove('visible'), 2000);
+}
+
+function hideGroupOverlay() {
+  document.getElementById('group-overlay').classList.remove('visible');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SEARCH
+   ═══════════════════════════════════════════════════════════════ */
+let searchIndex = [];
+
+function buildSearchIndex(nodes) {
+  searchIndex = nodes.map(n => ({
+    id: n.id,
+    title: n.title,
+    section: n.section,
+    description: n.description,
+    tags: n.tags || [],
+  }));
+}
+
+const searchInput = document.getElementById('search');
+const searchResults = document.getElementById('search-results');
+
+searchInput.addEventListener('input', () => {
+  const query = searchInput.value.toLowerCase().trim();
+  if (query.length < 2) {
+    searchResults.classList.remove('active');
+    return;
+  }
+
+  const matches = searchIndex.filter(n =>
+    n.title.toLowerCase().includes(query) ||
+    n.description.toLowerCase().includes(query) ||
+    n.tags.some(t => t.includes(query))
+  ).slice(0, 10);
+
+  if (matches.length === 0) {
+    searchResults.classList.remove('active');
+    return;
+  }
+
+  searchResults.innerHTML = matches.map(n => {
+    const sec = SECTION_COLORS[n.section] || SECTION_COLORS.GENERAL;
+    // Highlight matching text in title
+    const titleLower = n.title.toLowerCase();
+    const idx = titleLower.indexOf(query);
+    let displayTitle = n.title;
+    if (idx >= 0) {
+      displayTitle = n.title.slice(0, idx) + 
+        `<mark style="background:rgba(167,139,250,0.3);color:#f0f0ff;border-radius:2px;padding:0 2px;">${n.title.slice(idx, idx + query.length)}</mark>` +
+        n.title.slice(idx + query.length);
+    }
+    return `<div class="result-item" data-id="${n.id}">
+      <div class="result-title">${displayTitle}</div>
+      <div class="result-section">${sec.emoji} ${sec.label}</div>
+    </div>`;
+  }).join('');
+
+  searchResults.classList.add('active');
+
+  // Click handler
+  searchResults.querySelectorAll('.result-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const nodeId = el.dataset.id;
+      const node = nodeObjects.get(nodeId);
+      if (node) {
+        // Open sidebar + focus camera
+        focusedNode = nodeId;
+        openSidebar(node.data);
+        focusOnNode(nodeId);
+        // Highlight the node visually
+        highlightNode(nodeId);
+      }
+      searchResults.classList.remove('active');
+      searchInput.value = '';
+    });
+  });
+});
+
+
+searchInput.addEventListener('blur', () => {
+  setTimeout(() => searchResults.classList.remove('active'), 200);
+});
+
+function focusOnNode(nodeId) {
+  const node = nodeObjects.get(nodeId);
+  if (!node) return;
+
+  controls.autoRotate = false;
+  const targetPos = node.position.clone().add(new THREE.Vector3(0, 5, 15));
+  camera.position.lerp(targetPos, 0.05);
+  controls.target.lerp(node.position, 0.05);
+
+  // Highlight animation: pulse the node
+  const originalScale = node.mesh.scale.clone();
+  const ringOriginalScale = node.ring.scale.clone();
+  
+  // Quick pulse animation
+  let pulsePhase = 0;
+  const pulseInterval = setInterval(() => {
+    pulsePhase += 0.15;
+    const scale = 1 + Math.sin(pulsePhase) * 0.4;
+    if (pulsePhase < Math.PI * 4) {
+      node.mesh.scale.setScalar(scale);
+      node.ring.scale.set(scale, scale, 1);
+      node.glow.scale.setScalar(scale * 1.2);
+    } else {
+      clearInterval(pulseInterval);
+      node.mesh.scale.copy(originalScale);
+      node.ring.scale.copy(ringOriginalScale);
+      node.glow.scale.setScalar(1);
+    }
+  }, 50);
+
+  // Also highlight in legend
+  document.querySelectorAll('#legend .item').forEach(el => {
+    if (el.dataset.section === node.data.section) {
+      el.style.transition = 'opacity 0.3s';
+      el.style.opacity = '1';
+    }
+  });
+}
+
+// ── Node highlight ring (persistent glow when found via search) ──
+let highlightedNodeId = null;
+let highlightRing = null;
+
+function highlightNode(nodeId) {
+  // Remove previous highlight
+  if (highlightRing) {
+    scene.remove(highlightRing);
+    highlightRing.geometry.dispose();
+    highlightRing.material.dispose();
+    highlightRing = null;
+  }
+  highlightedNodeId = null;
+
+  const node = nodeObjects.get(nodeId);
+  if (!node) return;
+
+  highlightedNodeId = nodeId;
+
+  // Create a pulsing outer ring
+  const ringGeo = new THREE.RingGeometry(node.size * 2.5, node.size * 3.2, 32);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0xfbbf24,
+    transparent: true,
+    opacity: 0.6,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  highlightRing = new THREE.Mesh(ringGeo, ringMat);
+  highlightRing.position.copy(node.position);
+  scene.add(highlightRing);
+}
+
+function clearNodeHighlight() {
+  if (highlightRing) {
+    scene.remove(highlightRing);
+    highlightRing.geometry.dispose();
+    highlightRing.material.dispose();
+    highlightRing = null;
+  }
+  highlightedNodeId = null;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOOLTIP & SIDEBAR
+   ═══════════════════════════════════════════════════════════════ */
+const tooltip = document.getElementById('tooltip');
+
+function showTooltip(nodeData, screenX, screenY) {
+  const sec = SECTION_COLORS[nodeData.section] || SECTION_COLORS.GENERAL;
+  document.getElementById('tt-title').textContent = nodeData.title;
+  document.getElementById('tt-desc').textContent = nodeData.description || '';
+  document.getElementById('tt-meta').innerHTML = `
+    <span class="tag" style="background:${sec.color}22; color:${sec.color}">${sec.emoji} ${sec.label}</span>
+    <span class="tag" style="background:rgba(167,139,250,0.1); color:#a78bfa">${nodeData.word_count || 0} words</span>
+  `;
+
+  tooltip.style.display = 'block';
+  tooltip.style.left = (screenX + 16) + 'px';
+  tooltip.style.top = (screenY - 10) + 'px';
+
+  // Keep in viewport
+  const rect = tooltip.getBoundingClientRect();
+  if (rect.right > window.innerWidth) tooltip.style.left = (screenX - rect.width - 16) + 'px';
+  if (rect.bottom > window.innerHeight) tooltip.style.top = (screenY - rect.height + 10) + 'px';
+}
+
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
+
+// Sidebar
+const sidebar = document.getElementById('sidebar');
+let currentSidebarNode = null; // Track current node for action buttons
+
+function openSidebar(nodeData) {
+  currentSidebarNode = nodeData; // Store for action buttons
+  const sec = SECTION_COLORS[nodeData.section] || SECTION_COLORS.GENERAL;
+
+  const badge = document.getElementById('sb-badge');
+  badge.textContent = `${sec.emoji} ${sec.label}`;
+  badge.style.background = sec.color + '22';
+  badge.style.color = sec.color;
+  badge.style.border = `1px solid ${sec.color}44`;
+
+  document.getElementById('sb-title').textContent = nodeData.title;
+  document.getElementById('sb-words').textContent = `📝 ${nodeData.word_count || 0} words`;
+  document.getElementById('sb-modified').textContent = `📅 ${nodeData.modified ? nodeData.modified.slice(0, 10) : '—'}`;
+  document.getElementById('sb-filepath').textContent = `📂 ${nodeData.filepath || nodeData.filename || ''}`;
+
+  // Render markdown content
+  document.getElementById('sidebar-content').innerHTML = renderMarkdown(nodeData.content || '');
+
+  // Tags
+  const tagsContainer = document.getElementById('sb-tags');
+  const footer = document.getElementById('sidebar-footer');
+  if (nodeData.tags && nodeData.tags.length > 0) {
+    footer.style.display = 'flex';
+    tagsContainer.innerHTML = nodeData.tags.map(t =>
+      `<span class="tag">#${t}</span>`
+    ).join('');
+  } else {
+    footer.style.display = 'none';
+  }
+
+  // Show action buttons (only for nodes that are NOT already in notes/ai-knowledge)
+  const actionsEl = document.getElementById('sidebar-actions');
+  const editActionsEl = document.getElementById('sidebar-edit-actions');
+  const isInApiSection = nodeData.section === 'NOTES' || nodeData.section === 'AI_KNOWLEDGE';
+  if (actionsEl) {
+    actionsEl.style.display = isInApiSection ? 'none' : 'flex';
+  }
+  // Show edit/delete for ALL nodes
+  if (editActionsEl) {
+    editActionsEl.style.display = 'flex';
+  }
+
+  sidebar.classList.add('open');
+  sidebarOpen = true;
+  updateLayoutClasses();
+}
+
+function closeSidebar() {
+  sidebar.classList.remove('open');
+  sidebarOpen = false;
+  focusedNode = null;
+  currentSidebarNode = null;
+  clearNodeHighlight();
+  // Hide action panels
+  const actionsEl = document.getElementById('sidebar-actions');
+  const editActionsEl = document.getElementById('sidebar-edit-actions');
+  if (actionsEl) actionsEl.style.display = 'none';
+  if (editActionsEl) editActionsEl.style.display = 'none';
+  updateLayoutClasses();
+}
+
+document.getElementById('sidebar-close').addEventListener('click', closeSidebar);
+
+// ── Sidebar action buttons: Load to Notes / Load to AI DB ──
+document.getElementById('sb-btn-notes').addEventListener('click', async () => {
+  if (!currentSidebarNode) return;
+  const node = currentSidebarNode;
+  try {
+    const res = await fetch('/api/brain/save-to-notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: node.title, content: node.content, tags: node.tags || [] })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      const apiStatus = data.api_id ? ' ✅ API synced' : (data.api_error ? ` ⚠️ API: ${data.api_error}` : '');
+      toast(`📝 Saved to Notes: ${data.path}${apiStatus}`, 'success');
+    } else {
+      toast(`❌ Error: ${data.error}`, 'error');
+    }
+  } catch (err) {
+    toast(`❌ Failed: ${err.message}`, 'error');
+  }
+});
+
+document.getElementById('sb-btn-ai').addEventListener('click', async () => {
+  if (!currentSidebarNode) return;
+  const node = currentSidebarNode;
+  try {
+    const res = await fetch('/api/brain/save-to-ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: node.title, content: node.content, tags: node.tags || [] })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      const apiStatus = data.api_id ? ' ✅ API synced' : (data.api_error ? ` ⚠️ API: ${data.api_error}` : '');
+      toast(`🤖 Saved to AI DB: ${data.path}${apiStatus}`, 'success');
+    } else {
+      toast(`❌ Error: ${data.error}`, 'error');
+    }
+  } catch (err) {
+    toast(`❌ Failed: ${err.message}`, 'error');
+  }
+});
+
+// ── Sidebar: Edit Node ──
+document.getElementById('sb-btn-edit').addEventListener('click', () => {
+  if (!currentSidebarNode) return;
+  const node = currentSidebarNode;
+  
+  // Replace sidebar content with an edit form
+  const contentEl = document.getElementById('sidebar-content');
+  const originalContent = node.content || '';
+  
+  contentEl.innerHTML = `
+    <div style="padding:4px 0">
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Title</label>
+        <input type="text" id="edit-title" value="${escapeHtml(node.title)}" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;">
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Section</label>
+        <select id="edit-section" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;">
+          ${Object.keys(SECTION_COLORS).map(k => `<option value="${k}" ${k === node.section ? 'selected' : ''}>${SECTION_COLORS[k].emoji} ${SECTION_COLORS[k].label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Tags (comma separated)</label>
+        <input type="text" id="edit-tags" value="${(node.tags || []).join(', ')}" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;">
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Content (Markdown)</label>
+        <textarea id="edit-content" style="width:100%;min-height:300px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:13px;line-height:1.6;resize:vertical;font-family:'JetBrains Mono','Fira Code',monospace;outline:none;">${escapeHtml(originalContent)}</textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-primary" id="edit-save-btn" style="flex:1;justify-content:center">💾 Сохранить</button>
+        <button class="btn btn-secondary" id="edit-cancel-btn" style="flex:1;justify-content:center">✕ Отмена</button>
+      </div>
+    </div>
+  `;
+  
+  // Hide action buttons while editing
+  document.getElementById('sidebar-actions').style.display = 'none';
+  document.getElementById('sidebar-edit-actions').style.display = 'none';
+  
+  // Cancel button — restore original content
+  document.getElementById('edit-cancel-btn').addEventListener('click', () => {
+    openSidebar(node); // Re-open with original data
+  });
+  
+  // Save button
+  document.getElementById('edit-save-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('edit-save-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Сохранение...';
+    
+    const newTitle = document.getElementById('edit-title').value.trim();
+    const newSection = document.getElementById('edit-section').value;
+    const newTags = document.getElementById('edit-tags').value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+    const newContent = document.getElementById('edit-content').value;
+    
+    if (!newTitle) {
+      toast('❌ Title is required', 'error');
+      btn.disabled = false;
+      btn.textContent = '💾 Сохранить';
+      return;
+    }
+    
+    try {
+      const res = await fetch('/api/brain/edit-node', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: node.id,
+          filepath: node.filepath || node.filename,
+          title: newTitle,
+          section: newSection,
+          tags: newTags,
+          content: newContent,
+        })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        toast(`✅ Saved: ${newTitle}`, 'success');
+        // Update current node data
+        node.title = newTitle;
+        node.section = newSection;
+        node.tags = newTags;
+        node.content = newContent;
+        // Re-open sidebar with updated data
+        setTimeout(() => openSidebar(node), 500);
+      } else {
+        toast(`❌ Error: ${data.error}`, 'error');
+        btn.disabled = false;
+        btn.textContent = '💾 Сохранить';
+      }
+    } catch (err) {
+      toast(`❌ Failed: ${err.message}`, 'error');
+      btn.disabled = false;
+      btn.textContent = '💾 Сохранить';
+    }
+  });
+});
+
+// ── Sidebar: Delete Node ──
+document.getElementById('sb-btn-delete').addEventListener('click', async () => {
+  if (!currentSidebarNode) return;
+  const node = currentSidebarNode;
+  
+  // Confirm deletion
+  const confirmed = confirm(`🗑️ Удалить ноду "${node.title}"?\n\nФайл: ${node.filepath || node.filename}\n\nЭто действие необратимо!`);
+  if (!confirmed) return;
+  
+  try {
+    const res = await fetch('/api/brain/delete-node', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: node.id,
+        filepath: node.filepath || node.filename,
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      toast(`🗑️ Deleted: ${node.title}`, 'success');
+      closeSidebar();
+      // Remove node from graph visually
+      removeNodeFromGraph(node.id);
+    } else {
+      toast(`❌ Error: ${data.error}`, 'error');
+    }
+  } catch (err) {
+    toast(`❌ Failed: ${err.message}`, 'error');
+  }
+});
+
+// Helper: escape HTML for form values
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// Helper: remove node from graph after deletion
+function removeNodeFromGraph(nodeId) {
+  // Remove from nodeObjects
+  const obj = nodeObjects.get(nodeId);
+  if (obj) {
+    scene.remove(obj.mesh);
+    scene.remove(obj.ring);
+    scene.remove(obj.glow);
+    if (obj.label) scene.remove(obj.label);
+    nodeObjects.delete(nodeId);
+  }
+  // Remove connected links
+  for (let i = linkLines.length - 1; i >= 0; i--) {
+    const link = linkLines[i];
+    if (link.sourceId === nodeId || link.targetId === nodeId) {
+      scene.remove(link.line);
+      linkLines.splice(i, 1);
+    }
+  }
+  // Remove from graphData
+  if (graphData) {
+    graphData.nodes = graphData.nodes.filter(n => n.id !== nodeId);
+    graphData.links = graphData.links.filter(l => l.source !== nodeId && l.target !== nodeId);
+    graphData.stats.total_nodes = graphData.nodes.length;
+    graphData.stats.total_links = graphData.links.length;
+  }
+  // Update stats display
+  updateStats();
+  // Clear highlight if it was the deleted node
+  if (highlightedNodeId === nodeId) {
+    highlightedNodeId = null;
+    if (highlightRing) highlightRing.visible = false;
+  }
+}
+
+// Simple markdown renderer
+function renderMarkdown(md) {
+  let html = md
+    // Escape HTML
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    // Code blocks
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // Headers
+    .replace(/^####\s+(.+)$/gm, '<h4>$1</h4>')
+    .replace(/^###\s+(.+)$/gm, '<h3>$1</h3>')
+    .replace(/^##\s+(.+)$/gm, '<h2>$1</h2>')
+    .replace(/^#\s+(.+)$/gm, '<h1>$1</h1>')
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Italic
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // Links [[...]]
+    .replace(/\[\[(.+?)\]\]/g, '<a href="#" class="wiki-link" data-title="$1">$1</a>')
+    // Links [text](url)
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>')
+    // Blockquotes
+    .replace(/^&gt;\s+(.+)$/gm, '<blockquote>$1</blockquote>')
+    // Horizontal rule
+    .replace(/^---$/gm, '<hr>')
+    // Lists
+    .replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>')
+    .replace(/^(\d+)\.\s+(.+)$/gm, '<li>$2</li>')
+    // Paragraphs
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+
+  // Wrap in paragraphs
+  html = '<p>' + html + '</p>';
+
+  // Fix list grouping
+  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+
+  return html;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LEFT PANEL — Add Knowledge
+   ═══════════════════════════════════════════════════════════════ */
+const leftPanel = document.getElementById('left-panel');
+const addBtn = document.getElementById('add-knowledge-btn');
+
+addBtn.addEventListener('click', () => {
+  leftPanel.classList.add('open');
+  panelOpen = true;
+  addBtn.classList.add('hidden');
+  updateLayoutClasses();
+});
+
+document.getElementById('panel-close').addEventListener('click', () => {
+  leftPanel.classList.remove('open');
+  panelOpen = false;
+  addBtn.classList.remove('hidden');
+  updateLayoutClasses();
+});
+
+// Tags input
+const tagsInput = document.getElementById('form-tags-input');
+const tagsWrap = document.getElementById('tags-wrap');
+
+tagsInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const tag = tagsInput.value.trim().toLowerCase().replace(/[^a-zа-яё0-9_-]/g, '');
+    if (tag && !formTags.includes(tag)) {
+      formTags.push(tag);
+      renderTags();
+    }
+    tagsInput.value = '';
+  }
+});
+
+function renderTags() {
+  const chips = formTags.map(t =>
+    `<span class="tag-chip">#${t}<span class="remove" data-tag="${t}">×</span></span>`
+  ).join('');
+  tagsWrap.innerHTML = chips + '<input type="text" id="form-tags-input" placeholder="Type tag…">';
+  tagsWrap.querySelector('#form-tags-input').addEventListener('keydown', tagsInput._handler || (e => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const tag = e.target.value.trim().toLowerCase().replace(/[^a-zа-яё0-9_-]/g, '');
+      if (tag && !formTags.includes(tag)) { formTags.push(tag); renderTags(); }
+      e.target.value = '';
+    }
+  }));
+  tagsWrap.querySelectorAll('.remove').forEach(el => {
+    el.addEventListener('click', () => {
+      formTags = formTags.filter(t => t !== el.dataset.tag);
+      renderTags();
+    });
+  });
+}
+
+// Links input
+const linksInput = document.getElementById('form-links-input');
+const linksWrap = document.getElementById('links-wrap');
+
+function initLinksInput() {
+  const input = linksWrap.querySelector('input');
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const link = e.target.value.trim();
+      if (link && !formLinks.includes(link)) {
+        formLinks.push(link);
+        renderLinks();
+      }
+      e.target.value = '';
+    }
+  });
+}
+
+function renderLinks() {
+  const chips = formLinks.map(l =>
+    `<span class="link-chip">[[${l}]]<span class="remove" data-link="${l}">×</span></span>`
+  ).join('');
+  linksWrap.innerHTML = chips + '<input type="text" id="form-links-input" placeholder="Type node title…">';
+  initLinksInput();
+  linksWrap.querySelectorAll('.remove').forEach(el => {
+    el.addEventListener('click', () => {
+      formLinks = formLinks.filter(l => l !== el.dataset.link);
+      renderLinks();
+    });
+  });
+}
+initLinksInput();
+
+// Clear form
+document.getElementById('btn-clear-form').addEventListener('click', () => {
+  document.getElementById('form-title').value = '';
+  document.getElementById('form-content').value = '';
+  document.getElementById('form-section').value = 'GENERAL';
+  formTags = [];
+  formLinks = [];
+  renderTags();
+  renderLinks();
+});
+
+// Save node
+document.getElementById('btn-save-node').addEventListener('click', saveNewNode);
+
+let isSaving = false;
+
+function saveNewNode() {
+  if (isSaving) return; // Prevent double-submit
+  isSaving = true;
+
+  const btn = document.getElementById('btn-save-node');
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving…';
+
+  const title = document.getElementById('form-title').value.trim();
+  const content = document.getElementById('form-content').value.trim();
+  const section = document.getElementById('form-section').value;
+
+  if (!title) {
+    toast('Please enter a title', 'error');
+    isSaving = false;
+    btn.disabled = false;
+    btn.textContent = '💾 Save Node';
+    return;
+  }
+  if (!content) {
+    toast('Please enter content', 'error');
+    isSaving = false;
+    btn.disabled = false;
+    btn.textContent = '💾 Save Node';
+    return;
+  }
+
+  // Build markdown content
+  let mdContent = `# ${title}\n\n`;
+  if (formTags.length > 0) {
+    mdContent += `**Tags:** ${formTags.map(t => `#${t}`).join(' ')}\n\n`;
+  }
+  if (formLinks.length > 0) {
+    mdContent += `**Links:** ${formLinks.map(l => `[[${l}]]`).join(', ')}\n\n`;
+  }
+  mdContent += `---\n\n${content}`;
+
+  // Determine filename — ensure it's always valid
+  let safeName = title.replace(/[^a-zA-Zа-яА-ЯёЁ0-9_-\s]/g, '').trim();
+  if (!safeName) safeName = 'node-' + Date.now();
+  safeName = safeName.replace(/\s+/g, '-').replace(/-+/g, '-').toLowerCase();
+  const filename = `${safeName}.md`;
+
+  // Send to server via fetch (save endpoint)
+  fetch('/api/brain/save-node', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      filename,
+      content: mdContent,
+      section,
+      title,
+      tags: formTags,
+      links: formLinks,
+    }),
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Server save failed');
+    return res.json();
+  })
+  .then((data) => {
+    toast(`✅ Node saved! (${data.nodes} total nodes)`, 'success');
+    // Clear form
+    document.getElementById('btn-clear-form').click();
+    // Full rebuild: reload graph data and rebuild entire scene
+    loadGraphData();
+  })
+  .catch(err => {
+    // If no server API, save to localStorage and add to graph client-side
+    console.log('No server API, adding client-side:', err);
+    addNodeClientSide(title, content, section, formTags, formLinks);
+  })
+  .finally(() => {
+    isSaving = false;
+    btn.disabled = false;
+    btn.textContent = '💾 Save Node';
+  });
+}
+
+function addNodeClientSide(title, content, section, tags, links) {
+  const nodeId = 'custom_' + Date.now().toString(36);
+  const nodeData = {
+    id: nodeId,
+    title,
+    description: content.slice(0, 200),
+    content,
+    section,
+    filename: title.replace(/\s+/g, '-') + '.md',
+    filepath: 'custom/' + title.replace(/\s+/g, '-') + '.md',
+    subheadings: [],
+    tags,
+    links,
+    size: 1,
+    word_count: content.split(/\s+/).length,
+    char_count: content.length,
+    modified: new Date().toISOString(),
+  };
+
+  // Add to graph data
+  graphData.nodes.push(nodeData);
+  graphData.stats.total_nodes++;
+  graphData.stats.total_words += nodeData.word_count;
+
+  // Create 3D node
+  const node = createNode(nodeData, graphData.nodes.length - 1, graphData.nodes.length);
+  nodeObjects.set(nodeId, node);
+
+  // Create links
+  links.forEach(linkTitle => {
+    const targetNode = graphData.nodes.find(n => n.title.toLowerCase() === linkTitle.toLowerCase());
+    if (targetNode) {
+      const linkObj = createLink(nodeId, targetNode.id, 2);
+      if (linkObj) linkLines.push(linkObj);
+      graphData.links.push({ source: nodeId, target: targetNode.id, weight: 2 });
+      graphData.stats.total_links++;
+    }
+  });
+
+  // Update stats
+  document.getElementById('stat-nodes').textContent = graphData.stats.total_nodes;
+  document.getElementById('stat-links').textContent = graphData.stats.total_links;
+  document.getElementById('stat-words').textContent = graphData.stats.total_words;
+
+  // Rebuild search
+  buildSearchIndex(graphData.nodes);
+
+  toast('✅ Node added! (client-side, will persist on reload)', 'success');
+
+  // Focus on new node
+  focusOnNode(nodeId);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOAST
+   ═══════════════════════════════════════════════════════════════ */
+function toast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = message;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LAYOUT CLASSES
+   ═══════════════════════════════════════════════════════════════ */
+function updateLayoutClasses() {
+  const canvas = document.getElementById('canvas-container');
+  const hud = document.getElementById('hud');
+  const search = document.getElementById('search-wrap');
+  const controls = document.getElementById('controls');
+  const legend = document.getElementById('legend');
+
+  canvas.classList.remove('sidebar-open', 'panel-open', 'both-open');
+  hud.classList.remove('sidebar-open', 'panel-open', 'both-open');
+  search.classList.remove('sidebar-open');
+  controls.classList.remove('sidebar-open');
+  legend.classList.remove('panel-open');
+
+  if (sidebarOpen && panelOpen) {
+    canvas.classList.add('both-open');
+    hud.classList.add('both-open');
+    search.classList.add('sidebar-open');
+    controls.classList.add('sidebar-open');
+    legend.classList.add('panel-open');
+  } else if (sidebarOpen) {
+    canvas.classList.add('sidebar-open');
+    hud.classList.add('sidebar-open');
+    search.classList.add('sidebar-open');
+    controls.classList.add('sidebar-open');
+  } else if (panelOpen) {
+    canvas.classList.add('panel-open');
+    hud.classList.add('panel-open');
+    legend.classList.add('panel-open');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DRAG INTERACTION
+   ═══════════════════════════════════════════════════════════════ */
+const dragIndicator = document.getElementById('drag-indicator');
+
+// Click-vs-drag detection state
+let pointerDownTime = 0;
+let pointerDownPos = { x: 0, y: 0 };
+let pointerDownNode = null;
+const CLICK_THRESHOLD_MS = 300;
+const CLICK_THRESHOLD_PX = 10;
+
+renderer.domElement.addEventListener('pointerdown', onPointerDown);
+renderer.domElement.addEventListener('pointermove', onPointerMove);
+renderer.domElement.addEventListener('pointerup', onPointerUp);
+renderer.domElement.addEventListener('pointerleave', onPointerUp);
+
+function onPointerDown(event) {
+  updateMouse(event);
+  raycaster.setFromCamera(mouse, camera);
+
+  const nodeMeshes = Array.from(nodeObjects.values()).map(n => n.mesh);
+  const intersects = raycaster.intersectObjects(nodeMeshes);
+
+  if (intersects.length > 0) {
+    const nodeId = intersects[0].object.userData.nodeId;
+    const node = nodeObjects.get(nodeId);
+    if (!node) return;
+
+    // Record click start for click-vs-drag detection
+    pointerDownTime = Date.now();
+    pointerDownPos = { x: event.clientX, y: event.clientY };
+    pointerDownNode = node;
+
+    // Don't start drag yet — wait for pointermove to exceed threshold
+  }
+}
+
+function onPointerMove(event) {
+  updateMouse(event);
+
+  // Check if we should start dragging (threshold exceeded)
+  if (pointerDownNode && !isDragging) {
+    const dx = event.clientX - pointerDownPos.x;
+    const dy = event.clientY - pointerDownPos.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist > CLICK_THRESHOLD_PX) {
+      // Start drag
+      isDragging = true;
+      dragNode = pointerDownNode;
+      dragNode.dragged = true;
+      controls.autoRotate = false;
+
+      // Create drag plane facing camera
+      const cameraDir = new THREE.Vector3();
+      camera.getWorldDirection(cameraDir);
+      dragPlane.setFromNormalAndCoplanarPoint(cameraDir.negate(), dragNode.position);
+
+      // Calculate offset
+      raycaster.setFromCamera(mouse, camera);
+      const intersection = new THREE.Vector3();
+      raycaster.ray.intersectPlane(dragPlane, intersection);
+      dragOffset.copy(dragNode.position).sub(intersection);
+
+      controls.enabled = false;
+      dragIndicator.classList.add('visible');
+      dragIndicator.textContent = `Dragging: ${dragNode.data.title}`;
+    }
+  }
+
+  if (isDragging && dragNode) {
+    raycaster.setFromCamera(mouse, camera);
+    const intersection = new THREE.Vector3();
+    if (raycaster.ray.intersectPlane(dragPlane, intersection)) {
+      const newPos = intersection.add(dragOffset);
+      dragNode.position.copy(newPos);
+      dragNode.mesh.position.copy(newPos);
+      dragNode.ring.position.copy(newPos);
+      dragNode.glow.position.copy(newPos);
+      dragNode.velocity.set(0, 0, 0);
+
+      // Update links in real-time
+      for (const link of linkLines) {
+        if (link.sourceId === dragNode.id || link.targetId === dragNode.id) {
+          const source = nodeObjects.get(link.sourceId);
+          const target = nodeObjects.get(link.targetId);
+          if (source && target) {
+            const mid = source.position.clone().add(target.position).multiplyScalar(0.5);
+            mid.y += 1.5;
+            const curve = new THREE.QuadraticBezierCurve3(
+              source.position.clone(), mid, target.position.clone()
+            );
+            link.line.geometry.setFromPoints(curve.getPoints(20));
+          }
+        }
+      }
+
+      // Update drag indicator position
+      const screenPos = dragNode.position.clone().project(camera);
+      const sx = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+      const sy = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
+      dragIndicator.style.left = (sx + 20) + 'px';
+      dragIndicator.style.top = (sy - 10) + 'px';
+    }
+    return;
+  }
+
+  // Hover detection
+  raycaster.setFromCamera(mouse, camera);
+  const nodeMeshes = Array.from(nodeObjects.values()).map(n => n.mesh);
+  const intersects = raycaster.intersectObjects(nodeMeshes);
+
+  if (intersects.length > 0) {
+    const nodeId = intersects[0].object.userData.nodeId;
+    const node = nodeObjects.get(nodeId);
+    if (node && hoveredNode !== nodeId) {
+      hoveredNode = nodeId;
+      showTooltip(node.data, event.clientX, event.clientY);
+      renderer.domElement.style.cursor = 'pointer';
+    } else if (node) {
+      // Update tooltip position
+      showTooltip(node.data, event.clientX, event.clientY);
+    }
+  } else {
+    if (hoveredNode) {
+      hoveredNode = null;
+      hideTooltip();
+      renderer.domElement.style.cursor = 'default';
+    }
+  }
+}
+
+function onPointerUp(event) {
+  // Handle click (not drag)
+  if (pointerDownNode && !isDragging) {
+    const elapsed = Date.now() - pointerDownTime;
+    const dx = event.clientX - pointerDownPos.x;
+    const dy = event.clientY - pointerDownPos.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (elapsed < CLICK_THRESHOLD_MS && dist < CLICK_THRESHOLD_PX) {
+      // This was a click!
+      const node = pointerDownNode;
+      if (event.button === 2) {
+        // Right click — open full note in new tab
+        openFullNote(node.data);
+      } else {
+        // Left click — open sidebar
+        focusedNode = node.id;
+        openSidebar(node.data);
+      }
+    }
+  }
+
+  // Reset drag state
+  if (isDragging && dragNode) {
+    isDragging = false;
+    dragNode.dragged = false;
+    dragNode = null;
+    controls.enabled = true;
+    dragIndicator.classList.remove('visible');
+
+    // Resume auto-rotate after a delay
+    setTimeout(() => {
+      if (!isDragging) controls.autoRotate = true;
+    }, 3000);
+  }
+
+  // Reset click detection
+  pointerDownNode = null;
+}
+
+// Right-click context menu prevention + handling
+renderer.domElement.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  // Trigger right-click logic
+  if (hoveredNode) {
+    const node = nodeObjects.get(hoveredNode);
+    if (node) openFullNote(node.data);
+  }
+});
+
+function openFullNote(nodeData) {
+  // Build a standalone HTML page for the note
+  const sec = SECTION_COLORS[nodeData.section] || SECTION_COLORS.GENERAL;
+  const html = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${nodeData.title} — OWL Memory Brain</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #06060f;
+    color: #d4d4e8;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.8;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  .header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 24px; padding-bottom: 16px;
+    border-bottom: 1px solid rgba(167,139,250,0.15);
+  }
+  .section-badge {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 4px 10px; border-radius: 6px;
+    background: ${sec.color}22; color: ${sec.color};
+    border: 1px solid ${sec.color}44;
+  }
+  h1 { font-size: 28px; font-weight: 800; color: #f0f0ff; margin: 16px 0; line-height: 1.3; }
+  h2 { font-size: 20px; font-weight: 700; color: #f0f0ff; margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(167,139,250,0.12); }
+  h3 { font-size: 16px; font-weight: 600; color: #d4d4e8; margin: 20px 0 8px; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 8px 0; padding-left: 24px; }
+  li { margin: 4px 0; }
+  code { background: rgba(167,139,250,0.1); color: #c4b5fd; padding: 2px 6px; border-radius: 4px; font-size: 14px; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+  pre { background: rgba(0,0,0,0.4); border: 1px solid rgba(167,139,250,0.12); border-radius: 8px; padding: 16px; margin: 12px 0; overflow-x: auto; font-size: 14px; line-height: 1.6; }
+  pre code { background: none; padding: 0; }
+  blockquote { border-left: 3px solid ${sec.color}; padding-left: 16px; margin: 12px 0; color: #b0b0cc; font-style: italic; }
+  a { color: #a78bfa; text-decoration: none; border-bottom: 1px solid rgba(167,139,250,0.3); }
+  a:hover { border-bottom-color: #a78bfa; }
+  hr { border: none; border-top: 1px solid rgba(167,139,250,0.12); margin: 24px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { padding: 8px 12px; border: 1px solid rgba(167,139,250,0.12); text-align: left; }
+  th { background: rgba(167,139,250,0.08); font-weight: 600; }
+  .meta { display: flex; gap: 16px; font-size: 12px; color: #7878a0; margin: 12px 0 24px; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
+  .tag { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; background: rgba(167,139,250,0.1); color: #a78bfa; }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 8px;
+    background: rgba(167,139,250,0.1); color: #a78bfa;
+    border: 1px solid rgba(167,139,250,0.2);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    text-decoration: none; margin-bottom: 20px;
+  }
+  .back-btn:hover { background: rgba(167,139,250,0.15); }
+</style>
+<script src="/static/js/i18n.js">' + '<' + '/script>
+</head>
+<body>
+<a href="#" class="back-btn" onclick="event.preventDefault();parent.postMessage({type:'mn-close'},'*')">← Назад к графу</a>
+<div class="header">
+  <span class="section-badge">${sec.emoji} ${sec.label}</span>
+  <span style="font-size:12px;color:#7878a0">${nodeData.word_count || 0} words · ${nodeData.modified ? nodeData.modified.slice(0,10) : ''}</span>
+</div>
+<h1>${nodeData.title}</h1>
+<div class="meta">
+  <span>📂 ${nodeData.filepath || nodeData.filename || ''}</span>
+  <span>📅 ${nodeData.modified ? nodeData.modified.slice(0,10) : '—'}</span>
+</div>
+${nodeData.tags && nodeData.tags.length > 0 ? `<div class="tags">${nodeData.tags.map(t => `<span class="tag">#${t}</span>`).join('')}</div>` : ''}
+<hr>
+${renderMarkdown(nodeData.content || '')}
+</body>
+</html>`;
+
+  /* Просмотр узла открываем модальным окном, а не новой вкладкой:
+     раньше здесь был window.open(blob), из-за чего документ уезжал в
+     отдельное окно браузера и возвращаться приходилось вручную. */
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  openNodeModal(url, nodeData.title || 'Узел');
+}
+
+let _mnModal = null;
+function openNodeModal(url, title) {
+  closeNodeModal();
+  const back = document.createElement('div');
+  back.className = 'mn-modal-back';
+  back.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(3,4,10,.72);'
+    + 'display:flex;align-items:center;justify-content:center;padding:24px;'
+    + 'backdrop-filter:blur(3px)';
+  back.innerHTML =
+    '<div class="mn-modal" style="position:relative;width:min(1000px,96vw);height:min(88vh,900px);'
+    + 'background:#06060f;border:1px solid rgba(167,139,250,.28);border-radius:14px;'
+    + 'box-shadow:0 24px 70px rgba(0,0,0,.65);display:flex;flex-direction:column;overflow:hidden">'
+    + '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;'
+    + 'background:rgba(13,13,26,.96);border-bottom:1px solid rgba(167,139,250,.18)">'
+    + '<strong style="color:#d4d4e8;font-size:14px;flex:1;overflow:hidden;'
+    + 'text-overflow:ellipsis;white-space:nowrap"></strong>'
+    + '<button class="mn-close" style="background:rgba(167,139,250,.14);color:#d4d4e8;'
+    + 'border:1px solid rgba(167,139,250,.3);border-radius:8px;padding:6px 12px;'
+    + 'font-size:13px;cursor:pointer">Закрыть</button>'
+    + '</div>'
+    + '<iframe class="mn-frame" title="Просмотр узла" '
+    + 'style="flex:1;width:100%;border:0;background:#06060f"></iframe>'
+    + '</div>';
+  back.querySelector('strong').textContent = title;
+  back.querySelector('iframe').src = url;
+  back.querySelector('.mn-close').addEventListener('click', closeNodeModal);
+  back.addEventListener('mousedown', (e) => { if (e.target === back) closeNodeModal(); });
+  document.body.appendChild(back);
+  _mnModal = { back: back, url: url };
+  const frame = back.querySelector('iframe');
+  frame.addEventListener('load', () => { try { frame.contentWindow.focus(); } catch (e) {} });
+}
+
+function closeNodeModal() {
+  if (!_mnModal) return;
+  try { URL.revokeObjectURL(_mnModal.url); } catch (e) {}
+  if (_mnModal.back && _mnModal.back.parentNode) {
+    _mnModal.back.parentNode.removeChild(_mnModal.back);
+  }
+  _mnModal = null;
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && _mnModal) closeNodeModal();
+});
+window.addEventListener('message', (e) => {
+  if (e && e.data && e.data.type === 'mn-close') closeNodeModal();
+});
+
+function updateMouse(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KEYBOARD
+   ═══════════════════════════════════════════════════════════════ */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (sidebarOpen) closeSidebar();
+    if (panelOpen) {
+      leftPanel.classList.remove('open');
+      panelOpen = false;
+      addBtn.classList.remove('hidden');
+      updateLayoutClasses();
+    }
+  }
+  if (e.key === 'k' && e.ctrlKey) {
+    e.preventDefault();
+    searchInput.focus();
+  }
+  if (e.key === 'r') {
+    toggleRotation();
+  }
+  if (e.key === 'p') {
+    togglePhysics();
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   TOGGLE BUTTONS (Rotation + Physics)
+   ═══════════════════════════════════════════════════════════════ */
+function toggleRotation() {
+  controls.autoRotate = !controls.autoRotate;
+  const btn = document.getElementById('rotation-toggle');
+  if (controls.autoRotate) {
+    btn.classList.remove('paused');
+    btn.classList.add('active');
+    btn.textContent = '🌀';
+    toast('🌀 Rotation ON', 'info');
+  } else {
+    btn.classList.add('paused');
+    btn.classList.remove('active');
+    btn.textContent = '⏸';
+    toast('⏸ Rotation paused', 'info');
+  }
+}
+
+function togglePhysics() {
+  forceRunning = !forceRunning;
+  const btn = document.getElementById('physics-toggle');
+  if (forceRunning) {
+    btn.classList.remove('paused');
+    btn.classList.add('active');
+    btn.textContent = '⚡';
+    toast('⚡ Physics ON', 'info');
+  } else {
+    btn.classList.add('paused');
+    btn.classList.remove('active');
+    btn.textContent = '⏸';
+    toast('⏸ Physics paused', 'info');
+  }
+}
+
+document.getElementById('rotation-toggle').addEventListener('click', toggleRotation);
+document.getElementById('physics-toggle').addEventListener('click', togglePhysics);
+
+// Set initial active state
+document.getElementById('rotation-toggle').classList.add('active');
+document.getElementById('physics-toggle').classList.add('active');
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS PANEL
+   ═══════════════════════════════════════════════════════════════ */
+const settingsPanel = document.getElementById('settings-panel');
+const settingsToggle = document.getElementById('settings-toggle');
+
+// ── localStorage helpers ──
+const SETTINGS_KEY = 'owl-brain-settings';
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+function saveSettings(s) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+}
+
+// ── Apply saved settings on load ──
+const savedSettings = loadSettings();
+if (savedSettings.skipApi) document.getElementById('setting-skip-api').checked = true;
+if (savedSettings.showLabels !== undefined) document.getElementById('setting-show-labels').checked = !!savedSettings.showLabels;
+if (savedSettings.autoRotate !== undefined) {
+  document.getElementById('setting-auto-rotate').checked = !!savedSettings.autoRotate;
+  controls.autoRotate = !!savedSettings.autoRotate;
+}
+if (savedSettings.physics !== undefined) {
+  document.getElementById('setting-physics').checked = !!savedSettings.physics;
+  forceRunning = !!savedSettings.physics;
+}
+if (savedSettings.includeAiDb !== undefined) {
+  document.getElementById('setting-include-ai').checked = !!savedSettings.includeAiDb;
+}
+if (savedSettings.syncEnabled) document.getElementById('setting-sync-enabled').checked = true;
+if (savedSettings.syncTarget) document.getElementById('setting-sync-target').value = savedSettings.syncTarget;
+
+// ── Toggle settings panel ──
+settingsToggle.addEventListener('click', () => {
+  const isOpen = settingsPanel.classList.contains('open');
+  if (isOpen) {
+    settingsPanel.classList.remove('open');
+    settingsToggle.classList.remove('active');
+    if (sidebarOpen) document.getElementById('sidebar').classList.remove('open');
+  } else {
+    settingsPanel.classList.add('open');
+    settingsToggle.classList.add('active');
+  }
+});
+document.getElementById('settings-close').addEventListener('click', () => {
+  settingsPanel.classList.remove('open');
+  settingsToggle.classList.remove('active');
+});
+
+// ── Setting: Skip API ──
+document.getElementById('setting-skip-api').addEventListener('change', (e) => {
+  const s = loadSettings();
+  s.skipApi = e.target.checked;
+  saveSettings(s);
+  toast(e.target.checked ? '✅ Skip API: ON (local files only)' : '✅ Skip API: OFF', 'info');
+});
+
+// ── Setting: Show Labels ──
+document.getElementById('setting-show-labels').addEventListener('change', (e) => {
+  const s = loadSettings();
+  s.showLabels = e.target.checked;
+  saveSettings(s);
+  // Toggle node label visibility
+  for (const node of nodeObjects.values()) {
+    if (node.labelSprite) node.labelSprite.visible = e.target.checked;
+  }
+  toast(e.target.checked ? '✅ Labels: ON' : '✅ Labels: OFF', 'info');
+});
+
+// ── Setting: Auto-Rotate ──
+document.getElementById('setting-auto-rotate').addEventListener('change', (e) => {
+  const s = loadSettings();
+  s.autoRotate = e.target.checked;
+  saveSettings(s);
+  controls.autoRotate = e.target.checked;
+  const rotBtn = document.getElementById('rotation-toggle');
+  if (e.target.checked) {
+    rotBtn.classList.remove('paused');
+    rotBtn.classList.add('active');
+    rotBtn.textContent = '🌀';
+  } else {
+    rotBtn.classList.add('paused');
+    rotBtn.classList.remove('active');
+    rotBtn.textContent = '⏸';
+  }
+});
+
+// ── Setting: Physics ──
+document.getElementById('setting-physics').addEventListener('change', (e) => {
+  const s = loadSettings();
+  s.physics = e.target.checked;
+  saveSettings(s);
+  forceRunning = e.target.checked;
+  const physBtn = document.getElementById('physics-toggle');
+  if (e.target.checked) {
+    physBtn.classList.remove('paused');
+    physBtn.classList.add('active');
+    physBtn.textContent = '⚡';
+  } else {
+    physBtn.classList.add('paused');
+    physBtn.classList.remove('active');
+    physBtn.textContent = '⏸';
+  }
+});
+
+// ── Regenerate Graph button ──
+document.getElementById('btn-regenerate').addEventListener('click', async () => {
+  const statusEl = document.getElementById('regenerate-status');
+  const skipApi = document.getElementById('setting-skip-api').checked;
+  statusEl.textContent = '⏳ Regenerating...';
+  try {
+    const url = '/api/brain/regenerate' + (skipApi ? '?skipApi=true' : '');
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.ok) {
+      statusEl.textContent = `✅ Done! ${data.nodes} nodes`;
+      // Reload graph
+      await loadGraphData();
+      toast(`🔄 Graph regenerated: ${data.nodes} nodes`, 'success');
+    } else {
+      statusEl.textContent = `❌ Error: ${data.error}`;
+      toast(`❌ Regenerate failed: ${data.error}`, 'error');
+    }
+  } catch (err) {
+    statusEl.textContent = `❌ ${err.message}`;
+    toast(`❌ Regenerate failed: ${err.message}`, 'error');
+  }
+  setTimeout(() => { statusEl.textContent = ''; }, 5000);
+});
+
+// ── Load Notes button (regenerate from notes/ only) ──
+document.getElementById('btn-load-notes').addEventListener('click', async () => {
+  const statusEl = document.getElementById('load-status');
+  statusEl.textContent = '⏳ Loading notes...';
+  try {
+    const res = await fetch('/api/brain/regenerate-notes');
+    const data = await res.json();
+    if (data.ok) {
+      statusEl.textContent = `✅ Notes: ${data.nodes} nodes`;
+      await loadGraphData();
+      toast(`📝 Notes loaded: ${data.nodes} nodes`, 'success');
+    } else {
+      statusEl.textContent = `❌ Error: ${data.error}`;
+      toast(`❌ Load notes failed: ${data.error}`, 'error');
+    }
+  } catch (err) {
+    statusEl.textContent = `❌ ${err.message}`;
+    toast(`❌ Load notes failed: ${err.message}`, 'error');
+  }
+  setTimeout(() => { statusEl.textContent = ''; }, 5000);
+});
+
+// ── Load AI DB button (regenerate from ai-knowledge/ only) ──
+document.getElementById('btn-load-ai').addEventListener('click', async () => {
+  const statusEl = document.getElementById('load-status');
+  statusEl.textContent = '⏳ Loading AI DB...';
+  try {
+    const res = await fetch('/api/brain/regenerate-ai');
+    const data = await res.json();
+    if (data.ok) {
+      statusEl.textContent = `✅ AI DB: ${data.nodes} nodes`;
+      await loadGraphData();
+      toast(`🤖 AI DB loaded: ${data.nodes} nodes`, 'success');
+    } else {
+      statusEl.textContent = `❌ Error: ${data.error}`;
+      toast(`❌ Load AI DB failed: ${data.error}`, 'error');
+    }
+  } catch (err) {
+    statusEl.textContent = `❌ ${err.message}`;
+    toast(`❌ Load AI DB failed: ${err.message}`, 'error');
+  }
+  setTimeout(() => { statusEl.textContent = ''; }, 5000);
+});
+
+// ── Setting: Include AI DB ──
+document.getElementById('setting-include-ai').addEventListener('change', (e) => {
+  const s = loadSettings();
+  s.includeAiDb = e.target.checked;
+  saveSettings(s);
+  toast(e.target.checked ? '✅ AI DB: included' : '✅ AI DB: hidden', 'info');
+  // Reload graph with new filter
+  loadGraphData();
+});
+
+// ── Setting: Auto-sync enabled ──
+document.getElementById('setting-sync-enabled').addEventListener('change', (e) => {
+  const s = loadSettings();
+  s.syncEnabled = e.target.checked;
+  saveSettings(s);
+  toast(e.target.checked ? '✅ Auto-sync: ON' : '✅ Auto-sync: OFF', 'info');
+});
+
+// ── Setting: Sync target ──
+document.getElementById('setting-sync-target').addEventListener('change', (e) => {
+  const s = loadSettings();
+  s.syncTarget = e.target.value;
+  saveSettings(s);
+});
+
+// ── Sync Now button ──
+document.getElementById('btn-sync-now').addEventListener('click', async () => {
+  const statusEl = document.getElementById('sync-status-text');
+  const s = loadSettings();
+  const target = s.syncTarget || 'both';
+  statusEl.textContent = '⏳ Syncing...';
+  try {
+    const res = await fetch('/api/brain/sync-new-files', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      const parts = [];
+      if (data.copied_to_notes.length) parts.push(`📝 ${data.copied_to_notes.length} to Notes`);
+      if (data.copied_to_ai.length) parts.push(`🤖 ${data.copied_to_ai.length} to AI DB`);
+      if (data.skipped.length) parts.push(`⏭️ ${data.skipped.length} skipped`);
+      statusEl.textContent = parts.length ? parts.join(' · ') : '✅ Nothing new to sync';
+      toast(`🔄 Sync: ${data.total_copied} copied, ${data.skipped.length} skipped`, 'success');
+      // Reload graph to show new nodes
+      await loadGraphData();
+    } else {
+      statusEl.textContent = `❌ Error: ${data.error}`;
+      toast(`❌ Sync failed: ${data.error}`, 'error');
+    }
+  } catch (err) {
+    statusEl.textContent = `❌ ${err.message}`;
+    toast(`❌ Sync failed: ${err.message}`, 'error');
+  }
+  setTimeout(() => { statusEl.textContent = ''; }, 8000);
+});
+
+// ── Sync Status button ──
+document.getElementById('btn-sync-status').addEventListener('click', async () => {
+  const statusEl = document.getElementById('sync-status-text');
+  statusEl.textContent = '⏳ Checking...';
+  try {
+    const res = await fetch('/api/brain/sync-status');
+    const data = await res.json();
+    if (data.ok) {
+      statusEl.textContent = `📊 ${data.new_count} new files · ${data.notes_count} in Notes · ${data.ai_count} in AI DB`;
+      if (data.new_files.length > 0) {
+        // Show first 5 new files
+        const preview = data.new_files.slice(0, 5).join(', ');
+        const more = data.new_files.length > 5 ? ` (+${data.new_files.length - 5} more)` : '';
+        toast(`📋 New files: ${preview}${more}`, 'info');
+      } else {
+        toast('✅ All files synced!', 'success');
+      }
+    } else {
+      statusEl.textContent = `❌ Error: ${data.error}`;
+    }
+  } catch (err) {
+    statusEl.textContent = `❌ ${err.message}`;
+  }
+  setTimeout(() => { statusEl.textContent = ''; }, 8000);
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   WINDOW RESIZE
+   ═══════════════════════════════════════════════════════════════ */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   LOAD DATA — Full rebuild on each call
+   ═══════════════════════════════════════════════════════════════ */
+async function loadGraphData(retries = 3) {
+  const s = loadSettings();
+  const skipApi = s.skipApi || false;
+  const includeAiDb = s.includeAiDb !== false; // default true
+
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      const response = await fetch('/api/brain/graph-data?_=' + Date.now(), { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+
+      if (!data.nodes || !data.links) throw new Error('Invalid graph data: missing nodes/links');
+
+      // If skipApi is on, filter out API-sourced nodes (NOTES, AI_KNOWLEDGE sections)
+      if (skipApi) {
+        const apiSections = new Set(['NOTES', 'AI_KNOWLEDGE']);
+        data.nodes = data.nodes.filter(n => !apiSections.has(n.section));
+        const validIds = new Set(data.nodes.map(n => n.id));
+        data.links = data.links.filter(l => validIds.has(l.source) && validIds.has(l.target));
+        // Rebuild sections
+        data.sections = {};
+        for (const node of data.nodes) {
+          const sec = node.section;
+          if (!data.sections[sec]) {
+            data.sections[sec] = { name: sec, nodes: [], count: 0 };
+          }
+          data.sections[sec].nodes.push(node.id);
+          data.sections[sec].count++;
+        }
+        data.stats.total_nodes = data.nodes.length;
+        data.stats.total_links = data.links.length;
+        data.stats.sections = Object.keys(data.sections).length;
+      }
+
+      // If includeAiDb is off, filter out AI_KNOWLEDGE nodes
+      if (!includeAiDb) {
+        const aiSections = new Set(['AI_KNOWLEDGE']);
+        data.nodes = data.nodes.filter(n => !aiSections.has(n.section));
+        const validIds = new Set(data.nodes.map(n => n.id));
+        data.links = data.links.filter(l => validIds.has(l.source) && validIds.has(l.target));
+        data.sections = {};
+        for (const node of data.nodes) {
+          const sec = node.section;
+          if (!data.sections[sec]) {
+            data.sections[sec] = { name: sec, nodes: [], count: 0 };
+          }
+          data.sections[sec].nodes.push(node.id);
+          data.sections[sec].count++;
+        }
+        data.stats.total_nodes = data.nodes.length;
+        data.stats.total_links = data.links.length;
+        data.stats.sections = Object.keys(data.sections).length;
+      }
+
+      // Full cleanup: remove all existing objects
+      for (const node of nodeObjects.values()) {
+        scene.remove(node.mesh);
+        scene.remove(node.ring);
+        scene.remove(node.glow);
+        node.mesh.geometry.dispose();
+        node.mesh.material.dispose();
+        node.ring.geometry.dispose();
+        node.ring.material.dispose();
+        node.glow.geometry.dispose();
+        node.glow.material.dispose();
+      }
+      for (const link of linkLines) {
+        scene.remove(link.line);
+        link.line.geometry.dispose();
+        link.line.material.dispose();
+      }
+      for (const pulse of linkPulses) {
+        scene.remove(pulse);
+        pulse.geometry.dispose();
+        pulse.material.dispose();
+      }
+      if (particles) {
+        scene.remove(particles);
+        particles.geometry.dispose();
+        particles.material.dispose();
+      }
+      if (brainWireframe) {
+        scene.remove(brainWireframe);
+        brainWireframe = null;
+      }
+
+      nodeObjects.clear();
+      linkLines = [];
+      linkPulses = [];
+      particles = null;
+      hoveredNode = null;
+      focusedNode = null;
+
+      // Rebuild from scratch
+      buildGraph(data);
+      createBrainWireframe();
+      createParticles();
+
+      // Hide loading
+      setTimeout(() => {
+        document.getElementById('loading').classList.add('hidden');
+      }, 300);
+
+      console.log(`✅ Graph loaded: ${data.nodes.length} nodes, ${data.links.length} links`);
+      return; // Success
+    } catch (err) {
+      console.warn(`⚠️ Load attempt ${attempt}/${retries} failed:`, err.message);
+      if (attempt === retries) {
+        console.error('Failed to load graph after all retries:', err);
+        document.getElementById('loading').innerHTML = `
+          <div class="icon">🧠</div>
+          <h2>Граф пока пуст</h2>
+          <p>${err.message}</p>
+          <p style="margin-top:12px;font-size:12px;opacity:.7">
+            Граф строится по .md-файлам в каталоге <b>wikimemory</b>.<br>
+            Положите туда заметки — и связи появятся сами.<br>
+            Либо задайте другой каталог через INFINITY_WIKI_MEMORY_DIR.
+          </p>
+        `;
+      } else {
+        await new Promise(r => setTimeout(r, 1000 * attempt)); // Exponential backoff
+      }
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATION LOOP
+   ═══════════════════════════════════════════════════════════════ */
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const time = clock.getElapsedTime();
+
+  // Update physics
+  updatePhysics();
+
+  // Rotate node rings
+  for (const node of nodeObjects.values()) {
+    node.ring.lookAt(camera.position);
+    node.glow.lookAt(camera.position);
+
+    // Pulse effect
+    const pulse = 1 + Math.sin(time * 2 + node.position.x) * 0.05;
+    node.ring.scale.set(pulse, pulse, 1);
+  }
+
+  // Animate pulses along links
+  for (const pulse of linkPulses) {
+    if (pulse.userData.linkIndex >= linkLines.length) continue;
+    const link = linkLines[pulse.userData.linkIndex];
+    if (!link || !link.line.visible) {
+      pulse.visible = false;
+      continue;
+    }
+    pulse.visible = true;
+    pulse.userData.t += pulse.userData.speed;
+    if (pulse.userData.t > 1) pulse.userData.t = 0;
+
+    const source = nodeObjects.get(link.sourceId);
+    const target = nodeObjects.get(link.targetId);
+    if (!source || !target) continue;
+
+    const mid = source.position.clone().add(target.position).multiplyScalar(0.5);
+    mid.y += 1.5;
+    const curve = new THREE.QuadraticBezierCurve3(
+      source.position.clone(), mid, target.position.clone()
+    );
+    const pos = curve.getPoint(pulse.userData.t);
+    pulse.position.copy(pos);
+  }
+
+  // Rotate particles
+  if (particles) {
+    particles.rotation.y = time * 0.01;
+    particles.rotation.x = time * 0.005;
+  }
+
+  // Animate highlight ring
+  if (highlightRing && highlightedNodeId) {
+    const node = nodeObjects.get(highlightedNodeId);
+    if (node) {
+      highlightRing.position.copy(node.position);
+      highlightRing.lookAt(camera.position);
+      // Pulse opacity
+      highlightRing.material.opacity = 0.3 + Math.sin(time * 4) * 0.3;
+      // Slow rotation
+      highlightRing.rotation.z = time * 0.5;
+    }
+  }
+
+  controls.update();
+  composer.render();
+}
+
+// Start
+loadGraphData();
+animate();
+</script>
+</body>
+</html>

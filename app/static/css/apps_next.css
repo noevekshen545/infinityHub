@@ -1,0 +1,432 @@
+/* Skin «next» модуля App Store: язык библиотеки 2.0 (library_next.css) —
+   рейл из module_rail.css, карточки и сегменты вместо плавающих таблеток,
+   акцент из темы приложения.
+
+   Правила идут ПОСЛЕ базового <style> страницы и ПОСЛЕ design.css, поэтому
+   перекрывают раскладку; красок, мимо переменных темы, здесь нет — единственная
+   литеральная, собранная в токен, описана в алиас-блоке.
+   Гейт: html[data-apps-skin="next"].pg-page_apps; классика (?skin=classic) этих правил
+   не подключает. */
+
+/* ── Псевдонимы переменных ──────────────────────────────────────────────
+   Базовый слой страницы читает имена, которых нет в design.css
+   (--radius-xl, --shadow-sm, --*-light, --border2, --font-sans, --red,
+   --yellow). Пока локальная таблица тем была на месте, они брались из неё;
+   со скином палитра приходит из темы приложения, поэтому имена задаём здесь,
+   через color-mix от переменных темы — иначе они светили бы индиго #6366f1.
+   Значения на <html>, а тема design.css — на <body>: для содержимого
+   выигрывает тема, этот блок остаётся запасным для светлой палитры. */
+html[data-apps-skin="next"] {
+  --radius-xl: 20px;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, .08);
+  --border2: var(--border-2, var(--border));
+  --font-sans: var(--font);
+  --red: var(--danger, #d64545);
+  --yellow: var(--warning, #c98a12);
+  --green: var(--success, #1f9254);
+  --purple: var(--accent-2, #6d28d9);
+  /* --accent2 кладёт на <html> theme.js (в design.css имя с дефисом).
+       Без запасного значения градиенты страницы остались бы валидными,
+       только если theme.js доехал. */
+  --accent2: var(--accent-2, var(--accent));
+  /* Краска текста на сплошном акценте. Белый здесь — не отступление от темы,
+       а единственная литеральная краска слоя: такие же кнопки в main/media_neo.css
+       и в классическом слое страницы. Собрана в токен, потому что на акценте
+       другого цвета (жёлтом, к примеру) её надо менять одним местом. */
+  --on-accent: #fff;
+  --accent-light: color-mix(in srgb, var(--accent) 14%, transparent);
+  --accent-glow: color-mix(in srgb, var(--accent) 25%, transparent);
+  --green-light: color-mix(in srgb, var(--green) 14%, transparent);
+  --red-light: color-mix(in srgb, var(--red) 14%, transparent);
+  --yellow-light: color-mix(in srgb, var(--yellow) 14%, transparent);
+  --purple-light: color-mix(in srgb, var(--purple) 14%, transparent);
+}
+
+/* ── Контент: смещаем колонку от рейла ───────────────────────────────── */
+html[data-apps-skin="next"].pg-page_apps .main-content {
+  margin: 0 auto 0 calc(var(--rail-w) + var(--rail-pad) * 2 + 8px);
+  padding: 22px 28px 96px;
+  min-height: 100vh;
+}
+
+/* Базовый слой готовил отступ под верхнюю таблетку (padding-top: 80px) —
+   с рейлом вертикальный зазор не нужен. */
+html[data-apps-skin="next"].pg-page_apps body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+}
+
+/* ── Герой: обложка сверху, подпись на затемнённой полосе ─────────────── */
+html[data-apps-skin="next"].pg-page_apps .hero-section { margin-bottom: 24px }
+
+html[data-apps-skin="next"].pg-page_apps .hero-carousel {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+html[data-apps-skin="next"].pg-page_apps .hero-banner {
+  height: 240px;
+  background: color-mix(in srgb, var(--accent) 22%, var(--bg2));
+}
+
+/* Подпись читается и на светлой обложке, и на тёмной: затемнение снизу
+   вместо прежней цветной подложки. */
+html[data-apps-skin="next"].pg-page_apps .hero-slide::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(6, 10, 18, .78), rgba(6, 10, 18, .1) 58%, transparent);
+  pointer-events: none;
+}
+
+html[data-apps-skin="next"].pg-page_apps .hero-banner-content {
+  padding: 22px 26px;
+  max-width: 70%;
+  z-index: 3;
+}
+
+html[data-apps-skin="next"].pg-page_apps .hero-badge {
+  background: color-mix(in srgb, var(--on-accent) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-accent) 22%, transparent);
+  backdrop-filter: blur(6px);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  margin-bottom: 10px;
+}
+
+html[data-apps-skin="next"].pg-page_apps .hero-app-name {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, .45);
+  letter-spacing: 0;
+}
+
+html[data-apps-skin="next"].pg-page_apps .hero-btn {
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+html[data-apps-skin="next"].pg-page_apps .hero-btn:hover {
+  background: color-mix(in srgb, var(--accent) 88%, var(--on-accent));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+html[data-apps-skin="next"].pg-page_apps .hero-dots { bottom: 16px }
+
+/* Стрелки уезжают в правый верхний угол парой: базовый слой ставил их по
+   вертикальному центру по краям, и prev ложилась прямо на бейдж с названием
+   подписи слайда (подпись живёт внизу слева, но на 240 px она дотягивает
+   до центра). */
+html[data-apps-skin="next"].pg-page_apps .hero-nav {
+  width: 30px;
+  height: 30px;
+  font-size: 12px;
+  top: 14px;
+  margin-top: 0;
+  transform: none;
+  background: color-mix(in srgb, var(--on-accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--on-accent) 22%, transparent);
+}
+
+html[data-apps-skin="next"].pg-page_apps .hero-nav.prev { left: auto; right: 54px }
+html[data-apps-skin="next"].pg-page_apps .hero-nav.next { right: 14px }
+
+/* hover базового слоя поднимал кнопку на translateY(-50%) — с новым
+   положением это был бы прыжок вверх на половину высоты. */
+html[data-apps-skin="next"].pg-page_apps .hero-nav:hover { transform: scale(1.08) }
+
+/* ── Поиск и фильтр-чипы: те же радиусы, что у карточек ───────────────── */
+html[data-apps-skin="next"].pg-page_apps .search-bar,
+html[data-apps-skin="next"].pg-page_apps .ext-search {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 11px 16px;
+}
+
+html[data-apps-skin="next"].pg-page_apps .search-bar:focus-within,
+html[data-apps-skin="next"].pg-page_apps .ext-search:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+html[data-apps-skin="next"].pg-page_apps .filters {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 6px;
+  width: 100%;
+}
+
+html[data-apps-skin="next"].pg-page_apps .filter-chip {
+  border-radius: var(--radius-sm);
+  padding: 7px 13px;
+  font-size: 12.5px;
+  color: var(--text2);
+}
+
+html[data-apps-skin="next"].pg-page_apps .filter-chip.active {
+  /* Прежний локальный градиент #6366f1→#a855f7 не связан с темой. */
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+/* Чип-кнопка «Создать приложение» — тот же accent, что и активный чип, но
+   без состояния «выбран». */
+html[data-apps-skin="next"].pg-page_apps .filter-chip.primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+html[data-apps-skin="next"].pg-page_apps .filter-chip.primary:hover {
+  background: color-mix(in srgb, var(--accent) 88%, var(--on-accent));
+  color: var(--on-accent);
+}
+
+/* ── Секции категорий и карточки приложений ──────────────────────────── */
+html[data-apps-skin="next"].pg-page_apps .category-section { margin-bottom: 28px }
+
+html[data-apps-skin="next"].pg-page_apps .category-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Счётчик категории — маленькая пилюля на фоне-подложке, как `.rail-badge`
+   в рейле: цифра не должна перетягивать на себя вес названия. */
+html[data-apps-skin="next"].pg-page_apps .category-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  background: var(--bg3);
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+}
+
+html[data-apps-skin="next"].pg-page_apps .category-emoji { font-size: 15px }
+
+html[data-apps-skin="next"].pg-page_apps .apps-grid {
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 14px;
+}
+
+html[data-apps-skin="next"].pg-page_apps .app-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 14px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-apps-skin="next"].pg-page_apps .app-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+/* .app-card::before давал цветную подложку на весь размер карточки; в
+   языке 2.0 наведение отвечает только границей и тенью. */
+html[data-apps-skin="next"].pg-page_apps .app-card::before { display: none }
+
+html[data-apps-skin="next"].pg-page_apps .app-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  font-size: 26px;
+  margin-bottom: 12px;
+}
+
+html[data-apps-skin="next"].pg-page_apps .app-name {
+  font-size: 13.5px;
+  min-height: 34px;
+  margin-bottom: 8px;
+}
+
+html[data-apps-skin="next"].pg-page_apps .app-price {
+  font-size: 10.5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+/* ── Пустые состояния и загрузка ─────────────────────────────────────── */
+html[data-apps-skin="next"].pg-page_apps .empty-state,
+html[data-apps-skin="next"].pg-page_apps .ext-empty {
+  background: var(--bg2);
+  border: 1px dashed var(--border-2, var(--border));
+  border-radius: var(--radius-lg);
+  padding: 44px 24px;
+}
+
+html[data-apps-skin="next"].pg-page_apps .empty-state .icon,
+html[data-apps-skin="next"].pg-page_apps .ext-empty .icon {
+  font-size: 44px;
+  margin-bottom: 12px;
+  opacity: .55;
+}
+
+html[data-apps-skin="next"].pg-page_apps .empty-state h3,
+html[data-apps-skin="next"].pg-page_apps .ext-empty h3 {
+  font-size: 17px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+html[data-apps-skin="next"].pg-page_apps .empty-state p,
+html[data-apps-skin="next"].pg-page_apps .ext-empty p {
+  font-size: 13px;
+  color: var(--text2);
+}
+
+/* ── Модальные окна и тост ───────────────────────────────────────────── */
+html[data-apps-skin="next"].pg-page_apps .modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  width: min(720px, 92vw);
+}
+
+html[data-apps-skin="next"].pg-page_apps .notification-toast {
+  top: 20px;
+  right: 20px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* ── Вид «Расширения» ─────────────────────────────────────────────────── */
+html[data-apps-skin="next"].pg-page_apps .ext-sub-tabs {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 5px;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+html[data-apps-skin="next"].pg-page_apps .ext-sub-tab {
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  font-size: 12.5px;
+}
+
+html[data-apps-skin="next"].pg-page_apps .ext-sub-tab.active {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+html[data-apps-skin="next"].pg-page_apps .ext-sub-tabs .ext-create-btn {
+  background: var(--accent);
+  color: var(--on-accent) !important;
+  border-radius: var(--radius-sm);
+}
+
+html[data-apps-skin="next"].pg-page_apps .ext-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: 14px;
+}
+
+html[data-apps-skin="next"].pg-page_apps .ext-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  min-width: 0;
+}
+
+html[data-apps-skin="next"].pg-page_apps .ext-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+html[data-apps-skin="next"].pg-page_apps .ext-card-name {
+  font-size: 14px;
+  font-weight: 650;
+  /* Длинные имена расширений не должны растягивать карточку. */
+  overflow-wrap: anywhere;
+}
+
+html[data-apps-skin="next"].pg-page_apps .ext-btn.primary {
+  background: var(--accent);
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+html[data-apps-skin="next"].pg-page_apps .ext-btn.primary:hover {
+  background: color-mix(in srgb, var(--accent) 88%, var(--on-accent));
+}
+
+/* Бейджи категорий: цвет из переменной темы, а не захардкоженный hex —
+   иначе на светлой теме подпись становилась нечитаемой. */
+html[data-apps-skin="next"].pg-page_apps .ext-badge {
+  background: var(--bg3);
+  color: var(--text2);
+  border-radius: 999px;
+}
+
+html[data-apps-skin="next"].pg-page_apps .ext-status.enabled {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+/* ── Узкие экраны: рейл становится выдвижной панелью ──────────────────── */
+@media (max-width: 980px) {
+  /* В выдвижном режиме рейл уходит за левый край, поэтому контент
+     возвращается на всю ширину, а освобождается только место под FAB. */
+  html[data-apps-skin="next"].pg-page_apps .main-content {
+    margin-left: auto;
+    padding: 72px 14px 96px;
+  }
+
+  html[data-apps-skin="next"].pg-page_apps .hero-banner { height: 200px }
+  html[data-apps-skin="next"].pg-page_apps .hero-banner-content { max-width: 85%; padding: 16px 18px }
+  html[data-apps-skin="next"].pg-page_apps .hero-app-name { font-size: 21px }
+
+  /* Горизонтальное переполнение вида «Расширения» на 390 px: чипы действий
+     и вкладки переносим, сетку сужаем до одной колонки. */
+  html[data-apps-skin="next"].pg-page_apps .apps-layout { flex-direction: column }
+  html[data-apps-skin="next"].pg-page_apps .filters { width: 100% }
+  html[data-apps-skin="next"].pg-page_apps .filter-chip { white-space: nowrap }
+  html[data-apps-skin="next"].pg-page_apps .ext-card-actions { flex-wrap: wrap }
+  html[data-apps-skin="next"].pg-page_apps .ext-sub-tabs .ext-create-btn { margin-left: 0 !important }
+  html[data-apps-skin="next"].pg-page_apps .notification-toast {
+    left: 14px;
+    right: 14px;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-apps-skin="next"].pg-page_apps .app-card,
+  html[data-apps-skin="next"].pg-page_apps .ext-card,
+  html[data-apps-skin="next"].pg-page_apps .hero-slide {
+    transition-duration: 0.01ms !important;
+  }
+}

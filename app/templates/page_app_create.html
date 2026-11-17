@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html class="pg-page_app_create" data-apps-skin="next" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Создать приложение — Infinity</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/fonts/google-fonts.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+/* Палитра и таблица тем здесь больше не нужны: со скином их задают
+   design.css + theme.js (общая тема приложения), а имена переменных, которых
+   в design.css нет (--radius-xl, --shadow-sm, --*-light, --on-accent),
+   довозит алиас-блок apps_next.css. Классика (?skin=classic) получает прежний
+   файл из templates_backup — с локальной палитрой. */
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+::selection{background:var(--accent);color:var(--on-accent)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+
+.topbar{position:sticky;top:0;z-index:100;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;height:60px;gap:16px}
+.topbar .logo{font-size:18px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:8px}
+.topbar .logo i{color:var(--accent);font-size:20px}
+.topbar .back{padding:6px 14px;border-radius:var(--radius-sm);background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:13px;text-decoration:none;transition:var(--tr);display:flex;align-items:center;gap:6px}
+.topbar .back:hover{background:var(--bg4);color:var(--text)}
+.topbar .subtitle{font-size:13px;color:var(--text3);margin-left:auto}
+
+.progress-wrap{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 24px 0;position:sticky;top:60px;z-index:99}
+.progress{display:flex;gap:0;max-width:900px;margin:0 auto}
+.prog-step{flex:1;text-align:center;padding:8px 4px 12px;font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;position:relative;transition:var(--tr);border-bottom:3px solid var(--bg4)}
+.prog-step:hover{color:var(--text2)}
+.prog-step.active{color:var(--accent);border-bottom-color:var(--accent)}
+.prog-step.done{color:var(--green);border-bottom-color:var(--green)}
+.prog-step .num{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--bg3);color:var(--text2);align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-right:6px;transition:var(--tr)}
+.prog-step.active .num{background:var(--accent);color:var(--on-accent)}
+.prog-step.done .num{background:var(--green);color:var(--on-accent)}
+
+.container{max-width:720px;margin:0 auto;padding:28px 24px 80px}
+
+.step-panel{display:none;animation:fadeIn 0.35s ease}
+.step-panel.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+.step-header{margin-bottom:24px}
+.step-header h2{font-size:22px;font-weight:700;display:flex;align-items:center;gap:10px}
+.step-header p{font-size:14px;color:var(--text2);margin-top:6px;line-height:1.5}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:16px;box-shadow:var(--shadow-sm);transition:var(--tr)}
+.card-title{font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.form-group .hint{font-size:11px;color:var(--text3);margin-top:3px}
+input[type="text"],input[type="url"],input[type="number"],select,textarea{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border-2);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-family:var(--font);outline:none;transition:var(--tr)}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+textarea{resize:vertical;min-height:80px;font-family:var(--font-mono)}
+input[readonly]{opacity:0.6;cursor:not-allowed;background:var(--bg3)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.app-cover-preview{width:100%;height:140px;border-radius:var(--radius);background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border:1px solid var(--border);margin-bottom:16px}
+.app-cover-preview img{width:100%;height:100%;object-fit:cover}
+.app-cover-preview .cover-icon{font-size:56px;color:var(--on-accent);text-shadow:0 4px 12px rgba(0,0,0,.25)}
+.cover-row{display:flex;gap:8px;align-items:center}
+.cover-row input{flex:1;min-width:0}
+.cover-file-btn{padding:10px 14px;background:var(--bg3);border:1px solid var(--border-2);border-radius:var(--radius-sm);cursor:pointer;white-space:nowrap;font-size:13px;color:var(--text2);transition:var(--tr)}
+.cover-file-btn:hover{background:var(--bg4);color:var(--text)}
+
+.type-grid{display:grid;gap:8px}
+.type-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--border-2);border-radius:var(--radius);cursor:pointer;transition:var(--tr);background:var(--bg)}
+.type-item:hover{border-color:var(--accent);background:var(--accent-light)}
+.type-item.selected{border-color:var(--accent);background:var(--accent-light);box-shadow:0 0 0 3px var(--accent-glow)}
+.type-item .type-icon{font-size:28px;width:40px;text-align:center;color:var(--accent)}
+.type-item .type-info{flex:1}
+.type-item .type-name{font-size:15px;font-weight:600;color:var(--text)}
+.type-item .type-desc{font-size:12px;color:var(--text3);margin-top:2px}
+
+.icon-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.icon-opt{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--bg);border:1px solid var(--border-2);border-radius:var(--radius-sm);cursor:pointer;font-size:18px;color:var(--text2);transition:var(--tr)}
+.icon-opt:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+.icon-opt.selected{border-color:var(--accent);background:var(--accent-light);color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow)}
+
+.radio-group{display:flex;gap:16px;margin-bottom:14px}
+.radio-group label{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2)}
+.radio-group input[type="radio"]{accent-color:var(--accent);width:16px;height:16px}
+
+.nav-buttons{display:flex;gap:10px;justify-content:space-between;margin-top:28px;padding-top:20px;border-top:1px solid var(--border)}
+.btn{padding:10px 22px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;transition:var(--tr);display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;font-family:var(--font)}
+.btn-primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent2);border-color:var(--accent2);box-shadow:0 4px 12px var(--accent-glow);transform:translateY(-1px)}
+.btn-secondary{background:var(--bg2);color:var(--text);border-color:var(--border-2)}
+.btn-secondary:hover{background:var(--bg3);border-color:var(--text3)}
+.btn-success{background:var(--green);color:var(--on-accent);border-color:var(--green)}
+.btn-success:hover{background:color-mix(in srgb,var(--green) 82%,var(--on-accent));box-shadow:0 4px 12px var(--green-light);transform:translateY(-1px)}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none!important}
+
+.summary-grid{display:grid;gap:8px;font-size:13px}
+.summary-row{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--bg4)}
+.summary-row:last-child{border-bottom:none}
+.summary-label{color:var(--text3);min-width:130px;font-weight:500}
+.summary-value{color:var(--text);font-weight:600}
+.summary-value .fa{color:var(--accent)}
+.summary-icon{font-size:22px;color:var(--accent)}
+
+.confirm-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+
+@media(max-width:600px){
+.form-row{grid-template-columns:1fr}
+.prog-step .num{margin-right:0}
+.prog-step .label{display:none}
+.container{padding:20px 16px 80px}
+.topbar{padding:0 16px}
+}
+</style>
+<script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/apps" class="back"><i class="fas fa-arrow-left"></i> Назад</a>
+  <span class="logo"><i class="fas fa-magic"></i> Создать приложение</span>
+  <span class="subtitle">Мастер создания</span>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress" id="progressBar"></div>
+</div>
+
+<div class="container" id="appContainer">
+  <div class="card" id="stepContent"></div>
+</div>
+
+<script>
+function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function generateId(name){return name.toLowerCase().replace(/[^a-z0-9а-яё]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'')||'my-app'}
+
+const STEPS=[
+  {icon:'fa-info-circle',label:'Основное'},
+  {icon:'fa-cube',label:'Тип'},
+  {icon:'fa-image',label:'Иконка'},
+  {icon:'fa-cog',label:'Настройки'},
+  {icon:'fa-check-circle',label:'Готово'}
+];
+
+/* var, а не let: часть обработчиков в разметке обращается к window.__aaData
+   (онinput у поля иконки/обложки, onchange категории, колбэк загрузки файла).
+   С let свойство на window не появляется, и такие строки падали на первом
+   же обращении — превью иероглифа, обложки и категории не обновлялись. */
+var __aaCurrentStep=0;
+var __aaData={name:'',description:'',type:'html',icon:'fas fa-globe',iconType:'fontawesome',coverUrl:'',url:'',width:800,height:600,needsServer:false,port:8000,idleTimeout:10,cmd:'',dependencies:'',category:''};
+
+let __allCategories=[];
+
+async function loadCategories(){
+  try{
+    const r=await fetch('/api/apps/categories');
+    const d=await r.json();
+    __allCategories=d.categories||[];
+  }catch(e){__allCategories=[]}
+}
+loadCategories();
+
+function renderProgress(){
+  const bar=document.getElementById('progressBar');
+  bar.innerHTML=STEPS.map((s,i)=>`
+    <div class="prog-step ${i===__aaCurrentStep?'active':''}" data-step="${i}" onclick="goToStep(${i})">
+      <span class="num">${i+1}</span><span class="label">${s.label}</span>
+    </div>
+  `).join('');
+}
+
+function goToStep(step){
+  __aaCurrentStep=step;
+  document.querySelectorAll('.prog-step').forEach((el,i)=>{
+    el.className='prog-step'+(i===step?' active':'')+(i<step?' done':'');
+  });
+  renderStep();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderStep(){
+  const fn=[renderStepBasic,renderStepType,renderStepIcon,renderStepAdvanced,renderStepConfirm];
+  fn[__aaCurrentStep]();
+}
+
+function navButtons(){
+  return `
+  <div class="nav-buttons">
+    <button class="btn ${__aaCurrentStep>0?'btn-secondary':'btn-secondary'}" onclick="prevStep()" ${__aaCurrentStep===0?'disabled':''}>
+      <i class="fas fa-arrow-left"></i> Назад
+    </button>
+    <button class="btn ${__aaCurrentStep===4?'btn-success':'btn-primary'}" onclick="nextStep()">
+      ${__aaCurrentStep===4?'<i class="fas fa-check"></i> Создать':'Далее <i class="fas fa-arrow-right"></i>'}
+    </button>
+  </div>`;
+}
+
+function prevStep(){if(__aaCurrentStep>0)goToStep(__aaCurrentStep-1)}
+
+function nextStep(){
+  const d=__aaData;
+  if(__aaCurrentStep===0){
+    d.name=document.getElementById('aaName')?.value.trim()||'';
+    d.description=document.getElementById('aaDesc')?.value.trim()||'';
+    if(!d.name){alert('Введите название');return}
+  }else if(__aaCurrentStep===1){
+    const sel=document.querySelector('input[name="aaType"]:checked');
+    d.type=sel?.value||'html';
+  }else if(__aaCurrentStep===2){
+    d.iconType=document.querySelector('input[name="iconSourceType"]:checked')?.value||'fontawesome';
+    if(d.iconType==='fontawesome')d.icon=document.getElementById('aaIconFA')?.value.trim()||'fas fa-globe';
+    else d.icon=document.getElementById('aaIconUrl')?.value.trim()||'';
+  }else if(__aaCurrentStep===3){
+    d.url=document.getElementById('aaUrl')?.value.trim()||'';
+    d.width=parseInt(document.getElementById('aaWidth')?.value)||800;
+    d.height=parseInt(document.getElementById('aaHeight')?.value)||600;
+    d.needsServer=document.getElementById('aaServer')?.checked||false;
+    d.port=parseInt(document.getElementById('aaPort')?.value)||8000;
+    d.idleTimeout=parseInt(document.getElementById('aaIdle')?.value)||10;
+    d.coverUrl=document.getElementById('aaCoverUrl')?.value.trim()||'';
+    const depsEl=document.getElementById('aaDeps');
+    if(depsEl)d.dependencies=depsEl.value.trim();
+    d.cmd=document.getElementById('aaCmd')?.value.trim()||getDefaultCmd(d.type);
+    if(d.type==='link'&&!d.url){alert('Введите URL для приложения-ссылки');return}
+  }else if(__aaCurrentStep===4){
+    submitAddApp();return;
+  }
+  if(__aaCurrentStep<4)goToStep(__aaCurrentStep+1);
+}
+
+function renderStepBasic(){
+  const d=__aaData;
+  document.getElementById('stepContent').innerHTML=`
+    <div class="step-panel active">
+      <div class="step-header">
+        <h2><i class="fas fa-info-circle" style="color:var(--accent)"></i> Основная информация</h2>
+        <p>Заполните базовые данные вашего приложения.</p>
+      </div>
+      <div class="app-cover-preview" id="appCoverPreview">
+        <div class="cover-icon" id="coverIconPreview"><i class="${d.icon||'fas fa-mobile-alt'}"></i></div>
+      </div>
+      <div class="form-group">
+        <label>Название *</label>
+        <input type="text" id="aaName" value="${esc(d.name)}" placeholder="Моё приложение" oninput="autoGenerateId();updateCoverPreview()">
+      </div>
+      <div class="form-group">
+        <label>ID (авто)</label>
+        <input type="text" id="aaId" value="${esc(generateId(d.name))}" placeholder="my-app" readonly>
+      </div>
+      <div class="form-group">
+        <label>Описание</label>
+        <input type="text" id="aaDesc" value="${esc(d.description)}" placeholder="Краткое описание приложения" oninput="updateCoverPreview()">
+      </div>
+    </div>
+    ${navButtons()}
+  `;
+  setTimeout(updateCoverPreview,50);
+}
+
+function renderStepType(){
+  const d=__aaData;
+  document.getElementById('stepContent').innerHTML=`
+    <div class="step-panel active">
+      <div class="step-header">
+        <h2><i class="fas fa-cube" style="color:var(--accent)"></i> Тип приложения</h2>
+        <p>Выберите тип приложения, которое хотите создать.</p>
+      </div>
+      <div class="type-grid">
+        <label class="type-item${d.type==='html'?' selected':''}">
+          <input type="radio" name="aaType" value="html" ${d.type==='html'?'checked':''} style="display:none">
+          <div class="type-icon"><i class="fas fa-globe"></i></div>
+          <div class="type-info"><div class="type-name">HTML приложение</div><div class="type-desc">Веб-страница с HTML/CSS/JS</div></div>
+        </label>
+        <label class="type-item${d.type==='python'?' selected':''}">
+          <input type="radio" name="aaType" value="python" ${d.type==='python'?'checked':''} style="display:none">
+          <div class="type-icon"><i class="fab fa-python"></i></div>
+          <div class="type-info"><div class="type-name">Python приложение</div><div class="type-desc">Скрипт Python с терминалом</div></div>
+        </label>
+        <label class="type-item${d.type==='link'?' selected':''}">
+          <input type="radio" name="aaType" value="link" ${d.type==='link'?'checked':''} style="display:none">
+          <div class="type-icon"><i class="fas fa-link"></i></div>
+          <div class="type-info"><div class="type-name">Ссылка</div><div class="type-desc">Открыть внешний URL</div></div>
+        </label>
+        <label class="type-item${d.type==='background'?' selected':''}">
+          <input type="radio" name="aaType" value="background" ${d.type==='background'?'checked':''} style="display:none">
+          <div class="type-icon"><i class="fas fa-cogs"></i></div>
+          <div class="type-info"><div class="type-name">Фоновое</div><div class="type-desc">Работает в фоне без окна</div></div>
+        </label>
+        <label class="type-item${d.type==='widget'?' selected':''}">
+          <input type="radio" name="aaType" value="widget" ${d.type==='widget'?'checked':''} style="display:none">
+          <div class="type-icon"><i class="fas fa-puzzle-piece"></i></div>
+          <div class="type-info"><div class="type-name">Виджет</div><div class="type-desc">Мини-виджет на рабочем столе</div></div>
+        </label>
+      </div>
+    </div>
+    ${navButtons()}
+  `;
+  document.querySelectorAll('.type-item').forEach(item=>{
+    item.onclick=()=>{
+      document.querySelectorAll('.type-item').forEach(i=>i.classList.remove('selected'));
+      item.classList.add('selected');
+      item.querySelector('input').checked=true;
+    };
+  });
+}
+
+function renderStepIcon(){
+  const d=__aaData;
+  const iconPresets=['fas fa-mobile-alt','fas fa-globe','fab fa-python','fas fa-cogs','fas fa-puzzle-piece','fas fa-link','fas fa-gamepad','fas fa-palette','fas fa-edit','fas fa-chart-bar','fas fa-music','fas fa-camera','fas fa-tools','fas fa-lightbulb','fas fa-rocket','fas fa-star','fas fa-book','fas fa-film','fas fa-shopping-cart','fas fa-comment'];
+  document.getElementById('stepContent').innerHTML=`
+    <div class="step-panel active">
+      <div class="step-header">
+        <h2><i class="fas fa-image" style="color:var(--accent)"></i> Иконка приложения</h2>
+        <p>Выберите иконку для приложения или укажите URL картинки.</p>
+      </div>
+      <div style="margin-bottom:16px">
+        <div class="radio-group">
+          <label><input type="radio" name="iconSourceType" value="fontawesome" ${d.iconType!=='url'?'checked':''} onchange="document.getElementById('aaIconUrlWrap').style.display='none';document.getElementById('aaFAWrap').style.display=''"> Font Awesome</label>
+          <label><input type="radio" name="iconSourceType" value="url" ${d.iconType==='url'?'checked':''} onchange="document.getElementById('aaFAWrap').style.display='none';document.getElementById('aaIconUrlWrap').style.display=''"> URL картинки</label>
+        </div>
+      </div>
+      <div id="aaFAWrap" style="display:${d.iconType!=='url'?'':'none'}">
+        <div class="form-group">
+          <label>Выберите иконку</label>
+          <div class="icon-grid">
+            ${iconPresets.map(cls=>`<div class="icon-opt ${d.icon===cls?'selected':''}" onclick="selectIcon('${cls}')"><i class="${cls}"></i></div>`).join('')}
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Или введите класс Font Awesome</label>
+          <input type="text" id="aaIconFA" value="${esc(d.iconType!=='url'?d.icon:'')}" placeholder="fas fa-heart" oninput="window.__aaData.icon=this.value;updateCoverPreview()">
+          <div class="hint">Например: <code>fas fa-rocket</code>, <code>fab fa-python</code></div>
+        </div>
+      </div>
+      <div id="aaIconUrlWrap" style="display:${d.iconType==='url'?'':'none'}">
+        <div class="form-group">
+          <label>URL иконки</label>
+          <input type="url" id="aaIconUrl" value="${esc(d.iconType==='url'?d.icon:'')}" placeholder="https://example.com/icon.png" oninput="window.__aaData.icon=this.value;updateCoverPreview()">
+        </div>
+      </div>
+    </div>
+    ${navButtons()}
+  `;
+  setTimeout(updateCoverPreview,50);
+}
+
+function selectIcon(iconClass){
+  document.getElementById('aaIconFA').value=iconClass;
+  __aaData.icon=iconClass;
+  document.querySelectorAll('.icon-opt').forEach(el=>el.classList.toggle('selected',el.querySelector('i')?.className===iconClass));
+  updateCoverPreview();
+}
+
+function updateCoverPreview(){
+  const preview=document.getElementById('appCoverPreview');
+  const iconEl=document.getElementById('coverIconPreview');
+  if(!preview||!iconEl)return;
+  const d=__aaData;
+  if(d.coverUrl){
+    iconEl.style.display='none';
+    let img=preview.querySelector('img');
+    if(!img){img=document.createElement('img');preview.appendChild(img)}
+    img.src=d.coverUrl;
+    img.onerror=()=>{img.style.display='none';iconEl.style.display=''};
+    img.onload=()=>{img.style.display='';iconEl.style.display='none'};
+  }else{
+    let img=preview.querySelector('img');if(img)img.remove();
+    iconEl.style.display='';
+    const name=document.getElementById('aaName')?.value?.trim()||'';
+    if(name){
+      iconEl.innerHTML=name[0].toUpperCase();
+      iconEl.style.fontSize='64px';
+    }else if(d.iconType==='fontawesome' && d.icon){
+      iconEl.innerHTML='<i class="'+d.icon+'" style="font-size:56px;color:var(--on-accent)"></i>';
+    }else{
+      iconEl.innerHTML='<i class="fas fa-mobile-alt" style="font-size:56px;color:var(--on-accent)"></i>';
+    }
+  }
+}
+
+function renderStepAdvanced(){
+  const d=__aaData;
+  const showUrlField=d.type==='link';
+  const showServerOpts=d.type==='python'||d.type==='background';
+  document.getElementById('stepContent').innerHTML=`
+    <div class="step-panel active">
+      <div class="step-header">
+        <h2><i class="fas fa-cog" style="color:var(--accent)"></i> Настройки</h2>
+        <p>Дополнительные параметры приложения.</p>
+      </div>
+      ${showUrlField?`
+      <div class="form-group">
+        <label>URL *</label>
+        <input type="url" id="aaUrl" value="${esc(d.url)}" placeholder="https://example.com">
+      </div>`:''}
+      <div class="form-group">
+        <label>Обложка</label>
+        <div class="cover-row">
+          <input type="url" id="aaCoverUrl" value="${esc(d.coverUrl||'')}" placeholder="https://example.com/cover.jpg" oninput="window.__aaData.coverUrl=this.value;updateCoverPreview()">
+          <label class="cover-file-btn">
+            <i class="fas fa-upload"></i> Файл
+            <input type="file" accept="image/*" style="display:none" onchange="uploadAppCover(this, event)">
+          </label>
+        </div>
+        <div class="hint">URL изображения или загрузите файл</div>
+      </div>
+      <div class="form-group">
+        <label>Категория</label>
+        <select id="aaCategory" onchange="window.__aaData.category=this.value">
+          <option value="">— Без категории —</option>
+          ${__allCategories.map(c=>`<option value="${esc(c)}" ${d.category===c?'selected':''}>${esc(c)}</option>`).join('')}
+          <option value="__new__">➕ Новая категория...</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ширина окна</label>
+          <input type="number" id="aaWidth" value="${d.width}" min="320">
+        </div>
+        <div class="form-group">
+          <label>Высота окна</label>
+          <input type="number" id="aaHeight" value="${d.height}" min="200">
+        </div>
+      </div>
+      ${showServerOpts?`
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="aaServer" ${d.needsServer?'checked':''} onchange="document.getElementById('aaServerOpts').style.display=this.checked?'':'none'" style="accent-color:var(--accent);width:18px;height:18px">
+          <i class="fas fa-cogs" style="color:var(--accent)"></i> Встроенный сервер
+        </label>
+      </div>
+      <div id="aaServerOpts" style="display:${d.needsServer?'':'none'}">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Порт</label>
+            <input type="number" id="aaPort" value="${d.port}" min="1024" max="65535">
+          </div>
+          <div class="form-group">
+            <label>Таймаут (мин)</label>
+            <input type="number" id="aaIdle" value="${d.idleTimeout}" min="1" max="120">
+          </div>
+        </div>
+      </div>
+      `:''}
+      ${d.type==='python'?`
+      <div class="form-group">
+        <label><i class="fab fa-python" style="color:var(--accent)"></i> Зависимости</label>
+        <textarea id="aaDeps" rows="3" placeholder="flask&#10;requests==2.31.0&#10;numpy, pandas">${esc(d.dependencies||'')}</textarea>
+        <div class="hint">По одному на строку или через запятую</div>
+      </div>
+      `:''}
+      <div class="form-group">
+        <label>Команда запуска</label>
+        <input type="text" id="aaCmd" value="${esc(d.cmd||getDefaultCmd(d.type))}" placeholder="python main.py">
+      </div>
+    </div>
+    ${navButtons()}
+  `;
+}
+
+function getDefaultCmd(type){return type==='python'||type==='background'?'python main.py':''}
+
+async function uploadAppCover(input, ev){
+  const file=input.files[0];
+  if(!file)return;
+  const fd=new FormData();
+  fd.append('appId','__temp_cover__');
+  fd.append('image',file);
+  try{
+    const r=await fetch('/api/apps/cover/upload-temp',{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.url){
+      window.__aaData.coverUrl=d.url;
+      document.getElementById('aaCoverUrl').value=d.url;
+      updateCoverPreview();
+    }else{alert('Ошибка: '+(d.error||'Неизвестная ошибка'))}
+  }catch(e){alert('Ошибка загрузки: '+e.message)}
+  input.value='';
+}
+
+document.addEventListener('change',async function(ev){
+  if(ev.target.id==='aaCategory' && ev.target.value==='__new__'){
+    const newCat=await InfinityDialogs.prompt({label:'Введите название новой категории:'});
+    if(newCat && newCat.trim()){
+      const cat=newCat.trim();
+      if(!__allCategories.includes(cat)){
+        __allCategories.push(cat);
+        const opt=document.createElement('option');
+        opt.value=cat;opt.textContent=cat;opt.selected=true;
+        ev.target.insertBefore(opt,ev.target.lastElementChild);
+      }
+      ev.target.value=cat;
+      window.__aaData.category=cat;
+    }else{
+      ev.target.value=window.__aaData.category||'';
+    }
+  }
+});
+
+function renderStepConfirm(){
+  const d=__aaData;
+  const typeNames={html:'<i class="fas fa-globe"></i> HTML',python:'<i class="fab fa-python"></i> Python',link:'<i class="fas fa-link"></i> Ссылка',background:'<i class="fas fa-cogs"></i> Фоновое',widget:'<i class="fas fa-puzzle-piece"></i> Виджет'};
+  document.getElementById('stepContent').innerHTML=`
+    <div class="step-panel active">
+      <div class="step-header">
+        <h2><i class="fas fa-check-circle" style="color:var(--green)"></i> Проверьте данные</h2>
+        <p>Перед созданием приложения убедитесь, что все данные верны.</p>
+      </div>
+      <div class="confirm-box">
+        <div class="summary-grid">
+          <div class="summary-row"><span class="summary-label">Название:</span><span class="summary-value">${esc(d.name)}</span></div>
+          <div class="summary-row"><span class="summary-label">ID:</span><span class="summary-value">${esc(generateId(d.name))}</span></div>
+          <div class="summary-row"><span class="summary-label">Тип:</span><span class="summary-value">${typeNames[d.type]||d.type}</span></div>
+          <div class="summary-row"><span class="summary-label">Иконка:</span><span class="summary-value">${d.iconType==='fontawesome'?'<i class="'+esc(d.icon)+'"></i>':'<img src="'+esc(d.icon)+'" style="width:20px;height:20px">'}</span></div>
+          ${d.description?`<div class="summary-row"><span class="summary-label">Описание:</span><span class="summary-value">${esc(d.description)}</span></div>`:''}
+          ${d.url?`<div class="summary-row"><span class="summary-label">URL:</span><span class="summary-value" style="color:var(--accent)">${esc(d.url)}</span></div>`:''}
+          ${d.category?`<div class="summary-row"><span class="summary-label">Категория:</span><span class="summary-value">${esc(d.category)}</span></div>`:''}
+          <div class="summary-row"><span class="summary-label">Размер:</span><span class="summary-value">${d.width}×${d.height}</span></div>
+          ${d.needsServer?`<div class="summary-row"><span class="summary-label">Сервер:</span><span class="summary-value">Порт ${d.port}, таймаут ${d.idleTimeout}мин</span></div>`:''}
+          ${d.dependencies?`<div class="summary-row"><span class="summary-label">Зависимости:</span><span class="summary-value" style="color:var(--yellow)">${esc(d.dependencies)}</span></div>`:''}
+        </div>
+      </div>
+    </div>
+    ${navButtons()}
+  `;
+}
+
+function autoGenerateId(){
+  const name=document.getElementById('aaName')?.value||'';
+  const idInput=document.getElementById('aaId');
+  if(idInput)idInput.value=generateId(name);
+  updateCoverPreview();
+}
+
+async function submitAddApp(){
+  const d=__aaData;
+  const id=generateId(d.name);
+  if(!d.name){alert('Введите название');return}
+  if(!id){alert('Ошибка генерации ID');return}
+  const app={
+    id,name:d.name,type:d.type,description:d.description,
+    icon:d.icon,cover:d.coverUrl||'',url:d.url,
+    width:d.width,height:d.height,needsServer:d.needsServer,
+    port:d.port,idleTimeout:d.idleTimeout,
+    cmd:d.cmd||getDefaultCmd(d.type),isBackground:d.type==='background',
+    dependencies:d.dependencies||'',category:d.category||''
+  };
+  try{
+    const r=await fetch('/api/apps/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(app)});
+    const text=await r.text();let resp;try{resp=JSON.parse(text)}catch(e){alert('Ошибка: '+text.substring(0,200));return}
+    if(resp.ok){
+      alert('✓ Приложение "'+d.name+'" создано!\nУстановите его из App Store.');
+      window.location.href='/apps';
+    }else{
+      alert('Ошибка: '+(resp.error||''));
+    }
+  }catch(e){alert('Ошибка: '+e.message)}
+}
+
+renderProgress();
+goToStep(0);
+</script>
+<!-- apps_next.css нужен этой странице алиас-блоком переменных (он не
+     ограничен селектором страницы); сами его правила скоупнуты к
+     .pg-page_apps и сюда не дотягиваются. -->
+<link rel="stylesheet" href="/static/css/apps_next.css">
+<link rel="stylesheet" href="/static/css/app_create_next.css">
+</body>
+</html>

@@ -1,0 +1,26 @@
+/* Общий слой превью-шаблонов редактора заметок (Aurora / Studio / Focus).
+   Здесь только поведение редактора: длинная панель инструментов и строка
+   чтения в метаданных. Переключателя шаблонов в редакторе нет — шаблон
+   выбирается на странице заметок. */
+
+#readTime {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+#readTime i { font-size: 11px }
+
+/* Панель инструментов редактора шире списка заметок: на средних экранах
+   подписи кнопок ломают её на четыре строки. Оставляем иконки — title
+   у каждой кнопки уже есть. */
+@media (max-width: 1180px) {
+  html[data-notes-skin] .toolbar .btn span:not(.icon):not(.collab-btn-badge) {
+    display: none;
+  }
+  html[data-notes-skin] .toolbar .btn { padding: 7px 10px }
+  html[data-notes-skin] .toolbar select { max-width: 130px }
+}
+
+@media (max-width: 640px) {
+}

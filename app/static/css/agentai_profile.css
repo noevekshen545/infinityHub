@@ -1,0 +1,326 @@
+/* Панель профиля в интерфейсе агента (/agentai).
+
+Стили совпадают с панелью личностей и режимом ботов: та же цепочка имён темы
+(мост отдаёт --surface/--text-3/--accent-soft, theme.js — свои --bg2/--text3),
+тот же абсолютный слой над интерфейсом агента. Имени --muted в теме нет,
+приглушённый текст берётся из --text-3: с --muted панель в светлых темах
+писала серым по серому. Кнопка стоит выше кнопки ботов, чтобы три плавающие
+кнопки не налеза́ли друг на друга. */
+
+.ap-root {
+  --p-bg: var(--bg, #10151c);
+  --p-1: var(--surface, var(--bg2, #171d26));
+  --p-2: var(--surface-2, var(--bg3, #1e2732));
+  --p-3: var(--surface-3, var(--bg4, #263241));
+  --p-line: var(--border, #2a3240);
+  --p-line-2: var(--border-2, var(--border2, #3b4757));
+  --p-text: var(--text, #e8eef2);
+  --p-2nd: var(--text-2, var(--text2, #b9c3ce));
+  --p-dim: var(--text-3, var(--text3, #93a1b1));
+  --p-acc: var(--accent, #5aa9ff);
+  --p-acc-soft: var(--accent-soft, rgba(90, 169, 255, .16));
+  --p-on-acc: var(--bg, #10151c);
+  --p-ok: var(--ok, #34d399);
+  --p-warn: var(--warn, #fbbf24);
+  --p-err: var(--err, #f87171);
+  --p-sh: var(--sh-3, 0 24px 70px rgba(0, 0, 0, .55));
+  --p-sh-2: var(--sh-2, 0 10px 30px -12px rgba(0, 0, 0, .55));
+
+  position: fixed;
+  inset: 0;
+  z-index: 900400;
+  pointer-events: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--p-text);
+}
+
+/* Кнопка вызова панели */
+.ap-fab {
+  position: absolute;
+  right: 18px;
+  bottom: 200px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--p-line);
+  background: var(--p-1);
+  color: var(--p-acc);
+  font-size: 16px;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: var(--p-sh-2);
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+}
+.ap-fab:hover { transform: translateY(-2px); background: var(--p-2); border-color: var(--p-acc); }
+.ap-root.open .ap-fab { opacity: 0; pointer-events: none; }
+
+/* Затемнение и окно */
+.ap-modal {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 9, 14, .66);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .18s ease, visibility .18s ease;
+}
+[data-theme="light"] .ap-modal { background: rgba(18, 24, 32, .34); }
+.ap-root.open .ap-modal { opacity: 1; visibility: visible; pointer-events: auto; }
+
+.ap-panel {
+  width: min(1040px, calc(100vw - 40px));
+  height: min(700px, calc(100vh - 60px));
+  display: flex;
+  flex-direction: column;
+  background: var(--p-bg);
+  border: 1px solid var(--p-line);
+  border-radius: 16px;
+  box-shadow: var(--p-sh);
+  overflow: hidden;
+}
+
+.ap-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--p-line);
+  background: var(--p-1);
+}
+.ap-title {
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ap-title > i { color: var(--p-acc); }
+.ap-chip {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--p-line);
+  background: var(--p-2);
+  color: var(--p-dim);
+  white-space: nowrap;
+}
+.ap-spacer { flex: 1; }
+
+.ap-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 6px 11px;
+  border-radius: 9px;
+  border: 1px solid var(--p-line);
+  background: var(--p-2);
+  color: var(--p-text);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color .12s ease, background .12s ease;
+}
+.ap-btn:hover:not(:disabled) { border-color: var(--p-acc); background: var(--p-3); }
+.ap-btn:disabled { opacity: .45; cursor: default; }
+.ap-btn.primary { background: var(--p-acc); color: var(--p-on-acc); border-color: transparent; font-weight: 600; }
+.ap-btn.primary:hover:not(:disabled) { background: var(--p-acc); filter: brightness(1.06); }
+/* «Закрыть» без подложки: в шапке и так две кнопки, вторая залитая спорит. */
+.ap-ghost { background: transparent; border-color: transparent; color: var(--p-dim); }
+.ap-ghost:hover:not(:disabled) { background: var(--p-2); border-color: var(--p-line); color: var(--p-text); }
+
+/* Сводка профиля */
+.ap-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--p-line);
+}
+.ap-stat {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--p-1);
+  border: 1px solid var(--p-line);
+  border-radius: 11px;
+  padding: 9px 11px;
+}
+.ap-stat-i {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--p-2);
+  color: var(--p-acc);
+  font-size: 12px;
+}
+.ap-stat-t b { display: block; font-size: 17px; font-weight: 600; line-height: 1.15; }
+.ap-stat-t span { font-size: 11px; color: var(--p-dim); }
+
+/* Выборки: поиск, личность, период */
+.ap-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--p-line);
+  background: var(--p-1);
+}
+.ap-field,
+.ap-select {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 9px;
+  border-radius: 9px;
+  border: 1px solid var(--p-line);
+  background: var(--p-2);
+  color: var(--p-dim);
+}
+.ap-field { flex: 1; min-width: 200px; }
+.ap-field:focus-within,
+.ap-select:focus-within { border-color: var(--p-acc); box-shadow: 0 0 0 3px var(--p-acc-soft); }
+.ap-field > i,
+.ap-select > i { font-size: 11px; }
+.ap-filters input,
+.ap-filters select {
+  width: 100%;
+  font-size: 12px;
+  padding: 7px 0;
+  border: 0;
+  background: transparent;
+  color: var(--p-text);
+  font-family: inherit;
+}
+.ap-filters select { padding: 7px 2px; cursor: pointer; }
+.ap-filters select option { background: var(--p-2); color: var(--p-text); }
+.ap-filters input:focus,
+.ap-filters select:focus { outline: none; }
+.ap-filters input::placeholder { color: var(--p-dim); }
+
+.ap-body {
+  flex: 1;
+  overflow: auto;
+  padding: 12px 16px 18px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-3) transparent;
+}
+.ap-section { margin-bottom: 18px; }
+.ap-section > h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--p-dim);
+}
+.ap-sec-i { color: var(--p-acc); font-size: 11px; }
+
+.ap-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--p-line);
+  border-radius: 11px;
+  background: var(--p-1);
+  margin-bottom: 6px;
+  transition: border-color .12s ease, background .12s ease;
+}
+.ap-row:hover { border-color: var(--p-line-2); background: var(--p-2); }
+.ap-row .ap-main { flex: 1; min-width: 0; }
+.ap-row .ap-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ap-row .ap-meta { font-size: 11px; color: var(--p-dim); margin-top: 2px; }
+.ap-hash {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--p-line);
+  background: var(--p-2);
+  color: var(--p-2nd);
+}
+.ap-tag {
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--p-line);
+  color: var(--p-dim);
+  white-space: nowrap;
+}
+.ap-tag.on { color: var(--p-ok); border-color: var(--p-ok); }
+.ap-tag.run { color: var(--p-warn); border-color: var(--p-warn); }
+
+/* Пустое состояние и заглушки: иконка + подпись в одну строку */
+.ap-empty {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--p-dim);
+  padding: 6px 2px;
+}
+.ap-off {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--p-dim);
+  padding: 14px 16px;
+}
+.ap-more {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--p-dim);
+}
+/* «Показать ещё» во всю ширину списка */
+.ap-wide { width: 100%; margin-top: 2px; }
+
+/* Всплывашка живёт на document.body, вне .ap-root: локальные переменные до неё
+   не доходят, поэтому здесь полные цепочки имён темы, а не --p-*. */
+.ap-toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 26px;
+  z-index: 900500;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  background: var(--surface-2, var(--bg3, #1e2732));
+  color: var(--text, #e8eef2);
+  border: 1px solid var(--border, #2a3240);
+  box-shadow: var(--sh-2, 0 10px 30px -12px rgba(0, 0, 0, .55));
+  transition: opacity .3s ease;
+}
+.ap-toast.ok { border-color: var(--ok, #34d399); }
+.ap-toast.error { border-color: var(--err, #f87171); }
+.ap-toast.warn { border-color: var(--warn, #fbbf24); }
+
+/* Фокус с клавиатуры: у агента своих колец нет, без них панель непроходима */
+.ap-root :is(button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--p-acc);
+  outline-offset: 1px;
+}
+
+@media (max-width: 720px) {
+  .ap-stats { grid-template-columns: repeat(2, 1fr); }
+  .ap-row { flex-wrap: wrap; }
+}

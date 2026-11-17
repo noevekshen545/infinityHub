@@ -1,0 +1,300 @@
+/* Studio — собранная «рабочая» тема заметок.
+   Идея: строгая сетка, ровные панели без стеклянных эффектов, акцентная
+   полоска у активной папки, плотные карточки с чёткой иерархией. Тема
+   приложения (light/dark/sepia) наследуется через переменные страницы.
+   Функционально это та же страница заметок: меняется только оформление. */
+
+html[data-notes-skin="studio"] body {
+  background:
+    linear-gradient(180deg, var(--bg3) 0, var(--bg) 220px),
+    var(--bg);
+}
+
+html[data-notes-skin="studio"] body::before {
+  background:
+    radial-gradient(ellipse 70% 40% at 50% -20%, var(--accent-glow), transparent 70%);
+  opacity: 0.45;
+}
+
+/* ── Боковая панель ───────────────────────────────────────────────────── */
+html[data-notes-skin="studio"] .sidebar {
+  width: 268px;
+  background: var(--bg2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-right: 1px solid var(--border2);
+}
+
+html[data-notes-skin="studio"] .sidebar-header {
+  padding: 20px 18px 16px;
+  background: none;
+  border-bottom: 1px solid var(--border);
+}
+
+html[data-notes-skin="studio"] .sidebar-header h2 {
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+html[data-notes-skin="studio"] .sidebar-section-title {
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  padding: 12px 12px 6px;
+}
+
+html[data-notes-skin="studio"] .folder {
+  position: relative;
+  border-radius: 9px;
+  padding: 8px 10px 8px 12px;
+  color: var(--text2);
+}
+
+html[data-notes-skin="studio"] .folder.on {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  box-shadow: none;
+  font-weight: 600;
+}
+
+html[data-notes-skin="studio"] .folder.on::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+
+html[data-notes-skin="studio"] .folder.on .cnt {
+  background: var(--bg3);
+  color: var(--text2);
+}
+
+html[data-notes-skin="studio"] .sidebar .ne-actions { padding: 12px 8px 4px }
+
+html[data-notes-skin="studio"] .sidebar .ne-actions .btn {
+  border-radius: 8px;
+  background: var(--bg2);
+  padding: 8px 9px;
+}
+
+html[data-notes-skin="studio"] .sidebar .ne-actions .btn.primary {
+  background: var(--accent);
+  box-shadow: none;
+}
+
+html[data-notes-skin="studio"] .sidebar-footer {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+}
+
+html[data-notes-skin="studio"] .nav-link { border-radius: 8px; font-size: 12.5px }
+
+/* ── Верхняя панель: ровный инструментальный тулбар ──────────────────── */
+html[data-notes-skin="studio"] .main {
+  max-width: 1440px;
+  padding: 18px 34px 44px;
+}
+
+html[data-notes-skin="studio"] .top-bar {
+  top: 10px;
+  border-radius: 12px;
+  background: var(--bg2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--border);
+  box-shadow: none;
+  padding: 9px 12px;
+  margin-bottom: 16px;
+}
+
+html[data-notes-skin="studio"] .top-bar h1 {
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+html[data-notes-skin="studio"] .top-bar .back-link {
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  border-radius: 8px;
+}
+
+html[data-notes-skin="studio"] .top-bar .back-link:hover {
+  background: var(--bg4);
+  color: var(--text);
+  transform: none;
+  box-shadow: none;
+}
+
+html[data-notes-skin="studio"] .top-bar .btn,
+html[data-notes-skin="studio"] .top-bar .btn-icon {
+  border-radius: 8px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text2);
+}
+
+html[data-notes-skin="studio"] .top-bar .btn:hover,
+html[data-notes-skin="studio"] .top-bar .btn-icon:hover {
+  background: var(--bg3);
+  color: var(--text);
+  border-color: var(--border);
+  transform: none;
+  box-shadow: none;
+}
+
+html[data-notes-skin="studio"] .top-bar .btn.primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: none;
+  border-radius: 8px;
+}
+
+html[data-notes-skin="studio"] .top-bar .btn.primary:hover {
+  background: var(--accent2);
+  color: #fff;
+}
+
+html[data-notes-skin="studio"] .top-bar .sep { height: 20px }
+
+html[data-notes-skin="studio"] .search-bar { margin-bottom: 12px }
+
+html[data-notes-skin="studio"] .search-bar input {
+  height: 40px;
+  border-radius: 9px;
+  background: var(--bg2);
+  border-color: var(--border);
+}
+
+html[data-notes-skin="studio"] .search-bar input:focus {
+  background: var(--bg2);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+html[data-notes-skin="studio"] .toolbar-row { gap: 6px; margin-bottom: 12px }
+
+html[data-notes-skin="studio"] .chip {
+  border-radius: 8px;
+  padding: 7px 12px;
+  background: var(--bg2);
+  font-size: 11.5px;
+}
+
+html[data-notes-skin="studio"] .chip.on {
+  background: var(--accent);
+  box-shadow: none;
+}
+
+/* ── Карточки: плотная сетка ─────────────────────────────────────────── */
+html[data-notes-skin="studio"] .notes-grid {
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 12px;
+}
+
+html[data-notes-skin="studio"] .card {
+  border-radius: 11px;
+  padding: 16px;
+  background: var(--bg2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+html[data-notes-skin="studio"] .card::before {
+  height: 2px;
+  background: var(--accent);
+}
+
+html[data-notes-skin="studio"] .card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+}
+
+html[data-notes-skin="studio"] body.dark .card:hover {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+}
+
+html[data-notes-skin="studio"] .card-img {
+  height: 148px;
+  border-radius: 7px;
+  margin-bottom: 10px;
+}
+
+html[data-notes-skin="studio"] .card .title {
+  font-size: 15px;
+  letter-spacing: 0;
+  margin-bottom: 6px;
+}
+
+html[data-notes-skin="studio"] .card .preview {
+  font-size: 12.5px;
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+
+html[data-notes-skin="studio"] .card .meta {
+  font-size: 10.5px;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+html[data-notes-skin="studio"] .card .tag { border-radius: 6px }
+
+html[data-notes-skin="studio"] .card-badge { border-radius: 5px }
+
+html[data-notes-skin="studio"] .card-act { border-radius: 5px }
+
+html[data-notes-skin="studio"] .empty {
+  border: 1px dashed var(--border2);
+  border-radius: 12px;
+  padding: 64px 20px;
+}
+
+/* ── Плотный режим (кнопка в верхней панели) ─────────────────────────── */
+html[data-notes-skin="studio"].skin-studio-compact .notes-grid { gap: 8px }
+
+html[data-notes-skin="studio"].skin-studio-compact .card { padding: 12px }
+
+html[data-notes-skin="studio"].skin-studio-compact .card .preview {
+  -webkit-line-clamp: 2;
+}
+
+html[data-notes-skin="studio"].skin-studio-compact .card-img { height: 110px }
+
+html[data-notes-skin="studio"].skin-studio-compact .card .meta { padding-top: 6px }
+
+html[data-notes-skin="studio"].skin-studio-compact .toolbar-row { margin-bottom: 8px }
+
+/* ── Адаптив ──────────────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  html[data-notes-skin="studio"] .main { padding: 16px 24px 36px }
+}
+
+@media (max-width: 900px) {
+  html[data-notes-skin="studio"] .notes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  html[data-notes-skin="studio"] .sidebar { width: 280px }
+  html[data-notes-skin="studio"] .main { padding: 12px 14px 28px }
+  html[data-notes-skin="studio"] .top-bar { top: 6px; border-radius: 10px }
+  html[data-notes-skin="studio"] .notes-grid { grid-template-columns: 1fr; gap: 10px }
+  html[data-notes-skin="studio"] .card { padding: 14px }
+  html[data-notes-skin="studio"] .card-img { height: 130px }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-notes-skin="studio"] .card { transition: none }
+}

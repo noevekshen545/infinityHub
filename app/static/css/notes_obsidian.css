@@ -1,0 +1,180 @@
+/* ============================================================================
+   Заметки: свойства, структура, обратные ссылки, подсказки [[...]]
+   ----------------------------------------------------------------------------
+   Отдельный файл, а не блок в page_notes_edit.html: тот шаблон — на 9k
+   строк, и его правка каждый раз означала бы чтение целиком. Здесь же лежит
+   всё, что добавлялось в редактор.
+
+   Все цвета берутся из переменных темы (--card, --border, --text), поэтому
+   панели следуют за переключением темы и не остаются белыми на тёмной —
+   ровно та проблема, из-за которой в design.css пришлось чинить --card.
+   ============================================================================ */
+
+.nb-props {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px 14px; margin: 0 0 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 12.5px;
+}
+.nb-props-label {
+  color: var(--text3); font-weight: 600; font-size: 11px;
+  text-transform: uppercase; letter-spacing: .5px;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.nb-props-items { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.nb-props-empty { color: var(--text3); font-style: italic; font-size: 12px; }
+.nb-props-add {
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text2); border-radius: 6px; width: 24px; height: 24px;
+  cursor: pointer; line-height: 1;
+}
+.nb-props-add:hover { border-color: var(--accent); color: var(--accent); }
+
+.nb-prop {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 5px 3px 8px;
+}
+.nb-prop-k { color: var(--text3); font-size: 11px; font-weight: 600; }
+.nb-prop-in {
+  border: none; background: transparent; color: var(--text);
+  font: inherit; font-size: 12px; padding: 1px 3px;
+  min-width: 72px; max-width: 200px; min-height: 0;
+  border-radius: 4px;
+}
+.nb-prop-in:focus {
+  outline: 1px solid var(--accent); background: var(--bg2);
+}
+.nb-prop-in[type="date"], .nb-prop-in[type="number"] { max-width: 130px; }
+select.nb-prop-in { cursor: pointer; }
+.nb-prop-x {
+  border: none; background: transparent; color: var(--text3);
+  cursor: pointer; padding: 0 3px; font-size: 11px; line-height: 1;
+}
+.nb-prop-x:hover { color: var(--red, #dc2626); }
+
+.nb-addmenu-item {
+  padding: 7px 10px; border-radius: 6px; cursor: pointer;
+  font-size: 13px; display: flex; align-items: center; gap: 7px;
+}
+.nb-addmenu-item:hover { background: var(--accent-light, rgba(79,70,229,.1)); }
+.nb-addmenu-custom { color: var(--text2); border-top: 1px solid var(--border); margin-top: 4px; padding-top: 9px; }
+
+.nb-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 8px);
+  padding: 10px 12px;
+  box-shadow: var(--shadow, 0 1px 2px rgba(16,24,40,.05));
+}
+.nb-card-h {
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .6px; color: var(--text3); margin-bottom: 8px;
+}
+.nb-n {
+  background: var(--accent); color: #fff; border-radius: 9px;
+  padding: 1px 6px; font-size: 10px; margin-left: 4px;
+}
+.nb-empty { color: var(--text3); font-size: 12px; font-style: italic; padding: 3px 0; }
+
+.nb-ol { font-size: 12.5px; line-height: 1.55; }
+.nb-ol a { color: var(--text2); text-decoration: none; display: block; padding: 1px 0; }
+.nb-ol a:hover { color: var(--accent); }
+.nb-ol[data-l="1"] a { font-weight: 700; color: var(--text); }
+.nb-ol[data-l="2"] a { font-weight: 600; }
+
+.nb-back-item {
+  display: block; padding: 7px 8px; border-radius: 6px;
+  text-decoration: none; color: inherit; margin-bottom: 4px;
+  border: 1px solid transparent;
+}
+.nb-back-item:hover { background: var(--bg3); border-color: var(--border); }
+.nb-back-t { display: block; font-size: 12.5px; font-weight: 600; color: var(--text); }
+.nb-back-c {
+  display: block; font-size: 11px; color: var(--text3); margin-top: 2px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.nb-back-item--unres { border: 1px dashed rgba(239,68,68,.4); }
+.nb-back-item--unres .nb-back-t { color: var(--red, #dc2626); }
+.nb-btn-mini {
+  margin-top: 5px; font-size: 11px; padding: 3px 9px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--bg2); color: var(--accent); cursor: pointer;
+}
+.nb-btn-mini:hover { border-color: var(--accent); background: var(--accent-light, rgba(79,70,229,.1)); }
+
+.nb-head-btns {
+  display: inline-flex; gap: 4px; margin-left: 10px; vertical-align: middle;
+}
+.nb-hbtn {
+  width: 28px; height: 28px; border-radius: 6px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text3); cursor: pointer; font-size: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.nb-hbtn:hover { border-color: var(--accent); color: var(--accent); }
+.nb-hbtn.on { color: var(--accent); border-color: var(--accent); background: var(--accent-light, rgba(79,70,229,.1)); }
+
+/* ── Иконки панели форматирования ──
+   design.css задаёт всем button тему через `padding: 9px 16px`. У кнопок
+   панели форматирования ширина зафиксирована (32px), и вместе с
+   box-sizing:border-box это даёт content-box шириной 0: горизонтальные
+   отступы съедают её целиком. Все inline-SVG внутри — а их здесь 13, вся
+   панель форматирования — сжимались в ноль и были не видны, тогда как
+   иконки на <i> не трогались. Размер кнопки задают width/height, padding
+   ей не нужен.
+
+   Правило лежит здесь, а не в page_notes_edit.html, потому что этот файл
+   отдаётся сервером на каждый запрос, а шаблон читается при старте. */
+.fmt-btn { padding: 0 }
+
+/* Кнопка панели. Отдельный класс, а не чужой .btn-icon: тот оформлен
+   под шапку конкретной страницы и в другом месте выглядел чуждеродно.
+   Плавающей кнопки больше нет: она стояла position:fixed у правого края
+   и налезала на липкую панель инструментов. Переключатель теперь внутри
+   строки свойств — #nbSideToggleBtn, класс .nb-props-add. */
+.nb-props-add.on {
+  border-color: var(--accent); color: var(--accent);
+  background: var(--accent-light, rgba(79,70,229,.1));
+}
+
+/* Панель свёрнута по умолчанию: она занимала 290px справа постоянно,
+   а пользуются ей единицы. Теперь колонка появляется только по кнопке
+   в строке свойств (или по Ctrl+Shift+O) и не отнимает место у текста.
+   Разворачивание — атрибут hidden, который ставит note_editor_obsidian.js. */
+.nb-workbench { grid-template-columns: minmax(0, 1fr); }
+.nb-workbench.has-side { grid-template-columns: minmax(0, 1fr) 290px; }
+
+.nb-workbench > .nb-main { min-width: 0 }
+.nb-workbench > .nb-side {
+  position: sticky;
+  top: 120px;              /* ниже липкой панели инструментов, не поверх неё */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100vh - 140px);
+  overflow: auto;
+}
+.nb-workbench > .nb-side[hidden] { display: none }
+
+@media (max-width: 1180px) {
+  .nb-workbench.has-side { grid-template-columns: minmax(0, 1fr) }
+  .nb-workbench > .nb-side { position: static; max-height: none }
+}
+
+/* Режим фокусировки (карандаш в углу редактора): остаются только
+   заголовок и текст. Панели «Структура / Обратные ссылки» и строка
+   свойств скрывались не все — из-за этого режим выглядел сломанным:
+   справа висели блоки, которых быть не должно. */
+body.notes-focus .nb-side,
+body.notes-focus .nb-props,
+body.notes-focus .pg-note-box { display: none !important }
+body.notes-focus .nb-workbench,
+body.notes-focus .nb-workbench.has-side { grid-template-columns: minmax(0, 1fr) !important }
+
+/* На узких экранах строка свойств компактнее. */
+@media (max-width: 900px) {
+  .nb-props { font-size: 12px; padding: 8px 10px; }
+}

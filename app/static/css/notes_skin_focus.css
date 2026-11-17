@@ -1,0 +1,285 @@
+/* Focus — читальная тема заметок.
+   Идея: одна спокойная колонка, крупная типографика, минимум хрома.
+   Карточки превращаются в аккуратные строки-записи, а кнопка «Дзен» в
+   верхней панели убирает боковую колонку и оставляет только текст
+   (режим сохраняется в localStorage и снимается по Esc).
+   Все цвета — переменные страницы заметок, поэтому темы приложения
+   работают без дополнительных правил. */
+
+html[data-notes-skin="focus"] body {
+  background: var(--bg);
+}
+
+html[data-notes-skin="focus"] body::before {
+  background:
+    radial-gradient(ellipse 70% 45% at 50% -25%, var(--accent-glow), transparent 70%);
+  opacity: 0.35;
+}
+
+/* ── Боковая панель ───────────────────────────────────────────────────── */
+html[data-notes-skin="focus"] .sidebar {
+  width: 252px;
+  background: color-mix(in srgb, var(--bg2) 70%, transparent);
+  border-right: 1px solid var(--border);
+}
+
+html[data-notes-skin="focus"] .sidebar-header {
+  padding: 24px 18px 16px;
+  background: none;
+  border-bottom: 1px solid var(--border);
+}
+
+html[data-notes-skin="focus"] .sidebar-section-title {
+  letter-spacing: 0.12em;
+  font-size: 9.5px;
+}
+
+html[data-notes-skin="focus"] .folder {
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+html[data-notes-skin="focus"] .folder.on {
+  background: var(--bg3);
+  color: var(--text);
+  border-color: var(--border);
+  box-shadow: none;
+  font-weight: 600;
+}
+
+html[data-notes-skin="focus"] .folder.on .cnt {
+  background: var(--bg2);
+  color: var(--text2);
+}
+
+html[data-notes-skin="focus"] .sidebar .ne-actions { padding: 12px 8px 4px }
+html[data-notes-skin="focus"] .sidebar .ne-actions .btn { border-radius: 8px }
+html[data-notes-skin="focus"] .sidebar .ne-actions .btn.primary {
+  background: var(--accent);
+  box-shadow: none;
+}
+
+html[data-notes-skin="focus"] .sidebar-footer {
+  background: transparent;
+  border-top: 1px solid var(--border);
+}
+
+html[data-notes-skin="focus"] .nav-link { border-radius: 8px }
+
+/* ── Колонка чтения ───────────────────────────────────────────────────── */
+html[data-notes-skin="focus"] .main {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 24px 36px 64px;
+}
+
+html[data-notes-skin="focus"] .top-bar {
+  top: 10px;
+  border-radius: 14px;
+  padding: 9px 12px;
+  background: color-mix(in srgb, var(--bg2) 82%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+  margin-bottom: 18px;
+}
+
+html[data-notes-skin="focus"] body.dark .top-bar {
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+}
+
+html[data-notes-skin="focus"] .top-bar h1 {
+  font-size: 15.5px;
+  font-weight: 650;
+}
+
+html[data-notes-skin="focus"] .top-bar .back-link {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  border-radius: 9px;
+}
+
+html[data-notes-skin="focus"] .top-bar .back-link:hover {
+  background: var(--bg3);
+  color: var(--text);
+  transform: none;
+  box-shadow: none;
+}
+
+html[data-notes-skin="focus"] .top-bar .btn,
+html[data-notes-skin="focus"] .top-bar .btn-icon {
+  border-radius: 9px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text2);
+}
+
+html[data-notes-skin="focus"] .top-bar .btn:hover,
+html[data-notes-skin="focus"] .top-bar .btn-icon:hover {
+  background: var(--bg3);
+  color: var(--text);
+  border-color: var(--border);
+  transform: none;
+  box-shadow: none;
+}
+
+html[data-notes-skin="focus"] .top-bar .btn.primary {
+  background: var(--accent);
+  border-radius: 9px;
+  box-shadow: none;
+}
+
+html[data-notes-skin="focus"] .search-bar { margin-bottom: 14px }
+
+html[data-notes-skin="focus"] .search-bar input {
+  height: 46px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  background: var(--bg2);
+}
+
+html[data-notes-skin="focus"] .toolbar-row {
+  gap: 6px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+html[data-notes-skin="focus"] .chip {
+  border-radius: 999px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text3);
+  font-size: 11.5px;
+}
+
+html[data-notes-skin="focus"] .chip:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+html[data-notes-skin="focus"] .chip.on {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* ── Записи вместо карточек ───────────────────────────────────────────── */
+html[data-notes-skin="focus"] .notes-grid {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+html[data-notes-skin="focus"] .card {
+  border-radius: 14px;
+  border: 1px solid transparent;
+  border-bottom-color: var(--border);
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 20px 18px;
+  box-shadow: none;
+}
+
+html[data-notes-skin="focus"] .card::before { display: none }
+
+html[data-notes-skin="focus"] .card:hover {
+  background: color-mix(in srgb, var(--bg2) 72%, transparent);
+  border-color: var(--border);
+  transform: none;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+}
+
+html[data-notes-skin="focus"] body.dark .card:hover {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+}
+
+html[data-notes-skin="focus"] .card-img {
+  height: 220px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+html[data-notes-skin="focus"] .card .title {
+  font-size: 19px;
+  font-weight: 650;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  margin-bottom: 8px;
+  -webkit-line-clamp: 3;
+}
+
+html[data-notes-skin="focus"] .card .preview {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text2);
+  -webkit-line-clamp: 4;
+  margin-bottom: 12px;
+  max-width: 68ch;
+}
+
+html[data-notes-skin="focus"] .card .meta { font-size: 11px }
+
+html[data-notes-skin="focus"] .card .tag {
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+html[data-notes-skin="focus"] .card-badge {
+  background: var(--bg2);
+  border-radius: 6px;
+}
+
+html[data-notes-skin="focus"] .card-act { border-radius: 7px }
+
+html[data-notes-skin="focus"] .empty {
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  padding: 88px 20px;
+}
+
+/* ── Режим «Дзен»: только текст ───────────────────────────────────────── */
+@media (min-width: 769px) {
+  html[data-notes-skin="focus"].skin-focus-zen .sidebar { display: none }
+
+  html[data-notes-skin="focus"].skin-focus-zen .main {
+    max-width: 760px;
+    padding: 30px 28px 96px;
+  }
+
+  html[data-notes-skin="focus"].skin-focus-zen .toolbar-row,
+  html[data-notes-skin="focus"].skin-focus-zen .search-bar {
+    max-width: 100%;
+  }
+
+  html[data-notes-skin="focus"].skin-focus-zen .card .title { font-size: 21px }
+
+  html[data-notes-skin="focus"].skin-focus-zen .card .preview {
+    font-size: 14.5px;
+    line-height: 1.75;
+  }
+}
+
+/* ── Адаптив ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  html[data-notes-skin="focus"] .main { padding: 20px 22px 48px }
+}
+
+@media (max-width: 768px) {
+  html[data-notes-skin="focus"] .sidebar { width: 284px }
+  html[data-notes-skin="focus"] .main { padding: 12px 14px 40px }
+  html[data-notes-skin="focus"] .top-bar { top: 6px; border-radius: 12px }
+  html[data-notes-skin="focus"] .card { padding: 16px 14px; border-radius: 12px }
+  html[data-notes-skin="focus"] .card .title { font-size: 17.5px }
+  html[data-notes-skin="focus"] .card .preview { font-size: 13.5px }
+  html[data-notes-skin="focus"] .card-img { height: 170px }
+  html[data-notes-skin="focus"] .toolbar-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none }
+  html[data-notes-skin="focus"] .toolbar-row::-webkit-scrollbar { display: none }
+  html[data-notes-skin="focus"] .chip { flex: 0 0 auto }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-notes-skin="focus"] .card { transition: none }
+}

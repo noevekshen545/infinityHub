@@ -1,0 +1,36 @@
+[package]
+name = "avi"
+version = "0.1.0"
+edition = "2021"
+description = "MiniAV EDR: user-mode сайдкар защиты (не замена системному AV)"
+
+[[bin]]
+name = "avi"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+crossterm = "0.27"
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+goblin = "0.8"
+hex = "0.4"
+notify = "6"
+rand = "0.8"
+ratatui = "0.26"
+rusqlite = { version = "0.31", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+sysinfo = "0.30"
+ureq = { version = "2", features = ["json"] }
+walkdir = "2"
+zip = "2"
+# Многошаблонный поиск правил за один проход по файлу: без него детект по
+# сигнатурам требовал внешнего `yara`, которого на машине нет.
+aho-corasick = "1"
+
+# Нативная проверка Authenticode: внешний `powershell` стоил ~0,7-2,1 с на
+# файл, что делало придирчивый режим на целом диске непригодным.
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["wintrust", "wincrypt", "guiddef", "minwindef", "winbase", "fileapi"] }

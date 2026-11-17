@@ -1,0 +1,269 @@
+/* Skin «next» читалки ZIM (/zim/view): тот же рейл 2.0 слева, оглавление
+   остаётся правой панелью, а тело статьи живёт на переменных темы.
+   Подключается ПОСЛЕ базового <style> страницы и ПОСЛЕ design.css.
+
+   Гейт: html[data-zim-skin="next"]. Классическая выдача (?skin=classic)
+   этот файл не подключает и остаётся со своей палитрой.
+
+   Краски мимо переменных здесь только там, где нужен сплошной акцент
+   (текст на нём — --on-accent). Страница объявляет собственные палитры на
+   body.light/.sepia/.warm, но design.css приходит позже и перекрывает их;
+   остаются имена, которых в design.css нет (--accent-glow, --link в светлой
+   теме, --shadow-sm, --font-main) — их закрывает алиас-блок ниже. */
+
+html[data-zim-skin="next"] {
+  --on-accent: #fff;
+}
+
+/* Алиасы страницы -> токены темы. Объявлены на body: так они сильнее
+   собственных body.light и :root страницы, но не трогают режим высокого
+   контраста — там пользователь просил именно чёрное на белом. */
+html[data-zim-skin="next"] body:not(.high-contrast) {
+  --hover: color-mix(in srgb, var(--text) 6%, transparent);
+  --link: var(--accent);
+  --accent-glow: color-mix(in srgb, var(--accent) 20%, transparent);
+  --purple: var(--accent-2, var(--accent));
+  --shadow-sm: var(--shadow);
+  --font-main: var(--font);
+  /* Этих двух имён нет и в design.css: без алиасов они доставались от
+     локальной тёмной палитры страницы и в светлых темах давали тёмную
+     рамку и фиолетовое свечение. */
+  --border2: color-mix(in srgb, var(--border) 70%, var(--text) 8%);
+  --shadow-glow: 0 0 40px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+/* ── Каркас: колонка чтения правее рейла ──────────────────────────────── */
+/* Ширину колонки по-прежнему задаёт ползунок «Ширина» в настройках чтения:
+   renderSettings пишет инлайновый max-width на .wrap. Здесь — только отступ
+   под рейл, поэтому max-width не переопределяется. */
+html[data-zim-skin="next"] .wrap {
+  margin: 0 auto 0 calc(var(--rail-w) + var(--rail-pad) * 2 + 8px);
+  padding: 20px 28px 96px;
+}
+
+/* Базовая шапка .toolbar — плавающая таблетка с внешними полями; в рейле
+   поля сдвигали бы панель от кромки (left 16 + margin 16 = 32). */
+html[data-zim-skin="next"] .toolbar {
+  margin: 0;
+}
+
+/* Статья живёт прямо в #content (loadEntry пишет innerHTML без обёртки
+   .content), поэтому карточку рисуем на нём, а не на несуществующем классе. */
+html[data-zim-skin="next"] #content {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 32px 40px;
+}
+
+html[data-zim-skin="next"] #content > h1 {
+  -webkit-text-fill-color: currentColor;
+  background: none;
+  font-size: clamp(26px, 2.4vw, 34px);
+}
+
+/* Хлебные крошки базовой вёрстки тянутся отрицательными полями под паддинг
+   .content, которого нет: на 390 они вылезали за экран на 6 px. */
+html[data-zim-skin="next"] #content .breadcrumbs {
+  margin: 0 0 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg3);
+}
+
+/* Оглавление справа: панель остаётся выезжающей, но на широком экране
+   открытая панель не должна наезжать на колонку текста. */
+@media (min-width: 1200px) {
+  html[data-zim-skin="next"] body.toc-open .wrap {
+    margin-right: 320px;
+  }
+}
+
+/* ── Рейл: элементы, специфичные для читалки ──────────────────────────── */
+html[data-zim-skin="next"] .toolbar .rail-search {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+html[data-zim-skin="next"] .toolbar .rail-search input[type=text] {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 12.5px;
+  font-family: inherit;
+  outline: none;
+}
+
+html[data-zim-skin="next"] .toolbar .rail-search input[type=text]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+/* Кнопка поиска — соседка поля ввода в одной строке: общее правило рейла
+   растягивает пункты на width:100%, здесь это отнимало бы всю строку и
+   выдавливало кнопку за панель, оставляя от поля 28 px. */
+html[data-zim-skin="next"] .toolbar .rail-search .btn {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 8px 10px;
+}
+
+/* «Содержание» и «Фокус» помечаются классом on — в рейле это то же
+   состояние, что .active у остальных модулей. */
+html[data-zim-skin="next"] .toolbar .btn.on {
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg3));
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+  color: var(--accent);
+  font-weight: 650;
+  box-shadow: none;
+}
+
+html[data-zim-skin="next"] .toolbar .rail-tag {
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text-2, var(--text2));
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
+html[data-zim-skin="next"].rail-collapsed .rail-tag {
+  display: none;
+}
+
+html[data-zim-skin="next"] .toolbar .rail-foot {
+  flex: 0 0 auto;
+  padding: 8px 6px 0;
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+}
+
+html[data-zim-skin="next"] .toolbar .rail-foot #info {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--text-3, var(--text2));
+  font-weight: 500;
+}
+
+/* ── Тело статьи: типографика на токенах ──────────────────────────────── */
+html[data-zim-skin="next"] #content a,
+html[data-zim-skin="next"] .zim-body a {
+  color: var(--link);
+}
+
+html[data-zim-skin="next"] .zim-body h2 {
+  border-bottom-color: var(--border);
+}
+
+html[data-zim-skin="next"] .zim-body h2::after {
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+html[data-zim-skin="next"] .zim-body th,
+html[data-zim-skin="next"] #content th {
+  background: var(--bg3);
+}
+
+html[data-zim-skin="next"] .zim-body pre {
+  background: var(--bg3);
+  box-shadow: none;
+}
+
+html[data-zim-skin="next"] .zim-body .infobox th,
+html[data-zim-skin="next"] .zim-body .navbox-title {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+html[data-zim-skin="next"] .zim-body .post-tag {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--accent);
+}
+
+html[data-zim-skin="next"] .zim-body .post-tag:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+html[data-zim-skin="next"] .zim-body table {
+  border-color: var(--border);
+}
+
+/* ── Оглавление справа ────────────────────────────────────────────────── */
+html[data-zim-skin="next"] #tocSidebar {
+  background: var(--bg2);
+  border-color: var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+html[data-zim-skin="next"] #tocSidebar .toc-header {
+  background: var(--bg3);
+  border-bottom-color: var(--border);
+  color: var(--text);
+}
+
+html[data-zim-skin="next"] #tocSidebar .toc-item.active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+/* ── Узкие экраны ─────────────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  html[data-zim-skin="next"] .wrap {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 74px 14px 40px;
+  }
+
+  html[data-zim-skin="next"] #content {
+    padding: 20px 16px;
+    border-radius: var(--radius);
+  }
+
+  /* Свободное обтекание инфобоксов Wikimedia на телефоне сжимает текст
+     в узкую колонку — распускаем их на всю ширину. */
+  html[data-zim-skin="next"] .zim-body .infobox,
+  html[data-zim-skin="next"] .zim-body .thumb {
+    float: none;
+    max-width: 100%;
+    margin: 14px 0;
+  }
+
+  html[data-zim-skin="next"] .zim-body .reflist {
+    column-count: 1;
+  }
+
+  html[data-zim-skin="next"] #tocSidebar {
+    top: 64px;
+    right: 8px;
+    width: min(300px, 88vw);
+    max-height: calc(100vh - 80px);
+  }
+
+  /* Панель открыта поверх текста — отступ справа не нужен. */
+  html[data-zim-skin="next"] body.toc-open .wrap {
+    margin-right: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-zim-skin="next"] #content,
+  html[data-zim-skin="next"] #tocSidebar {
+    animation: none;
+    transition-duration: .01ms;
+  }
+}

@@ -1,0 +1,2253 @@
+<!DOCTYPE html>
+<!-- saved from url=(0065)file:///home/infinity/Downloads/Qwen_html_20260425_b1i21knoa.html -->
+<html lang="ru"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🇷🇺 Умный Календарь</title>
+    <style>
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: white;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --accent: #2e6fc9;
+            --accent-hover: #1a5cb5;
+            --holiday-official: #c0392b;
+            --holiday-observance: #e67e22;
+            --shadow: 0 20px 60px rgba(0,0,0,0.4);
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            
+            /* Цвета категорий по умолчанию */
+            --cat-tasks: #10b981;
+            --cat-reminders: #f59e0b;
+            --cat-shopping: #ef4444;
+            --cat-notes: #8b5cf6;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --text-primary: #f1f5f9;
+            --text-secondary: #9ca3af;
+            --border-color: #374151;
+            --accent: #4a90e2;
+            --accent-hover: #357abd;
+            --shadow: 0 20px 60px rgba(0,0,0,0.6);
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            color: var(--text-primary);
+            transition: background 0.3s;
+        }
+
+        .calendar-app {
+            display: flex;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            width: 95%;
+            max-width: 1400px;
+            height: 90vh;
+            max-height: 800px;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 240px;
+            background: linear-gradient(180deg, #2e6fc9 0%, #1a4fa0 100%);
+            color: white;
+            padding: 16px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 2px; }
+
+        .sidebar-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-title {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-new-event {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.12);
+            border: none;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 9px 12px;
+            border-radius: 6px;
+            transition: background 0.2s;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-new-event:hover { background: rgba(255,255,255,0.22); }
+
+        .mini-cal {
+            background: rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .mini-cal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .mini-cal-nav { display: flex; gap: 6px; }
+
+        .mini-cal-nav button {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .mini-cal-nav button:hover { background: rgba(255,255,255,0.3); }
+
+        .mini-cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            text-align: center;
+        }
+
+        .mini-cal-day-name {
+            font-size: 10px;
+            padding: 3px;
+            opacity: 0.6;
+            font-weight: 600;
+        }
+
+        .mini-cal-day {
+            padding: 5px 2px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: all 0.15s;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .mini-cal-day:hover { background: rgba(255,255,255,0.2); }
+        .mini-cal-day.today { background: white; color: #2e6fc9; font-weight: 700; }
+        .mini-cal-day.selected { background: rgba(255,255,255,0.3); font-weight: 600; }
+        .mini-cal-day.other { opacity: 0.3; }
+        .mini-cal-day.has-events::after {
+            content: ''; position: absolute; bottom: 1px; left: 50%;
+            transform: translateX(-50%); width: 4px; height: 4px;
+            background: #ffd700; border-radius: 50%;
+        }
+
+        .mini-cal-day.holiday {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white !important; font-weight: 700;
+            box-shadow: 0 2px 8px rgba(238, 90, 36, 0.4);
+        }
+
+        .mini-cal-day.holiday.official {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            box-shadow: 0 2px 8px rgba(231, 76, 60, 0.5);
+        }
+
+        .mini-cal-day.holiday::before {
+            content: '🎉'; position: absolute; top: -8px; right: -6px; font-size: 10px;
+        }
+        .mini-cal-day.holiday.official::before { content: '⭐'; }
+
+        .holiday-tooltip {
+            position: absolute; bottom: 100%; left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            background: #1a1a2e; color: white; padding: 8px 12px;
+            border-radius: 8px; font-size: 11px; white-space: nowrap;
+            z-index: 100; pointer-events: none; opacity: 0;
+            transition: opacity 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            max-width: 200px; text-align: center;
+        }
+        .holiday-tooltip::after {
+            content: ''; position: absolute; top: 100%; left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent; border-top-color: #1a1a2e;
+        }
+        .mini-cal-day.holiday:hover .holiday-tooltip,
+        .day-head.holiday:hover .holiday-tooltip { opacity: 1; }
+
+        /* Categories */
+        .categories { margin-top: 4px; }
+        .cat-title {
+            font-size: 11px; opacity: 0.6; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 8px;
+        }
+
+        .cat-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 8px; border-radius: 6px; cursor: pointer;
+            font-size: 12px; transition: background 0.2s;
+        }
+        .cat-item:hover { background: rgba(255,255,255,0.1); }
+        .cat-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+        .cat-dot.tasks { background: var(--cat-tasks); }
+        .cat-dot.reminders { background: var(--cat-reminders); }
+        .cat-dot.shopping { background: var(--cat-shopping); }
+        .cat-dot.notes { background: var(--cat-notes); }
+
+        /* ===== MAIN AREA ===== */
+        .main-area {
+            flex: 1; display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        .main-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 20px; border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary); flex-wrap: wrap; gap: 10px;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+        .search-bar {
+            display: flex; align-items: center; background: var(--bg-primary);
+            border-radius: 8px; padding: 7px 12px; width: 200px;
+        }
+        .search-bar input {
+            border: none; background: transparent; outline: none;
+            margin-left: 8px; font-size: 13px; width: 100%;
+            color: var(--text-primary);
+        }
+        .search-bar input::placeholder { color: var(--text-secondary); }
+
+        .main-title {
+            font-size: 20px; font-weight: 300; color: var(--text-primary);
+        }
+        .main-title span { font-weight: 600; }
+
+        .view-btns { display: flex; gap: 4px; }
+        .view-btn {
+            padding: 7px 14px; border: 1px solid var(--border-color);
+            background: var(--bg-secondary); border-radius: 6px;
+            cursor: pointer; font-size: 12px; color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        .view-btn.active {
+            background: var(--accent); color: white; border-color: var(--accent);
+        }
+        .view-btn:hover:not(.active) { background: var(--bg-primary); }
+
+        .header-actions { display: flex; align-items: center; gap: 8px; }
+
+        .nav-arrows { display: flex; align-items: center; gap: 8px; }
+        .nav-arrow {
+            width: 32px; height: 32px; border: 1px solid var(--border-color);
+            background: var(--bg-secondary); border-radius: 6px;
+            cursor: pointer; display: flex; align-items: center;
+            justify-content: center; font-size: 14px; color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        .nav-arrow:hover { background: var(--bg-primary); }
+
+        .btn-today, .btn-export, .btn-theme {
+            padding: 7px 14px; border: 1px solid var(--border-color);
+            background: var(--bg-secondary); border-radius: 6px;
+            cursor: pointer; font-size: 12px; color: var(--text-primary);
+            transition: all 0.2s; display: flex; align-items: center; gap: 4px;
+        }
+        .btn-today:hover, .btn-export:hover, .btn-theme:hover {
+            background: var(--bg-primary);
+        }
+
+        /* ===== VIEWS CONTAINER ===== */
+        .views-container { flex: 1; overflow: hidden; position: relative; }
+
+        /* Week View */
+        .week-container {
+            display: none; height: 100%; overflow-y: auto;
+            background: var(--bg-secondary); padding: 0 20px 10px;
+        }
+        .week-container.active { display: block; }
+        .week-container::-webkit-scrollbar { width: 6px; }
+        .week-container::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+        .week-grid {
+            display: grid; grid-template-columns: 50px repeat(7, 1fr); gap: 0;
+        }
+
+        .col-time { border-right: 1px solid var(--border-color); }
+        .col-day { border-left: 1px solid var(--border-color); min-height: 100%; }
+
+        .day-head {
+            text-align: center; padding: 12px 4px;
+            border-bottom: 2px solid var(--border-color);
+            position: sticky; top: 0; background: var(--bg-secondary);
+            z-index: 10; cursor: pointer;
+        }
+        .day-head.is-today { border-bottom-color: var(--accent); }
+        .day-head.holiday {
+            background: linear-gradient(135deg, #fff5f5, #ffe8e8);
+            border-bottom-color: var(--holiday-official) !important;
+        }
+        .day-head.holiday.official {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        }
+        .day-head.holiday::after {
+            content: '🎉'; display: block; font-size: 10px; margin-top: 2px;
+        }
+        .day-head.holiday.official::after { content: '⭐'; }
+
+        .day-head-name {
+            font-size: 11px; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .day-head-num {
+            font-size: 20px; font-weight: 600; color: var(--text-primary);
+            margin-top: 2px;
+        }
+        .day-head.is-today .day-head-num { color: var(--accent); }
+        .day-head.holiday .day-head-num { color: var(--holiday-official); }
+
+        .time-slot { height: 70px; border-top: 1px solid var(--border-color); display: flex; }
+        .time-label {
+            width: 50px; font-size: 11px; color: var(--text-secondary);
+            padding-right: 8px; text-align: right; position: relative;
+            top: -6px; flex-shrink: 0;
+        }
+
+        .day-cell {
+            position: relative; min-height: 70px;
+            border-left: 1px solid var(--border-color);
+            cursor: pointer; transition: background 0.15s;
+        }
+        .day-cell:hover { background: var(--bg-primary); }
+        .day-cell.drag-over {
+            background: rgba(46, 111, 201, 0.1);
+            border: 2px dashed var(--accent);
+        }
+
+        .event-block {
+            position: absolute; left: 3px; right: 3px;
+            border-radius: 6px; padding: 6px 8px; font-size: 11px;
+            cursor: grab; overflow: hidden;
+            transition: transform 0.1s, box-shadow 0.1s;
+            z-index: 5; border-left: 3px solid;
+            user-select: none;
+        }
+        .event-block:active { cursor: grabbing; }
+        .event-block:hover {
+            transform: translateX(2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 20;
+        }
+        .event-block.dragging {
+            opacity: 0.8; transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .event-block.tasks { background: #d1fae5; color: #065f46; border-left-color: var(--cat-tasks); }
+        .event-block.reminders { background: #fef3c7; color: #92400e; border-left-color: var(--cat-reminders); }
+        .event-block.shopping { background: #fee2e2; color: #991b1b; border-left-color: var(--cat-shopping); }
+        .event-block.notes { background: #ede9fe; color: #5b21b6; border-left-color: var(--cat-notes); }
+        .event-block.holiday { background: #fef2f2; color: var(--holiday-official); border-left-color: var(--holiday-official); }
+
+        .event-block.all-day {
+            top: 2px; height: 22px; font-size: 10px;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .event-icon { margin-right: 3px; }
+        .event-time-label { font-size: 9px; opacity: 0.7; margin-top: 2px; }
+        .event-repeat { font-size: 9px; margin-left: 4px; opacity: 0.8; }
+
+        /* Month View */
+        .month-container {
+            display: none; height: 100%; overflow-y: auto;
+            background: var(--bg-secondary); padding: 10px 20px;
+        }
+        .month-container.active { display: block; }
+
+        .month-header {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 1px; margin-bottom: 10px;
+        }
+        .month-day-name {
+            text-align: center; padding: 10px;
+            font-size: 12px; font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .month-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 1px; background: var(--border-color);
+            border-radius: 8px; overflow: hidden;
+        }
+
+        .month-day {
+            background: var(--bg-secondary); min-height: 100px;
+            padding: 8px; cursor: pointer; transition: background 0.15s;
+            position: relative;
+        }
+        .month-day:hover { background: var(--bg-primary); }
+        .month-day.other { background: var(--bg-primary); opacity: 0.6; }
+        .month-day.today {
+            box-shadow: inset 0 0 0 2px var(--accent);
+        }
+        .month-day.holiday {
+            background: linear-gradient(135deg, #fff5f5, #ffe8e8);
+        }
+        .month-day.holiday.official {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        }
+
+        .month-day-num {
+            font-size: 14px; font-weight: 600;
+            color: var(--text-primary); margin-bottom: 4px;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .month-day.holiday .month-day-num { color: var(--holiday-official); }
+        .month-day.holiday::after {
+            content: '🎉'; font-size: 10px;
+        }
+        .month-day.holiday.official::after { content: '⭐'; }
+
+        .month-events { display: flex; flex-direction: column; gap: 2px; }
+        .month-event {
+            padding: 3px 6px; border-radius: 4px; font-size: 10px;
+            white-space: nowrap; overflow: hidden;
+            text-overflow: ellipsis; cursor: pointer;
+            border-left: 2px solid;
+        }
+        .month-event.tasks { background: #d1fae5; color: #065f46; border-left-color: var(--cat-tasks); }
+        .month-event.reminders { background: #fef3c7; color: #92400e; border-left-color: var(--cat-reminders); }
+        .month-event.shopping { background: #fee2e2; color: #991b1b; border-left-color: var(--cat-shopping); }
+        .month-event.notes { background: #ede9fe; color: #5b21b6; border-left-color: var(--cat-notes); }
+        .month-event.holiday { background: #fef2f2; color: var(--holiday-official); border-left-color: var(--holiday-official); }
+        .month-event.more {
+            font-size: 9px; color: var(--text-secondary);
+            cursor: pointer; padding: 2px 6px;
+        }
+        .month-event.more:hover { color: var(--accent); }
+
+        /* Day View */
+        .day-panel {
+            display: none; flex-direction: column;
+            padding: 20px; overflow-y: auto;
+            background: var(--bg-secondary); height: 100%;
+        }
+        .day-panel.active { display: flex; }
+
+        .day-panel-header {
+            display: flex; align-items: center;
+            justify-content: space-between; margin-bottom: 16px;
+        }
+        .day-panel-title {
+            font-size: 20px; font-weight: 600; color: var(--text-primary);
+        }
+
+        .day-panel-events { display: flex; flex-direction: column; gap: 8px; }
+
+        .day-event-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 12px; border-radius: 8px; cursor: pointer;
+            transition: background 0.15s; border-left: 4px solid;
+        }
+        .day-event-item:hover { background: var(--bg-primary); }
+        .day-event-item.tasks { border-left-color: var(--cat-tasks); background: #f0fdf4; }
+        .day-event-item.reminders { border-left-color: var(--cat-reminders); background: #fffbeb; }
+        .day-event-item.shopping { border-left-color: var(--cat-shopping); background: #fef2f2; }
+        .day-event-item.notes { border-left-color: var(--cat-notes); background: #f5f3ff; }
+        .day-event-item.holiday { border-left-color: var(--holiday-official); background: #fef2f2; }
+
+        .day-event-time {
+            font-size: 12px; color: var(--text-secondary);
+            min-width: 60px; font-weight: 600;
+        }
+        .day-event-info { flex: 1; }
+        .day-event-name {
+            font-size: 14px; font-weight: 600; color: var(--text-primary);
+            display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+        }
+        .day-event-desc {
+            font-size: 12px; color: var(--text-secondary); margin-top: 2px;
+        }
+
+        .no-events {
+            text-align: center; padding: 40px;
+            color: var(--text-secondary); font-size: 14px;
+        }
+        .no-events-icon { font-size: 40px; margin-bottom: 10px; }
+
+        .btn-add-day {
+            margin-top: 16px; padding: 10px;
+            background: var(--bg-primary);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px; color: var(--text-secondary);
+            font-size: 13px; cursor: pointer;
+            transition: all 0.2s; text-align: center;
+        }
+        .btn-add-day:hover {
+            border-color: var(--accent); color: var(--accent);
+            background: rgba(46, 111, 201, 0.1);
+        }
+
+        /* All-day events row */
+        .all-day-row {
+            grid-column: 2 / -1; display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0; border-bottom: 1px solid var(--border-color);
+            min-height: 26px;
+        }
+        .all-day-cell {
+            border-left: 1px solid var(--border-color);
+            padding: 2px 2px; display: flex;
+            flex-wrap: wrap; gap: 2px; min-height: 26px;
+        }
+        .all-day-tag {
+            padding: 2px 6px; border-radius: 4px; font-size: 10px;
+            white-space: nowrap; overflow: hidden;
+            text-overflow: ellipsis; cursor: pointer;
+        }
+        .all-day-tag.tasks { background: #d1fae5; color: #065f46; }
+        .all-day-tag.reminders { background: #fef3c7; color: #92400e; }
+        .all-day-tag.shopping { background: #fee2e2; color: #991b1b; }
+        .all-day-tag.notes { background: #ede9fe; color: #5b21b6; }
+        .all-day-tag.holiday { background: #fef2f2; color: var(--holiday-official); border: 1px solid var(--holiday-official); }
+
+        /* Holiday panel */
+        .holiday-panel {
+            background: linear-gradient(135deg, #fff5f5, #ffe8e8);
+            border-left: 4px solid var(--holiday-official);
+            padding: 12px 16px; border-radius: 0 8px 8px 0;
+            margin: 8px 0; cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .holiday-panel:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+        }
+        .holiday-panel.official {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border-left-color: var(--holiday-official);
+        }
+        .holiday-panel-name {
+            font-weight: 700; color: var(--holiday-official);
+            font-size: 14px; display: flex; align-items: center; gap: 6px;
+        }
+        .holiday-panel-desc {
+            font-size: 12px; color: #666; margin-top: 4px; line-height: 1.4;
+        }
+        .holiday-badge {
+            display: inline-block; padding: 2px 8px;
+            background: var(--holiday-official); color: white;
+            border-radius: 10px; font-size: 10px; font-weight: 600;
+            margin-left: 8px;
+        }
+        .holiday-badge.observance { background: var(--holiday-observance); }
+
+        /* ===== MODALS ===== */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); display: none;
+            align-items: center; justify-content: center;
+            z-index: 1000; backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--bg-secondary); border-radius: 16px;
+            padding: 28px; width: 480px; max-width: 90vw;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            animation: modalIn 0.25s ease; max-height: 90vh; overflow-y: auto;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-title {
+            font-size: 20px; font-weight: 600;
+            color: var(--text-primary); margin-bottom: 20px;
+        }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block; font-size: 12px; font-weight: 600;
+            color: var(--text-secondary); margin-bottom: 5px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%; padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px; font-size: 14px;
+            color: var(--text-primary); outline: none;
+            transition: border-color 0.2s; font-family: inherit;
+            background: var(--bg-primary);
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(46,111,201,0.1);
+        }
+        .form-group textarea { resize: vertical; min-height: 60px; }
+
+        .form-row { display: flex; gap: 10px; }
+        .form-row .form-group { flex: 1; }
+
+        .type-selector { display: flex; gap: 8px; flex-wrap: wrap; }
+        .type-option {
+            flex: 1; min-width: 80px; padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px; text-align: center;
+            cursor: pointer; font-size: 12px; font-weight: 600;
+            transition: all 0.2s;
+        }
+        .type-option:hover { border-color: var(--accent); }
+        .type-option.selected.tasks { border-color: var(--cat-tasks); background: #d1fae5; color: #065f46; }
+        .type-option.selected.reminders { border-color: var(--cat-reminders); background: #fef3c7; color: #92400e; }
+        .type-option.selected.shopping { border-color: var(--cat-shopping); background: #fee2e2; color: #991b1b; }
+        .type-option.selected.notes { border-color: var(--cat-notes); background: #ede9fe; color: #5b21b6; }
+        .type-emoji { font-size: 18px; display: block; margin-bottom: 3px; }
+
+        /* Color picker */
+        .color-picker-group {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .color-picker {
+            width: 40px; height: 40px; border: none;
+            border-radius: 8px; cursor: pointer;
+            background: transparent; padding: 0;
+        }
+        .color-picker::-webkit-color-swatch {
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+        }
+        .color-presets { display: flex; gap: 4px; }
+        .color-preset {
+            width: 24px; height: 24px; border-radius: 50%;
+            cursor: pointer; border: 2px solid transparent;
+            transition: transform 0.15s;
+        }
+        .color-preset:hover { transform: scale(1.1); }
+        .color-preset.selected { border-color: var(--text-primary); }
+
+        /* Repeat options */
+        .repeat-options {
+            display: flex; flex-direction: column; gap: 8px;
+            padding: 10px; background: var(--bg-primary);
+            border-radius: 8px; margin-top: 8px;
+        }
+        .repeat-option {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; cursor: pointer;
+        }
+        .repeat-option input { cursor: pointer; }
+
+        /* Notification toggle */
+        .notification-toggle {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px; background: var(--bg-primary);
+            border-radius: 8px;
+        }
+        .toggle-switch {
+            position: relative; width: 44px; height: 24px;
+            background: var(--border-color); border-radius: 12px;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .toggle-switch.active { background: var(--accent); }
+        .toggle-switch::after {
+            content: ''; position: absolute; top: 2px; left: 2px;
+            width: 20px; height: 20px; background: white;
+            border-radius: 50%; transition: transform 0.2s;
+        }
+        .toggle-switch.active::after { transform: translateX(20px); }
+
+        .modal-actions {
+            display: flex; gap: 10px; margin-top: 20px;
+        }
+        .btn-save {
+            flex: 1; padding: 12px; background: var(--accent);
+            color: white; border: none; border-radius: 8px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-save:hover { background: var(--accent-hover); }
+        .btn-cancel {
+            padding: 12px 24px; background: var(--bg-primary);
+            color: var(--text-secondary); border: none;
+            border-radius: 8px; font-size: 14px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-cancel:hover { background: var(--border-color); }
+        .btn-delete {
+            padding: 12px 16px; background: #fee2e2;
+            color: #dc2626; border: none; border-radius: 8px;
+            font-size: 14px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-delete:hover { background: #fecaca; }
+
+        /* Detail Modal */
+        .detail-content { margin-bottom: 16px; }
+        .detail-type {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; margin-bottom: 12px;
+        }
+        .detail-type.tasks { background: #d1fae5; color: #065f46; }
+        .detail-type.reminders { background: #fef3c7; color: #92400e; }
+        .detail-type.shopping { background: #fee2e2; color: #991b1b; }
+        .detail-type.notes { background: #ede9fe; color: #5b21b6; }
+        .detail-type.holiday { background: #fef2f2; color: var(--holiday-official); }
+
+        .detail-title {
+            font-size: 22px; font-weight: 700;
+            color: var(--text-primary); margin-bottom: 8px;
+        }
+        .detail-date {
+            font-size: 14px; color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        .detail-desc {
+            font-size: 14px; color: var(--text-primary);
+            line-height: 1.6; padding: 12px;
+            background: var(--bg-primary); border-radius: 8px;
+        }
+        .detail-repeat {
+            font-size: 12px; color: var(--text-secondary);
+            margin-top: 8px; display: flex; align-items: center; gap: 4px;
+        }
+        .detail-notification {
+            font-size: 12px; color: var(--text-secondary);
+            margin-top: 4px; display: flex; align-items: center; gap: 4px;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed; bottom: 20px; right: 20px;
+            z-index: 2000; display: flex; flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: var(--bg-secondary); border-left: 4px solid var(--accent);
+            padding: 12px 20px; border-radius: 8px;
+            box-shadow: var(--card-shadow); color: var(--text-primary);
+            font-size: 14px; animation: toastIn 0.3s ease;
+            display: flex; align-items: center; gap: 10px;
+            max-width: 350px;
+        }
+        .toast.success { border-left-color: var(--cat-tasks); }
+        .toast.error { border-left-color: var(--cat-shopping); }
+        .toast.warning { border-left-color: var(--cat-reminders); }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .calendar-app { flex-direction: column; height: 95vh; }
+            .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 10px; }
+            .mini-cal { display: none; }
+            .categories { display: flex; gap: 8px; }
+            .main-header { padding: 10px; }
+            .search-bar { width: 150px; }
+            .week-grid { font-size: 11px; }
+            .time-label { font-size: 10px; }
+        }
+
+        @media (max-width: 600px) {
+            .header-left { flex-direction: column; align-items: flex-start; }
+            .view-btns { width: 100%; justify-content: center; }
+            .header-actions { width: 100%; justify-content: center; }
+            .month-day { min-height: 80px; padding: 4px; }
+            .month-day-num { font-size: 12px; }
+            .month-event { font-size: 9px; padding: 2px 4px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="calendar-app">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-top">
+            <div class="sidebar-title">🇷🇺 Умный Календарь</div>
+        </div>
+
+        <button class="btn-new-event" onclick="openNewEvent()">
+            <span style="font-size:16px">+</span> Новое событие
+        </button>
+
+        <div class="mini-cal">
+            <div class="mini-cal-header">
+                <span id="miniCalMonth">Апрель 2026</span>
+                <div class="mini-cal-nav">
+                    <button onclick="changeMiniMonth(-1)">◀</button>
+                    <button onclick="changeMiniMonth(1)">▶</button>
+                </div>
+            </div>
+            <div class="mini-cal-grid" id="miniCalGrid"><div class="mini-cal-day-name">Вс</div><div class="mini-cal-day-name">Пн</div><div class="mini-cal-day-name">Вт</div><div class="mini-cal-day-name">Ср</div><div class="mini-cal-day-name">Чт</div><div class="mini-cal-day-name">Пт</div><div class="mini-cal-day-name">Сб</div><div class="mini-cal-day other">30</div><div class="mini-cal-day other">31</div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,1)">1
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,2)">2
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,3)">3
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,4)">4
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,5)">5
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,6)">6
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,7)">7
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,8)">8
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,9)">9
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,10)">10
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,11)">11
+            
+        </div><div class="mini-cal-day holiday" onclick="selectMiniDay(2026,3,12)">12
+            <div class="holiday-tooltip"><strong>День космонавтики</strong><br>Памятная дата в честь первого полёта человека в космос.</div>
+        </div><div class="mini-cal-day selected holiday" onclick="selectMiniDay(2026,3,13)">13
+            <div class="holiday-tooltip"><strong>Пасха Христова</strong><br>Величайший православный праздник — Воскресение Христово.</div>
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,14)">14
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,15)">15
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,16)">16
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,17)">17
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,18)">18
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,19)">19
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,20)">20
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,21)">21
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,22)">22
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,23)">23
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,24)">24
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,25)">25
+            
+        </div><div class="mini-cal-day today has-events" onclick="selectMiniDay(2026,3,26)">26
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,27)">27
+            
+        </div><div class="mini-cal-day holiday" onclick="selectMiniDay(2026,3,28)">28
+            <div class="holiday-tooltip"><strong>Радоница</strong><br>День поминовения усопших.</div>
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,29)">29
+            
+        </div><div class="mini-cal-day" onclick="selectMiniDay(2026,3,30)">30
+            
+        </div><div class="mini-cal-day other">1</div><div class="mini-cal-day other">2</div><div class="mini-cal-day other">3</div><div class="mini-cal-day other">4</div><div class="mini-cal-day other">5</div><div class="mini-cal-day other">6</div><div class="mini-cal-day other">7</div><div class="mini-cal-day other">8</div><div class="mini-cal-day other">9</div><div class="mini-cal-day other">10</div></div>
+        </div>
+
+        <div class="categories">
+            <div class="cat-title">Категории</div>
+            <div class="cat-item" onclick="toggleCategory(&#39;tasks&#39;)">
+                <div class="cat-dot tasks"></div><span>Задания</span>
+            </div>
+            <div class="cat-item" onclick="toggleCategory(&#39;reminders&#39;)">
+                <div class="cat-dot reminders"></div><span>Напоминания</span>
+            </div>
+            <div class="cat-item" onclick="toggleCategory(&#39;shopping&#39;)">
+                <div class="cat-dot shopping"></div><span>Покупки</span>
+            </div>
+            <div class="cat-item" onclick="toggleCategory(&#39;notes&#39;)">
+                <div class="cat-dot notes"></div><span>Заметки</span>
+            </div>
+            <div class="cat-item" onclick="toggleHolidays()">
+                <div class="cat-dot" style="background:#e74c3c"></div><span>Праздники</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main-area">
+        <div class="main-header">
+            <div class="header-left">
+                <div class="search-bar">
+                    <span>🔍</span>
+                    <input type="text" placeholder="Поиск..." id="searchInput" oninput="filterEvents()">
+                </div>
+                <div class="main-title" id="mainTitle">Май <span>2026</span></div>
+            </div>
+
+            <div class="header-actions">
+                <div class="nav-arrows">
+                    <button class="nav-arrow" onclick="navigate(-1)">◀</button>
+                    <button class="btn-today" onclick="goToToday()">Сегодня</button>
+                    <button class="nav-arrow" onclick="navigate(1)">▶</button>
+                </div>
+
+                <div class="view-btns">
+                    <button class="view-btn active" onclick="switchView(&#39;day&#39;)" id="btnDay">День</button>
+                    <button class="view-btn" onclick="switchView(&#39;week&#39;)" id="btnWeek">Неделя</button>
+                    <button class="view-btn" onclick="switchView(&#39;month&#39;)" id="btnMonth">Месяц</button>
+                </div>
+
+                <button class="btn-export" onclick="exportToICS()" title="Экспорт в ICS">📤</button>
+                <button class="btn-theme" onclick="toggleTheme()" title="Тёмная тема" id="themeBtn">🌙</button>
+            </div>
+        </div>
+
+        <!-- Views Container -->
+        <div class="views-container">
+            <!-- Week View -->
+            <div class="week-container" id="weekView">
+                <div class="week-grid" id="weekGrid"><div class="col-time"><div class="day-head"></div></div><div class="col-day"><div class="day-head" onclick="openDayView(&#39;2026-05-11&#39;)">
+            <div class="day-head-name">Вс</div>
+            <div class="day-head-num">11</div>
+            
+        </div></div><div class="col-day"><div class="day-head" onclick="openDayView(&#39;2026-05-12&#39;)">
+            <div class="day-head-name">Пн</div>
+            <div class="day-head-num">12</div>
+            
+        </div></div><div class="col-day"><div class="day-head" onclick="openDayView(&#39;2026-05-13&#39;)">
+            <div class="day-head-name">Вт</div>
+            <div class="day-head-num">13</div>
+            
+        </div></div><div class="col-day"><div class="day-head" onclick="openDayView(&#39;2026-05-14&#39;)">
+            <div class="day-head-name">Ср</div>
+            <div class="day-head-num">14</div>
+            
+        </div></div><div class="col-day"><div class="day-head" onclick="openDayView(&#39;2026-05-15&#39;)">
+            <div class="day-head-name">Чт</div>
+            <div class="day-head-num">15</div>
+            
+        </div></div><div class="col-day"><div class="day-head" onclick="openDayView(&#39;2026-05-16&#39;)">
+            <div class="day-head-name">Пт</div>
+            <div class="day-head-num">16</div>
+            
+        </div></div><div class="col-day"><div class="day-head" onclick="openDayView(&#39;2026-05-17&#39;)">
+            <div class="day-head-name">Сб</div>
+            <div class="day-head-num">17</div>
+            
+        </div></div><div class="col-time"></div><div class="col-day"><div class="all-day-cell" onclick="openNewEventForDayAt(2026,4,11,&#39;00:00&#39;)"></div></div><div class="col-day"><div class="all-day-cell" onclick="openNewEventForDayAt(2026,4,12,&#39;00:00&#39;)"></div></div><div class="col-day"><div class="all-day-cell" onclick="openNewEventForDayAt(2026,4,13,&#39;00:00&#39;)"></div></div><div class="col-day"><div class="all-day-cell" onclick="openNewEventForDayAt(2026,4,14,&#39;00:00&#39;)"></div></div><div class="col-day"><div class="all-day-cell" onclick="openNewEventForDayAt(2026,4,15,&#39;00:00&#39;)"></div></div><div class="col-day"><div class="all-day-cell" onclick="openNewEventForDayAt(2026,4,16,&#39;00:00&#39;)"></div></div><div class="col-day"><div class="all-day-cell" onclick="openNewEventForDayAt(2026,4,17,&#39;00:00&#39;)"></div></div><div class="col-time"><div class="time-slot"><div class="time-label">6:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="6" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,06:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="6" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,06:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="6" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,06:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="6" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,06:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="6" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,06:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="6" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,06:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="6" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,06:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">7:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="7" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,07:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="7" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,07:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="7" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,07:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="7" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,07:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="7" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,07:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="7" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,07:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="7" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,07:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">8:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="8" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,08:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="8" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,08:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="8" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,08:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="8" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,08:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="8" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,08:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="8" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,08:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="8" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,08:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">9:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="9" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,09:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="9" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,09:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="9" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,09:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="9" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,09:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="9" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,09:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="9" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,09:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="9" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,09:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">10:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="10" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,10:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="10" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,10:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="10" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,10:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="10" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,10:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="10" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,10:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="10" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,10:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="10" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,10:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">11:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="11" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,11:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="11" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,11:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="11" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,11:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="11" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,11:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="11" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,11:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="11" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,11:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="11" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,11:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">12:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="12" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,12:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="12" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,12:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="12" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,12:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="12" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,12:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="12" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,12:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="12" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,12:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="12" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,12:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">13:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="13" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,13:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="13" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,13:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="13" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,13:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="13" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,13:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="13" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,13:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="13" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,13:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="13" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,13:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">14:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="14" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,14:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="14" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,14:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="14" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,14:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="14" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,14:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="14" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,14:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="14" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,14:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="14" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,14:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">15:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="15" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,15:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="15" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,15:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="15" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,15:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="15" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,15:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="15" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,15:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="15" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,15:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="15" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,15:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">16:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="16" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,16:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="16" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,16:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="16" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,16:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="16" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,16:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="16" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,16:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="16" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,16:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="16" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,16:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">17:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="17" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,17:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="17" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,17:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="17" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,17:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="17" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,17:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="17" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,17:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="17" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,17:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="17" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,17:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">18:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="18" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,18:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="18" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,18:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="18" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,18:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="18" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,18:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="18" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,18:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="18" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,18:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="18" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,18:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">19:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="19" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,19:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="19" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,19:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="19" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,19:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="19" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,19:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="19" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,19:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="19" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,19:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="19" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,19:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">20:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="20" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,20:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="20" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,20:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="20" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,20:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="20" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,20:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="20" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,20:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="20" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,20:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="20" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,20:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">21:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="21" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,21:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="21" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,21:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="21" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,21:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="21" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,21:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="21" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,21:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="21" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,21:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="21" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,21:00)"></div></div></div><div class="col-time"><div class="time-slot"><div class="time-label">22:00</div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-11" data-hour="22" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,11,22:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-12" data-hour="22" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,12,22:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-13" data-hour="22" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,13,22:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-14" data-hour="22" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,14,22:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-15" data-hour="22" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,15,22:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-16" data-hour="22" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,16,22:00)"></div></div></div><div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="2026-05-17" data-hour="22" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" onclick="openNewEventForDayAt(2026,4,17,22:00)"></div></div></div></div>
+            </div>
+
+            <!-- Month View -->
+            <div class="month-container" id="monthView">
+                <div class="month-header" id="monthHeader"><div class="month-day-name">Вс</div><div class="month-day-name">Пн</div><div class="month-day-name">Вт</div><div class="month-day-name">Ср</div><div class="month-day-name">Чт</div><div class="month-day-name">Пт</div><div class="month-day-name">Сб</div></div>
+                <div class="month-grid" id="monthGrid"><div class="month-day other today" onclick="openDayView(&#39;2026-04-26&#39;)">
+        <div class="month-day-num">26</div>
+        <div class="month-events"><div class="month-event tasks" onclick="showEventDetail(&#39;evt_1777140955679_25ghpmp4e&#39;)">✅ ываыва</div><div class="month-event tasks" onclick="showEventDetail(&#39;evt_1777150271062_4lz950dn0&#39;)">✅ апаппр</div></div>
+    </div><div class="month-day other" onclick="openDayView(&#39;2026-04-27&#39;)">
+        <div class="month-day-num">27</div>
+        <div class="month-events"></div>
+    </div><div class="month-day other holiday" onclick="openDayView(&#39;2026-04-28&#39;)">
+        <div class="month-day-num">28<span style="font-size:10px">🎉</span></div>
+        <div class="month-events"></div>
+    </div><div class="month-day other" onclick="openDayView(&#39;2026-04-29&#39;)">
+        <div class="month-day-num">29</div>
+        <div class="month-events"></div>
+    </div><div class="month-day other" onclick="openDayView(&#39;2026-04-30&#39;)">
+        <div class="month-day-num">30</div>
+        <div class="month-events"></div>
+    </div><div class="month-day holiday official" onclick="openDayView(&#39;2026-05-01&#39;)">
+        <div class="month-day-num">1<span style="font-size:10px">⭐</span></div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-02&#39;)">
+        <div class="month-day-num">2</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-03&#39;)">
+        <div class="month-day-num">3</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-04&#39;)">
+        <div class="month-day-num">4</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-05&#39;)">
+        <div class="month-day-num">5</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-06&#39;)">
+        <div class="month-day-num">6</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-07&#39;)">
+        <div class="month-day-num">7</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-08&#39;)">
+        <div class="month-day-num">8</div>
+        <div class="month-events"></div>
+    </div><div class="month-day holiday official" onclick="openDayView(&#39;2026-05-09&#39;)">
+        <div class="month-day-num">9<span style="font-size:10px">⭐</span></div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-10&#39;)">
+        <div class="month-day-num">10</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-11&#39;)">
+        <div class="month-day-num">11</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-12&#39;)">
+        <div class="month-day-num">12</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-13&#39;)">
+        <div class="month-day-num">13</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-14&#39;)">
+        <div class="month-day-num">14</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-15&#39;)">
+        <div class="month-day-num">15</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-16&#39;)">
+        <div class="month-day-num">16</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-17&#39;)">
+        <div class="month-day-num">17</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-18&#39;)">
+        <div class="month-day-num">18</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-19&#39;)">
+        <div class="month-day-num">19</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-20&#39;)">
+        <div class="month-day-num">20</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-21&#39;)">
+        <div class="month-day-num">21</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-22&#39;)">
+        <div class="month-day-num">22</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-23&#39;)">
+        <div class="month-day-num">23</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-24&#39;)">
+        <div class="month-day-num">24</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-25&#39;)">
+        <div class="month-day-num">25</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-26&#39;)">
+        <div class="month-day-num">26</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-27&#39;)">
+        <div class="month-day-num">27</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-28&#39;)">
+        <div class="month-day-num">28</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-29&#39;)">
+        <div class="month-day-num">29</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-30&#39;)">
+        <div class="month-day-num">30</div>
+        <div class="month-events"></div>
+    </div><div class="month-day" onclick="openDayView(&#39;2026-05-31&#39;)">
+        <div class="month-day-num">31</div>
+        <div class="month-events"></div>
+    </div><div class="month-day other holiday" onclick="openDayView(&#39;2026-06-01&#39;)">
+        <div class="month-day-num">1<span style="font-size:10px">🎉</span></div>
+        <div class="month-events"></div>
+    </div><div class="month-day other" onclick="openDayView(&#39;2026-06-02&#39;)">
+        <div class="month-day-num">2</div>
+        <div class="month-events"></div>
+    </div><div class="month-day other" onclick="openDayView(&#39;2026-06-03&#39;)">
+        <div class="month-day-num">3</div>
+        <div class="month-events"></div>
+    </div><div class="month-day other" onclick="openDayView(&#39;2026-06-04&#39;)">
+        <div class="month-day-num">4</div>
+        <div class="month-events"></div>
+    </div><div class="month-day other" onclick="openDayView(&#39;2026-06-05&#39;)">
+        <div class="month-day-num">5</div>
+        <div class="month-events"></div>
+    </div><div class="month-day other" onclick="openDayView(&#39;2026-06-06&#39;)">
+        <div class="month-day-num">6</div>
+        <div class="month-events"></div>
+    </div></div>
+            </div>
+
+            <!-- Day View -->
+            <div class="day-panel active" id="dayView">
+                <div class="day-panel-header">
+                    <div class="day-panel-title" id="dayPanelTitle">Понедельник, 5 Май 2026</div>
+                    <button class="btn-today" onclick="switchView(&#39;month&#39;)" style="font-size:12px">← Назад</button>
+                </div>
+                <div class="day-panel-events" id="dayPanelEvents"><div class="no-events"><div class="no-events-icon">📭</div>Нет событий на этот день</div></div>
+                <div class="btn-add-day" onclick="openNewEventForDay()">+ Добавить событие</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Event Modal -->
+<div class="modal-overlay" id="newEventModal">
+    <div class="modal">
+        <div class="modal-title" id="modalTitle">Новое событие</div>
+
+        <div class="form-group">
+            <label>Тип</label>
+            <div class="type-selector">
+                <div class="type-option tasks selected" data-type="tasks" onclick="selectType(this)">
+                    <span class="type-emoji">✅</span>Задание
+                </div>
+                <div class="type-option reminders" data-type="reminders" onclick="selectType(this)">
+                    <span class="type-emoji">⏰</span>Напоминание
+                </div>
+                <div class="type-option shopping" data-type="shopping" onclick="selectType(this)">
+                    <span class="type-emoji">🛒</span>Покупка
+                </div>
+                <div class="type-option notes" data-type="notes" onclick="selectType(this)">
+                    <span class="type-emoji">📝</span>Заметка
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Название *</label>
+            <input type="text" id="eventName" placeholder="Введите название...">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Дата *</label>
+                <input type="date" id="eventDate">
+            </div>
+            <div class="form-group">
+                <label>Время</label>
+                <input type="time" id="eventTime">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Цвет метки</label>
+            <div class="color-picker-group">
+                <input type="color" class="color-picker" id="eventColor" value="#10b981" onchange="updateColorPreset(this.value)">
+                <div class="color-presets">
+                    <div class="color-preset selected" style="background:#10b981" onclick="setColor(&#39;#10b981&#39;, this)"></div>
+                    <div class="color-preset" style="background:#f59e0b" onclick="setColor(&#39;#f59e0b&#39;, this)"></div>
+                    <div class="color-preset" style="background:#ef4444" onclick="setColor(&#39;#ef4444&#39;, this)"></div>
+                    <div class="color-preset" style="background:#8b5cf6" onclick="setColor(&#39;#8b5cf6&#39;, this)"></div>
+                    <div class="color-preset" style="background:#3b82f6" onclick="setColor(&#39;#3b82f6&#39;, this)"></div>
+                    <div class="color-preset" style="background:#ec4899" onclick="setColor(&#39;#ec4899&#39;, this)"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Повторение</label>
+            <select id="eventRepeat" onchange="toggleRepeatOptions()">
+                <option value="none">Не повторять</option>
+                <option value="daily">Ежедневно</option>
+                <option value="weekly">Еженедельно</option>
+                <option value="monthly">Ежемесячно</option>
+                <option value="yearly">Ежегодно</option>
+            </select>
+            <div class="repeat-options" id="repeatOptions" style="display:none">
+                <label class="repeat-option">
+                    <input type="checkbox" id="repeatWeekdays" onchange="toggleWeekdays()">
+                    Только рабочие дни (Пн-Пт)
+                </label>
+                <label class="repeat-option">
+                    <input type="checkbox" id="repeatEndless">
+                    Без даты окончания
+                </label>
+                <div id="repeatEndDateGroup" class="form-group" style="margin:8px 0 0">
+                    <label>Дата окончания</label>
+                    <input type="date" id="repeatEndDate">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Уведомление</label>
+            <div class="notification-toggle">
+                <div class="toggle-switch" id="notifyToggle" onclick="toggleNotify()"></div>
+                <span style="font-size:13px">Напомнить за 15 минут</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Описание</label>
+            <textarea id="eventDesc" placeholder="Добавьте описание..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal()">Отмена</button>
+            <button class="btn-delete" id="btnDelete" style="display:none" onclick="deleteEvent()">🗑️</button>
+            <button class="btn-save" onclick="saveEvent()">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+    <div class="modal">
+        <div class="detail-content" id="detailContent">
+        <div class="detail-type holiday">🎉 Памятная дата</div>
+        <div class="detail-title">День окончания Второй мировой войны</div>
+        <div class="detail-date">📅 2 Сентябрь 2026</div>
+        <div class="detail-desc">Памятная дата России.</div>
+        
+    </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeDetail()">Закрыть</button>
+            <button class="btn-delete" onclick="editCurrentEvent()">✏️ Изменить</button>
+            <button class="btn-delete" onclick="deleteCurrentEvent()">🗑️ Удалить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ===== КОНФИГУРАЦИЯ =====
+const CONFIG = {
+    defaultColor: '#10b981',
+    notificationTime: 15, // минут до события
+    colors: ['#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6', '#ec4899', '#22c55e', '#f97316']
+};
+
+// ===== РОССИЙСКИЕ ПРАЗДНИКИ =====
+const russianHolidays = {
+    fixed: {
+        '1-1': { name: 'Новый год', desc: 'Главный праздник года. Начало новогодних каникул.', official: true },
+        '1-2': { name: 'Новогодние каникулы', desc: 'Выходной день в рамках новогодних праздников.', official: true },
+        '1-3': { name: 'Новогодние каникулы', desc: 'Выходной день в рамках новогодних праздников.', official: true },
+        '1-4': { name: 'Новогодние каникулы', desc: 'Выходной день в рамках новогодних праздников.', official: true },
+        '1-5': { name: 'Новогодние каникулы', desc: 'Выходной день в рамках новогодних праздников.', official: true },
+        '1-6': { name: 'Новогодние каникулы', desc: 'Выходной день в рамках новогодних праздников.', official: true },
+        '1-7': { name: 'Рождество Христово', desc: 'Православный праздник рождения Иисуса Христа.', official: true },
+        '1-8': { name: 'Новогодние каникулы', desc: 'Завершение новогодних праздников.', official: true },
+        '1-25': { name: 'Татьянин день', desc: 'День российского студенчества.', official: false },
+        '2-14': { name: 'День святого Валентина', desc: 'День всех влюблённых.', official: false },
+        '2-23': { name: 'День защитника Отечества', desc: 'Праздник в честь воинов и защитников страны.', official: true },
+        '3-8': { name: 'Международный женский день', desc: 'Праздник весны и женственности.', official: true },
+        '4-12': { name: 'День космонавтики', desc: 'Памятная дата в честь первого полёта человека в космос.', official: false },
+        '5-1': { name: 'Праздник Весны и Труда', desc: 'Международный день солидарности трудящихся.', official: true },
+        '5-9': { name: 'День Победы', desc: 'Праздник в честь победы СССР над нацистской Германией.', official: true },
+        '6-1': { name: 'День защиты детей', desc: 'Международный праздник в честь детей.', official: false },
+        '6-12': { name: 'День России', desc: 'Государственный праздник в честь суверенитета РФ.', official: true },
+        '6-22': { name: 'День памяти и скорби', desc: 'День начала Великой Отечественной войны (1941).', official: false },
+        '9-1': { name: 'День знаний', desc: 'Начало учебного года.', official: false },
+        '9-2': { name: 'День окончания Второй мировой войны', desc: 'Памятная дата России.', official: false },
+        '10-5': { name: 'День учителя', desc: 'Профессиональный праздник педагогов.', official: false },
+        '11-4': { name: 'День народного единства', desc: 'Праздник в честь освобождения Москвы в 1612 году.', official: true },
+        '12-12': { name: 'День Конституции РФ', desc: 'Памятная дата в честь принятия Конституции России.', official: false },
+        '12-31': { name: 'Новый год (канун)', desc: 'Предпраздничный день.', official: false }
+    },
+    orthodox: {
+        easter: { name: 'Пасха Христова', desc: 'Величайший православный праздник — Воскресение Христово.', official: false },
+        radonitsa: { name: 'Радоница', desc: 'День поминовения усопших.', official: false },
+        trinity: { name: 'День Святой Троицы', desc: 'Один из главных православных праздников.', official: false }
+    }
+};
+
+// ===== STATE =====
+let currentDate = new Date();
+let currentViewDate = new Date();
+let selectedDate = new Date();
+let miniCalDate = new Date();
+let selectedType = 'tasks';
+let editingEventId = null;
+let viewingEventId = null;
+let currentView = 'month';
+let activeCategories = { tasks: true, reminders: true, shopping: true, notes: true };
+let showHolidays = true;
+let isDarkTheme = false;
+let draggedEvent = null;
+let notificationTimeouts = [];
+
+const typeIcons = { tasks: '✅', reminders: '⏰', shopping: '🛒', notes: '📝', holiday: '🎉' };
+const typeLabels = { tasks: 'Задание', reminders: 'Напоминание', shopping: 'Покупка', notes: 'Заметка', holiday: 'Праздник' };
+const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const dayNames = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+const dayNamesFull = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+
+// ===== ИНИЦИАЛИЗАЦИЯ =====
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    requestNotificationPermission();
+    renderMiniCalendar();
+    renderMonthView();
+    loadNotifications();
+});
+
+// ===== ТЕМА =====
+function initTheme() {
+    const saved = localStorage.getItem('calendarTheme');
+    if (saved === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        isDarkTheme = true;
+        document.getElementById('themeBtn').textContent = '☀️';
+    }
+}
+
+function toggleTheme() {
+    isDarkTheme = !isDarkTheme;
+    if (isDarkTheme) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.getElementById('themeBtn').textContent = '☀️';
+        localStorage.setItem('calendarTheme', 'dark');
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+        document.getElementById('themeBtn').textContent = '🌙';
+        localStorage.setItem('calendarTheme', 'light');
+    }
+}
+
+// ===== УВЕДОМЛЕНИЯ =====
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+}
+
+function loadNotifications() {
+    const events = getAllEventsExpanded();
+    const now = Date.now();
+    
+    events.forEach(evt => {
+        if (evt.notify && evt.time && evt.time !== '00:00') {
+            const eventTime = new Date(`${evt.date}T${evt.time}`).getTime();
+            const notifyTime = eventTime - (CONFIG.notificationTime * 60000);
+            const delay = notifyTime - now;
+            
+            if (delay > 0 && delay < 30 * 24 * 60 * 60 * 1000) {
+                const timeout = setTimeout(() => sendNotification(evt), delay);
+                notificationTimeouts.push({ id: evt.id, timeout });
+            }
+        }
+    });
+}
+
+function sendNotification(event) {
+    if (Notification.permission === 'granted') {
+        new Notification(`🔔 ${event.name}`, {
+            body: event.description || 'Напоминание из календаря',
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📅</text></svg>'
+        });
+        showToast(`Напоминание: ${event.name}`, 'warning');
+    }
+}
+
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'}</span><span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100px)';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+// ===== ПРАЗДНИКИ =====
+function calculateOrthodoxEaster(year) {
+    const a = year % 19, b = year % 4, c = year % 7;
+    const d = (19 * a + 15) % 30, e = (2 * b + 4 * c + 6 * d + 6) % 7;
+    let f = d + e, day, month;
+    if (f <= 9) { day = f + 22; month = 3; }
+    else { day = f - 9; month = 4; }
+    day += 13;
+    const daysInMonth = month === 3 ? 30 : 31;
+    if (day > daysInMonth) { day -= daysInMonth; month = 4; }
+    return { month, day };
+}
+
+function getMovableHolidays(year) {
+    const holidays = {}, keyPrefix = `${year}-`;
+    const easter = calculateOrthodoxEaster(year);
+    const easterDate = new Date(year, easter.month - 1, easter.day);
+    holidays[`${keyPrefix}${formatDate(easterDate)}`] = { ...russianHolidays.orthodox.easter, date: formatDate(easterDate) };
+    
+    let radonitsa = new Date(easterDate);
+    radonitsa.setDate(radonitsa.getDate() + 9);
+    while (radonitsa.getDay() !== 2) radonitsa.setDate(radonitsa.getDate() + 1);
+    holidays[`${keyPrefix}${formatDate(radonitsa)}`] = { ...russianHolidays.orthodox.radonitsa, date: formatDate(radonitsa) };
+    
+    const trinity = new Date(easterDate);
+    trinity.setDate(trinity.getDate() + 49);
+    holidays[`${keyPrefix}${formatDate(trinity)}`] = { ...russianHolidays.orthodox.trinity, date: formatDate(trinity) };
+    
+    const novLastDay = new Date(year, 10, 30);
+    let motherDay = new Date(novLastDay);
+    while (motherDay.getDay() !== 0) motherDay.setDate(motherDay.getDate() - 1);
+    holidays[`${keyPrefix}${formatDate(motherDay)}`] = { ...russianHolidays.fixed['11-27'], date: formatDate(motherDay), name: 'День матери' };
+    
+    return holidays;
+}
+
+function getHolidayInfo(date) {
+    const year = date.getFullYear(), month = date.getMonth() + 1, day = date.getDate();
+    const key = `${month}-${day}`, dateKey = `${year}-${formatDate(date)}`;
+    if (russianHolidays.fixed[key]) {
+        if (russianHolidays.fixed[key].movable === 'novLastSun') {
+            const movable = getMovableHolidays(year);
+            if (movable[dateKey]) return { ...movable[dateKey], isHoliday: true };
+            return null;
+        }
+        return { ...russianHolidays.fixed[key], isHoliday: true, date: formatDate(date) };
+    }
+    const movable = getMovableHolidays(year);
+    if (movable[dateKey]) return { ...movable[dateKey], isHoliday: true };
+    return null;
+}
+
+function toggleHolidays() {
+    showHolidays = !showHolidays;
+    renderMiniCalendar();
+    renderMonthView();
+    renderWeekView();
+    if (currentView === 'day') renderDayView();
+}
+
+// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+function getMonday(d) {
+    const date = new Date(d);
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    date.setDate(diff);
+    date.setHours(0, 0, 0, 0);
+    return date;
+}
+
+function formatDate(d) { return d.toISOString().split('T')[0]; }
+function formatDateRu(d) { return `${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`; }
+function isToday(d) { return formatDate(d) === formatDate(new Date()); }
+function getEvents() {
+    const data = localStorage.getItem('calendarEvents');
+    return data ? JSON.parse(data) : {};
+}
+function saveEvents(events) { localStorage.setItem('calendarEvents', JSON.stringify(events)); }
+function generateId() { return 'evt_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
+
+// ===== РАСШИРЕНИЕ ПОВТОРЯЮЩИХСЯ СОБЫТИЙ =====
+function expandRecurringEvents(events, startDate, endDate) {
+    const expanded = [];
+    for (const dateKey in events) {
+        events[dateKey].forEach(evt => {
+            if (!evt.repeat || evt.repeat === 'none') {
+                if (evt.date >= formatDate(startDate) && evt.date <= formatDate(endDate)) {
+                    expanded.push({ ...evt, isInstance: false });
+                }
+                return;
+            }
+            const eventStart = new Date(evt.date + 'T00:00:00');
+            const eventEnd = evt.repeatEndDate ? new Date(evt.repeatEndDate + 'T23:59:59') : new Date(endDate.getFullYear() + 2, 11, 31);
+            let current = new Date(Math.max(eventStart, startDate));
+            while (current <= endDate && current <= eventEnd) {
+                if (current >= eventStart) {
+                    const instance = {
+                        ...evt,
+                        date: formatDate(current),
+                        id: evt.id + '_inst_' + formatDate(current),
+                        isInstance: true,
+                        originalId: evt.id
+                    };
+                    if (evt.repeatWeekdays) {
+                        const day = current.getDay();
+                        if (day !== 0 && day !== 6) expanded.push(instance);
+                    } else {
+                        expanded.push(instance);
+                    }
+                }
+                if (evt.repeat === 'daily') current.setDate(current.getDate() + 1);
+                else if (evt.repeat === 'weekly') current.setDate(current.getDate() + 7);
+                else if (evt.repeat === 'monthly') current.setMonth(current.getMonth() + 1);
+                else if (evt.repeat === 'yearly') current.setFullYear(current.getFullYear() + 1);
+            }
+        });
+    }
+    return expanded;
+}
+
+function getAllEventsExpanded() {
+    const events = getEvents();
+    const start = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth() - 1, 1);
+    const end = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth() + 2, 0);
+    return expandRecurringEvents(events, start, end);
+}
+
+// ===== MINI CALENDAR =====
+function renderMiniCalendar() {
+    const year = miniCalDate.getFullYear(), month = miniCalDate.getMonth();
+    document.getElementById('miniCalMonth').textContent = `${monthNames[month]} ${year}`;
+    const grid = document.getElementById('miniCalGrid');
+    let html = '';
+    dayNames.forEach(d => html += `<div class="mini-cal-day-name">${d}</div>`);
+    
+    const firstDay = new Date(year, month, 1);
+    let startDay = firstDay.getDay();
+    if (startDay === 0) startDay = 7;
+    startDay--;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const prevMonthDays = new Date(year, month, 0).getDate();
+    const events = getEvents();
+
+    for (let i = startDay - 1; i >= 0; i--) {
+        const d = prevMonthDays - i;
+        html += `<div class="mini-cal-day other">${d}</div>`;
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const date = new Date(year, month, d);
+        const key = formatDate(date);
+        const today = isToday(date), selected = formatDate(selectedDate) === key;
+        const hasEvents = events[key] && events[key].length > 0;
+        const holiday = showHolidays ? getHolidayInfo(date) : null;
+        let cls = 'mini-cal-day';
+        if (today) cls += ' today';
+        if (selected && !today) cls += ' selected';
+        if (hasEvents) cls += ' has-events';
+        if (holiday) cls += ` holiday${holiday.official ? ' official' : ''}`;
+        html += `<div class="${cls}" onclick="selectMiniDay(${year},${month},${d})">${d}
+            ${holiday ? `<div class="holiday-tooltip"><strong>${holiday.name}</strong><br>${holiday.desc}</div>` : ''}
+        </div>`;
+    }
+
+    const totalCells = startDay + daysInMonth;
+    for (let d = 1; d <= 42 - totalCells; d++) html += `<div class="mini-cal-day other">${d}</div>`;
+    grid.innerHTML = html;
+}
+
+function changeMiniMonth(delta) { miniCalDate.setMonth(miniCalDate.getMonth() + delta); renderMiniCalendar(); }
+function selectMiniDay(year, month, day) {
+    selectedDate = new Date(year, month, day);
+    currentViewDate = new Date(selectedDate);
+    renderMiniCalendar();
+    renderMonthView();
+}
+
+// ===== MONTH VIEW =====
+function renderMonthView() {
+    const year = currentViewDate.getFullYear(), month = currentViewDate.getMonth();
+    document.getElementById('mainTitle').innerHTML = `${monthNames[month]} <span>${year}</span>`;
+    
+    // Header
+    const header = document.getElementById('monthHeader');
+    header.innerHTML = dayNames.map(d => `<div class="month-day-name">${d}</div>`).join('');
+    
+    // Grid
+    const grid = document.getElementById('monthGrid');
+    let html = '';
+    const firstDay = new Date(year, month, 1);
+    let startDay = firstDay.getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const prevMonthDays = new Date(year, month, 0).getDate();
+    const events = getAllEventsExpanded();
+    
+    // Previous month days
+    for (let i = startDay - 1; i >= 0; i--) {
+        const d = prevMonthDays - i;
+        const date = new Date(year, month - 1, d);
+        html += renderMonthDay(date, true, events);
+    }
+    
+    // Current month days
+    for (let d = 1; d <= daysInMonth; d++) {
+        const date = new Date(year, month, d);
+        html += renderMonthDay(date, false, events);
+    }
+    
+    // Next month days
+    const totalCells = startDay + daysInMonth;
+    for (let d = 1; d <= 42 - totalCells; d++) {
+        const date = new Date(year, month + 1, d);
+        html += renderMonthDay(date, true, events);
+    }
+    
+    grid.innerHTML = html;
+}
+
+function renderMonthDay(date, isOther, events) {
+    const key = formatDate(date);
+    const today = isToday(date), holiday = showHolidays ? getHolidayInfo(date) : null;
+    let dayEvents = events.filter(e => e.date === key && (e.isHoliday || activeCategories[e.type]));
+    dayEvents.sort((a, b) => (a.time || '00:00').localeCompare(b.time || '00:00'));
+    
+    let cls = `month-day${isOther ? ' other' : ''}${today ? ' today' : ''}`;
+    if (holiday) cls += ` holiday${holiday.official ? ' official' : ''}`;
+    
+    let eventsHtml = '';
+    const maxVisible = 4;
+    dayEvents.slice(0, maxVisible).forEach(evt => {
+        const catClass = evt.isHoliday ? 'holiday' : evt.type;
+        const clickHandler = evt.isHoliday ? 
+            `showHolidayDetail('${key}', '${evt.name.replace(/'/g, "\\'")}', '${evt.description?.replace(/'/g, "\\'") || ''}', ${evt.official})` :
+            `showEventDetail('${evt.id}')`;
+        eventsHtml += `<div class="month-event ${catClass}" onclick="${clickHandler}">${typeIcons[catClass]} ${evt.name}</div>`;
+    });
+    if (dayEvents.length > maxVisible) {
+        eventsHtml += `<div class="month-event more" onclick="openDayView('${key}')">+${dayEvents.length - maxVisible} ещё</div>`;
+    }
+    
+    return `<div class="${cls}" onclick="openDayView('${key}')">
+        <div class="month-day-num">${date.getDate()}${holiday ? `<span style="font-size:10px">${holiday.official ? '⭐' : '🎉'}</span>` : ''}</div>
+        <div class="month-events">${eventsHtml}</div>
+    </div>`;
+}
+
+// ===== WEEK VIEW =====
+function renderWeekView() {
+    const start = getMonday(currentViewDate);
+    const grid = document.getElementById('weekGrid');
+    let html = '';
+    const weekDates = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(start);
+        d.setDate(d.getDate() + i);
+        weekDates.push(d);
+    }
+    
+    const events = getAllEventsExpanded();
+    
+    // Header
+    html += `<div class="col-time"><div class="day-head"></div></div>`;
+    weekDates.forEach(d => {
+        const today = isToday(d), holiday = showHolidays ? getHolidayInfo(d) : null;
+        let dayClass = `day-head${today ? ' is-today' : ''}`;
+        if (holiday) dayClass += ` holiday${holiday.official ? ' official' : ''}`;
+        html += `<div class="col-day"><div class="${dayClass}" onclick="openDayView('${formatDate(d)}')">
+            <div class="day-head-name">${dayNames[d.getDay() === 0 ? 6 : d.getDay() - 1]}</div>
+            <div class="day-head-num">${d.getDate()}</div>
+            ${holiday ? `<div class="holiday-tooltip"><strong>${holiday.name}</strong><br>${holiday.desc}${holiday.official ? '<br><span class="holiday-badge">Выходной</span>' : ''}</div>` : ''}
+        </div></div>`;
+    });
+    
+    // All-day events
+    html += `<div class="col-time"></div>`;
+    for (let i = 0; i < 7; i++) {
+        const key = formatDate(weekDates[i]);
+        const holiday = showHolidays ? getHolidayInfo(weekDates[i]) : null;
+        let dayEvents = events.filter(e => e.date === key && (!e.time || e.time === '00:00'));
+        if (holiday) dayEvents = [{ id: `holiday_${key}`, type: 'holiday', name: holiday.name, description: holiday.desc, time: '00:00', isHoliday: true, official: holiday.official }, ...dayEvents];
+        html += `<div class="col-day"><div class="all-day-cell" onclick="openNewEventForDayAt(${weekDates[i].getFullYear()},${weekDates[i].getMonth()},${weekDates[i].getDate()},'00:00')">`;
+        dayEvents.forEach(evt => {
+            const catKey = evt.isHoliday ? 'holiday' : evt.type;
+            if (evt.isHoliday || activeCategories[evt.type]) {
+                const handler = evt.isHoliday ? 
+                    `showHolidayDetail('${key}', '${evt.name.replace(/'/g, "\\'")}', '${evt.description?.replace(/'/g, "\\'") || ''}', ${evt.official})` :
+                    `showEventDetail('${evt.id}')`;
+                html += `<div class="all-day-tag ${catKey}" onclick="event.stopPropagation(); ${handler}">${typeIcons[catKey]} ${evt.name}${evt.repeat && evt.repeat !== 'none' ? '<span class="event-repeat">🔁</span>' : ''}</div>`;
+            }
+        });
+        html += `</div></div>`;
+    }
+    
+    // Time slots
+    for (let h = 6; h <= 22; h++) {
+        html += `<div class="col-time"><div class="time-slot"><div class="time-label">${h}:00</div></div></div>`;
+        for (let i = 0; i < 7; i++) {
+            const key = formatDate(weekDates[i]);
+            const dayEvents = events.filter(e => e.date === key && e.time && e.time !== '00:00');
+            const hourEvents = dayEvents.filter(e => {
+                const eventHour = parseInt(e.time.split(':')[0]);
+                return eventHour === h && activeCategories[e.type];
+            });
+            html += `<div class="col-day"><div class="time-slot">
+                <div class="day-cell" data-date="${key}" data-hour="${h}" 
+                     ondragover="handleDragOver(event)" ondrop="handleDrop(event)"
+                     onclick="openNewEventForDayAt(${weekDates[i].getFullYear()},${weekDates[i].getMonth()},${weekDates[i].getDate()},${String(h).padStart(2,'0')}:00)">`;
+            hourEvents.forEach(evt => {
+                const startTime = evt.time || '';
+                const duration = evt.duration || 1;
+                const topOffset = startTime ? parseInt(startTime.split(':')[1]) / 60 * 70 : 0;
+                const height = duration * 70;
+                html += `<div class="event-block ${evt.type}" style="top:${topOffset}px;height:${height}px;" 
+                         draggable="true" ondragstart="handleDragStart(event, '${evt.id}')"
+                         onclick="event.stopPropagation(); showEventDetail('${evt.id}')">
+                    <div style="font-weight:600"><span class="event-icon">${typeIcons[evt.type]}</span>${evt.name}${evt.repeat && evt.repeat !== 'none' ? '<span class="event-repeat">🔁</span>' : ''}</div>
+                    <div class="event-time-label">${startTime}</div>
+                </div>`;
+            });
+            html += `</div></div></div>`;
+        }
+    }
+    grid.innerHTML = html;
+}
+
+// ===== DAY VIEW =====
+function renderDayView() {
+    const d = selectedDate, key = formatDate(d);
+    const events = getAllEventsExpanded();
+    const holiday = showHolidays ? getHolidayInfo(d) : null;
+    let dayEvents = events.filter(e => e.date === key);
+    if (holiday) dayEvents = [{ id: `holiday_${key}`, type: 'holiday', name: holiday.name, description: holiday.desc, time: '00:00', isHoliday: true, official: holiday.official }, ...dayEvents];
+    
+    document.getElementById('dayPanelTitle').textContent = `${dayNamesFull[d.getDay() === 0 ? 6 : d.getDay() - 1]}, ${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+    const container = document.getElementById('dayPanelEvents');
+    
+    if (dayEvents.length === 0) {
+        container.innerHTML = `<div class="no-events"><div class="no-events-icon">📭</div>Нет событий на этот день</div>`;
+        return;
+    }
+    
+    dayEvents.sort((a, b) => (a.time || '00:00').localeCompare(b.time || '00:00'));
+    let html = '';
+    dayEvents.forEach(evt => {
+        if (evt.isHoliday || activeCategories[evt.type]) {
+            const catClass = evt.isHoliday ? 'holiday' : evt.type;
+            const handler = evt.isHoliday ? 
+                `showHolidayDetail('${key}', '${evt.name.replace(/'/g, "\\'")}', '${evt.description?.replace(/'/g, "\\'") || ''}', ${evt.official})` :
+                `showEventDetail('${evt.id}')`;
+            html += `<div class="day-event-item ${catClass}" onclick="${handler}">
+                <div class="day-event-time">${evt.time && evt.time !== '00:00' ? evt.time : 'Весь день'}</div>
+                <div class="day-event-info">
+                    <div class="day-event-name">
+                        ${typeIcons[catClass]} ${evt.name}
+                        ${evt.repeat && evt.repeat !== 'none' ? '<span style="font-size:11px;margin-left:4px">🔁</span>' : ''}
+                        ${evt.official ? '<span class="holiday-badge">Выходной</span>' : ''}
+                        ${evt.isHoliday && !evt.official ? '<span class="holiday-badge observance">Памятная дата</span>' : ''}
+                    </div>
+                    ${evt.description ? `<div class="day-event-desc">${evt.description}</div>` : ''}
+                    ${evt.notify ? `<div class="detail-notification">🔔 Уведомление за ${CONFIG.notificationTime} мин</div>` : ''}
+                </div>
+            </div>`;
+        }
+    });
+    container.innerHTML = html;
+}
+
+// ===== DRAG & DROP =====
+function handleDragStart(e, eventId) {
+    draggedEvent = eventId;
+    e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', eventId);
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    if (!draggedEvent) return;
+    
+    const date = e.currentTarget.dataset.date;
+    const hour = e.currentTarget.dataset.hour;
+    if (!date || !hour) return;
+    
+    const events = getEvents();
+    for (const dateKey in events) {
+        const evt = events[dateKey].find(e => e.id === draggedEvent);
+        if (evt) {
+            evt.date = date;
+            evt.time = `${hour.padStart(2, '0')}:00`;
+            saveEvents(events);
+            showToast('Событие перемещено', 'success');
+            renderWeekView();
+            if (currentView === 'day') renderDayView();
+            break;
+        }
+    }
+    draggedEvent = null;
+}
+
+document.addEventListener('dragend', (e) => {
+    if (e.target.classList.contains('event-block')) {
+        e.target.classList.remove('dragging');
+        draggedEvent = null;
+    }
+});
+
+// ===== NAVIGATION =====
+function navigate(delta) {
+    if (currentView === 'month') {
+        currentViewDate.setMonth(currentViewDate.getMonth() + delta);
+        renderMiniCalendar();
+        renderMonthView();
+    } else if (currentView === 'week') {
+        const start = getMonday(currentViewDate);
+        start.setDate(start.getDate() + delta * 7);
+        currentViewDate = new Date(start);
+        selectedDate = new Date(start);
+        renderMiniCalendar();
+        renderWeekView();
+    }
+}
+
+function goToToday() {
+    currentDate = new Date();
+    currentViewDate = new Date(currentDate);
+    selectedDate = new Date(currentDate);
+    renderMiniCalendar();
+    if (currentView === 'month') renderMonthView();
+    else if (currentView === 'week') renderWeekView();
+    else renderDayView();
+}
+
+function switchView(view) {
+    currentView = view;
+    ['day', 'week', 'month'].forEach(v => {
+        document.getElementById(`btn${v.charAt(0).toUpperCase() + v.slice(1)}`).classList.toggle('active', v === view);
+        document.getElementById(`${v}View`).classList.toggle('active', v === view);
+    });
+    if (view === 'month') renderMonthView();
+    else if (view === 'week') renderWeekView();
+    else renderDayView();
+}
+
+function openDayView(dateStr) {
+    selectedDate = new Date(dateStr + 'T00:00:00');
+    switchView('day');
+}
+
+// ===== CATEGORIES =====
+function toggleCategory(type) {
+    activeCategories[type] = !activeCategories[type];
+    renderMonthView();
+    renderWeekView();
+    if (currentView === 'day') renderDayView();
+}
+
+// ===== EVENT MODAL =====
+function openNewEvent() {
+    editingEventId = null;
+    document.getElementById('modalTitle').textContent = 'Новое событие';
+    document.getElementById('eventName').value = '';
+    document.getElementById('eventDate').value = formatDate(selectedDate);
+    document.getElementById('eventTime').value = '09:00';
+    document.getElementById('eventDesc').value = '';
+    document.getElementById('eventColor').value = CONFIG.defaultColor;
+    document.getElementById('eventRepeat').value = 'none';
+    document.getElementById('notifyToggle').classList.remove('active');
+    document.getElementById('btnDelete').style.display = 'none';
+    document.getElementById('repeatOptions').style.display = 'none';
+    
+    document.querySelectorAll('.type-option').forEach(el => {
+        el.classList.remove('selected');
+        if (el.dataset.type === 'tasks') el.classList.add('selected');
+    });
+    selectedType = 'tasks';
+    document.getElementById('newEventModal').classList.add('active');
+    document.getElementById('eventName').focus();
+}
+
+function openNewEventForDay() { openNewEvent(); document.getElementById('eventDate').value = formatDate(selectedDate); }
+function openNewEventForDayAt(year, month, day, time) {
+    openNewEvent();
+    document.getElementById('eventDate').value = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    document.getElementById('eventTime').value = time;
+}
+
+function selectType(el) {
+    document.querySelectorAll('.type-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedType = el.dataset.type;
+}
+
+function setColor(color, el) {
+    document.getElementById('eventColor').value = color;
+    document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+function updateColorPreset(value) {
+    document.querySelectorAll('.color-preset').forEach(p => {
+        p.classList.toggle('selected', p.style.background === value);
+    });
+}
+
+function toggleRepeatOptions() {
+    const repeat = document.getElementById('eventRepeat').value;
+    const options = document.getElementById('repeatOptions');
+    options.style.display = repeat !== 'none' ? 'block' : 'none';
+    toggleWeekdays();
+}
+
+function toggleWeekdays() {
+    const repeat = document.getElementById('eventRepeat').value;
+    const weekdays = document.getElementById('repeatWeekdays');
+    weekdays.parentElement.style.display = repeat === 'daily' || repeat === 'weekly' ? 'flex' : 'none';
+}
+
+function toggleNotify() {
+    document.getElementById('notifyToggle').classList.toggle('active');
+}
+
+function saveEvent() {
+    const name = document.getElementById('eventName').value.trim();
+    const date = document.getElementById('eventDate').value;
+    const time = document.getElementById('eventTime').value;
+    const desc = document.getElementById('eventDesc').value.trim();
+    const color = document.getElementById('eventColor').value;
+    const repeat = document.getElementById('eventRepeat').value;
+    const repeatWeekdays = document.getElementById('repeatWeekdays').checked;
+    const repeatEndDate = document.getElementById('repeatEndless').checked ? null : document.getElementById('repeatEndDate').value;
+    const notify = document.getElementById('notifyToggle').classList.contains('active');
+
+    if (!name) { showToast('Введите название события', 'error'); return; }
+    if (!date) { showToast('Выберите дату', 'error'); return; }
+
+    const events = getEvents();
+    if (editingEventId) {
+        for (const key in events) events[key] = events[key].filter(e => e.id !== editingEventId);
+    }
+
+    const event = {
+        id: editingEventId || generateId(), type: selectedType, name, date,
+        time: time || '00:00', description: desc, color: color !== CONFIG.defaultColor ? color : null,
+        repeat: repeat !== 'none' ? repeat : null, repeatWeekdays: repeatWeekdays || null,
+        repeatEndDate: repeatEndDate, notify: notify || null, duration: 1
+    };
+    if (!events[date]) events[date] = [];
+    events[date].push(event);
+    saveEvents(events);
+    closeModal();
+    renderMiniCalendar();
+    renderMonthView();
+    renderWeekView();
+    if (currentView === 'day') renderDayView();
+    if (notify) loadNotifications();
+    showToast('Событие сохранено', 'success');
+}
+
+function deleteEvent() {
+    if (!editingEventId) return;
+    const events = getEvents();
+    for (const key in events) {
+        events[key] = events[key].filter(e => e.id !== editingEventId);
+        if (events[key].length === 0) delete events[key];
+    }
+    saveEvents(events);
+    closeModal();
+    renderMiniCalendar();
+    renderMonthView();
+    renderWeekView();
+    if (currentView === 'day') renderDayView();
+    showToast('Событие удалено', 'success');
+}
+
+function closeModal() {
+    document.getElementById('newEventModal').classList.remove('active');
+    editingEventId = null;
+    // Clear notification timeouts for this event if editing
+    if (editingEventId) {
+        notificationTimeouts = notificationTimeouts.filter(t => {
+            if (t.id === editingEventId) { clearTimeout(t.timeout); return false; }
+            return true;
+        });
+    }
+}
+
+// ===== DETAIL MODAL =====
+function showEventDetail(id) {
+    viewingEventId = id;
+    const events = getAllEventsExpanded();
+    const event = events.find(e => e.id === id);
+    if (!event) return;
+    
+    const d = new Date(event.date + 'T00:00:00');
+    const repeatText = event.repeat ? {
+        daily: 'Ежедневно', weekly: 'Еженедельно', monthly: 'Ежемесячно', yearly: 'Ежегодно'
+    }[event.repeat] : null;
+    
+    document.getElementById('detailContent').innerHTML = `
+        <div class="detail-type ${event.isHoliday ? 'holiday' : event.type}">${typeIcons[event.isHoliday ? 'holiday' : event.type]} ${event.isHoliday ? 'Праздник' : typeLabels[event.type]}</div>
+        <div class="detail-title">${event.name}</div>
+        <div class="detail-date">📅 ${formatDateRu(d)} ${event.time && event.time !== '00:00' ? '• ⏰ ' + event.time : '• Весь день'}</div>
+        ${event.description ? `<div class="detail-desc">${event.description}</div>` : ''}
+        ${repeatText ? `<div class="detail-repeat">🔁 Повтор: ${repeatText}${event.repeatWeekdays ? ' (только Пн-Пт)' : ''}${event.repeatEndDate ? ` до ${formatDateRu(new Date(event.repeatEndDate))}` : ''}</div>` : ''}
+        ${event.notify ? `<div class="detail-notification">🔔 Уведомление за ${CONFIG.notificationTime} минут</div>` : ''}
+        ${event.color ? `<div style="margin-top:8px"><span style="display:inline-block;width:16px;height:16px;border-radius:4px;background:${event.color};margin-right:6px"></span>Цвет метки</div>` : ''}
+    `;
+    document.getElementById('detailModal').classList.add('active');
+}
+
+function showHolidayDetail(dateKey, name, desc, official) {
+    const d = new Date(dateKey + 'T00:00:00');
+    document.getElementById('detailContent').innerHTML = `
+        <div class="detail-type holiday">🎉 ${official ? 'Государственный праздник' : 'Памятная дата'}</div>
+        <div class="detail-title">${name}</div>
+        <div class="detail-date">📅 ${formatDateRu(d)}</div>
+        <div class="detail-desc">${desc}</div>
+        ${official ? '<div style="margin-top:12px;padding:8px;background:#fef2f2;border-radius:6px;font-size:12px;color:#c0392b"><strong>⭐</strong> Официальный нерабочий праздничный день</div>' : ''}
+    `;
+    document.getElementById('detailModal').classList.add('active');
+}
+
+function closeDetail() { document.getElementById('detailModal').classList.remove('active'); viewingEventId = null; }
+
+function editCurrentEvent() {
+    const events = getEvents();
+    let event = null;
+    for (const key in events) {
+        const found = events[key].find(e => e.id === viewingEventId || e.id.startsWith(viewingEventId + '_inst_'));
+        if (found) { event = found; break; }
+    }
+    if (!event) return;
+    closeDetail();
+    editingEventId = event.originalId || event.id;
+    document.getElementById('modalTitle').textContent = 'Редактировать';
+    document.getElementById('eventName').value = event.name;
+    document.getElementById('eventDate').value = event.date;
+    document.getElementById('eventTime').value = event.time === '00:00' ? '' : event.time;
+    document.getElementById('eventDesc').value = event.description || '';
+    document.getElementById('eventColor').value = event.color || CONFIG.defaultColor;
+    document.getElementById('eventRepeat').value = event.repeat || 'none';
+    document.getElementById('repeatWeekdays').checked = event.repeatWeekdays || false;
+    document.getElementById('repeatEndDate').value = event.repeatEndDate || '';
+    document.getElementById('notifyToggle').classList.toggle('active', event.notify);
+    document.getElementById('btnDelete').style.display = 'block';
+    document.querySelectorAll('.type-option').forEach(el => {
+        el.classList.remove('selected');
+        if (el.dataset.type === event.type) el.classList.add('selected');
+    });
+    selectedType = event.type;
+    toggleRepeatOptions();
+    document.getElementById('newEventModal').classList.add('active');
+}
+
+function deleteCurrentEvent() {
+    if (!viewingEventId) return;
+    editingEventId = viewingEventId;
+    deleteEvent();
+    closeDetail();
+}
+
+// ===== EXPORT ICS =====
+function exportToICS() {
+    const events = getEvents();
+    let ics = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//RU Smart Calendar//EN\nCALSCALE:GREGORIAN\nMETHOD:PUBLISH\n';
+    
+    for (const date in events) {
+        events[date].forEach(evt => {
+            if (evt.isHoliday) return; // Не экспортируем системные праздники
+            const dtStart = evt.time && evt.time !== '00:00' ? 
+                `${evt.date.replace(/-/g,'')}T${evt.time.replace(':','')}00` : 
+                `${evt.date.replace(/-/g,'')}T000000`;
+            ics += `BEGIN:VEVENT\n`;
+            ics += `UID:${evt.id}@rusmartcalendar\n`;
+            ics += `DTSTAMP:${new Date().toISOString().replace(/[-:]/g,'').split('.')[0]}Z\n`;
+            ics += `DTSTART:${dtStart}\n`;
+            if (evt.duration && evt.duration > 1) {
+                const end = new Date(`${evt.date}T${evt.time || '00:00'}`);
+                end.setHours(end.getHours() + evt.duration);
+                ics += `DTEND:${end.toISOString().replace(/[-:]/g,'').split('.')[0].replace('T','')}Z\n`;
+            }
+            ics += `SUMMARY:${evt.name}\n`;
+            if (evt.description) ics += `DESCRIPTION:${evt.description.replace(/\n/g, '\\n')}\n`;
+            if (evt.color) ics += `COLOR:${evt.color}\n`;
+            if (evt.repeat && evt.repeat !== 'none') {
+                const freq = { daily: 'DAILY', weekly: 'WEEKLY', monthly: 'MONTHLY', yearly: 'YEARLY' }[evt.repeat];
+                ics += `RRULE:FREQ=${freq}${evt.repeatEndDate ? `;UNTIL=${evt.repeatEndDate.replace(/-/g,'')}T235959Z` : ''}\n`;
+            }
+            ics += `END:VEVENT\n`;
+        });
+    }
+    ics += 'END:VCALENDAR';
+    
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `calendar_${formatDate(new Date())}.ics`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Календарь экспортирован в ICS', 'success');
+}
+
+// ===== SEARCH =====
+function filterEvents() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    if (!query) { if (currentView === 'month') renderMonthView(); else if (currentView === 'week') renderWeekView(); else renderDayView(); return; }
+    const events = getAllEventsExpanded();
+    const results = events.filter(evt => evt.name.toLowerCase().includes(query) || (evt.description && evt.description.toLowerCase().includes(query)));
+    if (results.length > 0) {
+        currentViewDate = new Date(results[0].date + 'T00:00:00');
+        selectedDate = new Date(results[0].date + 'T00:00:00');
+        renderMiniCalendar();
+        if (currentView === 'month') renderMonthView(); else if (currentView === 'week') renderWeekView(); else renderDayView();
+        showToast(`Найдено: ${results.length} событий`, 'success');
+    } else {
+        showToast('Ничего не найдено', 'warning');
+    }
+}
+
+// ===== KEYBOARD & CLICK HANDLERS =====
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeModal(); closeDetail(); }
+    if (e.key === 'Enter' && document.getElementById('newEventModal').classList.contains('active')) saveEvent();
+});
+
+['newEventModal', 'detailModal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', (e) => {
+        if (e.target === document.getElementById(id)) { id === 'newEventModal' ? closeModal() : closeDetail(); }
+    });
+});
+
+// ===== INIT =====
+function init() {
+    renderMiniCalendar();
+    renderMonthView();
+}
+</script>
+
+</body></html>

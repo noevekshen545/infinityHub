@@ -1,0 +1,980 @@
+/* =====================================================================
+   Infinity Search — мобильная адаптация (≤640px, ≤480px)
+   ---------------------------------------------------------------------
+   Единый файл адаптации. ВСЕ правила активны только на узких экранах —
+   на десктопе (ширина > 640px) ни одно правило не применяется.
+   Используются CSS-переменные каждой страницы (--accent, --bg, --text
+   и т.д.) с fallback'ами, поэтому адаптация сама встраивается в тему
+   каждой страницы. Классы body pg-* добавляются инъекцией и позволяют
+   точечно адресовать правила конкретным страницам.
+   ===================================================================== */
+
+/* ================= Блок 0: токены ================= */
+@media (max-width: 640px) {
+  :root {
+    --m-radius: 16px;
+    --m-tap: 44px;
+    --m-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --m-safe-top: env(safe-area-inset-top, 0px);
+    --m-accent: var(--accent, #58a6ff);
+    --m-accent2: var(--accent2, var(--accent, #58a6ff));
+    --m-bg: var(--bg, #0d1117);
+    --m-bg2: var(--bg2, #161b22);
+    --m-bg3: var(--bg3, #21262d);
+    --m-border: var(--border, rgba(255, 255, 255, 0.1));
+    --m-text: var(--text, #e6edf3);
+    --m-text2: var(--text2, #c9d1d9);
+    --m-text3: var(--text3, #8b949e);
+    --m-glass: var(--glass, rgba(22, 27, 34, 0.85));
+  }
+}
+
+/* ================= Блок A: универсальные фиксы (безопасны для всех) ================= */
+@media (max-width: 640px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Медиа не вылезают за экран */
+  img { max-width: 100%; height: auto; }
+  video, iframe, embed, object { max-width: 100%; }
+  pre { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { max-width: 100%; }
+  input, select, textarea { max-width: 100%; }
+
+  /* WinBox-окна на мобильных — на весь экран (страховка к патчу в mobile.js) */
+  html.mobile .winbox:not(.min) {
+    width: 100dvw !important;
+    height: 100dvh !important;
+    left: 0 !important;
+    top: 0 !important;
+    border-radius: 0 !important;
+  }
+  html.mobile .winbox .wb-body,
+  html.mobile .winbox .wb-body > div {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* iOS не зумит при фокусе в поле ввода */
+  input, select, textarea { font-size: 16px !important; }
+
+  /* Крупные touch-цели: 44px — рекомендованный минимум Apple/Google,
+     раньше стояло 40px (ниже нормы, по кнопкам попадать неудобно). */
+  button, .btn, .btn-icon, a.btn, a.brand, .modal-close, .icon-btn {
+    min-height: var(--m-tap, 44px);
+  }
+  .btn-icon, .modal-close, .icon-btn { min-width: var(--m-tap, 44px); }
+
+  /* Модалки становятся bottom sheet на весь экран */
+  .modal-content {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: var(--m-radius) var(--m-radius) 0 0;
+    margin: 0;
+    padding-bottom: calc(20px + var(--m-safe-bottom));
+  }
+  /* .modal — это САМА панель диалога почти во всех шаблонах
+     (.modal-overlay > .modal). Раньше здесь стоял padding: 0 !important,
+     и такие диалоги на телефоне теряли внутренние отступы — заголовок
+     прилипал к краям. Полноэкранные подложки (.modal без .modal-overlay)
+     не трогаем: у них свои правила в шаблоне. */
+  .modal-overlay > .modal {
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
+    max-height: 88dvh;
+    padding: 20px !important;
+    margin-bottom: var(--m-safe-bottom);
+    border-radius: var(--m-radius, 16px);
+  }
+}
+
+/* ================= Блок B: общие паттерны ================= */
+@media (max-width: 640px) {
+  /* Панели инструментов: горизонтальный скролл, без переноса */
+  .toolbar, .topbar, .navbar, .controls-bar, .action-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .toolbar::-webkit-scrollbar, .topbar::-webkit-scrollbar,
+  .navbar::-webkit-scrollbar, .controls-bar::-webkit-scrollbar,
+  .action-bar::-webkit-scrollbar { display: none; }
+  .toolbar > * , .topbar > *, .navbar > * { flex-shrink: 0; }
+
+  /* Широкие таблицы — горизонтальный скролл в обёртке */
+  .tbl-wrap, .table-wrap, .results-table, .data-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Сап-бары в колонку */
+  .save-bar, .form-actions, .actions-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .save-bar .actions, .form-actions .actions { justify-content: stretch; }
+
+  /* Строки форм — в одну колонку */
+  .form-row { grid-template-columns: 1fr !important; }
+}
+
+/* ================= Блок B2: на сенсорных экранах нет :hover ================= */
+/* Часть действий на страницах показывалась ТОЛЬКО при наведении курсора
+   (`.card:hover .card-actions { opacity: 1 }` и подобные). На телефоне и
+   планшете наведения нет, поэтому кнопки оставались с нулевой прозрачностью:
+   переименовать/удалить папку, закрепить заметку, удалить сообщение, отменить
+   задачу, включить фокус-режим, запустить альбом — всё это было физически
+   недоступно. Показываем группы действий постоянно; условие (hover: none)
+   отключает это на устройствах с мышью, так что на ПК вид прежний. */
+@media (hover: none), (max-width: 640px) {
+  .card-actions,
+  .folder-acts,
+  .focus-btn,
+  .forum-p-actions,
+  .nt-view-acts,
+  .photo-share-btn,
+  .quote-card .delete-btn,
+  .rm-del,
+  .task-cancel,
+  .album-play-btn,
+  .track-actions,
+  .conv-actions,
+  .conv-item .co,
+  .book-card .action-btn-overlay,
+  .book-card .share-btn-overlay,
+  .book-card .qdrant-add-overlay {
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+  }
+
+  /* Обложки плееров: полноэкранная заливка с иконкой нужна как подсказка
+     «нажми, чтобы играть», но постоянное затемнение портит обложку —
+     делаем её почти прозрачной и уменьшаем значок. */
+  .track-card .cover .play-overlay,
+  .video-card .poster .play-overlay {
+    opacity: 1 !important;
+    background: rgba(0, 0, 0, .18) !important;
+  }
+  .track-card .cover .play-overlay i,
+  .video-card .poster .play-overlay i { font-size: 30px !important; }
+
+  /* Мелкие иконочные кнопки внутри групп — под палец */
+  .folder-acts button,
+  .card-actions button,
+  .track-actions button,
+  .task-cancel,
+  .rm-del {
+    min-width: 34px;
+    min-height: 34px;
+  }
+}
+
+/* ================= Блок C: секции по страницам ================= */
+
+/* -------------------- canvas.html -------------------- */
+@media (max-width: 640px) {
+  .pg-canvas canvas, .pg-canvas svg { max-width: 100%; }
+}
+
+/* -------------------- desktop.html (рабочий стол) -------------------- */
+@media (max-width: 640px) {
+  /* WinBox-окна на весь экран */
+  .pg-desktop .winbox:not(.min) {
+    width: 100vw !important;
+    height: calc(100dvh - 56px - var(--m-safe-bottom)) !important;
+    left: 0 !important;
+    top: 0 !important;
+    border-radius: 0 !important;
+  }
+  .pg-desktop .winbox .wb-body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .pg-desktop .winbox .wb-body::-webkit-scrollbar { display: block; width: 4px; }
+
+  /* Таскбар: иконки, safe-area */
+  .pg-desktop .taskbar {
+    height: calc(56px + var(--m-safe-bottom));
+    padding-bottom: var(--m-safe-bottom);
+  }
+  .pg-desktop .taskbar-start span { display: none; }
+  .pg-desktop .taskbar-start { padding: 0 14px; }
+  .pg-desktop .taskbar-clock { display: none; }
+
+  /* Календарь */
+  .pg-desktop .cal-sidebar { display: none; }
+  .pg-desktop .cal-week-grid { overflow-x: auto; font-size: 10px; }
+  .pg-desktop .cal-week-grid .cal-time-label { width: 34px; font-size: 9px; }
+  .pg-desktop .cal-month-day { min-height: 28px; padding: 2px; }
+  .pg-desktop .cal-month-day-num { font-size: 10px; }
+  .pg-desktop .cal-month-ev { display: none; }
+  .pg-desktop .cal-mini-cal { display: none; }
+  .pg-desktop .cal-full { grid-template-columns: 1fr !important; }
+  .pg-desktop .cal-main-header { padding: 8px; flex-wrap: wrap; gap: 6px; }
+  .pg-desktop .cal-search { width: 100%; }
+  .pg-desktop .cal-view-btns { justify-content: center; }
+
+  /* Сетки приложений */
+  .pg-desktop .tm-pinned-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px; }
+  .pg-desktop .tm-folders { grid-template-columns: 1fr !important; }
+  .pg-desktop .folder-apps-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px; }
+  .pg-desktop .cal-year-view { grid-template-columns: 1fr !important; }
+
+  /* Панель приложений */
+  .pg-desktop .show { grid-template-columns: 1fr !important; }
+  .pg-desktop .add-app-box { width: 100%; max-width: none; }
+
+  /* Сайдбар-панель рабочего стола */
+  .pg-desktop .sidebar-panel, .pg-desktop .floating-panel { max-width: 100vw; width: 100vw; }
+}
+
+/* -------------------- file_manager.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные классы — .fm-* (прежние .file-row/.file-actions в этой
+     разметке не используются: страница оформлена как отдельное окно). */
+  .pg-file_manager .fm-container { padding: 10px; }
+  .pg-file_manager .fm-toolbar-group { flex-wrap: nowrap; overflow-x: auto; }
+  .pg-file_manager .fm-btn { flex-shrink: 0; }
+}
+
+/* -------------------- infinity_fixed.html -------------------- */
+@media (max-width: 640px) {
+  .pg-infinity_fixed .nav-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .pg-infinity_fixed .files { grid-template-columns: 1fr !important; }
+  .pg-infinity_fixed .hero { padding: 24px 14px 44px; }
+}
+
+/* -------------------- page_agent.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_agent .mode-tabs, .pg-page_agent .provider-toggle { flex-wrap: nowrap; }
+  .pg-page_agent .chat-messages { padding: 10px; }
+  .pg-page_agent .suggestion { width: 100%; }
+  .pg-page_agent .theme-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* -------------------- page_ai_answers.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные классы — .kcard и .answer (не .answer-card/.answer-meta) */
+  .pg-page_ai_answers .kcard { padding: 12px; }
+  .pg-page_ai_answers .answer { min-width: 0; }
+  .pg-page_ai_answers .srch { flex-wrap: wrap; }
+  .pg-page_ai_answers .srch input { min-width: 100%; }
+}
+
+/* page_analytics.html — шаблона и маршрута в проекте нет,
+   секция оставлена как заготовка на случай появления модуля. */
+
+/* -------------------- page_api_docs.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_api_docs .container { flex-direction: column; height: auto; }
+  .pg-page_api_docs .sidebar { width: 100%; height: auto; max-height: 45vh; overflow-y: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  .pg-page_api_docs .main { padding: 16px; overflow: visible; }
+  .pg-page_api_docs pre { overflow-x: auto; }
+}
+
+/* -------------------- page_apps.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_apps .apps-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .pg-page_apps .app-card { padding: 14px; }
+}
+
+/* -------------------- page_app_create.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_app_create .topbar { overflow-x: auto; }
+  .pg-page_app_create .form-container { padding: 12px; }
+}
+
+/* -------------------- page_app_detail.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_app_detail .detail-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .pg-page_app_detail .detail-actions { width: 100%; justify-content: stretch; }
+}
+
+/* -------------------- page_article.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_article .article-content { padding: 14px; }
+  .pg-page_article .article-content img { border-radius: 10px; }
+}
+
+/* -------------------- page_ask.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_ask .chat-messages { padding: 10px; }
+  .pg-page_ask .suggestions { grid-template-columns: 1fr !important; }
+  .pg-page_ask .theme-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* -------------------- page_autogen.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальная сетка — .feature-grid (не .team-grid) */
+  .pg-page_autogen .feature-grid { grid-template-columns: 1fr !important; }
+  .pg-page_autogen .header-actions { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+  .pg-page_autogen .header-actions select { max-width: 100%; }
+}
+
+/* -------------------- page_avatar.html (WinBox) -------------------- */
+@media (max-width: 640px) {
+  .pg-page_avatar .winbox:not(.min) {
+    width: 100vw !important;
+    height: 100dvh !important;
+    left: 0 !important;
+    top: 0 !important;
+    border-radius: 0 !important;
+  }
+  .pg-page_avatar .winbox .wb-body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .pg-page_avatar .bone-control-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+  /* .control-panel на странице не встречается — используем .floating-panel,
+     который в разметке есть (панель управления аватаром). */
+  .pg-page_avatar .panel,
+  .pg-page_avatar .floating-panel { padding: 10px; }
+}
+
+/* -------------------- page_bookgen.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные контейнеры — .editor-container и .form-grid (не .book-settings) */
+  .pg-page_bookgen .editor-container { grid-template-columns: 1fr !important; }
+  .pg-page_bookgen .form-grid { grid-template-columns: 1fr !important; }
+  .pg-page_bookgen .setting-row { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
+
+/* -------------------- page_books.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные сетки — .book-grid и .heatmap (не .calendar-wrap/.reading-calendar) */
+  .pg-page_books .book-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .pg-page_books .heatmap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .pg-page_books .book-card { flex-direction: column; }
+  .pg-page_books .book-cover { width: 100%; height: auto; }
+}
+
+/* -------------------- page_collection.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_collection .items-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+}
+
+/* -------------------- page_desktop.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальный контейнер сетки — .fw-body (не .sm-body/.sm-main) */
+  .pg-page_desktop .fw-body { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)) !important; }
+  .pg-page_desktop .sm-app-name { font-size: 11px; }
+  .pg-page_desktop .folder-window { width: 100% !important; max-width: none; }
+  .pg-page_desktop .bg-grid { grid-template-columns: 1fr !important; }
+  .pg-page_desktop .fw-toolbar { flex-wrap: nowrap; overflow-x: auto; }
+}
+
+/* -------------------- page_education.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные классы: .course-grid (не .courses-grid/.lesson-grid) */
+  .pg-page_education .course-grid { grid-template-columns: 1fr !important; }
+  .pg-page_education .progress-bar { min-width: 0; }
+}
+
+/* -------------------- page_extensions_marketplace.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_extensions_marketplace .container { padding: 12px; }
+  .pg-page_extensions_marketplace .ext-card { padding: 14px; }
+}
+
+/* -------------------- page_html_landing.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_html_landing .header { flex-wrap: wrap; gap: 8px; }
+  /* Реальная сетка — .cards (не .features-grid) */
+  .pg-page_html_landing .cards { grid-template-columns: 1fr !important; }
+}
+
+/* -------------------- page_html_viewer.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальный тулбар — .fm-toolbar/.fs-toolbar/.toolbar (не .viewer-toolbar) */
+  .pg-page_html_viewer .toolbar,
+  .pg-page_html_viewer .fm-toolbar,
+  .pg-page_html_viewer .fs-toolbar { flex-wrap: nowrap; overflow-x: auto; }
+  .pg-page_html_viewer iframe { border: none; }
+}
+
+/* -------------------- page_index.html / page_indexbackup.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_index .nav-grid, .pg-page_indexbackup .nav-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .pg-page_index .files, .pg-page_indexbackup .files { grid-template-columns: 1fr !important; }
+  .pg-page_index .hero, .pg-page_indexbackup .hero { padding: 24px 14px 44px; }
+  .pg-page_index .search-box textarea, .pg-page_indexbackup .search-box textarea { font-size: 16px; }
+}
+
+/* -------------------- page_index_v2.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные сетки — .nav-grid и .widget-grid (не .quick-grid/.stats-row) */
+  .pg-page_index_v2 .nav-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .pg-page_index_v2 .widget-grid { grid-template-columns: 1fr !important; }
+  .pg-page_index_v2 .theme-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* -------------------- page_list.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные классы — .card и .pv (не .list-item/.list-item-actions) */
+  .pg-page_list .card { padding: 12px; }
+  .pg-page_list .pv { margin-left: auto; }
+  .pg-page_list .srch { flex-wrap: wrap; }
+  .pg-page_list .srch input { min-width: 100%; }
+}
+
+/* -------------------- page_media.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные сетки страницы: .video-player-sidebar (не .media-sidebar),
+     .video-player-info (не .video-info). */
+  .pg-page_media .video-player-page { padding: 10px; }
+  .pg-page_media .video-player-sidebar,
+  .pg-page_media .video-player-info { grid-template-columns: 1fr !important; }
+  .pg-page_media .video-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+  .pg-page_media .cast-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* -------------------- page_memory_brain.html -------------------- */
+@media (max-width: 640px) {
+  /* Разметка страницы — .settings-group/.settings-row (прежних .brain-grid и
+   .memory-card в шаблоне нет: сетка строится скриптом в .settings-group). */
+  .pg-page_memory_brain .settings-row { flex-wrap: wrap; gap: 8px; }
+  .pg-page_memory_brain .settings-group { padding: 12px; }
+  .pg-page_memory_brain .toggle-switch { margin-left: auto; }
+}
+
+/* -------------------- page_memory_graph.html -------------------- */
+@media (max-width: 640px) {
+  html.pg-page_memory_graph body { overflow-y: auto; height: auto; }
+  .pg-page_memory_graph .container { flex-direction: column; height: auto; }
+  .pg-page_memory_graph .sidebar { width: 100%; height: auto; max-height: 40vh; border-right: none; border-bottom: 1px solid var(--border); }
+  .pg-page_memory_graph .main { flex: none; overflow: visible; padding: 10px; }
+  .pg-page_memory_graph .toolbar { overflow-x: auto; }
+}
+
+/* -------------------- page_news.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_news .news-list .news-card { flex-direction: column; }
+  .pg-page_news .news-card-image { width: 100%; height: 160px; }
+  .pg-page_news .filters-bar { flex-direction: column; align-items: stretch; gap: 8px; }
+}
+
+/* -------------------- page_notes.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_notes .notes-grid { grid-template-columns: 1fr !important; }
+  .pg-page_notes .note-card { min-height: 0; }
+}
+
+/* -------------------- page_notes_edit.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_notes_edit .editor-wrap { padding: 10px; }
+  .pg-page_notes_edit .editor-toolbar { overflow-x: auto; }
+  .pg-page_notes_edit .split { grid-template-columns: 1fr !important; }
+}
+
+/* -------------------- page_notes_edit_nt.html -------------------- */
+@media (max-width: 640px) {
+  /* Редактор из двух панелей (текст + превью) в ряд на телефоне не
+     помещается — панели складываются вертикально, каждая на всю ширину.
+     Верхняя панель кнопок прокручивается, отступы текста уменьшены. */
+  .pg-page_notes_edit_nt .nt-work { flex-direction: column; }
+  .pg-page_notes_edit_nt .nt-sp { width: 100%; height: 1px; flex: 0 0 1px; }
+  .pg-page_notes_edit_nt .nt-pane { flex: 1 1 0; min-height: 0; max-height: none; }
+  .pg-page_notes_edit_nt .nt-col { padding: 20px 16px 24dvh; }
+  .pg-page_notes_edit_nt .nt-top { gap: 4px; padding: 0 6px; overflow-x: auto; }
+  .pg-page_notes_edit_nt .nt-top > * { flex-shrink: 0; }
+  .pg-page_notes_edit_nt .nt-body { font-size: 16px; }
+}
+
+/* -------------------- page_admin.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_admin .wrap { padding: 10px; }
+  .pg-page_admin .top { flex-wrap: wrap; gap: 8px; }
+  /* 24 таблицы логов/метрик — горизонтальный скролл вместо сжатия колонок */
+  .pg-page_admin .card-body { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .pg-page_admin .tbl { min-width: 560px; }
+}
+
+/* -------------------- page_notes_graph.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные классы — .toolbar и .legend-panel (не .graph-toolbar/.graph-legend) */
+  .pg-page_notes_graph .toolbar { flex-wrap: wrap; gap: 6px; }
+  .pg-page_notes_graph .legend-panel { flex-wrap: wrap; }
+}
+
+/* -------------------- page_plugins_marketplace.html -------------------- */
+@media (max-width: 640px) {
+  html.pg-page_plugins_marketplace body { overflow-y: auto; height: auto; }
+  .pg-page_plugins_marketplace .container { flex-direction: column; height: auto; }
+  .pg-page_plugins_marketplace .sidebar { width: 100%; height: auto; max-height: 40vh; border-right: none; border-bottom: 1px solid var(--border); }
+  .pg-page_plugins_marketplace .main { overflow: visible; padding: 14px; }
+  .pg-page_plugins_marketplace .plugin-card { padding: 14px; }
+  .pg-page_plugins_marketplace .topnav { flex-wrap: wrap; }
+  .pg-page_plugins_marketplace .topnav .tabs { overflow-x: auto; }
+}
+
+/* -------------------- page_server_settings.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_server_settings main, .pg-page_server_settings .main { padding: 12px; }
+  .pg-page_server_settings .form-row { grid-template-columns: 1fr !important; }
+  .pg-page_server_settings .actions { flex-wrap: wrap; gap: 8px; }
+  .pg-page_server_settings .actions .btn { flex: 1 1 auto; justify-content: center; }
+}
+
+/* -------------------- page_settings.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_settings .settings-grid { grid-template-columns: 1fr !important; }
+  .pg-page_settings .setting-group { padding: 14px; }
+  .pg-page_settings .status { grid-template-columns: 1fr !important; }
+  .pg-page_settings .save-bar { flex-direction: column; align-items: stretch; }
+}
+
+/* -------------------- page_social.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальная сетка — .theme-grid (не .profile-card) */
+  .pg-page_social .theme-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+  .pg-page_social .main-content { padding: 10px; }
+}
+
+/* -------------------- page_social_feed.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальная сетка — .theme-grid (не .feed-grid/.post-card) */
+  .pg-page_social_feed .theme-grid { grid-template-columns: 1fr !important; }
+}
+
+/* -------------------- page_social_friends.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные сетки — .theme-grid и .gc-grid (не .friends-grid) */
+  .pg-page_social_friends .theme-grid,
+  .pg-page_social_friends .gc-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .pg-page_social_friends .sub-header { flex-wrap: wrap; gap: 8px; }
+}
+
+/* -------------------- page_social_messages.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные контейнеры страницы: .chat-col / .chat-messages / .chat-input-area
+   (прежние chat-layout / conversations-list / message-input не существуют).
+   У .conv-list на узком экране страница уже переключается в оверлей. */
+  .pg-page_social_messages .chat-col { min-width: 0; }
+  .pg-page_social_messages .chat-messages { padding: 10px; }
+  .pg-page_social_messages .chat-input-area { flex-wrap: nowrap; padding: 8px 10px; }
+  .pg-page_social_messages .conv-header,
+  .pg-page_social_messages .chat-header { flex-wrap: wrap; gap: 6px; }
+}
+
+/* -------------------- page_social_music.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные сетки — .track-grid и .theme-grid (треков-строк .track-row нет) */
+  .pg-page_social_music .container { padding: 12px; }
+  .pg-page_social_music .toolbar { position: fixed; width: calc(100vw - 24px); max-width: none; left: 12px; right: 12px; transform: none; top: 8px; padding: 8px 12px; }
+  .pg-page_social_music .track-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+  .pg-page_social_music .theme-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+}
+
+/* -------------------- page_social_profile.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальные контейнеры — .layout и .theme-grid (не .profile-layout/.stats-row) */
+  .pg-page_social_profile .layout { grid-template-columns: 1fr !important; }
+  .pg-page_social_profile .album-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+  .pg-page_social_profile .theme-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+/* -------------------- page_social_video.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_social_video .container { padding: 12px; }
+  .pg-page_social_video .toolbar { position: fixed; width: calc(100vw - 24px); max-width: none; left: 12px; right: 12px; transform: none; top: 8px; padding: 8px 12px; }
+  .pg-page_social_video .theme-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+  .pg-page_social_video .video-grid { grid-template-columns: 1fr !important; }
+}
+
+/* -------------------- page_store.html (Медиастор) -------------------- */
+@media (max-width: 640px) {
+  /* Форма добавления репозитория: поле имело min-width 260px и в узком
+     окне вылезало за край вместе с кнопкой. Теперь поле занимает строку
+     целиком, кнопка — под ним на всю ширину. */
+  .pg-page_store .add-form { flex-direction: column; align-items: stretch; }
+  .pg-page_store .add-form input { min-width: 0; width: 100%; }
+  .pg-page_store .add-form .btn { width: 100%; justify-content: center; }
+
+  /* Карточки: одна колонка на телефоне, две — на широком экране в пределах
+     брейкпоинта. auto-fill с minmax(260-280px) давал обрезанные карточки. */
+  .pg-page_store .items-grid { grid-template-columns: 1fr; }
+  .pg-page_store .repo-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+
+  /* Заголовок раздела с кнопкой «назад» — в одну колонку, без min-width */
+  .pg-page_store .back-bar { gap: 8px; }
+  .pg-page_store .back-bar h2 { min-width: 0; font-size: 16px; }
+  .pg-page_store .card-actions .btn { padding: 9px 10px; }
+  .pg-page_store .notification { top: 70px; right: 8px; left: 8px; max-width: none; }
+}
+
+/* -------------------- page_statistics.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальная сетка карточек — .stats-grid (не .stat-cards/.chart-wrap) */
+  .pg-page_statistics .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px; }
+  .pg-page_statistics .chart-row { grid-template-columns: 1fr !important; }
+  .pg-page_statistics .header { flex-wrap: wrap; gap: 10px; }
+  .pg-page_statistics .header-right { flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+  .pg-page_statistics .period-select { max-width: 100%; }
+}
+
+/* -------------------- page_task_manager.html -------------------- */
+@media (max-width: 640px) {
+  html.pg-page_task_manager body { overflow-y: auto; height: auto; }
+  .pg-page_task_manager main, .pg-page_task_manager .main { padding: 12px; }
+  .pg-page_task_manager .row { grid-template-columns: 1fr !important; }
+  .pg-page_task_manager .task-header { flex-wrap: wrap; gap: 6px; }
+  .pg-page_task_manager .topnav { flex-wrap: wrap; }
+}
+
+/* =====================================================================
+   Infinity Search — меню переполнения для перегруженных тулбаров
+   ---------------------------------------------------------------------
+   Задача: в тулбарах страниц до 240 кнопок (page_media — 237,
+   page_settings — 124). На телефоне они не помещаются. Кнопки не
+   удаляются — они переезжают в раскрывающееся меню «Ещё».
+
+   Разметка (чистый HTML, без JS):
+     <details class="more">
+       <summary class="btn more-btn" aria-label="Ещё">…</summary>
+       <div class="more-pop"> … кнопки, обычная разметка … </div>
+     </details>
+
+   Всё работает на <details>: открытие/закрытие — встроенное поведение
+   браузера, состояние запоминается само. Скрипт нужен только для
+   позиционирования (см. mobile.js, initMoreMenus).
+
+   ВАЖНО про обрезку: тулбары page_media/page_books имеют overflow-x:auto
+   (блок B) и transform: translateX(-50%). Поэтому попап НЕ делается
+   вложенным — скрипт переносит его в <body> и ставит position:fixed.
+   Иначе он обрезается по краям тулбара, а не всплывает поверх.
+   ===================================================================== */
+
+/* --- Базовые стили (любая ширина) --- */
+.more { position: relative; display: inline-flex; flex-shrink: 0; }
+.more > summary { list-style: none; cursor: pointer; }
+.more > summary::-webkit-details-marker { display: none; }
+.more > summary::after { content: ''; }
+
+/* --- Меню «Ещё» одинаково работает на ПК и на телефоне ---
+   Раньше кнопка «Ещё» была скрыта на десктопе, а .more-pop раскрывался
+   через display:contents прямо в тулбаре. Поэтому на ПК меню не было видно
+   совсем, а на телефоне в него попадали всего 2–6 пунктов. Теперь кнопка
+   и попап работают на любой ширине. */
+
+/* Пока скрипт (mobile.js) не перенёс попап в <body> и не поставил на
+   details класс .more-ready, попап скрыт — иначе он мигнёт в потоке
+   тулбара до инициализации. */
+details.more:not(.more-ready) > .more-pop { display: none !important; }
+
+/* Кнопка «Ещё» — аккуратная квадратная иконочная кнопка в стиле соседних
+   .btn-icon, а не обычная .btn с подписью. Раньше она наследовала общий
+   .btn (градиент/шрифт 18px), поэтому троеточие выглядело крупно и не
+   вязалось с остальными иконками тулбара.
+   Селекторы с .toolbar — чтобы перебить .toolbar .btn из шаблона. */
+.toolbar .more > .more-btn {
+  padding: 0;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  background: transparent;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  box-shadow: none;
+  gap: 0;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+  cursor: pointer;
+  transition: var(--tr, .2s ease);
+}
+.toolbar .more > .more-btn::before { display: none; }
+.toolbar .more > .more-btn i {
+  font-size: 14px;
+  color: var(--text2);
+  transition: var(--tr, .2s ease);
+}
+.toolbar .more > .more-btn:hover {
+  background: var(--hover, rgba(0, 0, 0, .05));
+  color: var(--accent);
+  transform: none;
+}
+.toolbar .more > .more-btn:hover i { color: var(--accent); }
+/* Меню открыто — кнопка «вдавлена» и подсвечена акцентом */
+.toolbar .more[open] > .more-btn {
+  background: var(--hover, rgba(0, 0, 0, .05));
+  border-color: var(--border, rgba(0, 0, 0, .1));
+  color: var(--accent);
+}
+.toolbar .more[open] > .more-btn i { color: var(--accent); }
+/* Видимый фокус с клавиатуры — иначе непонятно, где курсор */
+.toolbar .more > .more-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.toolbar .more > .more-btn:active { transform: scale(.94); }
+
+@media (max-width: 640px) {
+
+  /* Тулбар на телефоне прокручивается по горизонтали, и «Ещё» уезжал
+     за правый край — до него было не дотянуться. Закрепляем кнопку
+     у правого края тулбара: она всегда на виду при прокрутке. */
+  .more {
+    position: sticky;
+    right: 0;
+    z-index: 3;
+    /* подложка, чтобы кнопка не просвечивала прокручиваемые под ней */
+    background: inherit;
+    box-shadow: -8px 0 10px -8px rgba(0, 0, 0, .18);
+  }
+
+  /* На телефоне кнопка крупнее — 44px, чтобы по ней было легко попасть.
+     Иконка при этом остаётся той же, что и на ПК. */
+  .toolbar .more > .more-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 14px;
+  }
+}
+
+/* Попап живёт в body (см. mobile.js): position:fixed выносит его из
+   любого контейнера, поэтому тулбар не может его обрезать. */
+.more-pop {
+  position: fixed;
+  z-index: 2147483000;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  margin: 0;
+  min-width: 212px;
+  max-width: min(80vw, 330px);
+  max-height: 64dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  border-radius: var(--m-radius, 16px);
+  background: var(--bg2, #fff);
+  color: var(--text, #1a1f26);
+  border: 1px solid var(--border, rgba(0, 0, 0, .12));
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .28);
+  animation: morePop .14s ease-out;
+  /* явная ширина задаётся скриптом от реальных размеров */
+  box-sizing: border-box;
+}
+@keyframes morePop {
+  from { opacity: 0; transform: translateY(-6px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Затемняющая подложка: тап по ней закрывает меню */
+.more-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482999;
+  background: rgba(0, 0, 0, .32);
+  animation: moreFade .14s ease-out;
+}
+@keyframes moreFade { from { opacity: 0 } to { opacity: 1 } }
+
+/* Кнопки внутри меню — на всю ширину, крупная touch-зона */
+.more-pop > .btn,
+.more-pop > button,
+.more-pop > a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: var(--m-tap, 44px);
+  padding: 10px 12px;
+  text-align: left;
+  justify-content: flex-start;
+  border-radius: 10px;
+  white-space: normal;
+}
+.more-pop > .btn i,
+.more-pop > button i,
+.more-pop > a i { flex-shrink: 0; width: 18px; text-align: center; }
+
+/* Пункты меню — спокойные строки, а не «кричащие» акцентные кнопки.
+   В page_media/page_books есть глобальное `.btn { background: linear-gradient(...) }`,
+   поэтому перекрываем его явно (побеждает по порядку +Specificity через .more-pop >). */
+.more-pop > .btn,
+.more-pop > button,
+.more-pop > a {
+  background: transparent;
+  background-image: none;
+  color: var(--text, #1a1f26);
+  border: 1px solid transparent;
+  box-shadow: none;
+  font-weight: 500;
+}
+.more-pop > .btn i,
+.more-pop > button i,
+.more-pop > a i { color: var(--text2, #5b6472); }
+.more-pop > .btn:hover,
+.more-pop > button:hover,
+.more-pop > a:hover {
+  background: var(--hover, rgba(0, 0, 0, .05));
+  color: var(--text, #1a1f26);
+  transform: none;
+}
+.more-pop > .btn:hover i,
+.more-pop > button:hover i,
+.more-pop > a:hover i { color: var(--accent, #3b6ef5); }
+.more-pop > .btn:active,
+.more-pop > button:active,
+.more-pop > a:active { transform: none; }
+/* Активный пункт (например, текущий раздел) — мягкая подсветка, не заливка */
+.more-pop > .btn.active,
+.more-pop > button.active,
+.more-pop > a.active {
+  background: var(--accent-light, rgba(59, 110, 245, .1));
+  background-image: none;
+  color: var(--accent, #3b6ef5);
+  font-weight: 600;
+}
+.more-pop > .btn.active i,
+.more-pop > button.active i,
+.more-pop > a.active i { color: var(--accent, #3b6ef5); }
+
+/* Разделитель между смысловыми группами */
+.more-pop > .more-sep {
+  flex: 0 0 auto;
+  height: 2px;
+  min-height: 2px;
+  margin: 6px 8px;
+  padding: 0;
+  background: var(--border, rgba(0, 0, 0, .18));
+  border: 0;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+/* -------------------- page_workspace.html -------------------- */
+@media (max-width: 640px) {
+  /* Разметка страницы — редактор заметки (.note-inline-editor, .mode-modal,
+   .att-grid); прежние .workspace-layout/.panel/.tabs здесь не существуют. */
+  .pg-page_workspace .note-inline-editor { border-radius: 0; max-width: 100%; }
+  .pg-page_workspace .mode-modal { max-width: 100vw; width: 100vw; }
+  .pg-page_workspace .att-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .pg-page_workspace .nie-footer { flex-wrap: wrap; gap: 6px; }
+}
+
+/* -------------------- page_zim.html -------------------- */
+@media (max-width: 640px) {
+  /* Реальная сетка — .files (не .zim-toolbar) */
+  .pg-page_zim .wrap { padding: 12px; }
+  .pg-page_zim .files { grid-template-columns: 1fr !important; }
+  .pg-page_zim .list-view { grid-template-columns: 1fr !important; }
+}
+
+/* -------------------- page_zim_view.html -------------------- */
+@media (max-width: 640px) {
+  .pg-page_zim_view .toc { display: none; }
+  .pg-page_zim_view .article-content { padding: 12px; }
+  .pg-page_zim_view .notes-ai-float { width: 100vw; max-width: 100vw; left: 0; right: 0; }
+  .pg-page_zim_view .option-group { grid-template-columns: 1fr !important; }
+}
+
+/* -------------------- search_all.html -------------------- */
+@media (max-width: 640px) {
+  .pg-search_all .main-layout { flex-direction: column; }
+  .pg-search_all .sidebar { width: 100%; max-width: none; }
+  .pg-search_all .results-container { padding: 0 12px; }
+  .pg-search_all .result-card { padding: 12px; }
+  /* Реальный класс — .sources-list (не .source-tabs) */
+  .pg-search_all .sources-list { flex-wrap: wrap; gap: 6px; }
+}
+
+/* tldraw: тулбар приходит из внешней библиотеки (tlui-*). Адаптация
+   сводится к общим правилам блоков A/B/E — своих селекторов здесь нет. */
+
+/* ================= Блок E: универсальная «чистота» интерфейса =============
+   Не меняет функционал — только ритм, читаемость и удобство на телефоне.
+   Всё внутри @media, поэтому десктоп не затрагивается.
+   ======================================================================= */
+@media (max-width: 640px) {
+  /* Горизонтальное переполнение убираем точечно, а не правилом
+     `* { min-width: 0 }` — оно ломает элементы, которым min-width
+     нужен осмысленно (скролл-контейнеры, индикаторы, превью). */
+  body, .container, .main-content, .page, .wrap { max-width: 100vw; }
+  img, video, canvas, svg, iframe { max-width: 100%; }
+
+  /* Широкие таблицы: горизонтальный скролл + липкая шапка */
+  table { max-width: 100%; }
+  table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bg2, #fff);
+  }
+  table, thead, tbody, tr, th, td { overflow-wrap: anywhere; }
+
+  /* Длинные слова/URL не разрывают вёрстку */
+  p, li, td, dd, .card, .item { overflow-wrap: anywhere; }
+
+  /* Поля на всю ширину — на телефоне их не сжать в две колонки */
+  input:not([type="checkbox"]):not([type="radio"]),
+  select, textarea {
+    width: 100%;
+    max-width: 100%;
+  }
+  /* Чекбоксы/радио остаются по размеру содержимого */
+  input[type="checkbox"], input[type="radio"] { width: auto; }
+
+  /* Формы: подпись над полем, а не рядом */
+  .form-row, .form-group, .settings-form-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .form-row label, .settings-form-row label { min-width: 0; }
+
+  /* Кнопки действий — во всю ширину, их не надо искать пальцем */
+  .save-bar, .form-actions, .actions-bar, .modal-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .save-bar .btn, .form-actions .btn, .actions-bar .btn { width: 100%; }
+
+  /* Фокус виден и на телефоне (доступность + понятная навигация) */
+  :focus-visible {
+    outline: 2px solid var(--accent, #3b6ef5);
+    outline-offset: 2px;
+  }
+
+  /* Нижний системный отступ (iPhone с жестом «домой»). Правило стоит
+     ПОСЛЕ блока B, поэтому аккуратно добавляет отступ снизу, не трогая
+     горизонтальные отступы тулбара. */
+  .toolbar, .save-bar, .bottom-bar, .tabbar, footer {
+    padding-bottom: calc(10px + var(--m-safe-bottom, 0px));
+  }
+
+  /* Учитываем «бровки» экрана слева/справа в альбомной ориентации */
+  body {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}
+
+/* ================= Блок D: мелкие экраны (≤480px) =================
+   Ниже 480px гриды из 3+ колонок схлопываются в одну. */
+@media (max-width: 480px) {
+  /* Гриды из 3+ колонок — в 1 колонку на очень узких */
+  .pg-page_index .nav-grid, .pg-page_indexbackup .nav-grid,
+  .pg-page_index_v2 .nav-grid,
+  .pg-page_settings .theme-grid { grid-template-columns: 1fr !important; }
+
+  .pg-page_media .video-grid, .pg-page_apps .apps-grid,
+  .pg-page_social_music .theme-grid, .pg-page_social_video .theme-grid,
+  .pg-page_social_profile .album-grid,
+  .pg-page_social_feed .theme-grid { grid-template-columns: 1fr !important; }
+
+  .pg-page_ask .theme-grid { grid-template-columns: 1fr !important; }
+  .pg-page_agent .theme-grid { grid-template-columns: 1fr !important; }
+}

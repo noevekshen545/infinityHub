@@ -1,0 +1,49 @@
+/* 08-responsive.css — Адаптив и мобильные правила */
+/* ---------- адаптив ---------- */
+@media (max-width:1240px){
+  .details{display:none}
+  .chat.show-details .details{display:block;position:absolute;right:0;top:0;bottom:0;z-index:20;box-shadow:var(--sh-3);background:var(--surface)}
+  .chat{position:relative}
+}
+@media (max-width:1024px){
+  .modal{width:92%;height:88%}
+  :root{--side:250px}
+  .set-nav{width:190px}
+}
+@media (max-width:860px){
+  /* Шторка прижата к кромке: внешние поля карточки-рейла здесь не нужны,
+     скругление остаётся только справа. */
+  .side{position:absolute;left:0;top:0;bottom:0;z-index:25;width:min(300px,84vw);margin:0;
+    border-radius:0 20px 20px 0;box-shadow:var(--sh-3);
+    transform:translateX(-103%);transition:transform .28s cubic-bezier(.2,.8,.25,1)}
+  .chat-wrap{position:relative}
+  .side.open{transform:none}
+  /* на узких экранах панель — оверлей-«шторка» (burger/scrim), кнопка-рельс там не нужна */
+  .side-collapse-btn{display:none}
+  .scrim{display:block;position:absolute;inset:0;background:rgba(15,20,30,.3);z-index:24;opacity:0;pointer-events:none;transition:.25s}
+  .side.open~.scrim{opacity:1;pointer-events:auto}
+  .burger{display:grid!important}
+  .set-nav{width:62px;padding:8px}
+  .set-nav button{font-size:12px;padding:9px;gap:0;justify-content:center}
+  .set-nav button span{display:none}
+  .set-panels{padding:18px 16px}
+  .bookmarks-panel{width:100%}
+}
+@media (max-width:640px){
+  .overlay{padding:0}
+  .modal{width:100%;height:100%;max-width:none;max-height:none;border-radius:0;border:none}
+  .srow{flex-direction:column;align-items:stretch;gap:10px}
+  .srow .ctl{justify-content:space-between;width:100%}
+  .srow .ctl select,.srow .ctl input[type=text],.srow .ctl input[type=number],.srow .ctl input[type=password]{width:100%;flex:1}
+  input[type=range]{width:100%;flex:1}
+  .chat-head .ttl h2{max-width:42vw}
+  .stream{padding:14px 12px 8px}
+  .composer{padding:9px 12px 11px}
+  .hint{display:none}
+  .dock{gap:9px;padding:8px 12px}
+  .dock-btn{width:42px;height:42px;font-size:15px}
+  .mic{width:52px;height:52px;font-size:18px}
+  .m-foot{flex-wrap:wrap}
+  .hist-pop{width:95vw}
+}
+

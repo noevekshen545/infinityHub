@@ -1,0 +1,2582 @@
+<!DOCTYPE html>
+<!-- PAGE_APPS_NEW -->
+<html class="pg-page_apps" data-apps-skin="next" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>App Store — Infinity</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/fonts/google-fonts.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box }
+
+/* Палитра и таблица из девяти тем здесь больше не нужны: со скином
+   их задают design.css + theme.js (общая тема приложения). Классика
+   (?skin=classic) получает прежний файл из templates_backup — в нём
+   локальная палитра осталась. */
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.4s, color 0.4s;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, var(--accent-glow), transparent),
+    radial-gradient(ellipse 60% 40% at 85% 85%, rgba(168, 85, 247, 0.06), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px }
+::-webkit-scrollbar-track { background: var(--bg3); border-radius: 5px }
+::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 5px;
+  border: 2px solid var(--bg3);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--accent) }
+
+/* Разметка `.toolbar` здесь — левый рейл 2.0; его вид целиком описан в
+   module_rail.css с гейтом html[data-apps-skin="next"]. Прежние правила
+   плавающей таблетки убраны: они перебивали бы рейл на узких экранах
+   (`span { display: none }` прятал бы подписи пунктов). */
+
+.main-content {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 80px 24px 100px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-section { margin-bottom: 32px }
+
+.hero-carousel {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.hero-banner {
+  width: 100%;
+  height: 320px;
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-banner-content {
+  position: absolute;
+  z-index: 2;
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 60%;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  margin-bottom: 14px;
+  width: fit-content;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hero-app-name {
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 18px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  letter-spacing: -0.5px;
+}
+
+.hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.95);
+  color: var(--accent2);
+  border: none;
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  width: fit-content;
+  transition: var(--tr);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  font-weight: 600;
+}
+
+.hero-btn:hover {
+  background: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.hero-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.hero-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.hero-dot.active {
+  background: #fff;
+  transform: scale(1.3);
+  border-color: rgba(255,255,255,0.5);
+}
+
+.hero-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  z-index: 10;
+  transition: var(--tr);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-nav:hover {
+  background: rgba(255,255,255,0.4);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.hero-nav.prev { left: 20px }
+.hero-nav.next { right: 20px }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.modal-overlay.active { opacity: 1; visibility: visible; }
+
+.modal {
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  transform: scale(0.9) translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-overlay.active .modal { transform: scale(1) translateY(0); }
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  max-height: calc(90vh - 80px);
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: var(--tr);
+}
+
+.modal-close:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.theme-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background: var(--bg3);
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--tr);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.theme-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.theme-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.theme-btn .icon { font-size: 24px; }
+
+.apps-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.apps-content { flex: 1; min-width: 0; }
+
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.app-card {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: var(--tr);
+  position: relative;
+  overflow: hidden;
+}
+
+.app-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--accent-glow), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.app-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent);
+}
+
+.app-card:hover::before { opacity: 1 }
+
+.app-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  font-size: 36px;
+  font-weight: 700;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.app-icon.python { background: linear-gradient(135deg, #3776ab, #ffd43b) }
+.app-icon.html { background: linear-gradient(135deg, #e34c26, #f16529) }
+.app-icon.bg { background: linear-gradient(135deg, #8b5cf6, #a855f7) }
+.app-icon.default { background: linear-gradient(135deg, #00d2ff, #3a7bd5) }
+.app-icon img { width: 100%; height: 100%; object-fit: cover }
+
+.app-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 10px;
+  line-height: 1.3;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.app-price {
+  font-size: 11px;
+  color: var(--text2);
+  background: var(--bg3);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.app-price.installed {
+  background: var(--green-light);
+  color: var(--green);
+  border: 1px solid var(--green);
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 8px;
+  width: fit-content;
+}
+
+.filter-chip {
+  padding: 7px 14px;
+  border-radius: 20px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 12px;
+  transition: var(--tr);
+  font-weight: 500;
+}
+
+.filter-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.filter-chip.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 15px;
+  transition: var(--tr);
+}
+
+.search-bar:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.search-bar input {
+  flex: 1;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+}
+
+.search-bar i { color: var(--text3); font-size: 16px }
+
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text3);
+}
+
+.empty-state .icon {
+  font-size: 72px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  color: var(--text2);
+  margin-bottom: 12px;
+}
+
+.notification-toast {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 14px 22px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateX(120%);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 9999;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 400px;
+  color: var(--text);
+  border-left: 3px solid var(--accent);
+}
+
+.notification-toast.show { opacity: 1; transform: translateX(0); }
+.notification-toast.success { border-left-color: var(--green) }
+.notification-toast.error { border-left-color: var(--red) }
+.notification-toast.warning { border-left-color: var(--yellow) }
+.notification-toast i { font-size: 16px }
+
+@media (max-width: 768px) {
+  .main-content { padding: 72px 12px 100px }
+  .apps-layout { flex-direction: column }
+  .apps-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px }
+}
+
+/* --- Extensions section --- */
+.extensions-section { display: none; margin-top: 0 }
+.extensions-section.active { display: block }
+
+.ext-sub-tabs {
+  display: flex; gap: 4px; margin-bottom: 20px;
+  background: var(--glass); backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border); border-radius: var(--radius);
+  padding: 4px; width: 100%;
+  align-items: center;
+}
+.ext-sub-tabs .ext-create-btn{margin-left:auto;display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;background:var(--accent);color:#fff!important;border:none;cursor:pointer;transition:var(--tr)}
+.ext-sub-tabs .ext-create-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px var(--accent-glow)}
+.ext-sub-tab {
+  padding: 8px 18px; border-radius: 10px; cursor: pointer;
+  font-size: 13px; font-weight: 500; color: var(--text2);
+  border: none; background: transparent; transition: var(--tr);
+  font-family: inherit;
+}
+.ext-sub-tab:hover { background: var(--hover); color: var(--text) }
+.ext-sub-tab.active { background: var(--accent-light); color: var(--accent) }
+
+.ext-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.ext-card {
+  background: var(--glass); backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border); border-radius: var(--radius);
+  padding: 18px; transition: var(--tr); position: relative;
+}
+.ext-card:hover { border-color: var(--accent); box-shadow: var(--shadow) }
+
+.ext-card-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ext-card-info { flex: 1; min-width: 0 }
+
+.ext-card-name {
+  font-size: 15px; font-weight: 700; color: var(--text);
+  margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+}
+
+.ext-card-version {
+  font-size: 11px; color: var(--text3);
+  font-family: var(--font-mono);
+  background: var(--bg3); padding: 2px 8px; border-radius: 6px;
+}
+
+.ext-card-author {
+  font-size: 12px; color: var(--text2);
+  display: flex; align-items: center; gap: 4px;
+}
+
+.ext-card-desc {
+  font-size: 13px; color: var(--text2); line-height: 1.5;
+  margin-bottom: 14px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ext-card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; flex-wrap: wrap;
+}
+
+.ext-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 600; padding: 3px 10px;
+  border-radius: 8px; background: var(--bg3); color: var(--text2);
+}
+.ext-badge.books { background: rgba(59,130,246,0.15); color: #3b82f6 }
+.ext-badge.agent { background: rgba(168,85,247,0.15); color: #a855f7 }
+.ext-badge.media { background: rgba(236,72,153,0.15); color: #ec4899 }
+.ext-badge.notes { background: rgba(245,158,11,0.15); color: #f59e0b }
+.ext-badge.ui { background: rgba(16,185,129,0.15); color: #10b981 }
+.ext-badge.search { background: rgba(99,102,241,0.15); color: #818cf8 }
+.ext-badge.settings { background: rgba(239,68,68,0.15); color: #ef4444 }
+.ext-badge.all { background: var(--accent-light); color: var(--accent) }
+
+.ext-toggle {
+  position: relative; width: 40px; height: 22px; flex-shrink: 0;
+  cursor: pointer;
+}
+.ext-toggle input { opacity: 0; width: 0; height: 0 }
+.ext-toggle-slider {
+  position: absolute; inset: 0; background: var(--bg4);
+  border-radius: 22px; transition: var(--tr);
+}
+.ext-toggle-slider::before {
+  content: ''; position: absolute; left: 3px; top: 3px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--text3); transition: var(--tr);
+}
+.ext-toggle input:checked + .ext-toggle-slider { background: var(--accent) }
+.ext-toggle input:checked + .ext-toggle-slider::before {
+  background: #fff; transform: translateX(18px);
+}
+
+.ext-card-actions {
+  display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;
+}
+
+.ext-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: 8px; font-size: 12px;
+  font-weight: 500; border: 1px solid var(--border);
+  background: transparent; color: var(--text2); cursor: pointer;
+  transition: var(--tr); font-family: inherit;
+}
+.ext-btn:hover { background: var(--hover); color: var(--text); border-color: var(--accent) }
+.ext-btn.danger:hover { background: var(--red-light); color: var(--red); border-color: var(--red) }
+.ext-btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; border-color: transparent;
+}
+.ext-btn.primary:hover { box-shadow: 0 2px 12px var(--accent-glow) }
+
+.ext-status {
+  font-size: 11px; display: flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 8px;
+}
+.ext-status.enabled { background: var(--green-light); color: var(--green) }
+.ext-status.disabled { background: var(--bg3); color: var(--text3) }
+
+.ext-meta-row {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;
+}
+
+.ext-empty {
+  text-align: center; padding: 60px 24px; color: var(--text3);
+}
+.ext-empty .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5 }
+.ext-empty h3 { font-size: 18px; color: var(--text2); margin-bottom: 8px }
+.ext-empty p { font-size: 14px }
+
+.ext-search {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 12px 16px; margin-bottom: 20px;
+  background: var(--bg2);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text); font-size: 14px; transition: var(--tr);
+}
+.ext-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light) }
+.ext-search input { flex: 1; border: none; background: none; color: var(--text); font-size: 14px; font-family: inherit; outline: none }
+.ext-search i { color: var(--text3); font-size: 14px }
+
+.ext-loading {
+  text-align: center; padding: 40px; color: var(--text3);
+  font-size: 14px;
+}
+.ext-loading i { margin-right: 8px }
+
+.ext-modal-body { max-height: 70vh; overflow-y: auto }
+.ext-modal-body pre {
+  background: var(--bg3); padding: 16px; border-radius: 10px;
+  font-size: 12px; font-family: var(--font-mono);
+  overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+}
+
+/* Кнопка «Редактировать» на карточке приложения (editApp была, но кнопки
+   не было — правка приложения была недоступна из App Store). */
+.app-card-edit{position:absolute;top:6px;left:6px;z-index:3;width:28px;height:28px;border-radius:9px;
+  border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;display:none;
+  align-items:center;justify-content:center;font-size:11px;box-shadow:var(--shadow-sm);transition:var(--tr)}
+.app-card-edit:hover{color:var(--accent);border-color:var(--accent);transform:translateY(-1px)}
+.app-card:hover .app-card-edit{display:flex}
+</style>
+<script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+
+<!-- ЛЕВЫЙ РЕЙЛ 2.0. Прежние id и обработчики на месте: pill-панель и оба
+     сайдбара (приложений и расширений) стали группами одного рейла, логика
+     страницы не менялась. -->
+<div class="toolbar" id="appsRail" role="navigation" aria-label="App Store">
+  <div class="rail-head">
+    <a class="rail-brand" href="/" title="На главную">
+      <span class="rail-logo"><i class="fa-solid fa-infinity"></i></span>
+      <span class="rail-name"><b>Infinity</b><small>App Store</small></span>
+    </a>
+  </div>
+  <div class="rail-scroll">
+    <div class="rail-group">
+      <span class="rail-cap">Разделы</span>
+      <a class="btn" href="/"><i class="icon fa-solid fa-house"></i><span>Главная</span></a>
+      <button class="btn active" id="btnAppStore" onclick="showAppStore()"><i class="icon fa-solid fa-th-large"></i><span>App Store</span></button>
+      <button class="btn" id="btnExtensions" onclick="showExtensions()"><i class="icon fa-solid fa-puzzle-piece"></i><span>Расширения</span></button>
+      <button class="btn" id="themeBtn" onclick="openThemePicker()" title="Тема (T)"><i class="icon fa-solid fa-palette" id="themeIcon"></i><span>Тема</span></button>
+    </div>
+
+    <div class="rail-group" id="railGroupApps">
+      <span class="rail-cap">Категории</span>
+      <div id="sidebarCategoriesList"></div>
+      <span class="rail-cap">Фильтры</span>
+      <div id="railAppFilters">
+        <button class="btn" data-filter="installed" onclick="setFilter('installed')"><i class="icon fa-solid fa-circle-check"></i><span>Установлено</span></button>
+        <button class="btn" data-filter="html" onclick="setFilter('html')"><i class="icon fa-solid fa-globe"></i><span>HTML</span></button>
+        <button class="btn" data-filter="python" onclick="setFilter('python')"><i class="icon fa-brands fa-python"></i><span>Python</span></button>
+        <button class="btn" data-filter="bg" onclick="setFilter('bg')"><i class="icon fa-solid fa-cogs"></i><span>Фоновые</span></button>
+      </div>
+    </div>
+
+    <div class="rail-group" id="railGroupExt" style="display:none">
+      <span class="rail-cap">Расширения</span>
+      <button class="btn active" id="extSidebarAll" onclick="setExtCategory('all')"><i class="icon fa-solid fa-puzzle-piece"></i><span>Все расширения</span></button>
+      <div id="extCategoriesList"></div>
+      <div id="extNavPagesSection" style="display:none">
+        <span class="rail-cap">Страницы расширений</span>
+        <div id="extNavPagesList"></div>
+      </div>
+      <span class="rail-cap">Действия</span>
+      <div id="railExtActions">
+        <button class="btn" onclick="document.getElementById('extZipInput').click()"><i class="icon fa-solid fa-upload"></i><span>Загрузить .zip</span></button>
+        <button class="btn" onclick="showGitInstallModal()"><i class="icon fa-solid fa-link"></i><span>Установить по ссылке</span></button>
+        <button class="btn" onclick="createTestExtension()"><i class="icon fa-solid fa-flask"></i><span>Создать тестовое</span></button>
+        <button class="btn" onclick="showAddRepoModal()"><i class="icon fa-solid fa-database"></i><span>Добавить репозиторий</span></button>
+        <button class="btn" onclick="showRepoHelp()"><i class="icon fa-solid fa-circle-question"></i><span>Как создать репозиторий</span></button>
+      </div>
+    </div>
+  </div>
+  <div class="rail-foot">
+    <a class="btn primary" id="railFootApps" href="/apps/create"><i class="icon fa-solid fa-wand-magic-sparkles"></i><span>Создать приложение</span></a>
+    <a class="btn primary" id="railFootExt" href="/api/extensions/builder-page" style="display:none"><i class="icon fa-solid fa-wand-magic-sparkles"></i><span>Создать расширение</span></a>
+  </div>
+</div>
+<button class="rail-fab" id="appsRailToggle" type="button" aria-label="Открыть меню" aria-expanded="false">
+  <i class="fa-solid fa-bars"></i>
+</button>
+
+<div class="modal-overlay" id="themeModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h2><i class="fas fa-palette"></i> Выбор темы</h2>
+      <button class="modal-close" onclick="closeThemePicker()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="theme-grid">
+        <div class="theme-btn" data-theme="dark" onclick="setTheme('dark')"><span class="icon">🌙</span>Тёмная</div>
+        <div class="theme-btn" data-theme="light" onclick="setTheme('light')"><span class="icon">☀️</span>Светлая</div>
+        <div class="theme-btn" data-theme="sepia" onclick="setTheme('sepia')"><span class="icon">📜</span>Сепия</div>
+        <div class="theme-btn" data-theme="warm" onclick="setTheme('warm')"><span class="icon">🔥</span>Тёплая</div>
+        <div class="theme-btn" data-theme="paper" onclick="setTheme('paper')"><span class="icon">📄</span>Бумага</div>
+        <div class="theme-btn" data-theme="ocean" onclick="setTheme('ocean')"><span class="icon">🌊</span>Океан</div>
+        <div class="theme-btn" data-theme="forest" onclick="setTheme('forest')"><span class="icon">🌲</span>Лес</div>
+        <div class="theme-btn" data-theme="midnight" onclick="setTheme('midnight')"><span class="icon">🌌</span>Полночь</div>
+        <div class="theme-btn" data-theme="rose" onclick="setTheme('rose')"><span class="icon">🌹</span>Роза</div>
+      </div>
+      <button class="btn" style="width:100%;margin-top:20px;justify-content:center" onclick="closeThemePicker()">
+        <i class="fas fa-check"></i> Готово
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="main-content">
+  <div class="apps-layout" id="appsLayout">
+  <div class="apps-content">
+  <div class="hero-section">
+    <div class="hero-carousel" id="heroCarousel">
+      <div class="hero-banner" id="heroBanner"></div>
+      <div class="hero-dots" id="heroDots"></div>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <i class="fas fa-search"></i>
+    <input type="text" placeholder="Поиск приложений..." id="searchInput" oninput="filterApps(this.value)">
+  </div>
+
+  <div class="filters">
+    <a href="/apps/create" class="filter-chip primary"><i class="fas fa-magic"></i> Создать приложение</a>
+    <button class="filter-chip active" data-filter="all" onclick="setFilter('all')"><i class="fas fa-cubes"></i> Все</button>
+    <button class="filter-chip" data-filter="html" onclick="setFilter('html')"><i class="fas fa-globe"></i> HTML</button>
+    <button class="filter-chip" data-filter="python" onclick="setFilter('python')"><i class="fab fa-python"></i> Python</button>
+    <button class="filter-chip" data-filter="bg" onclick="setFilter('bg')"><i class="fas fa-cogs"></i> Фоновые</button>
+    <button class="filter-chip" data-filter="installed" onclick="setFilter('installed')">✓ Установлено</button>
+    <button class="filter-chip" onclick="openRepoManager()" style="color:var(--accent)"><i class="fas fa-folder-open"></i> Репозитории</button>
+    <button class="filter-chip" onclick="toggleAppDropZone()" style="color:var(--accent2,var(--text2))"><i class="fas fa-file-zipper"></i> Загрузить .zip</button>
+    <button class="filter-chip" onclick="showRepoHelp()" title="О репозиториях" style="color:var(--text3);font-size:14px;padding:6px 10px"><i class="fas fa-circle-question"></i></button>
+  </div>
+
+  <input type="file" accept=".zip" id="appZipInput" style="display:none" onchange="uploadAppZip(this)">
+  <div id="appDropZone" class="ext-drop-zone" style="display:none;border:2px dashed var(--border);border-radius:var(--radius);padding:30px;text-align:center;color:var(--text3);margin-bottom:16px;cursor:pointer;transition:var(--tr)"
+       ondragover="this.style.borderColor='var(--accent)';this.style.background='var(--accent-light)';event.preventDefault()"
+       ondragleave="this.style.borderColor='var(--border)';this.style.background='transparent'"
+       ondrop="handleAppDrop(event)">
+    <i class="fas fa-cloud-upload-alt" style="font-size:32px;margin-bottom:8px;display:block"></i>
+    <div>Перетащите .zip файл приложения сюда</div>
+  </div>
+
+  <div id="categoriesContainer"></div>
+  </div>
+  </div>
+
+<div class="extensions-section" id="extensionsSection">
+  <div class="apps-layout">
+  <div class="apps-content" id="extContent">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+<div class="ext-sub-tabs">
+  <button class="ext-sub-tab active" id="extTabInstalled" onclick="switchExtTab('installed', this)">
+    <i class="fas fa-cube"></i> Установленные <span id="extCount" style="font-size:11px;color:var(--text3);margin-left:4px"></span>
+  </button>
+  <button class="ext-sub-tab" id="extTabMarketplace" onclick="switchExtTab('marketplace', this)">
+    <i class="fas fa-store"></i> Магазин
+  </button>
+  <a href="/api/extensions/builder-page" id="extCreateBtn" class="ext-create-btn"><i class="fas fa-magic"></i> Создать расширение</a>
+</div>
+  </div>
+
+  <div class="ext-search">
+    <i class="fas fa-search"></i>
+    <input type="text" placeholder="Поиск расширений..." id="extSearchInput" oninput="filterExtensions(this.value)">
+  </div>
+
+  <div id="extRecoveryBanner" style="display:none;background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(249,115,22,0.12));border:1px solid rgba(239,68,68,0.4);border-radius:12px;padding:14px 16px;margin-bottom:16px;gap:12px;align-items:flex-start">
+    <i class="fas fa-shield-halved" style="color:var(--red);font-size:20px;margin-top:2px"></i>
+    <div style="flex:1;font-size:13px;line-height:1.6">
+      <b style="color:var(--red)">Обнаружены проблемы при загрузке расширений</b>
+      <div id="extRecoveryDetails" style="margin-top:6px;color:var(--text2)"></div>
+      <div id="extRecoveryActions" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+    <button class="ext-btn" onclick="loadRecoveryStatus()" style="flex-shrink:0" title="Обновить"><i class="fas fa-rotate"></i></button>
+  </div>
+
+  <input type="file" accept=".zip" id="extZipInput" style="display:none" onchange="uploadExtensionZip(this)">
+
+  <div id="extDropZone" class="ext-drop-zone" style="display:none;border:2px dashed var(--border);border-radius:var(--radius);padding:30px;text-align:center;color:var(--text3);margin-bottom:16px;cursor:pointer;transition:var(--tr)"
+       ondragover="this.style.borderColor='var(--accent)';this.style.background='var(--accent-light)';event.preventDefault()"
+       ondragleave="this.style.borderColor='var(--border)';this.style.background='transparent'"
+       ondrop="handleExtDrop(event)">
+    <i class="fas fa-cloud-upload-alt" style="font-size:32px;margin-bottom:8px;display:block"></i>
+    <div>Перетащите .zip файл расширения сюда</div>
+  </div>
+
+  <div id="extensionsInstalled" style="display:block"></div>
+  <div id="extensionsMarketplace" style="display:none"></div>
+  </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+let allApps = [];
+let currentFilter = 'all';
+let currentCategory = 'all';
+let installedApps = [];
+let heroIndex = 0;
+let heroInterval = null;
+
+const categoryMap = {
+  'social': ['telegram', 'whatsapp', 'discord', 'vk', 'facebook', 'twitter', 'instagram', 'threads'],
+  'tools': ['zip', 'pdf', 'converter', 'calculator', 'notepad', 'terminal', 'editor'],
+  'media': ['video', 'music', 'player', 'stream', 'youtube', 'tv'],
+  'games': ['game', 'chess', 'puzzle', 'arcade'],
+  'productivity': ['office', 'docs', 'sheets', 'calendar', 'mail', 'task']
+};
+
+const defaultCategories = {
+  'social': ['telegram', 'whatsapp', 'discord'],
+  'tools': ['breezip', 'notepad', 'terminal'],
+  'media': ['player', 'youtube'],
+  'games': ['game'],
+  'productivity': ['office', 'docs']
+};
+
+/* Один справочник категорий для рейла и для заголовков секций. Раньше имена
+   жили в двух местах (в сайдбаре — без эмодзи, в заголовках — с эмодзи) и
+   разъезжались: переименование категории надо было делать дважды. */
+const APP_CAT_META = [
+  {id: 'social',       fa: 'fa-comments',            emoji: '💬', name: 'Соцсети'},
+  {id: 'tools',        fa: 'fa-screwdriver-wrench',  emoji: '🔧', name: 'Инструменты'},
+  {id: 'media',        fa: 'fa-film',                emoji: '🎬', name: 'Медиа'},
+  {id: 'games',        fa: 'fa-gamepad',             emoji: '🎮', name: 'Игры'},
+  {id: 'productivity', fa: 'fa-chart-line',          emoji: '📊', name: 'Продуктивность'}
+];
+
+function catMeta(id) {
+  return APP_CAT_META.find(c => c.id === id) ||
+    {id: id, fa: 'fa-folder', emoji: '📁', name: id};
+}
+
+try {
+  installedApps = JSON.parse(localStorage.getItem('desktop_apps') || '[]');
+} catch(e) {}
+
+// Приложения, убранные из меню приложений: стандартные и docker-приложения
+// удалить нельзя, но в App Store они остаются.
+let menuHiddenApps = new Set();
+try {
+  menuHiddenApps = new Set(JSON.parse(localStorage.getItem('desktop_menu_hidden') || '[]'));
+} catch(e) {}
+function isMenuHidden(id) { return menuHiddenApps.has(id); }
+function saveMenuHiddenApps() {
+  localStorage.setItem('desktop_menu_hidden', JSON.stringify([...menuHiddenApps]));
+}
+
+/* Тема общая для приложения: её ведёт InfinityTheme из theme.js, который
+   skin-маршрут подключает через inject(). Своя таблица палитры со страницы
+   снята, поэтому здесь только читаем и просим сменить тему. */
+function getTheme() {
+  return window.InfinityTheme ? InfinityTheme.get() : 'light';
+}
+
+function setTheme(t) {
+  if (window.InfinityTheme) {
+    InfinityTheme.set(t);
+  } else {
+    document.body.className = t;
+  }
+
+  document.querySelectorAll('.theme-btn').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === t);
+  });
+
+  updateThemeIcon(t);
+  showToast('🎨 Тема: ' + t, 'success');
+}
+
+function updateThemeIcon(t) {
+  const icons = {
+    dark: 'fa-moon', light: 'fa-sun', sepia: 'fa-scroll',
+    warm: 'fa-fire', paper: 'fa-file', ocean: 'fa-water',
+    forest: 'fa-tree', midnight: 'fa-star', rose: 'fa-heart'
+  };
+  const iconEl = document.getElementById('themeIcon');
+  /* Класс `icon` держит размер иконки в рейле: если перезаписать className
+     целиком, после первой смены темы пункт уехал бы по ширине. */
+  if (iconEl) iconEl.className = 'icon fa-solid ' + (icons[t] || 'fa-moon');
+}
+
+function openThemePicker() {
+  document.getElementById('themeModal').classList.add('active');
+  document.querySelectorAll('.theme-btn').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === getTheme());
+  });
+}
+
+function closeThemePicker() {
+  document.getElementById('themeModal').classList.remove('active');
+}
+
+function showToast(msg, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = 'notification-toast ' + type;
+  const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+  const color = type === 'success' ? 'var(--green)' : type === 'error' ? 'var(--red)' : type === 'warning' ? 'var(--yellow)' : 'var(--accent)';
+  toast.innerHTML = `<i class="fas ${icon}" style="color:${color}"></i><span>${msg}</span>`;
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add('show'));
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+function esc(s) {
+  if (!s) return '';
+  // Одинарную кавычку пропускали, а имена расширений подставляются в
+  // inline-обработчики вида onclick="fn('name')". Расширение с апострофом
+  // в имени ломало onclick синтаксически, и кнопки просто не работали.
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+async function loadApps() {
+  try {
+    const r = await fetch('/api/apps');
+    allApps = await r.json();
+    migrateInstalledApps();
+    autoInstallDefaultApps();
+    renderSidebarCategories();
+    renderHero();
+    renderApps();
+  } catch(e) {
+    document.getElementById('categoriesContainer').innerHTML =
+      '<div class="empty-state"><div class="icon">⚠️</div><h3>Ошибка</h3><p>' + e.message + '</p></div>';
+  }
+}
+
+function renderSidebarCategories() {
+  const container = document.getElementById('sidebarCategoriesList');
+
+  const customCats = [];
+  allApps.forEach(a => {
+    const cat = a.category;
+    if (cat && !APP_CAT_META.find(c => c.id === cat) && customCats.indexOf(cat) === -1) {
+      customCats.push(cat);
+    }
+  });
+
+  const cats = [{id: 'all', fa: 'fa-box-open', name: 'Все'}]
+    .concat(APP_CAT_META)
+    .concat(customCats.map(cat => catMeta(cat)));
+
+  // Каталог (data-cat) в атрибуте, а не в строке onclick: имя категории
+  // приходит из данных приложения и может содержать кавычку.
+  container.innerHTML = cats.map(c =>
+    `<button type="button" class="btn${c.id === currentCategory ? ' active' : ''}" data-cat="${esc(c.id)}" onclick="setCategory(this.dataset.cat)">
+      <i class="icon fa-solid ${c.fa}"></i><span>${esc(c.name)}</span>
+    </button>`
+  ).join('');
+}
+
+function renderHero() {
+  const heroBanner = document.getElementById('heroBanner');
+  const heroDots = document.getElementById('heroDots');
+  const appsWithCover = allApps.filter(a => a.cover && (a.cover.startsWith('http') || a.cover.startsWith('/')));
+  const displayApps = appsWithCover.length ? appsWithCover.slice(0, 5) : allApps.slice(0, 3);
+
+  if (!displayApps.length) {
+    heroBanner.style.display = 'none';
+    return;
+  }
+
+  heroBanner.style.display = 'flex';
+  heroBanner.innerHTML = displayApps.map((app, i) => {
+    const isCoverUrl = app.cover && (app.cover.startsWith('http') || app.cover.startsWith('/'));
+    const bg = isCoverUrl ?
+      `background-image:url('${esc(app.cover)}');background-size:cover;background-position:center` :
+      'background:linear-gradient(135deg, var(--accent), var(--accent2))';
+
+    return `<div class="hero-slide" data-index="${i}" style="position:absolute;inset:0;${bg};display:flex;align-items:flex-end;opacity:${i === 0 ? '1' : '0'};transition:opacity .6s">
+      <div class="hero-banner-content">
+        <div class="hero-badge">${app.category || 'Приложение'}</div>
+        <div class="hero-app-name">${esc(app.name)}</div>
+        <button class="hero-btn" onclick="viewApp('${app.id}')">
+          <i class="fas fa-arrow-right"></i> Открыть
+        </button>
+      </div>
+    </div>`;
+  }).join('') +
+  '<button class="hero-nav prev" onclick="changeHeroSlide(-1)"><i class="fas fa-chevron-left"></i></button>' +
+  '<button class="hero-nav next" onclick="changeHeroSlide(1)"><i class="fas fa-chevron-right"></i></button>';
+
+  heroDots.innerHTML = displayApps.map((_, i) =>
+    `<div class="hero-dot ${i === 0 ? 'active' : ''}" onclick="goToHeroSlide(${i})"></div>`
+  ).join('');
+
+  if (displayApps.length > 1) {
+    if (heroInterval) clearInterval(heroInterval);
+    heroInterval = setInterval(() => changeHeroSlide(1), 6000);
+  }
+}
+
+function changeHeroSlide(dir) {
+  const slides = document.querySelectorAll('.hero-slide');
+  if (!slides.length) return;
+
+  slides[heroIndex].style.opacity = '0';
+  document.querySelectorAll('.hero-dot')[heroIndex].classList.remove('active');
+
+  heroIndex = (heroIndex + dir + slides.length) % slides.length;
+
+  slides[heroIndex].style.opacity = '1';
+  document.querySelectorAll('.hero-dot')[heroIndex].classList.add('active');
+}
+
+function goToHeroSlide(idx) {
+  const slides = document.querySelectorAll('.hero-slide');
+  if (!slides.length) return;
+
+  slides[heroIndex].style.opacity = '0';
+  document.querySelectorAll('.hero-dot')[heroIndex].classList.remove('active');
+
+  heroIndex = idx;
+
+  slides[heroIndex].style.opacity = '1';
+  document.querySelectorAll('.hero-dot')[heroIndex].classList.add('active');
+}
+
+function getAppCategory(appId) {
+  if (!appId) return 'tools';
+  const app = allApps.find(a => a.id === appId);
+  if (app && app.category) return app.category;
+
+  const id = appId.toLowerCase();
+  for (const [cat, keywords] of Object.entries(categoryMap)) {
+    if (keywords.some(k => id.includes(k))) return cat;
+  }
+  for (const [cat, keywords] of Object.entries(defaultCategories)) {
+    if (keywords.some(k => id.includes(k))) return cat;
+  }
+  return 'tools';
+}
+
+function migrateInstalledApps() {
+  let updated = false;
+  installedApps = installedApps.map(installed => {
+    const serverApp = allApps.find(a => a.id === installed.id);
+    if (serverApp) {
+      const migrated = {
+        id: installed.id,
+        name: installed.name || serverApp.name,
+        type: installed.type || serverApp.type || 'html',
+        background: installed.background || serverApp.background || false,
+        main: installed.main || serverApp.main || 'index.html',
+        width: installed.width || serverApp.windowWidth || serverApp.width || 800,
+        height: installed.height || serverApp.windowHeight || serverApp.height || 600,
+        url: installed.url || serverApp.url || '',
+        needsServer: installed.needsServer || serverApp.needsServer || false,
+        cmd: installed.cmd || serverApp.serverCmd || '',
+        isBackground: installed.isBackground || serverApp.isBackground || false,
+        is_default: installed.is_default !== undefined ? installed.is_default : !!serverApp.is_default
+      };
+      if (JSON.stringify(installed) !== JSON.stringify(migrated)) updated = true;
+      return migrated;
+    }
+    return installed;
+  });
+  if (updated) {
+    localStorage.setItem('desktop_apps', JSON.stringify(installedApps));
+    try { window.parent.postMessage({action: 'appsMigrated'}, '*') } catch(e) {}
+    try { window.parent.postMessage({action: 'syncApps'}, '*') } catch(e) {}
+  }
+}
+
+function isInstalled(id) {
+  return installedApps.some(a => a.id === id);
+}
+
+function autoInstallDefaultApps() {
+  let updated = false;
+  allApps.filter(a => a.is_default).forEach(app => {
+    if (isMenuHidden(app.id)) return;   // убрано из меню — не возвращаем
+    if (app.no_auto_install) return;    // админ запретил автоустановку
+    if (!installedApps.some(a => a.id === app.id)) {
+      installedApps.push({
+        id: app.id,
+        name: app.name || app.id,
+        type: app.type || 'html',
+        background: app.background || false,
+        main: app.main || 'index.html',
+        width: app.windowWidth || 800,
+        height: app.windowHeight || 600,
+        url: app.url || '',
+        needsServer: app.needsServer || false,
+        cmd: app.serverCmd || '',
+        isBackground: app.isBackground || false,
+        is_default: true
+      });
+      updated = true;
+    }
+  });
+  if (updated) {
+    localStorage.setItem('desktop_apps', JSON.stringify(installedApps));
+    try { window.parent.postMessage({action: 'appsMigrated'}, '*') } catch(e) {}
+    try { window.parent.postMessage({action: 'syncApps'}, '*') } catch(e) {}
+  }
+}
+
+function getIconClass(type) {
+  if (type === 'python') return 'python';
+  if (type === 'bg' || type === 'background') return 'bg';
+  if (type === 'html' || type === 'app') return 'html';
+  return 'default';
+}
+
+function renderApps(filteredApps = null) {
+  const container = document.getElementById('categoriesContainer');
+  let apps = filteredApps || allApps;
+
+  if (currentFilter === 'html') apps = apps.filter(a => a.type === 'app' || a.type === 'html' || (!a.background && a.type !== 'python' && a.type !== 'bg'));
+  else if (currentFilter === 'python') apps = apps.filter(a => a.type === 'python');
+  else if (currentFilter === 'bg') apps = apps.filter(a => a.background || a.type === 'bg' || a.type === 'background');
+  else if (currentFilter === 'installed') apps = apps.filter(a => isInstalled(a.id));
+
+  function catSection(meta, list) {
+    return `<div class="category-section">
+      <h2 class="category-title">
+        <span class="category-emoji">${meta.emoji}</span> ${esc(meta.name)}
+        <span class="category-count">${list.length}</span>
+      </h2>
+      <div class="apps-grid">${list.map(app => renderAppCard(app)).join('')}</div>
+    </div>`;
+  }
+
+  if (currentCategory === 'all') {
+    const builtInIds = APP_CAT_META.map(c => c.id);
+
+    const customCatMap = {};
+    allApps.forEach(a => {
+      const cat = getAppCategory(a.id);
+      if (cat && !builtInIds.includes(cat) && !customCatMap[cat]) {
+        customCatMap[cat] = cat;
+      }
+    });
+    const cats = APP_CAT_META.concat(Object.keys(customCatMap).map(catMeta));
+
+    container.innerHTML = cats.map(cat => {
+      const catApps = apps.filter(a => getAppCategory(a.id) === cat.id);
+      return catApps.length ? catSection(cat, catApps) : '';
+    }).join('');
+  } else {
+    apps = apps.filter(a => getAppCategory(a.id) === currentCategory);
+
+    if (!apps.length) {
+      container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><h3>Пусто</h3><p>В этой категории пока нет приложений</p></div>';
+      return;
+    }
+
+    container.innerHTML = catSection(catMeta(currentCategory), apps);
+  }
+}
+
+function renderAppCard(app) {
+  const inst = isInstalled(app.id);
+  const iconClass = getIconClass(app.type || (app.background ? 'bg' : 'html'));
+  const appIcon = app.icon || (app.type === 'python' ? '🐍' : app.background ? '⚙️' : '🌐');
+  const isIconUrl = app.icon && (app.icon.startsWith('http') || app.icon.startsWith('/'));
+  const isFaIcon = app.icon && (app.icon.includes(' fa-') || app.icon.startsWith('fa-'));
+  const isSvgIcon = app.icon && app.icon.endsWith('.svg');
+  const iconContent = isIconUrl
+    ? `<img src="${esc(app.icon)}">`
+    : (isFaIcon || isSvgIcon)
+        ? `<img src="/api/apps/icon?id=${esc(app.id)}" onerror="this.parentElement.innerHTML='${esc(appIcon)}'">`
+        : appIcon;
+
+  const badge = isMenuHidden(app.id)
+    ? `<div class="app-price" style="background:var(--bg3);color:var(--text3)"><i class="fas fa-eye-slash"></i> Убрано из меню</div>`
+    : app.is_default
+    ? `<div class="app-price installed" style="background:var(--accent-light);color:var(--accent);border:1px solid var(--accent)">★ Стандартное</div>`
+    : `<div class="app-price ${inst ? 'installed' : ''}">${inst ? '✓ Установлено' : 'Бесплатно'}</div>`;
+
+  return `<div class="app-card" onclick="viewApp('${app.id}')" style="position:relative">
+    ${!app.is_default && (app.shared_with||[]).length > 0 ? '<div style="position:absolute;top:6px;right:6px;z-index:2;background:var(--accent);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px" title="Поделено"><i class="fas fa-share-nodes"></i></div>' : ''}
+    <div class="app-icon ${iconClass}">${iconContent}</div>
+    <div class="app-name">${esc(app.name)}</div>
+    ${badge}
+    <button class="app-card-edit" onclick="event.stopPropagation();editApp('${app.id}')" title="Редактировать приложение"><i class="fas fa-pen"></i></button>
+  </div>`;
+}
+
+/* Подсветка фильтра по data-filter, а не по кликнутому элементу: один и тот
+   же фильтр живёт и в рейле, и в чипах над сеткой — активным должен быть
+   оба, независимо от того, откуда его выбрали. */
+function syncAppFilters(f) {
+  document.querySelectorAll('#railAppFilters [data-filter], .filters [data-filter]').forEach(b =>
+    b.classList.toggle('active', b.dataset.filter === f));
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  syncAppFilters(f);
+  renderApps();
+}
+
+function openRepoManager() {
+  const existing = document.querySelector('.repo-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay active repo-modal';
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+  modal.innerHTML = '<div class="modal" style="max-width:600px">' +
+    '<div class="modal-header">' +
+      '<h2><i class="fas fa-folder-open"></i> Репозитории приложений</h2>' +
+      '<button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()"><i class="fas fa-times"></i></button>' +
+    '</div>' +
+    '<div class="modal-body">' +
+      '<div class="repo-tabs" style="display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:8px">' +
+        '<button class="ext-btn repo-tab active" data-type="apps" onclick="switchRepoType(\'apps\',this)"><i class="fas fa-cube"></i> Приложения</button>' +
+        '<button class="ext-btn repo-tab" data-type="extensions" onclick="switchRepoType(\'extensions\',this)"><i class="fas fa-puzzle-piece"></i> Расширения</button>' +
+      '</div>' +
+      '<div id="repoList" style="margin-bottom:16px"></div>' +
+      '<div style="display:flex;gap:8px">' +
+        '<input type="text" id="repoUrlInput" placeholder="URL репозитория..." style="flex:1;padding:10px 14px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;font-size:14px;color:var(--text);outline:none">' +
+        '<button class="ext-btn primary" onclick="addRepository()"><i class="fas fa-plus"></i> Добавить</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+  document.body.appendChild(modal);
+  window._repoType = 'apps';
+  loadRepos();
+}
+
+function switchRepoType(type, el) {
+  window._repoType = type;
+  document.querySelectorAll('.repo-tab').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  loadRepos();
+}
+
+async function loadRepos() {
+  const type = window._repoType || 'apps';
+  const endpoint = type === 'apps' ? '/api/apps/repository/load' : '/api/extensions/repository/load';
+  try {
+    const r = await fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
+    const d = await r.json();
+    const list = d.repositories || [];
+    const container = document.getElementById('repoList');
+    if (!container) return;
+    if (!list.length) {
+      container.innerHTML = '<div style="color:var(--text3);padding:12px;text-align:center">Нет добавленных репозиториев</div>';
+      return;
+    }
+    container.innerHTML = list.map(r =>
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg3);border-radius:10px;margin-bottom:6px">' +
+        '<span style="font-size:13px;font-family:var(--font-mono);color:var(--text2);word-break:break-all;flex:1;margin-right:8px">' + esc(r.url || r) + '</span>' +
+        '<button class="ext-btn danger" style="padding:4px 10px;font-size:12px;flex-shrink:0" onclick="removeRepository(\'' + esc(r.url || r) + '\')"><i class="fas fa-trash"></i></button>' +
+      '</div>'
+    ).join('');
+  } catch(e) {
+    showToast('Ошибка загрузки репозиториев: ' + e.message, 'error');
+  }
+}
+
+async function addRepository() {
+  const url = document.getElementById('repoUrlInput')?.value?.trim();
+  if (!url) { showToast('Введите URL репозитория', 'error'); return; }
+  const type = window._repoType || 'apps';
+  const endpoint = type === 'apps' ? '/api/apps/repository/add' : '/api/extensions/repository/add';
+  try {
+    const r = await fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url})});
+    const d = await r.json();
+    if (d.ok) {
+      showToast('Репозиторий добавлен', 'success');
+      document.getElementById('repoUrlInput').value = '';
+      loadRepos();
+    } else {
+      showToast('Ошибка: ' + (d.error || ''), 'error');
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function removeRepository(url) {
+  if (!confirm('Удалить репозиторий?')) return;
+  const type = window._repoType || 'apps';
+  const endpoint = type === 'apps' ? '/api/apps/repository/remove' : '/api/extensions/repository/remove';
+  try {
+    const r = await fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url})});
+    const d = await r.json();
+    if (d.ok) {
+      showToast('Репозиторий удалён', 'success');
+      loadRepos();
+    } else {
+      showToast('Ошибка: ' + (d.error || ''), 'error');
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+function showRepoHelp() {
+  const existing = document.querySelector('.repo-help-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay active repo-help-modal';
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+  modal.innerHTML = '<div class="modal" style="max-width:680px">' +
+    '<div class="modal-header">' +
+      '<h2><i class="fas fa-circle-question"></i> Как создать репозиторий</h2>' +
+      '<button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()"><i class="fas fa-times"></i></button>' +
+    '</div>' +
+    '<div class="modal-body repo-help-body">' +
+      '<h3 style="margin:0 0 8px;font-size:15px;color:var(--text)"><i class="fas fa-lightbulb"></i> Принципы</h3>' +
+      '<p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">' +
+        'Репозиторий — это JSON-файл, который содержит список приложений и/или расширений. ' +
+        'Вы можете разместить его на GitHub Pages, любой статической хостинге (Netlify, Vercel), ' +
+        'GitHub Gist или просто на HTTP-сервере. Infinity загружает этот JSON и показывает ' +
+        'приложения/расширения из него в магазине.' +
+      '</p>' +
+      '<h3 style="margin:0 0 8px;font-size:15px;color:var(--text)"><i class="fas fa-file-code"></i> Формат JSON</h3>' +
+      '<pre style="background:var(--bg3);border-radius:10px;padding:14px;font-size:12px;line-height:1.6;overflow-x:auto;color:var(--text2);font-family:var(--font-mono);margin-bottom:16px">' +
+'{\n' +
+'  "apps": [\n' +
+'    {\n' +
+'      "id": "my-app",\n' +
+'      "name": "My App",\n' +
+'      "type": "html",\n' +
+'      "description": "Описание приложения",\n' +
+'      "icon": "https://example.com/icon.png",\n' +
+'      "main": "index.html",\n' +
+'      "url": "https://github.com/user/repo"\n' +
+'    }\n' +
+'  ],\n' +
+'  "extensions": [\n' +
+'    {\n' +
+'      "name": "my-extension",\n' +
+'      "description": "Описание расширения",\n' +
+'      "version": "1.0.0",\n' +
+'      "category": "tools",\n' +
+'      "author": "Your Name",\n' +
+'      "download_url": "https://github.com/user/repo/releases/download/v1.0.0/ext.zip"\n' +
+'    }\n' +
+'  ]\n' +
+'}' + '</pre>' +
+      '<h3 style="margin:0 0 8px;font-size:15px;color:var(--text)"><i class="fas fa-list-ol"></i> Пошаговая инструкция</h3>' +
+      '<ol style="font-size:13px;color:var(--text2);line-height:1.8;padding-left:20px;margin-bottom:16px">' +
+        '<li>Создайте JSON-файл по образцу выше</li>' +
+        '<li>Загрузите его на GitHub Pages, Gist, Netlify или любой хостинг</li>' +
+        '<li>Скопируйте прямую ссылку на raw-файл (например, <code style="font-size:12px;background:var(--bg3);padding:2px 6px;border-radius:4px">https://raw.githubusercontent.com/...</code>)</li>' +
+        '<li>Нажмите «Добавить репозиторий» и вставьте ссылку</li>' +
+        '<li>Приложения/расширения появятся в магазине автоматически</li>' +
+      '</ol>' +
+      '<div style="background:var(--accent-light);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">' +
+        '<strong style="color:var(--accent)">💡 Совет:</strong> Для тестирования используйте GitHub Gist — ' +
+        'это самый быстрый способ создать и хостить JSON-репозиторий бесплатно.' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+  document.body.appendChild(modal);
+}
+
+function setCategory(c) {
+  currentCategory = c;
+  document.querySelectorAll('#railGroupApps [data-cat]').forEach(b =>
+    b.classList.toggle('active', b.dataset.cat === c));
+  currentFilter = 'all';
+  syncAppFilters('all');
+  renderApps();
+}
+
+function filterApps(q) {
+  if (!q) {
+    renderApps();
+    return;
+  }
+  const filtered = allApps.filter(a =>
+    a.name.toLowerCase().includes(q.toLowerCase()) ||
+    (a.description || '').toLowerCase().includes(q.toLowerCase())
+  );
+  currentCategory = 'all';
+  document.querySelectorAll('#railGroupApps [data-cat]').forEach(b =>
+    b.classList.toggle('active', b.dataset.cat === 'all'));
+  renderApps(filtered);
+}
+
+async function installApp(id) {
+  const app = allApps.find(a => a.id === id);
+  if (!app || installedApps.find(a => a.id === id)) return;
+
+  // Установка снова возвращает приложение в меню приложений.
+  if (isMenuHidden(id)) { menuHiddenApps.delete(id); saveMenuHiddenApps(); }
+
+  installedApps.push({
+    id: id,
+    name: app.name || id,
+    type: app.type || 'html',
+    background: app.background || false,
+    main: app.main || 'index.html',
+    width: app.windowWidth || app.width || 800,
+    height: app.windowHeight || app.height || 600,
+    url: app.url || '',
+    needsServer: app.needsServer || false,
+    cmd: app.serverCmd || '',
+    isBackground: app.isBackground || false
+  });
+
+  localStorage.setItem('desktop_apps', JSON.stringify(installedApps));
+  try { window.parent.postMessage({action: 'installApp', app: {id: id, name: app.name, type: app.type, url: app.url}}, '*') } catch(e) {}
+  try { window.parent.postMessage({action: 'syncApps'}, '*') } catch(e) {}
+
+  renderApps();
+  showToast('✓ ' + app.name + ' установлено', 'success');
+}
+
+function viewApp(id) { window.location.href = '/apps/view?id=' + id; }
+function editApp(id) { window.location.href = '/apps/edit?id=' + id; }
+function deleteApp(id) {
+  const app = allApps.find(a => a.id === id);
+  if (app && app.is_default) {
+    showToast('Стандартные приложения нельзя удалить', 'warning');
+    return;
+  }
+  if (app && String(app.id).startsWith('docker_')) {
+    showToast('Приложения из Docker удаляются в разделе Docker', 'warning');
+    return;
+  }
+  if (confirm('Удалить приложение?')) {
+    if (window.WidgetManager) WidgetManager.close(id);
+    fetch('/api/apps/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    })
+      .then(r => r.json().then(d => ({ ok: r.ok, status: r.status, d })).catch(() => ({ ok: r.ok, status: r.status, d: {} })))
+      .then(({ ok, status, d }) => {
+        if (!ok || (d && d.error)) {
+          showToast('Не удалось удалить: ' + ((d && d.error) || ('HTTP ' + status)), 'error');
+          return;
+        }
+        loadApps();
+      })
+      .catch(() => showToast('Не удалось удалить приложение', 'error'));
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 't' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag !== 'input' && tag !== 'textarea') {
+      e.preventDefault();
+      openThemePicker();
+    }
+  }
+  if (e.key === 'Escape') { closeThemePicker(); }
+});
+
+/* При загрузке тему не выбираем и не пишем: theme.js уже применил тему
+   приложения. Здесь лишь подписываем иконку и активную плитку, иначе
+   первый вход в App Store становился тёмным независимо от настройки. */
+function syncThemeUI() {
+  var t = getTheme();
+  document.querySelectorAll('.theme-btn').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === t);
+  });
+  updateThemeIcon(t);
+}
+
+if (window.InfinityTheme && InfinityTheme.onChange) {
+  InfinityTheme.onChange(syncThemeUI);
+}
+syncThemeUI();
+
+// --- Extensions ---
+let extData = [];
+let marketplaceData = [];
+let extCurrentTab = 'installed';
+let extSearchQuery = '';
+let extCategory = 'all';
+
+/* У каждого вида свои пункты рейла: группа категорий/фильтров или группа
+   расширений, и нижняя кнопка «Создать …». Прежние кнопки-«колонки»
+   скрывали боковой сайдбар внутри вида — с рейлом 2.0 сайдбарова нет,
+   поэтому переключается содержимое меню, а не его видимость. */
+function setRailView(which) {
+  const ext = which === 'ext';
+  document.getElementById('railGroupApps').style.display = ext ? 'none' : '';
+  document.getElementById('railGroupExt').style.display = ext ? '' : 'none';
+  document.getElementById('railFootApps').style.display = ext ? 'none' : '';
+  document.getElementById('railFootExt').style.display = ext ? '' : 'none';
+}
+
+function showAppStore() {
+  document.getElementById('extensionsSection').classList.remove('active');
+  document.getElementById('appsLayout').style.display = 'flex';
+  document.querySelector('.hero-section').style.display = 'block';
+  document.getElementById('btnAppStore').classList.add('active');
+  document.getElementById('btnExtensions').classList.remove('active');
+  setRailView('apps');
+}
+
+function showExtensions() {
+  document.getElementById('extensionsSection').classList.add('active');
+  document.getElementById('appsLayout').style.display = 'none';
+  document.querySelector('.hero-section').style.display = 'none';
+  document.getElementById('btnAppStore').classList.remove('active');
+  document.getElementById('btnExtensions').classList.add('active');
+  setRailView('ext');
+  loadExtensions();
+}
+
+async function loadExtensions() {
+  document.getElementById('extensionsInstalled').innerHTML = '<div class="ext-loading"><i class="fas fa-spinner fa-spin"></i> Загрузка расширений...</div>';
+  try {
+    const r = await fetch('/api/extensions');
+    const data = await r.json();
+    extData = data.extensions || data || [];
+    renderExtensions();
+    renderExtNavPages();
+    loadRecoveryStatus();
+  } catch(e) {
+    document.getElementById('extensionsInstalled').innerHTML =
+      '<div class="ext-empty"><div class="icon">⚠️</div><h3>Ошибка</h3><p>' + esc(e.message) + '</p></div>';
+  }
+}
+
+async function loadMarketplace() {
+  document.getElementById('extensionsMarketplace').innerHTML = '<div class="ext-loading"><i class="fas fa-spinner fa-spin"></i> Загрузка магазина...</div>';
+  try {
+    const r = await fetch('/api/extensions/marketplace/list');
+    const data = await r.json();
+    marketplaceData = data.extensions || data || [];
+    renderMarketplace();
+  } catch(e) {
+    document.getElementById('extensionsMarketplace').innerHTML =
+      '<div class="ext-empty"><div class="icon">⚠️</div><h3>Магазин недоступен</h3><p>' + esc(e.message) + '</p></div>';
+  }
+}
+
+function switchExtTab(tab, el) {
+  extCurrentTab = tab;
+  document.querySelectorAll('.ext-sub-tab').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('extensionsInstalled').style.display = tab === 'installed' ? 'block' : 'none';
+  document.getElementById('extensionsMarketplace').style.display = tab === 'marketplace' ? 'block' : 'none';
+  if (tab === 'installed') { renderExtensions(); }
+  else { loadMarketplace(); }
+}
+
+/* Вкладка «Магазин» — под рубильником apps_marketplace. Серверный каталог
+   пока зашитая заглушка из пяти позиций с нерабочими ссылками, поэтому при
+   выключенном флаге вкладка скрыта, а API отдаёт пустой список. Гейт и
+   здесь, и на маршруте: пустая вкладка не должна выглядеть сломанной. */
+function applyMarketplaceFlag() {
+  var enabled = !!(window.__APPS_FLAGS__ && window.__APPS_FLAGS__.marketplace);
+  var tab = document.getElementById('extTabMarketplace');
+  if (tab) tab.style.display = enabled ? '' : 'none';
+  if (!enabled && extCurrentTab === 'marketplace') {
+    switchExtTab('installed', document.getElementById('extTabInstalled'));
+  }
+}
+
+function filterExtensions(q) {
+  extSearchQuery = q;
+  if (extCurrentTab === 'installed') renderExtensions();
+  else renderMarketplace();
+}
+
+
+const EXT_CAT_META = {
+  books:     {icon: 'fa-book',        label: 'Книги'},
+  agent:     {icon: 'fa-robot',       label: 'Агент'},
+  media:     {icon: 'fa-film',        label: 'Медиа'},
+  notes:     {icon: 'fa-sticky-note', label: 'Заметки'},
+  search:    {icon: 'fa-search',      label: 'Поиск'},
+  ui:        {icon: 'fa-paint-brush', label: 'UI'},
+  settings:  {icon: 'fa-cog',         label: 'Настройки'}
+};
+
+function extCatLabel(cat) {
+  if (EXT_CAT_META[cat]) return EXT_CAT_META[cat].label;
+  return String(cat).replace(/[_-]+/g, ' ').replace(/\b\w/g, function(ch) { return ch.toUpperCase(); });
+}
+
+function renderExtCategories() {
+  var box = document.getElementById('extCategoriesList');
+  if (!box) return;
+  // Сначала встроенные категории, потом те, что появились у расширений,
+  // созданных в билдере.
+  var cats = Object.keys(EXT_CAT_META);
+  (extData || []).forEach(function(e) {
+    var m = e.target_module;
+    if (m && m !== 'all' && cats.indexOf(m) === -1) cats.push(m);
+  });
+  cats.sort();
+  box.innerHTML = cats.map(function(cat) {
+    var meta = EXT_CAT_META[cat] || {icon: 'fa-puzzle-piece'};
+    var label = extCatLabel(cat);
+    var n = (extData || []).filter(function(e) { return (e.target_module || 'all') === cat; }).length;
+    return '<button type="button" class="btn' + (extCategory === cat ? ' active' : '') + '"' +
+           ' data-ext-cat="' + esc(cat) + '" onclick="setExtCategory(this.dataset.extCat)">' +
+           '<i class="icon fa-solid ' + meta.icon + '"></i>' +
+           '<span>' + esc(label) + (n ? ' (' + n + ')' : '') + '</span>' +
+           '</button>';
+  }).join('');
+  syncExtAll();
+}
+
+/* «Все расширения» живёт в рейле отдельной кнопкой: дублировать её в списке
+   категорий не нужно, подсвечиваем только её. */
+function syncExtAll() {
+  var all = document.getElementById('extSidebarAll');
+  if (all) all.classList.toggle('active', extCategory === 'all');
+}
+
+function setExtCategory(cat) {
+  extCategory = cat;
+  document.querySelectorAll('#railGroupExt [data-ext-cat]').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.extCat === cat);
+  });
+  syncExtAll();
+  renderExtensions();
+}
+
+function renderExtNavPages() {
+  const section = document.getElementById('extNavPagesSection');
+  const list = document.getElementById('extNavPagesList');
+  const items = [];
+  (extData || []).forEach(ext => {
+    const pages = ext.module_pages?.pages || [];
+    pages.forEach(p => {
+      if (p.in_nav !== false) {
+        items.push({
+          ext: ext.name,
+          title: p.title || p.path,
+          icon: (p.icon || 'fa-globe').replace('fa-', ''),
+          path: p.path,
+          section: p.nav_section || ''
+        });
+      }
+    });
+  });
+  if (items.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  const grouped = {};
+  items.forEach(item => {
+    const key = item.section || '__default';
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(item);
+  });
+  list.innerHTML = Object.entries(grouped).map(([key, groupItems]) => {
+    const header = key !== '__default' ? `<span class="rail-cap">${esc(key)}</span>` : '';
+    return header + groupItems.map(item =>
+      `<a href="/module/${esc(item.ext)}/${esc(item.path)}" class="btn" target="_blank">
+        <i class="icon fa-solid fa-${esc(item.icon)}"></i>
+        <span>${esc(item.title)}</span>
+      </a>`
+    ).join('');
+  }).join('');
+}
+
+function renderExtensions() {
+  const container = document.getElementById('extensionsInstalled');
+  let list = extData;
+  if (extCategory !== 'all') {
+    list = list.filter(e => (e.target_module || 'all') === extCategory);
+  }
+  if (extSearchQuery) {
+    const q = extSearchQuery.toLowerCase();
+    list = list.filter(e =>
+      (e.name || '').toLowerCase().includes(q) ||
+      (e.description || '').toLowerCase().includes(q) ||
+      (e.target_module || 'all').toLowerCase().includes(q)
+    );
+  }
+  renderExtCategories();
+  document.getElementById('extCount').textContent = '(' + extData.length + ')';
+  if (!list.length) {
+    container.innerHTML = '<div class="ext-empty"><div class="icon">🧩</div><h3>Нет расширений</h3><p>Установите расширение из магазина или создайте своё первое расширение с помощью тура</p><div style="display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap"><a href="/api/extensions/builder-page" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none"><i class="fas fa-magic"></i> Создать расширение</a><a href="/api/extensions/builder-page?tour=1" class="btn btn-warning" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none"><i class="fas fa-graduation-cap"></i> Пройти тур</a></div></div>';
+    return;
+  }
+  container.innerHTML = '<div class="ext-grid">' + list.map(renderExtCard).join('') + '</div>';
+}
+
+function renderExtCard(ext) {
+  const enabled = ext.enabled !== false;
+  const module = ext.target_module || 'all';
+  const moduleLabel = module.charAt(0).toUpperCase() + module.slice(1);
+  const version = ext.version || '0.1.0';
+
+  return '<div class="ext-card" id="ext-' + esc(ext.name) + '">' +
+    '<div class="ext-card-header">' +
+      '<div class="ext-card-info">' +
+        '<div class="ext-card-name">' + esc(ext.name || module) +
+          '<span class="ext-card-version">v' + esc(version) + '</span>' +
+          '<span class="ext-status ' + (enabled ? 'enabled' : 'disabled') + '">' +
+            '<i class="fas fa-' + (enabled ? 'check-circle' : 'circle') + '"></i> ' +
+            (enabled ? 'Вкл' : 'Выкл') +
+          '</span>' +
+        '</div>' +
+        (ext.author ? '<div class="ext-card-author"><i class="fas fa-user"></i> ' + esc(ext.author) + '</div>' : '') +
+      '</div>' +
+      '<label class="ext-toggle" onclick="event.stopPropagation()">' +
+        '<input type="checkbox" ' + (enabled ? 'checked' : '') + ' onchange="toggleExtension(\'' + esc(ext.name) + '\', this.checked)">' +
+        '<div class="ext-toggle-slider"></div>' +
+      '</label>' +
+    '</div>' +
+    '<div class="ext-meta-row">' +
+      '<span class="ext-badge ' + esc(module) + '"><i class="fas fa-puzzle-piece"></i> ' + esc(moduleLabel) + '</span>' +
+      (ext.hooks && ext.hooks.length ? '<span class="ext-badge"><i class="fas fa-plug"></i> ' + ext.hooks.length + ' хуков</span>' : '') +
+    '</div>' +
+    (ext.description ? '<div class="ext-card-desc">' + esc(ext.description) + '</div>' : '') +
+    (ext.frontend_error ? '<div style="display:flex;align-items:center;gap:8px;margin-top:8px;padding:8px 12px;background:rgba(239,68,68,0.12);border:1px solid #ef4444;border-radius:8px;font-size:12px;color:#ef4444"><i class="fas fa-exclamation-triangle"></i><b>Ошибка JS:</b> <span style="word-break:break-all">' + esc(ext.frontend_error) + '</span></div>' : '') +
+    '<div class="ext-card-actions">' +
+      '<button class="ext-btn" onclick="openInBuilder(\'' + esc(ext.name) + '\')"><i class="fas fa-pen-to-square"></i> Вернуться в билдер</button>' +
+      '<button class="ext-btn" onclick="downloadExtensionInf(\'' + esc(ext.name) + '\')" title="Один файл .inf — запускается двойным кликом в файловом менеджере"><i class="fas fa-box"></i> Скачать .inf</button>' +
+      '<button class="ext-btn" onclick="editExtension(\'' + esc(ext.name) + '\')"><i class="fas fa-code"></i> Редактировать</button>' +
+      '<button class="ext-btn" onclick="showExtConfigModal(\'' + esc(ext.name) + '\')"><i class="fas fa-cog"></i> Настройки</button>' +
+      '<button class="ext-btn" onclick="showExtPermsModal(\'' + esc(ext.name) + '\')"><i class="fas fa-shield-alt"></i> Права</button>' +
+      '<button class="ext-btn" onclick="publishExtension(\'' + esc(ext.name) + '\')"><i class="fas fa-cloud-upload-alt"></i> Опубликовать</button>' +
+      '<button class="ext-btn" onclick="showExtRollbackModal(\'' + esc(ext.name) + '\')"><i class="fas fa-clock-rotate-left"></i> Откат</button>' +
+      '<button class="ext-btn danger" onclick="deleteExtension(\'' + esc(ext.name) + '\')"><i class="fas fa-trash"></i> Удалить</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function openInBuilder(name) {
+  window.location.href = '/api/extensions/builder-page?edit=' + encodeURIComponent(name);
+}
+
+// Скачать расширение одним файлом .inf (тот же пакет, но JSON вместо zip).
+async function downloadExtensionInf(name) {
+  try {
+    const r = await fetch('/api/extensions/' + encodeURIComponent(name) + '/export-inf');
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      showToast('Ошибка: ' + (d.error || 'не удалось собрать .inf'), 'error');
+      return;
+    }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name + '.inf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Файл .inf скачан', 'success');
+  } catch (e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+function renderMarketplace() {
+  const container = document.getElementById('extensionsMarketplace');
+  let list = marketplaceData;
+  if (extSearchQuery) {
+    const q = extSearchQuery.toLowerCase();
+    list = list.filter(e =>
+      (e.name || '').toLowerCase().includes(q) ||
+      (e.description || '').toLowerCase().includes(q) ||
+      (e.category || 'all').toLowerCase().includes(q)
+    );
+  }
+  if (!list.length) {
+    container.innerHTML = '<div class="ext-empty"><div class="icon">🛒</div><h3>Магазин пуст</h3><p>Пока нет доступных расширений для установки</p></div>';
+    return;
+  }
+  container.innerHTML = '<div class="ext-grid">' + list.map(renderMarketplaceCard).join('') + '</div>';
+}
+
+function renderMarketplaceCard(item) {
+  const module = item.category || 'all';
+  const moduleLabel = module.charAt(0).toUpperCase() + module.slice(1);
+  const stars = item.stars || item.rating || 0;
+  const starStr = '★'.repeat(Math.round(stars)) + '☆'.repeat(5 - Math.round(stars));
+
+  return '<div class="ext-card">' +
+    '<div class="ext-card-header">' +
+      '<div class="ext-card-info">' +
+        '<div class="ext-card-name">' + esc(item.name) +
+          '<span class="ext-card-version">' + (item.version ? 'v' + esc(item.version) : '') + '</span>' +
+        '</div>' +
+        (item.author ? '<div class="ext-card-author"><i class="fas fa-user"></i> ' + esc(item.author) + '</div>' : '') +
+        (stars > 0 ? '<div style="color:var(--yellow);font-size:12px;margin-top:2px">' + starStr + ' ' + stars.toFixed(1) + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div class="ext-meta-row">' +
+      '<span class="ext-badge ' + esc(module) + '"><i class="fas fa-puzzle-piece"></i> ' + esc(moduleLabel) + '</span>' +
+    '</div>' +
+    (item.description ? '<div class="ext-card-desc">' + esc(item.description) + '</div>' : '') +
+    '<div class="ext-card-footer">' +
+      '<button class="ext-btn primary" onclick="installMarketplaceExtension(\'' + esc(item.name) + '\', \'' + esc(item.download_url || item.source_url || '') + '\')">' +
+        '<i class="fas fa-download"></i> Установить' +
+      '</button>' +
+      '<button class="ext-btn danger" onclick="removeMarketplaceExtension(\'' + esc(item.name) + '\')"><i class="fas fa-trash"></i> Удалить из магазина</button>' +
+      (item.source_url ? '<a class="ext-btn" href="' + esc(item.source_url) + '" target="_blank"><i class="fas fa-external-link-alt"></i></a>' : '') +
+    '</div>' +
+  '</div>';
+}
+
+async function toggleExtension(name, enable) {
+  try {
+    if (!enable) {
+      const r = await fetch('/api/extensions/' + encodeURIComponent(name) + '/disable', {method: 'POST'});
+      const data = await r.json();
+      if (data.ok !== false) showToast('Выключено: ' + name, 'success');
+      else showToast('Ошибка: ' + (data.error || 'неизвестная'), 'error');
+      return;
+    }
+    const r = await fetch('/api/extensions/' + encodeURIComponent(name) + '/enable', {method: 'POST'});
+    const data = await r.json();
+    if (data.ok === false && data.need_sandbox_choice) {
+      showSandboxChoiceModal(name, data.sandbox);
+      return;
+    }
+    if (data.ok !== false) {
+      showToast('Включено: ' + name, 'success');
+    } else {
+      showToast('Ошибка: ' + (data.error || 'неизвестная'), 'error');
+      loadExtensions();
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+let _sandboxPendingName = null;
+function showSandboxChoiceModal(name, currentSandbox) {
+  _sandboxPendingName = name;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay active';
+  overlay.id = 'extSandboxModal';
+  overlay.innerHTML =
+    '<div class="modal" style="max-width:460px">' +
+      '<div class="modal-header" style="display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);padding:14px 18px">' +
+        '<i class="fas fa-shield-halved" style="color:var(--accent);font-size:18px"></i>' +
+        '<b style="flex:1;font-size:14px">Запуск расширения</b>' +
+        '<button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()"><i class="fas fa-times"></i></button>' +
+      '</div>' +
+      '<div class="modal-body" style="padding:16px 18px;font-size:13px;color:var(--text2);line-height:1.6">' +
+        '<b style="color:var(--text);font-size:14px"><i class="fas fa-puzzle-piece" style="color:var(--accent);margin-right:6px"></i>' + esc(name) + '</b>' +
+        '<p style="margin:8px 0 0">Это первый запуск расширения. Выберите режим выполнения Python-кода:</p>' +
+        '<div style="margin-top:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:12px;line-height:1.6">' +
+          '<div style="display:flex;gap:10px"><i class="fas fa-lock" style="color:var(--green);margin-top:2px"></i><div><b>Песочница (рекомендуется)</b> — Python-код выполняется в изолированном процессе: сбой не уронит сервер, доступ к серверным файлам ограничен.</div></div>' +
+          '<div style="display:flex;gap:10px;margin-top:8px"><i class="fas fa-unlock" style="color:var(--orange);margin-top:2px"></i><div><b>Напрямую</b> — полный доступ к серверу (как раньше).</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="modal-footer" style="padding:12px 18px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border)">' +
+        '<button class="ext-btn" style="color:var(--orange);border-color:rgba(249,115,22,0.4)" onclick="chooseSandboxMode(false)"><i class="fas fa-unlock"></i> Напрямую</button>' +
+        '<button class="ext-btn primary" onclick="chooseSandboxMode(true)"><i class="fas fa-shield-halved"></i> В песочнице</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+}
+
+async function chooseSandboxMode(sandbox) {
+  const name = _sandboxPendingName;
+  _sandboxPendingName = null;
+  const m = document.getElementById('extSandboxModal');
+  if (m) m.remove();
+  if (!name) return;
+  try {
+    const r = await fetch('/api/extensions/' + encodeURIComponent(name) + '/sandbox-choice', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({sandbox})
+    });
+    const data = await r.json();
+    if (data.ok !== false) {
+      showToast(sandbox ? 'Расширение будет работать в песочнице' : 'Расширение будет работать напрямую', 'success');
+      const r2 = await fetch('/api/extensions/' + encodeURIComponent(name) + '/enable', {method: 'POST'});
+      const d2 = await r2.json();
+      if (d2.ok) showToast('Включено: ' + name, 'success');
+      else showToast('Ошибка включения: ' + (d2.error || 'неизвестная'), 'error');
+    } else {
+      showToast('Ошибка: ' + (data.error || 'неизвестная'), 'error');
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  } finally {
+    loadExtensions();
+  }
+}
+
+async function loadRecoveryStatus() {
+  try {
+    const r = await fetch('/api/extensions/recovery/status');
+    const st = await r.json();
+    const banner = document.getElementById('extRecoveryBanner');
+    if (!banner) return;
+    const problems = (st.suspects || []).length + (st.blocked || []).length + (st.boot_errors || []).length;
+    if (!problems && !st.safe_mode) { banner.style.display = 'none'; return; }
+    banner.style.display = 'flex';
+    let html = '';
+    if (st.safe_mode) html += '<div><i class="fas fa-triangle-exclamation" style="color:var(--orange);margin-right:6px"></i><b>Безопасный режим:</b> сервер запущен без исполнения кода расширений. Выберите действие для каждого проблемного расширения, затем перезапустите сервер.</div>';
+    (st.suspects || []).forEach(n => {
+      html += '<div style="margin-top:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
+        '<i class="fas fa-circle-exclamation" style="color:var(--orange)"></i><b>' + esc(n) + '</b> <span style="color:var(--text3)">подозревается в сбое при загрузке</span>' +
+        '<span style="margin-left:auto;display:inline-flex;gap:6px">' +
+          '<button class="ext-btn" style="font-size:11px;padding:4px 10px" onclick="recoveryAction(\'try-again\',\'' + esc(n) + '\')">Попробовать снова</button>' +
+          '<button class="ext-btn" style="font-size:11px;padding:4px 10px;color:var(--orange);border-color:rgba(249,115,22,0.4)" onclick="recoveryAction(\'block\',\'' + esc(n) + '\')">Заблокировать</button>' +
+        '</span></div>';
+    });
+    (st.blocked || []).forEach(n => {
+      html += '<div style="margin-top:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
+        '<i class="fas fa-ban" style="color:var(--red)"></i><b>' + esc(n) + '</b> <span style="color:var(--red)">заблокировано (вредоносное?)</span>' +
+        '<button class="ext-btn" style="font-size:11px;padding:4px 10px;margin-left:auto" onclick="recoveryAction(\'unblock\',\'' + esc(n) + '\')">Разблокировать</button>' +
+        '</div>';
+    });
+    (st.boot_errors || []).forEach(e => {
+      html += '<div style="margin-top:4px;color:var(--text3);font-size:12px"><i class="fas fa-bug" style="margin-right:6px"></i>' + esc(e.name || '?') + ': ' + esc(String(e.error || '').slice(0, 120)) + '</div>';
+    });
+    document.getElementById('extRecoveryDetails').innerHTML = html;
+    document.getElementById('extRecoveryActions').innerHTML =
+      '<button class="ext-btn" style="font-size:12px" onclick="recoveryAction(\'safe-mode-off\',null)"><i class="fas fa-power-off"></i> Выйти из безопасного режима</button>' +
+      '<button class="ext-btn" style="font-size:12px" onclick="createRecoveryBackup()"><i class="fas fa-database"></i> Создать резервную копию</button>';
+  } catch(e) {}
+}
+
+async function recoveryAction(action, name) {
+  const endpoints = {
+    'try-again': '/api/extensions/recovery/try-again',
+    'block': '/api/extensions/recovery/block',
+    'unblock': '/api/extensions/recovery/unblock',
+    'safe-mode-off': '/api/extensions/recovery/safe-mode'
+  };
+  try {
+    let r;
+    if (action === 'safe-mode-off') {
+      r = await fetch(endpoints[action], {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({on:false})});
+    } else {
+      r = await fetch(endpoints[action], {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})});
+    }
+    const d = await r.json();
+    showToast(d.ok ? 'Готово' : 'Ошибка: ' + (d.error || 'неизвестная'), d.ok ? 'success' : 'error');
+    loadRecoveryStatus();
+    loadExtensions();
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function createRecoveryBackup() {
+  try {
+    const r = await fetch('/api/extensions/recovery/backup', {method:'POST'});
+    const d = await r.json();
+    showToast(d.ok ? 'Резервная копия создана: ' + (d.backup_id || '') : 'Ошибка: ' + (d.error || 'неизвестная'), d.ok ? 'success' : 'error');
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function deleteExtension(name) {
+  if (!confirm('Удалить расширение "' + name + '"? Это действие нельзя отменить.')) return;
+  try {
+    const r = await fetch('/api/extensions/' + encodeURIComponent(name), {method: 'DELETE'});
+    const data = await r.json();
+    if (data.ok !== false) {
+      showToast('Расширение "' + name + '" удалено', 'success');
+      loadExtensions();
+    } else {
+      showToast('Ошибка: ' + (data.error || 'неизвестная'), 'error');
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function installMarketplaceExtension(name, url) {
+  showToast('Установка ' + name + '...', 'info');
+  try {
+    const r = await fetch('/api/extensions/marketplace/install?url=' + encodeURIComponent(url || name), {method: 'POST'});
+    const data = await r.json();
+    if (data.ok !== false) {
+      showToast('Расширение "' + name + '" установлено!', 'success');
+      switchExtTab('installed', document.getElementById('extTabInstalled'));
+    } else {
+      showToast('Ошибка: ' + (data.error || 'неизвестная'), 'error');
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function publishExtension(name) {
+  const metaStr = await InfinityDialogs.prompt({label:'Введите JSON метаданных для публикации в магазине:\n(название, описание, иконка и т.д.)', value:'{"name":"' + name + '","description":"","author":"","version":"1.0.0","category":"tools"}'});
+  if (!metaStr) return;
+  try {
+    const meta = JSON.parse(metaStr);
+    const r = await fetch('/api/extensions/marketplace/publish', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, meta})});
+    const d = await r.json();
+    if (d.ok) {
+      showToast('Расширение "' + name + '" опубликовано в магазине!', 'success');
+      if (document.getElementById('extTabMarketplace')) loadMarketplace();
+    } else {
+      showToast('Ошибка публикации: ' + (d.error || ''), 'error');
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function removeMarketplaceExtension(name) {
+  if (!confirm('Удалить "' + name + '" из магазина?')) return;
+  try {
+    const r = await fetch('/api/extensions/marketplace/remove', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})});
+    const d = await r.json();
+    if (d.ok) {
+      showToast('Расширение "' + name + '" удалено из магазина', 'success');
+      loadMarketplace();
+    } else {
+      showToast('Ошибка: ' + (d.error || ''), 'error');
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function showExtConfigModal(name) {
+  try {
+    const r = await fetch('/api/extensions/' + encodeURIComponent(name) + '/config');
+    const cfg = await r.json();
+    const cfgStr = typeof cfg === 'object' ? JSON.stringify(cfg, null, 2) : String(cfg);
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay active';
+    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+    modal.innerHTML = '<div class="modal" style="max-width:600px">' +
+      '<div class="modal-header">' +
+        '<h2><i class="fas fa-cog"></i> Настройки: ' + esc(name) + '</h2>' +
+        '<button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()"><i class="fas fa-times"></i></button>' +
+      '</div>' +
+      '<div class="modal-body ext-modal-body">' +
+        '<pre>' + esc(cfgStr) + '</pre>' +
+      '</div>' +
+    '</div>';
+    document.body.appendChild(modal);
+  } catch(e) {
+    showToast('Ошибка загрузки конфига: ' + e.message, 'error');
+  }
+}
+
+async function showExtPermsModal(name) {
+  try {
+    const r = await fetch('/api/extensions/' + encodeURIComponent(name) + '/permissions');
+    const perms = await r.json();
+    const permsList = perms.permissions || perms || [];
+    const permsStr = Array.isArray(permsList) ? permsList.join(', ') : JSON.stringify(permsList, null, 2);
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay active';
+    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+    modal.innerHTML = '<div class="modal" style="max-width:500px">' +
+      '<div class="modal-header">' +
+        '<h2><i class="fas fa-shield-alt"></i> Права: ' + esc(name) + '</h2>' +
+        '<button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()"><i class="fas fa-times"></i></button>' +
+      '</div>' +
+      '<div class="modal-body ext-modal-body">' +
+        '<pre>' + esc(permsStr) + '</pre>' +
+      '</div>' +
+    '</div>';
+    document.body.appendChild(modal);
+  } catch(e) {
+    showToast('Ошибка загрузки прав: ' + e.message, 'error');
+  }
+}
+
+// --- Extension upload / git / create / editor ---
+function uploadExtensionZip(input) {
+  const file = input.files[0];
+  if (!file) return;
+  showToast('Загрузка ' + file.name + '...', 'info');
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const r = await fetch('/api/extensions/upload', { method: 'POST', body: e.target.result });
+      const d = await r.json();
+      if (d.ok) {
+        showToast('Расширение "' + (d.extension?.name || file.name) + '" установлено!', 'success');
+        loadExtensions();
+      } else {
+        showToast('Ошибка: ' + (d.error || ''), 'error');
+      }
+    } catch(e2) {
+      showToast('Ошибка: ' + e2.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  input.value = '';
+}
+
+function handleExtDrop(event) {
+  event.preventDefault();
+  const zone = document.getElementById('extDropZone');
+  if (zone) zone.style.borderColor = 'var(--border)';
+  if (zone) zone.style.background = 'transparent';
+  const file = event.dataTransfer.files[0];
+  if (file && file.name.endsWith('.zip')) {
+    showToast('Загрузка ' + file.name + '...', 'info');
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      try {
+        const r = await fetch('/api/extensions/upload', { method: 'POST', body: e.target.result });
+        const d = await r.json();
+        if (d.ok) {
+          showToast('Расширение установлено!', 'success');
+          loadExtensions();
+        } else {
+          showToast('Ошибка: ' + (d.error || ''), 'error');
+        }
+      } catch(e2) {
+        showToast('Ошибка: ' + e2.message, 'error');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    showToast('Пожалуйста, выберите .zip файл', 'warning');
+  }
+}
+
+// --- App zip upload ---
+function toggleAppDropZone() {
+  const zone = document.getElementById('appDropZone');
+  if (!zone) return;
+  if (zone.style.display === 'none' || !zone.style.display || zone.style.display === '') {
+    zone.style.display = 'block';
+  } else {
+    zone.style.display = 'none';
+  }
+}
+
+function uploadAppZip(input) {
+  const file = input.files[0];
+  if (!file) return;
+  showToast('Загрузка ' + file.name + '...', 'info');
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const r = await fetch('/api/apps/upload', { method: 'POST', body: e.target.result });
+      const d = await r.json();
+      if (d.ok) {
+        showToast('Приложение "' + (d.name || file.name) + '" установлено!', 'success');
+        loadApps();
+      } else {
+        showToast('Ошибка: ' + (d.error || ''), 'error');
+      }
+    } catch(e2) {
+      showToast('Ошибка: ' + e2.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  input.value = '';
+}
+
+function handleAppDrop(event) {
+  event.preventDefault();
+  const zone = document.getElementById('appDropZone');
+  zone.style.borderColor = 'var(--border)';
+  zone.style.background = 'transparent';
+  const file = event.dataTransfer.files[0];
+  if (file && file.name.endsWith('.zip')) {
+    showToast('Загрузка ' + file.name + '...', 'info');
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      try {
+        const r = await fetch('/api/apps/upload', { method: 'POST', body: e.target.result });
+        const d = await r.json();
+        if (d.ok) {
+          showToast('Приложение "' + (d.name || file.name) + '" установлено!', 'success');
+          loadApps();
+        } else {
+          showToast('Ошибка: ' + (d.error || ''), 'error');
+        }
+      } catch(e2) {
+        showToast('Ошибка: ' + e2.message, 'error');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    showToast('Пожалуйста, выберите .zip файл', 'warning');
+  }
+}
+
+function showGitInstallModal() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay active';
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+  modal.innerHTML = '<div class="modal" style="max-width:500px">' +
+    '<div class="modal-header">' +
+      '<h2><i class="fas fa-link"></i> Установить по Git-ссылке</h2>' +
+      '<button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()"><i class="fas fa-times"></i></button>' +
+    '</div>' +
+    '<div class="modal-body">' +
+      '<input type="text" id="gitUrlInput" placeholder="https://github.com/user/repo" style="width:100%;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:14px;font-family:inherit;margin-bottom:12px;outline:none">' +
+      '<button class="ext-btn primary" style="width:100%;justify-content:center;padding:10px" onclick="installFromGit()">' +
+        '<i class="fas fa-download"></i> Установить' +
+      '</button>' +
+    '</div>' +
+  '</div>';
+  document.body.appendChild(modal);
+  setTimeout(() => document.getElementById('gitUrlInput').focus(), 100);
+}
+
+async function installFromGit() {
+  const url = document.getElementById('gitUrlInput').value.trim();
+  if (!url) { showToast('Введите Git URL', 'warning'); return; }
+  showToast('Установка...', 'info');
+  try {
+    const r = await fetch('/api/extensions/install-git', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({url: url})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showToast('Расширение установлено!', 'success');
+      document.querySelector('.modal-overlay.active')?.remove();
+      loadExtensions();
+    } else {
+      showToast('Ошибка: ' + (d.error || ''), 'error');
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function createTestExtension() {
+  showToast('Создание тестового расширения...', 'info');
+  try {
+    const r = await fetch('/api/extensions/create-test', {method: 'POST'});
+    const d = await r.json();
+    if (d.ok) {
+      showToast('Тестовое расширение создано!', 'success');
+      loadExtensions();
+    } else {
+      showToast('Ошибка: ' + (d.error || ''), 'error');
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+// --- Extension Rollback ---
+// Снимок создаётся перед ручной правкой кода; откат возвращает рабочее
+// состояние, если правка всё испортила. Состояние ДО отката тоже
+// сохраняется (pre-restore), поэтому откат обратим.
+async function showExtRollbackModal(name) {
+  const old = document.getElementById('extRollbackModal');
+  if (old) old.remove();
+  const wrap = document.createElement('div');
+  wrap.id = 'extRollbackModal';
+  wrap.className = 'modal-overlay';
+  wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100050;display:flex;align-items:center;justify-content:center';
+  wrap.innerHTML =
+    '<div style="background:var(--bg2,#1a1a2e);border:1px solid var(--border,#333);border-radius:12px;padding:22px;max-width:560px;width:92%;max-height:80vh;overflow:auto">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">' +
+        '<h3 style="margin:0;font-size:16px">Откат расширения: ' + esc(name) + '</h3>' +
+        '<button onclick="document.getElementById(\'extRollbackModal\').remove()" style="margin-left:auto;background:none;border:none;color:inherit;font-size:20px;cursor:pointer">&times;</button>' +
+      '</div>' +
+      '<div id="extRollbackList"><div style="opacity:.7;font-size:13px">Загрузка снимков…</div></div>' +
+      '<div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">' +
+        '<button class="ext-btn" onclick="createExtBackupNow(\'' + esc(name) + '\')"><i class="fas fa-camera"></i> Создать снимок сейчас</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(wrap);
+  wrap.addEventListener('click', function(e) { if (e.target === wrap) wrap.remove(); });
+
+  const list = document.getElementById('extRollbackList');
+  try {
+    const r = await fetch('/api/extensions/' + encodeURIComponent(name) + '/backups');
+    const d = await r.json();
+    const items = d.backups || [];
+    if (!items.length) {
+      list.innerHTML = '<div style="font-size:13px;opacity:.8">Снимков пока нет. Они создаются автоматически перед правкой файлов, перегенерацией в билдере и обновлением — но если вы правите код вручную на диске, создайте снимок кнопкой ниже.</div>';
+      return;
+    }
+    list.innerHTML = items.map(function(b) {
+      return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border,#333);border-radius:9px;margin-bottom:8px">' +
+        '<i class="fas fa-clock-rotate-left" style="opacity:.6"></i>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-size:13px">' + esc(b.label || 'без метки') + '</div>' +
+          '<div style="font-size:11px;opacity:.6">' + esc(b.created || '') + (b.version ? ' · v' + esc(b.version) : '') + '</div>' +
+        '</div>' +
+        '<button class="ext-btn" onclick="doExtRollback(\'' + esc(name) + '\',\'' + esc(b.id) + '\')">Восстановить</button>' +
+      '</div>';
+    }).join('');
+  } catch (e) {
+    list.innerHTML = '<div style="font-size:13px;color:#ef4444">Не удалось загрузить снимки: ' + esc(e.message) + '</div>';
+  }
+}
+
+async function createExtBackupNow(name) {
+  try {
+    const r = await fetch('/api/extensions/' + encodeURIComponent(name) + '/backup', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({label: 'перед правкой'})
+    });
+    const d = await r.json();
+    if (d.ok) { showToast('Снимок создан', 'success'); showExtRollbackModal(name); }
+    else showToast(d.error || 'Не удалось создать снимок', 'warning');
+  } catch (e) { showToast(e.message, 'warning'); }
+}
+
+async function doExtRollback(name, backupId) {
+  if (!confirm('Восстановить расширение «' + name + '» из снимка?\n\nТекущее состояние сохранится как pre-restore — откат можно отменить.')) return;
+  try {
+    const r = await fetch('/api/extensions/' + encodeURIComponent(name) + '/rollback', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({backup_id: backupId})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      showToast('Расширение восстановлено', 'success');
+      document.getElementById('extRollbackModal').remove();
+      loadExtensions();
+    } else showToast(d.error || 'Откат не удался', 'warning');
+  } catch (e) { showToast(e.message, 'warning'); }
+}
+
+// --- Extension Editor ---
+function editExtension(name) {
+  window.open('/apps/edit-ext?id=' + encodeURIComponent(name), '_blank');
+}
+
+let _extEditorFiles = [];
+
+async function loadExtEditorFiles(name) {
+  try {
+    const r = await fetch('/api/extensions/' + encodeURIComponent(name) + '/files');
+    const data = await r.json();
+    _extEditorFiles = data.files || [];
+    renderExtFileTree();
+    if (_extEditorFiles.length) {
+      openExtEditorFile(_extEditorFiles[0].path);
+    }
+  } catch(e) {
+    const _tree = document.getElementById('extEditorFileTree');
+    if (_tree) _tree.innerHTML = '<div style="color:var(--red);padding:8px">Ошибка: ' + e.message + '</div>';
+  }
+}
+
+function renderExtFileTree() {
+  const container = document.getElementById('extEditorFileTree');
+  if (!container) return;
+  container.innerHTML = _extEditorFiles.filter(f => f.type === 'file').map(f => {
+    const active = f.path === window._extEditorCurrentFile ? 'style="background:var(--accent-light);color:var(--accent);border-radius:6px"' : '';
+    return '<div ' + active + ' onclick="openExtEditorFile(\'' + esc(f.path) + '\')" style="padding:6px 8px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
+      '<i class="fas fa-file-code" style="font-size:12px;color:var(--text3);width:16px"></i>' +
+      '<span>' + esc(f.name) + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+async function openExtEditorFile(path) {
+  window._extEditorCurrentFile = path;
+  renderExtFileTree();
+  const pathEl = document.getElementById('extEditorFilePath');
+  const ta = document.getElementById('extEditorTextarea');
+  if (!pathEl || !ta) return;
+  pathEl.textContent = path;
+  ta.value = 'Загрузка...';
+  ta.disabled = true;
+  try {
+    const r = await fetch('/api/extensions/' + encodeURIComponent(window._extEditorName) + '/files/read?path=' + encodeURIComponent(path));
+    const data = await r.json();
+    ta.value = data.content || '';
+    ta.disabled = false;
+    ta.focus();
+  } catch(e) {
+    ta.value = 'Ошибка: ' + e.message;
+  }
+}
+
+async function saveExtEditor() {
+  const name = window._extEditorName;
+  const path = window._extEditorCurrentFile;
+  const taEl = document.getElementById('extEditorTextarea');
+  if (!taEl) { showToast('Редактор недоступен', 'warning'); return; }
+  const content = taEl.value;
+  if (!path) { showToast('Выберите файл для сохранения', 'warning'); return; }
+  try {
+    const r = await fetch('/api/extensions/' + encodeURIComponent(name) + '/files/save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({path: path, content: content})
+    });
+    const data = await r.json();
+    if (data.ok) {
+      showToast('Файл сохранён', 'success');
+    } else {
+      showToast('Ошибка: ' + (data.error || ''), 'error');
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+// --- Hash routing ---
+(function() {
+  if (window.location.hash === '#extensions') {
+    setTimeout(function() { showExtensions(); }, 300);
+  }
+})();
+
+// --- Repository ---
+function showAddRepoModal() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay active';
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+  modal.innerHTML = '<div class="modal" style="max-width:520px">' +
+    '<div class="modal-header">' +
+      '<h2><i class="fas fa-database"></i> Добавить репозиторий</h2>' +
+      '<button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()"><i class="fas fa-times"></i></button>' +
+    '</div>' +
+    '<div class="modal-body">' +
+      '<p style="font-size:13px;color:var(--text2);margin-bottom:14px">JSON-файл со списком приложений/расширений. Формат: { "apps": [...], "extensions": [...] }</p>' +
+      '<input type="text" id="repoUrlInput" placeholder="https://example.com/repo.json" style="width:100%;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:14px;font-family:inherit;margin-bottom:12px;outline:none">' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button class="ext-btn primary" style="flex:1;justify-content:center;padding:10px" onclick="loadRepoFromUrl()"><i class="fas fa-cloud-download-alt"></i> Загрузить из URL</button>' +
+        '<button class="ext-btn" style="justify-content:center;padding:10px" onclick="loadRepoFromFile()"><i class="fas fa-file-upload"></i> Локальный файл</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+  document.body.appendChild(modal);
+  setTimeout(() => document.getElementById('repoUrlInput').focus(), 100);
+}
+
+async function loadRepoFromUrl() {
+  const url = document.getElementById('repoUrlInput').value.trim();
+  if (!url) { showToast('Введите URL репозитория', 'warning'); return; }
+  showToast('Загрузка репозитория...', 'info');
+  try {
+    const r = await fetch('/api/extensions/repository/load', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({url: url})
+    });
+    const d = await r.json();
+    if (d.ok && d.items) {
+      marketplaceData = d.items;
+      renderMarketplace();
+      switchExtTab('marketplace', document.getElementById('extTabMarketplace'));
+      showToast('Репозиторий загружен: ' + d.items.length + ' элементов', 'success');
+      document.querySelector('.modal-overlay.active')?.remove();
+    } else {
+      showToast('Ошибка: ' + (d.error || 'неизвестная'), 'error');
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+function loadRepoFromFile() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(ev) {
+      try {
+        const data = JSON.parse(ev.target.result);
+        const items = (data.apps || []).concat(data.extensions || []);
+        if (items.length) {
+          marketplaceData = items;
+          renderMarketplace();
+          switchExtTab('marketplace', document.getElementById('extTabMarketplace'));
+          showToast('Репозиторий загружен: ' + items.length + ' элементов', 'success');
+        } else {
+          showToast('Файл не содержит приложений или расширений', 'warning');
+        }
+      } catch(parseErr) {
+        showToast('Ошибка парсинга JSON: ' + parseErr.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+loadApps();
+applyMarketplaceFlag();
+</script>
+<link rel="stylesheet" href="/static/css/module_rail.css">
+<link rel="stylesheet" href="/static/css/apps_next.css">
+<script src="/static/js/module_rail.js" defer></script>
+<script src="/static/js/apps_next.js" defer></script>
+</body>
+</html>

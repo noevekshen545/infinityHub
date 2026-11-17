@@ -1,0 +1,224 @@
+/* Focus — редактор заметок: только текст.
+   Панели приглушены до наведения, поле без рамки, узкая колонка.
+   Добавляет два режима (кнопки в панели инструментов):
+     • «Дзен» — убирает всю обвязку, выход по Esc;
+     • «Машинка» — строка с курсором держится в центре экрана.
+   Цвета — токены страницы, тема приложения действует целиком. */
+
+html[data-notes-skin="focus"] body { background-color: var(--bg) }
+
+/* ── Панели: видны, когда нужны ───────────────────────────────────────── */
+html[data-notes-skin="focus"] .toolbar,
+html[data-notes-skin="focus"] .format-bar,
+html[data-notes-skin="focus"] .plugin-bar {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  opacity: 0.32;
+  transition: opacity 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+html[data-notes-skin="focus"] .toolbar:hover,
+html[data-notes-skin="focus"] .toolbar:focus-within,
+html[data-notes-skin="focus"] .format-bar:hover,
+html[data-notes-skin="focus"] .format-bar:focus-within,
+html[data-notes-skin="focus"] .plugin-bar:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--bg2) 82%, transparent);
+  border-color: var(--border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html[data-notes-skin="focus"] .toolbar { margin: 10px 18px 0 }
+html[data-notes-skin="focus"] .format-bar { margin: 0 18px 4px }
+
+html[data-notes-skin="focus"] .fmt-btn { border-radius: 8px }
+
+/* ── Полотно ──────────────────────────────────────────────────────────── */
+html[data-notes-skin="focus"] .wrap {
+  max-width: 720px;
+  padding: 40px 22px 110px;
+}
+
+html[data-notes-skin="focus"] .title-input {
+  font-size: clamp(28px, 3.4vw, 35px);
+  font-weight: 650;
+  letter-spacing: -0.012em;
+  color: var(--text);
+  background: none;
+  -webkit-text-fill-color: var(--text);
+  padding: 0;
+  margin-bottom: 10px;
+}
+
+html[data-notes-skin="focus"] .meta-line {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0 12px;
+  gap: 10px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+html[data-notes-skin="focus"] .meta-line > span:not([id]) { display: none }
+html[data-notes-skin="focus"] .meta-line > span[id] i { opacity: 0.6 }
+
+html[data-notes-skin="focus"] .editor-wrap { position: relative }
+
+html[data-notes-skin="focus"] .editor {
+  padding: 6px 0;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 17px;
+  line-height: 2.0;
+  color: var(--text);
+  caret-color: var(--accent);
+}
+
+html[data-notes-skin="focus"] .editor:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+html[data-notes-skin="focus"] .editor-highlight {
+  padding: 6px 0;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+}
+
+html[data-notes-skin="focus"] .focus-btn { top: 2px; right: -4px }
+
+html[data-notes-skin="focus"] .drop-zone {
+  border-radius: 0;
+  border-style: dashed;
+  border-color: var(--border);
+  background: transparent;
+  opacity: 0.75;
+}
+
+html[data-notes-skin="focus"] .tag-pill {
+  background: transparent;
+  border-color: var(--border2);
+  color: var(--text2);
+  border-radius: 999px;
+}
+
+html[data-notes-skin="focus"] .tag-pill:hover { background: var(--accent-light); color: var(--accent) }
+
+html[data-notes-skin="focus"] .tag-input { border-radius: 999px }
+
+html[data-notes-skin="focus"] .preview-area {
+  margin-top: 26px;
+  padding: 0;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-notes-skin="focus"] .preview-pane-head { background: var(--bg) }
+
+html[data-notes-skin="focus"] .notes-explorer {
+  width: 320px;
+  border-radius: 0 20px 20px 0;
+}
+
+html[data-notes-skin="focus"] .word-count {
+  background: transparent;
+  border-color: var(--border);
+  box-shadow: none;
+  color: var(--text3);
+}
+
+html[data-notes-skin="focus"] .saved-indicator { border-radius: 999px }
+html[data-notes-skin="focus"] .focus-tools .ft-btn { border-radius: 999px }
+
+/* ── «Машинка»: строка с курсором по центру экрана ────────────────────── */
+html[data-notes-skin="focus"].skin-typewriter .editor {
+  padding-top: 38vh;
+  padding-bottom: 52vh;
+}
+
+html[data-notes-skin="focus"].skin-typewriter .editor-highlight {
+  padding-top: 38vh;
+  padding-bottom: 52vh;
+}
+
+/* ── «Дзен»: только текст и маленький выход ───────────────────────────── */
+html[data-notes-skin="focus"].skin-editor-zen .toolbar,
+html[data-notes-skin="focus"].skin-editor-zen .format-bar,
+html[data-notes-skin="focus"].skin-editor-zen .plugin-bar,
+html[data-notes-skin="focus"].skin-editor-zen .word-count,
+html[data-notes-skin="focus"].skin-editor-zen .notes-explorer:not(.open) {
+  display: none !important;
+}
+
+html[data-notes-skin="focus"].skin-editor-zen .wrap {
+  max-width: 680px;
+  padding-top: 64px;
+}
+
+.oe-zen-exit {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 2400;
+  display: none;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border2);
+  background: color-mix(in srgb, var(--bg2) 88%, transparent);
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+html[data-notes-skin="focus"].skin-editor-zen .oe-zen-exit { display: inline-flex }
+
+.oe-zen-exit:hover { color: var(--accent); border-color: var(--accent) }
+
+/* ── Адаптив ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  html[data-notes-skin="focus"] .wrap { padding: 24px 16px 90px }
+  html[data-notes-skin="focus"] .editor { font-size: 16.5px; line-height: 1.9 }
+  html[data-notes-skin="focus"] .toolbar { margin: 8px 10px 0 }
+  html[data-notes-skin="focus"] .format-bar { margin: 0 10px 4px }
+  html[data-notes-skin="focus"].skin-typewriter .editor,
+  html[data-notes-skin="focus"].skin-typewriter .editor-highlight {
+    padding-top: 30vh;
+    padding-bottom: 45vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-notes-skin="focus"] .toolbar,
+  html[data-notes-skin="focus"] .format-bar,
+  html[data-notes-skin="focus"] .plugin-bar { transition: none }
+}
+
+/* Фокус-режим: ширину полотна задаёт ручка (--notes-focus-w, ставится на
+   body), а не фиксированный max-width скина. Без этого правила скин
+   перебивал inline-стиль страницы по специфичности, и перетаскивание
+   боковых ручек не меняло ширину — работала только высота. */
+html[data-notes-skin="focus"] body.notes-focus .wrap {
+  max-width: var(--notes-focus-w, 680px);
+}
+
+/* Сплит: превью — вторая колонка той же строки, что и редактор.
+   Внешний отступ сверху (26px) сдвигал его ниже колонки заметки. */
+html[data-notes-skin="focus"] body.notes-split .preview-area { margin-top: 0 }

@@ -1,0 +1,193 @@
+/* Studio — редактор заметок: собранный деловой вид.
+   Плоские панели, плотная сетка, акцентная полоска у активного элемента.
+   Слева от полотна — «Структура» (оглавление по заголовкам), её строит
+   notes_edit_skin_common.js. Цвета — из токенов страницы, поэтому тема
+   приложения действует без отдельной палитры. */
+
+html[data-notes-skin="studio"] body { background-color: var(--bg) }
+
+/* ── Панели ───────────────────────────────────────────────────────────── */
+html[data-notes-skin="studio"] .toolbar {
+  margin: 10px 16px 6px;
+  padding: 7px 10px;
+  gap: 4px;
+  border-radius: 12px;
+  border-color: var(--border2);
+  background: var(--bg2);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-notes-skin="studio"] .toolbar .btn {
+  border-radius: 8px;
+  border-color: transparent;
+  background: var(--bg3);
+  font-size: 11.5px;
+  padding: 7px 10px;
+}
+
+html[data-notes-skin="studio"] .toolbar .btn:hover { background: var(--hover) }
+
+html[data-notes-skin="studio"] .toolbar .btn.primary {
+  background: var(--accent);
+  box-shadow: none;
+}
+
+html[data-notes-skin="studio"] .toolbar .btn-icon { border-radius: 8px }
+
+html[data-notes-skin="studio"] .format-bar {
+  margin: 0 16px 10px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  border-color: var(--border2);
+  background: var(--bg2);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-notes-skin="studio"] .fmt-btn { width: 30px; height: 28px; border-radius: 7px }
+html[data-notes-skin="studio"] .fmt-btn:hover { background: var(--bg3); border-color: var(--border2) }
+
+html[data-notes-skin="studio"] .plugin-bar {
+  margin: 0 16px 10px;
+  border-radius: 10px;
+  background: var(--bg2);
+}
+
+/* ── Полотно заметки ──────────────────────────────────────────────────── */
+html[data-notes-skin="studio"] .wrap {
+  max-width: 1000px;
+  padding: 16px 20px 88px;
+}
+
+html[data-notes-skin="studio"] .title-input {
+  font-size: clamp(26px, 3vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  padding: 4px 0 8px;
+  background: none;
+  -webkit-text-fill-color: var(--text);
+}
+
+html[data-notes-skin="studio"] .meta-line {
+  border-bottom: 1px solid var(--border2);
+  padding: 8px 0 10px;
+  gap: 10px;
+  font-size: 11.5px;
+}
+
+html[data-notes-skin="studio"] .meta-line > span:not([id]) { display: none }
+
+html[data-notes-skin="studio"] .meta-line > span[id] {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--bg3);
+  color: var(--text2);
+}
+
+html[data-notes-skin="studio"] .editor-wrap { position: relative }
+
+html[data-notes-skin="studio"] .editor {
+  padding: 18px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  background: var(--bg2);
+  box-shadow: var(--shadow-sm);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+html[data-notes-skin="studio"] .editor:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+html[data-notes-skin="studio"] .editor-highlight {
+  padding: 18px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  background: var(--bg2);
+}
+
+html[data-notes-skin="studio"] .focus-btn { top: 10px; right: 12px }
+
+html[data-notes-skin="studio"] .drop-zone {
+  border-radius: 10px;
+  background: var(--bg3);
+}
+
+html[data-notes-skin="studio"] .attachments,
+html[data-notes-skin="studio"] .note-media-card,
+html[data-notes-skin="studio"] .preview-area { border-radius: 10px }
+
+html[data-notes-skin="studio"] .preview-area {
+  border-color: var(--border2);
+  box-shadow: none;
+  padding: 20px;
+}
+
+html[data-notes-skin="studio"] .tag-pill,
+html[data-notes-skin="studio"] .tag-input { border-radius: 6px }
+
+/* ── Папки ────────────────────────────────────────────────────────────── */
+html[data-notes-skin="studio"] .notes-explorer {
+  width: 300px;
+  border-radius: 0;
+  border-right: 1px solid var(--border2);
+  background: var(--bg2);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-notes-skin="studio"] .notes-explorer .ne-header {
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border2);
+}
+
+html[data-notes-skin="studio"] .notes-explorer .ne-actions .btn { border-radius: 8px }
+
+/* Сдвиги при открытых папках повторяют базовые, но от ширины 300 px. */
+html[data-notes-skin="studio"] body.ne-open .toolbar,
+html[data-notes-skin="studio"] body.ne-open .format-bar,
+html[data-notes-skin="studio"] body.ne-open .plugin-bar {
+  margin-left: 316px;
+}
+
+html[data-notes-skin="studio"] body.ne-open .wrap {
+  margin-left: 316px;
+  margin-right: 20px;
+}
+
+/* ── «Структура» ────────────────────────────────────────────────
+   Панель общая для всех шаблонов, стили — в notes_edit_toolbar_menu.css. */
+
+/* ── Плашки ───────────────────────────────────────────────────────────── */
+html[data-notes-skin="studio"] .word-count { border-radius: 8px; box-shadow: none }
+html[data-notes-skin="studio"] .saved-indicator { border-radius: 8px }
+html[data-notes-skin="studio"] .focus-tools .ft-btn { border-radius: 9px }
+
+/* ── Адаптив ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  html[data-notes-skin="studio"] .toolbar { margin: 8px 10px 4px }
+  html[data-notes-skin="studio"] .format-bar { margin: 0 10px 10px }
+  html[data-notes-skin="studio"] .wrap { padding: 12px 14px 80px }
+  html[data-notes-skin="studio"] .editor { padding: 14px 16px }
+  html[data-notes-skin="studio"] .editor-highlight { padding: 14px 16px }
+  html[data-notes-skin="studio"] body.ne-open .toolbar,
+  html[data-notes-skin="studio"] body.ne-open .format-bar,
+  html[data-notes-skin="studio"] body.ne-open .plugin-bar,
+  html[data-notes-skin="studio"] body.ne-open .wrap {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+/* Фокус-режим: ширину полотна задаёт ручка (--notes-focus-w, ставится на
+   body), а не фиксированный max-width скина. Без этого правила скин
+   перебивал inline-стиль страницы по специфичности, и перетаскивание
+   боковых ручек не меняло ширину — работала только высота. */
+html[data-notes-skin="studio"] body.notes-focus .wrap {
+  max-width: var(--notes-focus-w, 680px);
+}

@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html class="pg-page_social_feed" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лента — Infinity Social</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/fonts/google-fonts.css">
+<link rel="stylesheet" href="/static/css/social-theme.css?v=9">
+<style>
+/* ширина задаётся в social-theme.css: .main { max-width: 85% } */
+
+.stories-carousel { display: flex; gap: 12px; padding: 12px 0; overflow-x: auto; margin-bottom: 16px; scroll-snap-type: x mandatory }
+.story-circle { scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; flex-shrink: 0 }
+.story-ring { width: 64px; height: 64px; border-radius: 50%; padding: 3px; background: conic-gradient(var(--accent), var(--purple), var(--accent)); display: flex; align-items: center; justify-content: center }
+.story-ring.viewed { background: var(--border2) }
+.story-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--bg2) }
+.story-ring .story-add { width: 100%; height: 100%; border-radius: 50%; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-size: 24px; color: var(--accent) }
+.story-src-btn { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: var(--radius-sm); background: var(--bg3); color: var(--text); border: 1px solid var(--border); cursor: pointer; font-family: inherit; font-size: 14px; transition: var(--tr) }
+.story-src-btn i { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: var(--bg4); border-radius: 10px; color: var(--accent); font-size: 15px }
+.story-src-btn:hover { background: var(--hover); border-color: var(--accent) }
+.story-name { font-size: 11px; color: var(--text3); text-align: center; max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+
+.ai-recs { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px }
+.ai-recs h3 { font-size: 14px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; color: var(--accent) }
+.ai-recs .rec-items { display: flex; gap: 8px; overflow-x: auto }
+.ai-recs .rec-item { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 8px; border-radius: var(--radius-sm); transition: var(--tr) }
+.ai-recs .rec-item:hover { background: var(--hover) }
+.ai-recs .rec-item img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--bg3) }
+.ai-recs .rec-item .rec-name { font-size: 12px; font-weight: 500; max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.ai-recs .rec-item .rec-sub { font-size: 11px; color: var(--text3) }
+
+.hashtag-cloud { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px }
+.hashtag-cloud .htag { font-size: 12px; color: var(--accent); background: var(--accent-light); padding: 4px 10px; border-radius: 14px; cursor: pointer; transition: var(--tr) }
+.hashtag-cloud .htag:hover { background: var(--accent); color: white }
+
+.post-form textarea { width: 100%; min-height: 80px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: 12px; font-size: 14px; font-family: inherit; resize: vertical; transition: var(--tr) }
+.post-form textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow) }
+.post-form .pf-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px }
+.post-form { position: relative }
+.post-form .pf-left { display: flex; gap: 6px; align-items: center }
+.post-form .pf-left button { padding: 7px 12px; border-radius: var(--radius-sm); font-size: 13px; color: var(--text2); transition: var(--tr); display: flex; align-items: center; gap: 5px }
+.post-form .pf-left button:hover { background: var(--hover); color: var(--accent) }
+.post-form .pf-left button i { font-size: 15px }
+.char-count { font-size: 12px; color: var(--text3) }
+.btn-post { padding: 8px 20px; border-radius: var(--radius-sm); background: var(--accent); color: white; font-size: 14px; font-weight: 500; transition: var(--tr); border: none; cursor: pointer }
+.btn-post:hover { opacity: 0.9 }
+
+.post { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 12px; backdrop-filter: blur(10px); transition: var(--tr) }
+.post:hover { border-color: var(--border2) }
+.post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px }
+.post-avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; overflow: hidden; cursor: pointer; background: linear-gradient(135deg, var(--accent), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; font-weight: 600 }
+.post-avatar img { width: 100%; height: 100%; object-fit: cover }
+.post-author { font-weight: 600; font-size: 14px }
+.post-author a { color: var(--text) }
+.post-time { font-size: 12px; color: var(--text3) }
+.post-content { font-size: 14px; line-height: 1.6; margin-bottom: 10px; white-space: pre-wrap; word-break: break-word }
+.post-content .hashtag { color: var(--accent); cursor: pointer }
+.post-content .hashtag:hover { text-decoration: underline }
+.post-media { margin-bottom: 10px; border-radius: var(--radius-sm); overflow: hidden }
+.post-media audio { width: 100% }
+.post-media video { width: 100%; max-height: 400px; border-radius: var(--radius-sm) }
+.post-actions { display: flex; gap: 4px; padding-top: 10px; border-top: 1px solid var(--border) }
+.post-actions button { padding: 6px 12px; border-radius: var(--radius-sm); font-size: 13px; color: var(--text3); transition: var(--tr); display: flex; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; font-family: inherit }
+.post-actions button:hover { background: var(--hover); color: var(--text2) }
+.post-actions button.liked { color: var(--red) }
+.post-actions button.liked i { font-weight: 900 }
+.reaction-btn { position: relative }
+.reaction-picker { position: absolute; bottom: 100%; left: 0; display: none; gap: 4px; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 8px; box-shadow: var(--shadow-lg); z-index: 10; white-space: nowrap }
+.reaction-btn:hover .reaction-picker { display: flex }
+.reaction-picker span { font-size: 20px; cursor: pointer; padding: 2px 4px; border-radius: 6px; transition: var(--tr) }
+.reaction-picker span:hover { background: var(--hover); transform: scale(1.2) }
+
+.comments-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border) }
+.comment { display: flex; gap: 8px; margin-bottom: 8px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--bg2) }
+.c-avatar { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; overflow: hidden; background: linear-gradient(135deg, var(--accent2), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 11px; color: white; font-weight: 600 }
+.c-avatar img { width: 100%; height: 100%; object-fit: cover }
+.c-body { flex: 1 }
+.c-author { font-weight: 600; font-size: 13px }
+.c-text { font-size: 13px; color: var(--text2); margin-top: 2px }
+.c-time { font-size: 11px; color: var(--text3); margin-top: 4px }
+.comment-input { display: flex; gap: 8px; margin-top: 8px }
+.comment-input input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); padding: 8px 12px; font-size: 13px; font-family: inherit; transition: var(--tr) }
+.comment-input input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow) }
+.comment-input button { padding: 8px 14px; border-radius: var(--radius-sm); background: var(--accent); color: white; font-size: 13px; font-weight: 500; transition: var(--tr); border: none; cursor: pointer }
+
+.modal input, .modal textarea { width: 100%; padding: 10px 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 13px; margin-bottom: 14px; font-family: inherit; transition: var(--tr) }
+.modal input:focus, .modal textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow) }
+
+@media (max-width: 768px) {
+  .notif-panel { right: 8px; left: 8px; width: auto }
+}
+.toolbar {
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 1000; background: var(--glass);
+  backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl); padding: 6px;
+  display: flex; align-items: center; gap: 4px;
+  box-shadow: var(--shadow-lg);
+  max-width: calc(100vw - 24px);
+  transition: var(--tr);
+}
+.toolbar:hover { box-shadow: var(--shadow-lg), 0 0 60px var(--accent-glow) }
+.toolbar .brand { font-size: 15px; font-weight: 800; color: var(--accent); padding: 6px 12px; border-radius: 10px; cursor: pointer; transition: var(--tr); display: inline-flex; align-items: center; gap: 6px; text-decoration: none }
+.toolbar .brand:hover { background: var(--accent-light); transform: scale(1.05) }
+.toolbar .sep { width: 1px; height: 20px; background: var(--border2); margin: 0 4px }
+.toolbar .btn { background: transparent; border: 1px solid transparent; color: var(--text2); padding: 8px 14px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 500; transition: var(--tr); display: inline-flex; align-items: center; gap: 7px; font-family: inherit; text-decoration: none; white-space: nowrap }
+.toolbar .btn:hover { background: var(--hover); color: var(--text); transform: translateY(-1px) }
+.toolbar .btn:hover i { color: var(--accent) }
+.toolbar .btn.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; box-shadow: 0 4px 16px var(--accent-glow) }
+.toolbar .btn.active i { color: #fff }
+.toolbar .btn-icon { background: transparent; border: 1px solid transparent; color: var(--text2); padding: 8px 10px; border-radius: 12px; cursor: pointer; font-size: 15px; transition: var(--tr); display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px }
+.toolbar .btn-icon:hover { background: var(--hover); color: var(--accent); transform: rotate(15deg) }
+.main { padding-top: 76px !important }
+.theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px }
+.theme-btn { padding: 14px 10px; border: 2px solid var(--border); border-radius: 14px; cursor: pointer; font-size: 12px; font-weight: 600; transition: var(--tr); display: flex; flex-direction: column; align-items: center; gap: 8px; background: var(--bg); color: var(--text) }
+.theme-btn:hover { border-color: var(--accent); transform: translateY(-2px) }
+.theme-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent) }
+.theme-btn .icon { font-size: 26px }
+</style>
+<script src="/static/js/i18n.js"></script>
+<script src="/static/js/social-emoji.js?v=6"></script>
+<script src="/static/js/social-ui.js?v=6"></script>
+<link rel="stylesheet" href="/static/css/social-lightbox.css?v=2">
+<link rel="stylesheet" href="/static/css/social-viewer.css?v=1">
+<link rel="stylesheet" href="/static/css/social-share.css?v=1">
+<link rel="stylesheet" href="/static/css/social-comments.css?v=1">
+<script src="/static/js/social-dock.js?v=7"></script>
+<script src="/static/js/social-viewer.js?v=1"></script>
+<script src="/static/js/social-lightbox.js?v=3"></script>
+<script src="/static/js/social-comments.js?v=2"></script>
+<script src="/static/js/social-share.js?v=1"></script>
+<script src="/static/js/social-mentions.js?v=1"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+<script>
+const savedTheme = localStorage.getItem('infinity_theme') || 'dark';
+document.body.className = '';
+if (savedTheme !== 'dark') document.body.classList.add(savedTheme);
+</script>
+
+<div class="toolbar">
+  <a class="brand" href="/social/feed"><i class="fas fa-users"></i> Social</a>
+  <div class="sep"></div>
+  <a class="btn active" href="/social/feed"><i class="fas fa-newspaper"></i><span>Лента</span></a>
+  <a class="btn" href="/social/profile"><i class="fas fa-user"></i><span>Профиль</span></a>
+  <a class="btn" href="/social/friends"><i class="fas fa-user-friends"></i><span>Друзья</span></a>
+  <a class="btn" href="/social/messages"><i class="fas fa-envelope"></i><span>Сообщения</span><span class="count" style="background:var(--red);color:white;padding:1px 6px;border-radius:10px;font-size:10px;display:none" id="msg-count">0</span></a>
+  <a class="btn" href="/social/friends?tab=groups"><i class="fas fa-users"></i><span>Группы</span></a>
+  <a class="btn" href="/social/friends?tab=channels"><i class="fas fa-bullhorn"></i><span>Каналы</span></a>
+  <div class="sep"></div>
+  <a class="btn" href="/social/music"><i class="fas fa-music"></i><span>Музыка</span></a>
+  <a class="btn" href="/social/video"><i class="fas fa-video"></i><span>Видео</span></a>
+  <div class="sep"></div>
+  <button class="btn-icon" onclick="openThemePicker()" title="Тема"><i class="fas fa-palette"></i></button>
+  <a class="btn-icon" href="/" title="На главную"><i class="fas fa-home"></i></a>
+</div>
+<!-- PAGE_START -->
+<main class="main">
+    <div class="page-header">
+      <h1><i class="fas fa-newspaper"></i> Лента</h1>
+      <div class="notif-area">
+        <div class="notif-bell" onclick="toggleNotifications()">
+          <i class="fas fa-bell"></i>
+          <span class="badge" id="notif-badge" style="display:none">0</span>
+        </div>
+        <div class="notif-panel" id="notif-panel">
+          <div class="np-header"><span><i class="fas fa-bell"></i> Уведомления</span><button onclick="markAllNotifRead()">Прочитать все</button></div>
+          <div id="notif-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stories-carousel" id="stories-carousel"></div>
+    <input type="file" id="storyInput" accept="image/*,video/*" style="display:none">
+    <div class="modal-overlay" id="story-source-modal">
+      <div class="modal" style="max-width:360px">
+        <div class="modal-title"><i class="fas fa-plus-circle"></i> Добавить историю</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="story-src-btn" onclick="openCamera('photo')"><i class="fas fa-camera"></i> Сделать фото</button>
+          <button class="story-src-btn" onclick="openCamera('video')"><i class="fas fa-video"></i> Снять видео</button>
+          <button class="story-src-btn" onclick="closeModal('story-source-modal');pickStoryFile()"><i class="fas fa-upload"></i> Загрузить с устройства</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-overlay" id="camera-modal">
+      <div class="modal" style="max-width:420px">
+        <div class="modal-title" id="camera-title"><i class="fas fa-camera"></i> Сделать фото</div>
+        <div style="position:relative;background:#000;border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:9/16;max-height:56vh">
+          <video id="cam-video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;display:none"></video>
+          <canvas id="cam-canvas" style="display:none"></canvas>
+          <div id="cam-timer" style="position:absolute;top:8px;left:0;right:0;text-align:center;color:#fff;font-size:22px;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,.6);display:none">0:00</div>
+        </div>
+        <div class="m-actions" style="justify-content:center;margin-top:12px">
+          <button class="btn-secondary" onclick="closeCamera()"><i class="fas fa-times"></i> Отмена</button>
+          <button class="btn-primary" id="cam-trigger" onclick="camAction()"><i class="fas fa-camera"></i> Сделать фото</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="ai-recs" class="ai-recs" style="display:none">
+      <h3><i class="fas fa-magic"></i> Вам может понравиться</h3>
+      <div class="rec-items" id="rec-items"></div>
+    </div>
+
+    <div class="hashtag-cloud" id="hashtag-cloud"></div>
+
+    <div class="glass-card post-form">
+      <textarea id="post-content" placeholder="Что у вас нового?" maxlength="5000"></textarea>
+      <div class="pf-actions">
+        <div class="pf-left">
+          <button onclick="openMediaPicker('audio')" title="Прикрепить медиа"><i class="fas fa-music"></i></button>
+          <button onclick="openMediaPicker('video')" title="Прикрепить видео"><i class="fas fa-video"></i></button>
+          <input type="file" id="feed-media-input" accept="image/*,video/*,audio/*" multiple style="display:none" onchange="onFeedMediaPicked(this)">
+          <button onclick="pickFeedMedia()" title="Фото или видео с компьютера"><i class="fas fa-image"></i></button>
+          <button onclick="toggleWallPicker()" title="Эмодзи и стикеры"><i class="fas fa-smile"></i></button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="char-count"><span id="char-count">0</span>/5000</span>
+          <button class="btn-post" onclick="createPost()"><i class="fas fa-paper-plane"></i> Опубликовать</button>
+        </div>
+      </div>
+      <div id="feed-media-preview" style="display:none;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px"></div>
+          <div id="wallStickerChip"></div>
+      <div class="wall-picker" id="wallPicker">
+        <div class="wp-tabs">
+          <button type="button" class="active" data-wtab="emoji" onclick="switchWallTab('emoji')">Эмодзи</button>
+          <button type="button" data-wtab="sticker" onclick="switchWallTab('sticker')">Стикеры</button>
+        </div>
+        <div class="wp-body" id="wpBody"></div>
+      </div>
+    </div>
+
+    <div id="feed-container"></div>
+    <button class="load-more" id="load-more" onclick="loadMore()" style="display:none">Загрузить ещё</button>
+    <div id="feed-loader" class="loading" style="display:none"><i class="fas fa-spinner"></i><p style="margin-top:8px">Загрузка...</p></div>
+  </main>
+
+<div class="modal-overlay" id="media-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title"><i class="fas fa-music"></i> Прикрепить медиа</div>
+    <div class="search-bar" style="margin-bottom:12px"><i class="fas fa-search"></i><input id="media-search-input" placeholder="Поиск музыки или видео..." oninput="searchMedia()"></div>
+    <div class="media-tabs">
+      <button class="active" data-type="all" onclick="switchMediaTab('all')">Все</button>
+      <button data-type="music" onclick="switchMediaTab('music')">Музыка</button>
+      <button data-type="video" onclick="switchMediaTab('video')">Видео</button>
+    </div>
+    <div class="media-list" id="media-list"><div class="loading"><i class="fas fa-spinner"></i></div></div>
+    <div class="m-actions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button class="btn-secondary" onclick="closeModal('media-modal')">Закрыть</button></div>
+  </div>
+</div>
+
+<script>
+const API = '/api/social';
+let offset = 0, LIMIT = 20, loading = false, hasMore = true;
+let selectedMedia = null, activeMediaTab = 'all', pendingFeedMedia = [];
+let myProfileId = 'default';
+
+function closeModal(id) { document.getElementById(id).classList.remove('active') }
+function openModal(id) { document.getElementById(id).classList.add('active') }
+
+async function api(url, opts = {}) {
+  // Для FormData заголовок Content-Type не ставим: пусть браузер сам поставит
+  // multipart/form-data с boundary. Явный application/json ломает загрузку
+  // файлов — сервер отвечает 422 «Field required: file».
+  const headers = Object.assign({}, opts.headers || {});
+  if (opts.body !== undefined && !(opts.body instanceof FormData) && !('Content-Type' in headers)) {
+    headers['Content-Type'] = 'application/json';
+  }
+  const res = await fetch(url, { ...opts, headers });
+  return res.json();
+}
+function avStyle(crop) {
+  if (typeof crop === 'string') { try { crop = JSON.parse(crop) } catch (e) { crop = null } }
+  if (!crop || typeof crop !== 'object' || Array.isArray(crop)) crop = { zoom: 1, x: .5, y: .5 };
+  const z = Math.max(.5, Math.min(4, crop.zoom || 1));
+  const x = Math.max(0, Math.min(100, (crop.x ?? .5) * 100));
+  const y = Math.max(0, Math.min(100, (crop.y ?? .5) * 100));
+  return `object-position:${x}% ${y}%;transform:scale(${z});transform-origin:${x}% ${y}%`;
+}
+function escapeHtml(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])) }
+
+async function openRemoteProfile(actorUrl) {
+  try {
+    const p = await api(`${API}/ap/profile?actor=${encodeURIComponent(actorUrl)}`);
+    const modal = document.getElementById('remote-profile-modal');
+    const initial = (p.display_name || p.username || '?')[0].toUpperCase();
+    document.getElementById('remote-profile-name').textContent = p.display_name || p.username || '?';
+    document.getElementById('remote-profile-handle').textContent = p.username ? `${p.username}@${p.domain}` : actorUrl;
+    document.getElementById('remote-profile-bio').textContent = (p.summary || '').replace(/<[^>]+>/g, '');
+    document.getElementById('remote-profile-avatar').innerHTML = p.avatar_url ? `<img src="${p.avatar_url}" alt="">` : initial;
+    document.getElementById('remote-profile-avatar').style.background = p.avatar_url ? 'none' : 'linear-gradient(135deg,var(--accent2),var(--purple))';
+    const followBtn = document.getElementById('remote-profile-follow');
+    if (followBtn) {
+      followBtn.dataset.actor = actorUrl;
+      followBtn.popoverTarget = p.url || actorUrl;
+      try {
+        const subs = await api(`${API}/ap/following`);
+        const subbed = Array.isArray(subs) && subs.some(s => s.actor_url === actorUrl || s.actor_url === (p.url || ''));
+        followBtn.innerHTML = subbed ? '<i class="fas fa-user-minus"></i> Отписаться' : '<i class="fas fa-user-plus"></i> Подписаться';
+      } catch (e) {}
+    }
+    const openBtn = document.getElementById('remote-profile-open');
+    if (openBtn) { openBtn.href = p.url || actorUrl; openBtn.target = '_blank'; openBtn.style.display = 'inline-flex' }
+    openModal('remote-profile-modal');
+  } catch (e) { toast('Не удалось загрузить профиль', 'error') }
+}
+async function followRemoteFromFeed(btn) {
+  const actorUrl = btn.dataset.actor;
+  btn.disabled = true;
+  const isFollowing = btn.textContent.includes('Отписаться');
+  const res = await api(`${API}/ap/follow`, {
+    method: isFollowing ? 'DELETE' : 'POST',
+    body: JSON.stringify({ actor_url: actorUrl })
+  });
+  btn.disabled = false;
+  if (res && res.ok) {
+    btn.innerHTML = isFollowing ? '<i class="fas fa-user-plus"></i> Подписаться' : '<i class="fas fa-check"></i> Подписан';
+    toast(isFollowing ? 'Отписка отправлена' : 'Подписка отправлена');
+  }
+  else toast('Ошибка подписки', 'error');
+}
+
+async function init() {
+  try {
+    const p = await api(`${API}/me`);
+    if (p && p.profile_id) {
+      myProfileId = p.profile_id;
+    }
+  } catch(e) {}
+  loadStories();
+  loadRecommendations();
+  loadHashtags();
+  loadFeed();
+  loadNotifCount();
+  loadConvCount();
+  setInterval(loadNotifCount, 30000);
+  setInterval(loadConvCount, 15000);
+}
+
+async function loadConvCount() {
+  try { const convs = await api(`${API}/conversations`); const u = convs.reduce((s,c) => s+(c.unread_count||0),0); const el = document.getElementById('msg-count'); if (u > 0) { el.textContent = u > 99 ? '99+' : u; el.style.display = 'inline' } else el.style.display = 'none' } catch(e) {}
+}
+
+async function loadStories() {
+  try {
+    const stories = await api(`${API}/stories`);
+    const carousel = document.getElementById('stories-carousel');
+    carousel.innerHTML = '';
+    const addCircle = document.createElement('div'); addCircle.className = 'story-circle';
+    addCircle.innerHTML = '<div class="story-ring"><div class="story-add"><i class="fas fa-plus"></i></div></div><div class="story-name">Добавить</div>';
+    addCircle.onclick = () => openModal('story-source-modal');
+    carousel.appendChild(addCircle);
+    if (stories && stories.length) {
+      stories.forEach(s => {
+        const circle = document.createElement('div'); circle.className = 'story-circle';
+        const name = s.display_name || s.author_id || '?';
+        const viewedClass = s.viewed ? 'viewed' : '';
+        const viewCount = s.view_count || 0;
+        circle.innerHTML = `<div class="story-ring ${viewedClass}"><img src="${s.media_url}" alt=""></div><div class="story-name">${escapeHtml(name)}${viewCount > 0 ? ` <span style="font-size:9px;color:var(--text3)">${viewCount}</span>` : ''}</div>`;
+        circle.onclick = () => {
+          api(`${API}/stories/${s.id}/view`, { method: 'POST' });
+          circle.querySelector('.story-ring').classList.add('viewed');
+          openModal('media-modal');
+          document.getElementById('media-list').innerHTML = s.media_type === 'video' ? `<video src="${s.media_url}" controls style="max-width:100%;border-radius:var(--radius-sm)"></video>` : `<img src="${s.media_url}" style="max-width:100%;border-radius:var(--radius-sm)">`;
+          document.querySelector('.modal-title').innerHTML = '<i class="fas fa-camera"></i> История';
+        };
+        carousel.appendChild(circle);
+      });
+    }
+  } catch(e) {}
+}
+
+async function loadRecommendations() {
+  try {
+    const recs = await api(`${API}/recommendations`);
+    if (recs && recs.length) {
+      document.getElementById('ai-recs').style.display = 'block';
+      const container = document.getElementById('rec-items');
+      container.innerHTML = '';
+      recs.forEach(r => {
+        const div = document.createElement('div'); div.className = 'rec-item';
+        div.onclick = () => location.href = `/social/profile?id=${r.profile_id}`;
+        const initial = (r.display_name || r.profile_id || '?')[0].toUpperCase();
+        div.innerHTML = `<div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:18px;color:white;font-weight:600">${initial}</div><div class="rec-name">${escapeHtml(r.display_name || r.profile_id)}</div><div class="rec-sub">${r.common_friends || 0} общих друзей</div>`;
+        container.appendChild(div);
+      });
+    }
+  } catch(e) {}
+}
+
+async function loadHashtags() {
+  try {
+    const tags = await api(`${API}/hashtags/trending`);
+    const cloud = document.getElementById('hashtag-cloud');
+    cloud.innerHTML = '';
+    if (tags && tags.length) {
+      tags.slice(0, 15).forEach(t => {
+        const span = document.createElement('span'); span.className = 'htag';
+        span.textContent = `#${t.tag}`;
+        span.onclick = () => window.location.href = `?hashtag=${t.tag}`;
+        cloud.appendChild(span);
+      });
+    }
+  } catch(e) {}
+}
+
+async function loadFeed(reset = false) {
+  if (loading) return; loading = true;
+  document.getElementById('feed-loader').style.display = 'block';
+  document.getElementById('load-more').style.display = 'none';
+  const params = new URLSearchParams(location.search);
+  const hashtag = params.get('hashtag');
+  const endpoint = hashtag ? `${API}/hashtag/${hashtag}` : `${API}/feed?offset=${offset}&limit=${LIMIT}`;
+  const posts = await api(endpoint);
+  document.getElementById('feed-loader').style.display = 'none';
+  hasMore = posts.length >= LIMIT;
+  const container = document.getElementById('feed-container');
+  if (offset === 0 || reset) container.innerHTML = '';
+  if (posts.length === 0 && offset === 0) {
+    container.innerHTML = '<div class="empty-state"><i class="fas fa-rss"></i><p>Ваша лента пуста. Добавьте друзей, чтобы видеть их записи!</p></div>';
+    loading = false; return;
+  }
+  posts.forEach(p => renderPost(container, p));
+  offset += posts.length;
+  if (hasMore) document.getElementById('load-more').style.display = 'block';
+  loading = false;
+}
+
+function renderPost(container, post) {
+  const div = document.createElement('div'); div.className = 'post';
+  const initial = (post.display_name || post.author_id || '?')[0].toUpperCase();
+  const time = post.created_at ? new Date(post.created_at * 1000).toLocaleString('ru-RU') : '';
+  const content = escapeHtml(post.content).replace(/#(\w+)/g, '<span class="hashtag" onclick="event.stopPropagation();window.location.href=\'?hashtag=$1\'">#$1</span>').replace(/@(\w[\w.]*)/g, '<a href="/social/profile?id=$1" onclick="event.stopPropagation()" style="color:var(--accent)">@$1</a>');
+  let mediaHtml = '';
+  try {
+    const atts = JSON.parse(post.attachments || '[]');
+    // Список для лайтбокса считаем один раз и подставляем в onclick как
+    // JSON-литерал (атрибут в одинарных кавычках): раньше в onclick
+    // ссылались на неопределённую переменную attachments, и клик по
+    // картинке падал с ReferenceError.
+    const lbItems = collectPostMedia(atts);
+    const lbJson = JSON.stringify(lbItems);
+    atts.forEach(a => {
+      const u = a.src || a.url || '';
+      if (a.type === 'audio') mediaHtml += `<div class="post-media"><audio src="${u}" controls preload="none"></audio><div style="font-size:12px;color:var(--text3);margin-top:4px">${escapeHtml(a.title || '')}</div></div>`;
+      else if (a.type === 'video') mediaHtml += `<div class="post-media"><video src="${u}" controls preload="metadata" poster="${a.poster || ''}"></video></div>`;
+      else if (a.type === 'sticker') mediaHtml += `<div class="post-media"><img src="${u}" alt="sticker" style="max-width:160px;border-radius:12px"></div>`;
+      else if (a.type === 'image') mediaHtml += `<div class="post-media"><img src="${u}" alt="" style="max-width:100%;max-height:400px;border-radius:12px;cursor:zoom-in" onclick='lbOpen(${lbJson}, ${lbItems.findIndex(x => x.src === u)})'></div>`;
+    });
+  } catch(e) {}
+  div.innerHTML = `
+    <div class="post-header">
+      <div class="post-avatar" onclick="${post.is_remote ? `event.stopPropagation();openRemoteProfile('${post.actor_url}')` : `location.href='/social/profile?id=${post.author_id}'`}">${post.avatar_path ? `<img src="${post.avatar_path}" style="object-fit:cover;${avStyle(post.avatar_crop)}" alt="">` : initial}</div>
+      <div>
+        <div class="post-author"><a href="#" onclick="event.preventDefault();${post.is_remote ? `openRemoteProfile('${post.actor_url}')` : `window.location.href='/social/profile?id=${post.author_id}'`}">${escapeHtml(post.display_name || post.author_id)}</a>${post.is_remote ? '<span style="font-size:10px;color:var(--text3);margin-left:6px;vertical-align:middle"><i class="fas fa-globe"></i> РВ¤РВµРТ‘и</span>' : ''}</div>
+        <div class="post-time">${time}</div>
+      </div>
+    </div>
+    <div class="post-content">${content}</div>
+    ${post.repost_author_name ? `<div class="repost-info" style="margin:6px 0;padding:8px 10px;background:var(--bg3);border-radius:var(--radius-sm);border-left:3px solid var(--accent);font-size:12px;color:var(--text2)"><i class="fas fa-retweet"></i> Репост: ${escapeHtml(post.repost_author_name)}<br>${escapeHtml(post.repost_content || '').substring(0,100)}${post.repost_content && post.repost_content.length > 100 ? '...' : ''}</div>` : ''}
+    ${mediaHtml}
+    <div class="post-actions">
+      <button class="reaction-btn ${post.liked_by_me ? 'liked' : ''}" onclick="toggleLike('${post.id}', this)">
+        <i class="fa${post.liked_by_me ? 's' : 'r'} fa-heart"></i> <span>${post.likes_count || 0}</span>
+        <div class="reaction-picker">
+          <span onclick="event.stopPropagation();reactToPost('${post.id}','like',this)"><i class="fas fa-heart"></i></span>
+          <span onclick="event.stopPropagation();reactToPost('${post.id}','laugh',this)"><i class="fas fa-laugh"></i></span>
+          <span onclick="event.stopPropagation();reactToPost('${post.id}','shock',this)"><i class="fas fa-surprise"></i></span>
+          <span onclick="event.stopPropagation();reactToPost('${post.id}','sad',this)"><i class="fas fa-sad-tear"></i></span>
+          <span onclick="event.stopPropagation();reactToPost('${post.id}','angry',this)"><i class="fas fa-angry"></i></span>
+        </div>
+      </button>
+      <button onclick="toggleComments('${post.id}', this)"><i class="far fa-comment"></i> <span>${post.comments_count || 0}</span></button>
+      <button onclick="repost('${post.id}')" title="Репост"><i class="fas fa-retweet"></i></button>
+    </div>
+    <div class="comments-section" id="comments-${post.id}" style="display:none">
+      <div id="comments-list-${post.id}"></div>
+      <div class="comment-input"><input type="text" id="comment-input-${post.id}" placeholder="Написать комментарий..." onkeydown="if(event.key==='Enter')addComment('${post.id}')"><button onclick="addComment('${post.id}')"><i class="fas fa-paper-plane"></i></button></div>
+    </div>
+  `;
+  container.appendChild(div);
+}
+
+async function reactToPost(postId, type, el) {
+  await api(`${API}/posts/${postId}/react`, { method: 'POST', body: JSON.stringify({ type }) });
+  el.closest('.reaction-btn').querySelector('i').className = 'fas fa-heart';
+  el.closest('.reaction-btn').classList.add('liked');
+  const span = el.closest('.reaction-btn').querySelector('span');
+  span.textContent = parseInt(span.textContent) + 1;
+}
+
+async function toggleLike(postId, btn) {
+  const res = await api(`${API}/posts/${postId}/like`, { method:'POST' });
+  const span = btn.querySelector('span'); const c = parseInt(span.textContent);
+  if (res.liked) { btn.classList.add('liked'); btn.querySelector('i').className='fas fa-heart'; span.textContent=c+1 }
+  else { btn.classList.remove('liked'); btn.querySelector('i').className='far fa-heart'; span.textContent=Math.max(0,c-1) }
+}
+
+async function toggleComments(postId) {
+  const s = document.getElementById(`comments-${postId}`);
+  if (s.style.display !== 'none') { s.style.display='none'; return }
+  s.style.display='block';
+  const l = document.getElementById(`comments-list-${postId}`);
+  l.innerHTML='<div class="loading" style="padding:10px"><i class="fas fa-spinner"></i></div>';
+  (await api(`${API}/posts/${postId}/comments`)).forEach(c => renderComment(l, c));
+}
+
+function renderComment(container, comment) {
+  const d = document.createElement('div'); d.className='comment';
+  const time=comment.created_at?new Date(comment.created_at*1000).toLocaleString('ru-RU'):'';
+  d.innerHTML=`<div class="c-avatar">${(comment.display_name||comment.author_id||'?')[0]}</div><div class="c-body"><div class="c-author"><a href="/social/profile?id=${comment.author_id}">${escapeHtml(comment.display_name||comment.author_id)}</a></div><div class="c-text">${escapeHtml(comment.content)}</div><div class="c-time">${time}</div></div>`;
+  container.appendChild(d);
+  if (comment.replies) comment.replies.forEach(r => renderComment(container, r));
+}
+
+async function addComment(postId) {
+  const i = document.getElementById(`comment-input-${postId}`); const t = i.value.trim(); if (!t) return; i.value='';
+  await api(`${API}/posts/${postId}/comments`,{method:'POST',body:JSON.stringify({content:t})});
+  toggleComments(postId); setTimeout(()=>toggleComments(postId),100);
+}
+
+async function createPost() {
+  const ta = document.getElementById('post-content'); const text = ta.value.trim();
+  if (!text && !pendingSticker && !selectedMedia && !(pendingFeedMedia && pendingFeedMedia.length)) return;
+  ta.value=''; document.getElementById('char-count').textContent='0';
+  const atts=[]; if (selectedMedia) atts.push(selectedMedia);
+  (pendingFeedMedia||[]).forEach(m=>atts.push(m));
+  if (pendingSticker) atts.push({type:'sticker',src:pendingSticker});
+  const att = JSON.stringify(atts);
+  await api(`${API}/posts`,{method:'POST',body:JSON.stringify({content:text,attachments:att})});
+  selectedMedia=null; pendingFeedMedia=[]; pendingSticker=null; renderWallChip(); offset=0; document.getElementById('feed-container').innerHTML=''; loadFeed();
+}
+
+document.getElementById('post-content').addEventListener('input', function() { document.getElementById('char-count').textContent = this.value.length });
+// Подсказки @ в посте ленты: без этого упомянуть человека можно было только
+// в комментариях и на форуме.
+if (window.SocialMentions) {
+  SocialMentions.attach(document.getElementById('post-content'), { groupId: '' });
+}
+function loadMore() { loadFeed() }
+
+/* ---- Wall picker (emoji + stickers) ---- */
+/* ---- Wall picker (emoji + stickers) — общая фабрика ---- */
+let pendingSticker = null;
+let wallPicker = null;
+if (typeof window.SOCIAL_EMOJI !== 'undefined' && window.SOCIAL_EMOJI.makeWallPicker) {
+  wallPicker = window.SOCIAL_EMOJI.makeWallPicker({
+    panel: 'wallPicker', body: 'wpBody', target: 'post-content', chips: ['wallStickerChip'],
+    onSticker: src => { pendingSticker = src || null }
+  });
+}
+function toggleWallPicker() { if (wallPicker) wallPicker.toggle() }
+function switchWallTab(t) { if (wallPicker) wallPicker.switchTab(t) }
+function clearPendingSticker() { if (wallPicker) wallPicker.clearPending() }
+// Собирает медиа поста для лайтбокса: картинки и видео по порядку,
+function collectPostMedia(attachments) {
+  return (attachments || [])
+    .filter(a => a && (a.type === 'image' || a.type === 'video'))
+    .map(a => ({ type: a.type, src: a.src || a.url || '' }))
+    .filter(a => a.src);
+}
+
+function renderWallChip() { if (wallPicker) wallPicker.clearPending(); renderFeedMediaPreview() }
+document.addEventListener('click', function (e) {
+  const p = document.getElementById('wallPicker');
+  if (p && p.classList.contains('show') && !p.contains(e.target) && !e.target.closest('#wallPicker') && !e.target.closest('.pf-left button')) p.classList.remove('show');
+});
+
+async function openMediaPicker(type) {
+  // Both buttons used to open the default tab, so choosing audio or video
+  // did nothing.
+  activeMediaTab = type || 'audio';
+  selectedMedia = null;
+  openModal('media-modal');
+  document.querySelectorAll('.media-tabs button').forEach(b => {
+    b.classList.toggle('active', b.dataset.type === activeMediaTab);
+  });
+  document.getElementById('media-search-input').value = '';
+  searchMedia();
+}
+
+function pickFeedMedia() {
+  const input = document.getElementById('feed-media-input');
+  if (input) input.click();
+}
+
+async function onFeedMediaPicked(input) {
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  // The server accepts 20 attachments and rejects the rest, so the same
+  // limit is applied here instead of failing on publish.
+  const list = files.slice(0, 20);
+  const results = new Array(list.length);
+  // Три запроса одновременно: последовательная загрузка 20 файлов стоила
+  // 20 round-trip подряд, а больше нескольких — риск затопить соединение
+  // телефона, по которому одновременно идёт подкаст ленты.
+  // Сервер читает файл целиком в память, поэтому большие файлы грузятся
+  // по одному: иначе пик памяти сервера = размер файла × параллельность.
+  const conc = list.some(f => f.size > 25 * 1024 * 1024) ? 1 : 3;
+  let next = 0;
+  async function uploadOne() {
+    for (;;) {
+      const i = next++;
+      if (i >= list.length) return;
+      const f = list[i];
+      const fd = new FormData();
+      fd.append('file', f);
+      try {
+        const r = await api(`${API}/upload/post-media`, { method: 'POST', body: fd });
+        if (r && r.path) {
+          results[i] = { type: f.type.indexOf('video') === 0 ? 'video' : f.type.indexOf('audio') === 0 ? 'audio' : 'image', src: r.path };
+        }
+      } catch (e) {
+        toast('Не удалось загрузить ' + f.name + ': ' + (e.message || e), 'error');
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(conc, list.length) }, uploadOne));
+  // Порядок вложений сохраняется: результат лежит под своим индексом.
+  const added = results.filter(Boolean);
+  input.value = '';
+  if (!added.length) return;
+  pendingFeedMedia = (pendingFeedMedia || []).concat(added).slice(0, 20);
+  renderWallChip();
+  toast(added.length === 1 ? 'Файл прикреплён' : 'Файлов прикреплено: ' + added.length);
+}
+
+function renderFeedMediaPreview() {
+  const box = document.getElementById('feed-media-preview');
+  if (!box) return;
+  const items = pendingFeedMedia || [];
+  if (!items.length) { box.innerHTML = ''; box.style.display = 'none'; return; }
+  box.style.display = 'flex';
+  box.innerHTML = items.map((m, i) =>
+    '<div style="position:relative;width:56px;height:56px;border-radius:8px;'
+    + 'overflow:hidden;border:1px solid var(--border)">' +
+      (m.type === 'video'
+        ? '<video src="' + m.src + '" style="width:100%;height:100%;object-fit:cover"></video>'
+        : m.type === 'audio'
+          ? '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--green),var(--accent));color:#fff"><i class="fas fa-music"></i></div>'
+          : '<img src="' + m.src + '" style="width:100%;height:100%;object-fit:cover">') +
+      '<button onclick="removeFeedMedia(' + i + ')" title="Убрать" ' +
+      'style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;' +
+      'border:none;background:rgba(0,0,0,.6);color:#fff;font-size:11px;cursor:pointer;' +
+      'line-height:1;display:flex;align-items:center;justify-content:center">—</button>' +
+    '</div>').join('')
+    + '<div style="font-size:11px;color:var(--text3)">Прикреплено: ' + items.length + '</div>';
+}
+
+function removeFeedMedia(index) {
+  pendingFeedMedia.splice(index, 1);
+  renderFeedMediaPreview();
+}
+function switchMediaTab(type) { activeMediaTab=type; document.querySelectorAll('.media-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.type===type)); searchMedia() }
+async function searchMedia() {
+  const q=document.getElementById('media-search-input').value.trim(); const list=document.getElementById('media-list');
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  const res=await api(`${API}/media/search?q=${encodeURIComponent(q)}&type=${activeMediaTab}`); list.innerHTML='';
+  const items=[];
+  if (res.tracks) res.tracks.forEach(t=>items.push({type:'audio',title:t.title||t.filename,sub:`${t.artist||''} — ${t.album||''}`,src:`/api/media/stream/${encodePath(t.filepath)}`}));
+  if (res.videos) res.videos.forEach(v=>items.push({type:'video',title:v.title||v.filename,sub:v.overview?v.overview.slice(0,60):'',src:`/api/media/video-stream/${v.id}`,poster:v.poster_url||''}));
+  if (!items.length) { list.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Ничего не найдено</div>'; return }
+  items.forEach(item => {
+    const el=document.createElement('div'); el.className='media-item';
+    el.style.cssText='display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--tr)';
+    el.innerHTML=`<i class="${item.type==='audio'?'fas fa-music':'fas fa-video'}" style="color:${item.type==='audio'?'var(--green)':'var(--orange)'};width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border-radius:8px;font-size:14px;flex-shrink:0"></i><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(item.title||'Unknown')}</div><div style="font-size:11px;color:var(--text3)">${escapeHtml(item.sub||'')}</div></div><button class="mi-add" onclick="attachMedia('${item.type}','${escapeHtml(item.src)}','${escapeHtml(item.title||'')}','${escapeHtml(item.poster||'')}')" style="padding:4px 10px;border-radius:6px;background:var(--accent);color:white;font-size:11px;font-weight:500;border:none;cursor:pointer">+</button>`;
+    list.appendChild(el);
+  });
+}
+function attachMedia(type,src,title,poster) { selectedMedia={type,src,title,poster}; closeModal('media-modal'); document.querySelector('.pf-left button').style.color='var(--green)' }
+function encodePath(path) { return btoa(unescape(encodeURIComponent(path))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'') }
+
+async function toggleNotifications() {
+  const p = document.getElementById('notif-panel'); p.classList.toggle('open');
+  if (!p.classList.contains('open')) return;
+  const res = await api(`${API}/notifications`); const list = document.getElementById('notif-list'); list.innerHTML='';
+  if (res.notifications && res.notifications.length) {
+    res.notifications.slice(0,20).forEach(n => {
+      const item = document.createElement('div'); item.className=`notif-item${n.is_read?'':' unread'}`;
+      const actor=n.display_name||n.actor_id||'?'; const time=n.created_at?new Date(n.created_at*1000).toLocaleString('ru-RU'):'';
+      let text='';
+      if (n.type==='like') text=`<strong>${actor}</strong> оценил(а) вашу запись`;
+      else if (n.type==='comment') text=`<strong>${actor}</strong> оставил(а) комментарий`;
+      else if (n.type==='friend_request') text=`<strong>${actor}</strong> хочет добавить вас в друзья`;
+      else if (n.type==='friend_accept') text=`<strong>${actor}</strong> принял(а) вашу заявку`;
+      else if (n.type==='message') text=`<strong>${actor}</strong> написал(а) вам`;
+      else text=`<strong>${actor}</strong> ${n.type}`;
+      item.innerHTML=`<div class="n-avatar">${actor[0]}</div><div class="n-body">${text}<div class="n-time">${time}</div></div>`;
+      item.onclick=async()=>{ if (!n.is_read) { await api(`${API}/notifications/${n.id}/read`,{method:'PUT'}); item.classList.remove('unread') } if (n.target_type==='conversation') location.href=`/social/messages?conv=${n.target_id}`; else if (n.type==='friend_request'||n.type==='friend_accept') location.href='/social/friends'; else p.classList.remove('open') };
+      list.appendChild(item);
+    });
+  } else list.innerHTML='<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px">Нет уведомлений</div>';
+}
+async function loadNotifCount() {
+  const res=await api(`${API}/notifications`); const badge=document.getElementById('notif-badge');
+  if (res.unread_count>0) { badge.style.display='inline'; badge.textContent=res.unread_count>99?'99+':res.unread_count } else badge.style.display='none';
+}
+async function markAllNotifRead() {
+  await api(`${API}/notifications/read-all`,{method:'PUT'}); document.querySelectorAll('.notif-item.unread').forEach(e=>e.classList.remove('unread')); document.getElementById('notif-badge').style.display='none';
+}
+document.addEventListener('click', function(e) { const p=document.getElementById('notif-panel'), b=document.querySelector('.notif-bell'); if (b&&!p.contains(e.target)&&!b.contains(e.target)) p.classList.remove('open') });
+
+async function repost(postId) {
+    if(!await UI.confirm({title:'Сделать репост?',text:'Пост появится в вашей ленте и в лентах подписчиков.',okText:'Репостнуть'}))return;
+    try{
+      await api(`${API}/repost/${postId}`,{method:'POST'});
+      toast('Репост опубликован','success');
+      loadFeed();
+    }catch(e){toast(e.message||'Не удалось сделать репост','error')}
+}
+document.getElementById('storyInput').onchange=async function(){
+  const f=this.files[0];if(!f)return;
+  const fd=new FormData();fd.append('file',f);
+  await api(`${API}/stories`,{method:'POST',body:fd});
+  this.value='';loadFeed();
+};
+
+/* ---- Stories camera ---- */
+function toast(msg, type = '') {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:20px;right:20px;background:' + (type === 'error' ? 'var(--red)' : 'var(--accent)') + ';color:white;padding:12px 20px;border-radius:12px;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:300px';
+  t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+function pickStoryFile() { document.getElementById('storyInput').click() }
+let camStream = null, camRecorder = null, camChunks = [], camTimerId = null, camElapsed = 0, camMode = 'photo';
+
+async function openCamera(mode) {
+  camMode = mode;
+  document.getElementById('camera-title').innerHTML = mode === 'video' ? '<i class="fas fa-video"></i> Снять видео' : '<i class="fas fa-camera"></i> Сделать фото';
+  document.getElementById('cam-trigger').innerHTML = mode === 'video' ? '<i class="fas fa-circle"></i> Записать' : '<i class="fas fa-camera"></i> Сделать фото';
+  document.getElementById('cam-timer').style.display = 'none';
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 } },
+      audio: mode === 'video'
+    });
+    const v = document.getElementById('cam-video');
+    v.srcObject = camStream; v.style.display = 'block';
+    document.getElementById('cam-canvas').style.display = 'none';
+    openModal('camera-modal');
+  } catch (e) { toast('Камера недоступна: ' + (e.message || 'ошибка доступа'), 'error') }
+}
+function stopCam() {
+  if (camTimerId) { clearInterval(camTimerId); camTimerId = null }
+  if (camRecorder) { try { camRecorder.stop() } catch (e) {} camRecorder = null }
+  camChunks = [];
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null }
+  const v = document.getElementById('cam-video'); v.srcObject = null; v.style.display = 'none';
+}
+function closeCamera() { stopCam(); closeModal('camera-modal') }
+function camAction() {
+  if (camMode === 'photo') capturePhoto();
+  else if (!camRecorder) startRecording();
+  else stopRecording();
+}
+function capturePhoto() {
+  const v = document.getElementById('cam-video'), c = document.getElementById('cam-canvas');
+  if (!v.videoWidth) return;
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+  c.toBlob(b => { if (b) { uploadStory(b, 'story_photo.jpg'); closeCamera() } }, 'image/jpeg', 0.9);
+}
+function startRecording() {
+  if (!camStream) return;
+  camChunks = []; camElapsed = 0;
+  const mt = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+  camRecorder = new MediaRecorder(camStream, { mimeType: mt });
+  camRecorder.ondataavailable = e => { if (e.data && e.data.size) camChunks.push(e.data) };
+  camRecorder.onstop = () => {
+    const blob = new Blob(camChunks, { type: camRecorder ? camRecorder.mimeType : mt });
+    camRecorder = null;
+    if (blob.size > 0) { uploadStory(blob, 'story_video.webm'); closeCamera() }
+  };
+  camRecorder.start(500);
+  document.getElementById('cam-trigger').innerHTML = '<i class="fas fa-stop"></i> Стоп';
+  document.getElementById('cam-timer').style.display = 'block';
+  document.getElementById('cam-timer').textContent = '0:00';
+  camTimerId = setInterval(() => {
+    camElapsed++;
+    const m = Math.floor(camElapsed / 60), s = camElapsed % 60;
+    document.getElementById('cam-timer').textContent = `${m}:${String(s).padStart(2, '0')}`;
+  }, 1000);
+}
+function stopRecording() {
+  if (camRecorder) { camRecorder.stop() }
+  if (camTimerId) { clearInterval(camTimerId); camTimerId = null }
+}
+async function uploadStory(blob, name) {
+  const fd = new FormData(); fd.append('file', blob, name);
+  try {
+    const res = await fetch(`${API}/stories`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data && data.ok) toast('История опубликована');
+    else toast('Ошибка публикации', 'error');
+  } catch (e) { toast('Ошибка сети', 'error') }
+  loadFeed();
+}
+
+init();
+</script>
+<!-- PAGE_END -->
+<div class="modal-overlay" id="themeModal">
+  <div class="modal">
+    <div class="modal-title"><i class="fas fa-palette"></i> Выбор темы</div>
+    <div class="theme-grid">
+      <div class="theme-btn" data-theme="dark" onclick="setTheme('dark')"><span class="icon"><i class="fas fa-moon"></i></span>Тёмная</div>
+      <div class="theme-btn" data-theme="light" onclick="setTheme('light')"><span class="icon"><i class="fas fa-sun"></i></span>Светлая</div>
+      <div class="theme-btn" data-theme="sepia" onclick="setTheme('sepia')"><span class="icon"><i class="fas fa-scroll"></i></span>Сепия</div>
+      <div class="theme-btn" data-theme="warm" onclick="setTheme('warm')"><span class="icon"><i class="fas fa-fire"></i></span>Тёплая</div>
+      <div class="theme-btn" data-theme="paper" onclick="setTheme('paper')"><span class="icon"><i class="fas fa-file"></i></span>Бумага</div>
+      <div class="theme-btn" data-theme="ocean" onclick="setTheme('ocean')"><span class="icon"><i class="fas fa-water"></i></span>Океан</div>
+      <div class="theme-btn" data-theme="forest" onclick="setTheme('forest')"><span class="icon"><i class="fas fa-tree"></i></span>Лес</div>
+      <div class="theme-btn" data-theme="midnight" onclick="setTheme('midnight')"><span class="icon"><i class="fas fa-star"></i></span>Полночь</div>
+      <div class="theme-btn" data-theme="rose" onclick="setTheme('rose')"><span class="icon"><i class="fas fa-rose"></i></span>Роза</div>
+    </div>
+    <div class="m-actions"><button class="btn-primary" onclick="closeThemePicker()"><i class="fas fa-check"></i> Готово</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="remote-profile-modal">
+  <div class="modal">
+    <div class="modal-title"><i class="fas fa-globe"></i> Профиль (федерация)</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      <div id="remote-profile-avatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--purple));display:flex;align-items:center;justify-content:center;font-size:20px;color:white;font-weight:700;overflow:hidden;flex-shrink:0"></div>
+      <div>
+        <div style="font-weight:700;font-size:15px" id="remote-profile-name"></div>
+        <div style="font-size:12px;color:var(--text3)" id="remote-profile-handle"></div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--text2);margin:0 0 12px;word-break:break-word" id="remote-profile-bio"></p>
+    <div class="m-actions">
+      <button class="btn-primary" id="remote-profile-follow" onclick="followRemoteFromFeed(this)"><i class="fas fa-user-plus"></i> Подписаться</button>
+      <a class="btn-secondary" id="remote-profile-open" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none;align-items:center;gap:6px"><i class="fas fa-external-link-alt"></i> Оригинал</a>
+      <button class="btn-secondary" onclick="closeModal('remote-profile-modal')"><i class="fas fa-times"></i> Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function getTheme() { return localStorage.getItem('infinity_theme') || 'dark' }
+function setTheme(t) {
+  document.body.className = '';
+  if (t !== 'dark') document.body.classList.add(t);
+  localStorage.setItem('infinity_theme', t);
+  document.querySelectorAll('.theme-btn').forEach(el => el.classList.toggle('active', el.dataset.theme === t));
+}
+function openThemePicker() {
+  openModal('themeModal');
+  document.querySelectorAll('.theme-btn').forEach(el => el.classList.toggle('active', el.dataset.theme === getTheme()));
+}
+function closeThemePicker() { closeModal('themeModal') }
+</script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GenLab — AI-генератор</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/css/design.css">
+<link rel="stylesheet" href="/static/genlab/genlab.css">
+<link rel="stylesheet" href="/static/genlab/editor.css">
+<link rel="stylesheet" href="/static/genlab/audio.css">
+<link rel="stylesheet" href="/static/genlab/midi.css">
+<script>
+  /* Тема приложения (ключ infinity_theme, 9 вариантов). Ставим класс на <body>
+     и data-theme на <html> до отрисовки — иначе первые кадры GenLab живут в
+     светлой палитре и заметно мигают. Ключ и список тем совпадают с
+     static/js/theme.js, который подключается ниже и добавляет акцент и синхрон. */
+  (function () {
+    try {
+      var ALL = ['light', 'dark', 'sepia', 'warm', 'paper', 'ocean', 'forest', 'midnight', 'rose'];
+      var t = null;
+      try {
+        t = localStorage.getItem('infinity_theme') || localStorage.getItem('html_theme');
+      } catch (e) { /* приватный режим */ }
+      if (!t || ALL.indexOf(t) === -1) t = 'light';
+      document.documentElement.setAttribute('data-theme', t);
+      var paint = function () {
+        var b = document.body;
+        if (!b) return;
+        for (var i = 0; i < ALL.length; i++) b.classList.remove(ALL[i]);
+        b.classList.add(t);
+      };
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', paint, { once: true });
+      } else { paint(); }
+    } catch (e) { /* тема — украшение, отрисовка важнее */ }
+  })();
+</script>
+</head>
+<body class="pg-genlab gl-body">
+
+<div class="gl-shell" id="glShell">
+
+  <!-- ================= Боковая навигация ================= -->
+  <aside class="gl-side">
+    <div class="gl-brand">
+      <span class="gl-brand-mark"><i class="fas fa-wand-magic-sparkles"></i></span>
+      <span class="gl-brand-text">
+        <b>GenLab</b>
+        <small>AI-генератор</small>
+      </span>
+    </div>
+
+    <nav class="gl-nav" id="glNav"></nav>
+
+    <div class="gl-side-foot">
+      <button class="gl-chip" id="glComfyBtn" type="button" title="Состояние ComfyUI">
+        <span class="gl-dot" id="glComfyDot"></span>
+        <span id="glComfyLabel">ComfyUI…</span>
+      </button>
+      <div class="gl-gl-actions">
+        <button class="gl-icon-btn" id="glKeysBtn" type="button" title="MIDI-клавиатура">
+          <i class="fas fa-music"></i>
+        </button>
+        <button class="gl-icon-btn" id="glThemeBtn" type="button" title="Светлая / тёмная тема">
+          <i class="fas fa-sun"></i>
+        </button>
+        <button class="gl-icon-btn" id="glLogsBtn" type="button" title="Лог ComfyUI">
+          <i class="fas fa-terminal"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================= Основная область ================= -->
+  <main class="gl-main">
+
+    <header class="gl-top">
+      <div class="gl-top-left">
+        <h1 id="glViewTitle">Изображения</h1>
+        <p id="glViewDesc" class="gl-muted"></p>
+      </div>
+      <div class="gl-top-right">
+        <div class="gl-queue" id="glQueue" hidden>
+          <span class="gl-queue-badge" id="glQueueBadge">0</span>
+          <span class="gl-queue-text" id="glQueueText">в очереди</span>
+        </div>
+        <div class="gl-search">
+          <i class="fas fa-magnifying-glass"></i>
+          <input type="search" id="glSearch" placeholder="Поиск по галерее…" autocomplete="off">
+        </div>
+        <button class="gl-icon-btn" id="glRefreshBtn" type="button" title="Обновить">
+          <i class="fas fa-rotate"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="gl-grid">
+      <!-- ---------- Левая колонка: пресеты / галерея ---------- -->
+      <section class="gl-col gl-col-left">
+        <div class="gl-panel-head">
+          <span id="glPresetsTitle">Пресеты</span>
+          <button class="gl-link" id="glValidateBtn" type="button"
+                  title="Проверить граф по схеме ComfyUI без запуска">
+            <i class="fas fa-stethoscope"></i> Проверить
+          </button>
+        </div>
+        <div class="gl-scroll" id="glPresets"></div>
+
+        <div class="gl-panel-head gl-panel-head--split">
+          <span>Галерея</span>
+          <span class="gl-muted" id="glGalleryCount">0</span>
+        </div>
+        <div class="gl-scroll gl-gallery" id="glGallery"></div>
+      </section>
+
+      <!-- ---------- Центр: холст ---------- -->
+      <section class="gl-col gl-col-center">
+        <div class="gl-canvas" id="glCanvas">
+          <div class="gl-empty" id="glEmpty">
+            <div class="gl-empty-mark"><i class="fas fa-wand-magic-sparkles"></i></div>
+            <h2>Выберите пресет слева</h2>
+            <p class="gl-muted">
+              Параметры появятся справа. Перед запуском можно нажать
+              «Проверить» — модуль сверит собранный граф со схемой ComfyUI
+              и покажет, чего не хватает.
+            </p>
+          </div>
+          <img id="glResultImage" class="gl-result gl-hidden" alt="Результат">
+          <video id="glResultVideo" class="gl-result gl-hidden" controls playsinline></video>
+          <audio id="glResultAudio" class="gl-hidden" controls></audio>
+          <canvas id="glResultModel" class="gl-result gl-hidden"></canvas>
+          <button class="gl-btn gl-btn-ghost gl-canvas-edit" id="glEditBtn" type="button" hidden>
+            <i class="fas fa-pen-ruler"></i> Редактировать область
+          </button>
+          <button class="gl-btn gl-btn-ghost gl-canvas-edit gl-canvas-edit-audio" id="glAudioEditBtn" type="button" hidden>
+            <i class="fas fa-wave-square"></i> Редактор звука
+          </button>
+        </div>
+
+        <div class="gl-queuebar" id="glQueueBar"></div>
+      </section>
+
+      <!-- ---------- Правая колонка: параметры ---------- -->
+      <section class="gl-col gl-col-right">
+        <div class="gl-panel-head">
+          <span>Параметры</span>
+          <span class="gl-muted" id="glPresetCost"></span>
+        </div>
+        <div class="gl-scroll gl-form" id="glForm"></div>
+
+        <div class="gl-form-foot">
+          <button class="gl-btn gl-btn-ghost" id="glResetBtn" type="button">
+            <i class="fas fa-rotate-left"></i> Сбросить
+          </button>
+          <button class="gl-btn gl-btn-primary" id="glRunBtn" type="button" disabled>
+            <i class="fas fa-play"></i> Создать
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- ================= Нижняя панель: результаты заданий ================= -->
+    <footer class="gl-foot" id="glFoot">
+      <div class="gl-foot-head">
+        <span>Задания</span>
+        <button class="gl-link" id="glClearJobsBtn" type="button">Очистить завершённые</button>
+      </div>
+      <div class="gl-jobs" id="glJobs"></div>
+    </footer>
+  </main>
+</div>
+
+<!-- ================= Модальные окна ================= -->
+<div class="gl-modal" id="glModal" hidden>
+  <div class="gl-modal-back" data-close="1"></div>
+  <div class="gl-modal-box">
+    <div class="gl-modal-head">
+      <h3 id="glModalTitle">—</h3>
+      <button class="gl-icon-btn" type="button" data-close="1"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="gl-modal-body" id="glModalBody"></div>
+  </div>
+</div>
+
+<div class="gl-toasts" id="glToasts"></div>
+
+<script src="/static/js/theme.js"></script>
+<script src="/static/genlab/genlab.js" type="module"></script>
+<script src="/static/genlab/editor.js" type="module"></script>
+<script src="/static/genlab/audio.js" type="module"></script>
+<script src="/static/genlab/midi.js" type="module"></script>
+</body>
+</html>

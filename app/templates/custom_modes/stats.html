@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Статистика</title>
+<style>
+:root{--bg:#fff;--fg:#1f2937;--muted:#6b7280;--line:#e5e7eb;--acc:#4f46e5;--card:#fff;--r:14px;--sh:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.06)}
+@media (prefers-color-scheme:dark){:root{--bg:#15171c;--fg:#e8eaed;--muted:#9aa3af;--line:#2b2f37;--acc:#818cf8;--card:#1b1e24;--sh:0 1px 3px rgba(0,0,0,.4)}}
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+h1{font-size:18px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:14px 16px}
+.kpi .v{font-size:24px;font-weight:700}
+.kpi .k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:14px 16px}
+.panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 12px}
+.row{display:grid;grid-template-columns:130px 1fr 64px;gap:10px;align-items:center;margin-bottom:8px}
+.row .n{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .track{height:10px;border-radius:999px;background:var(--line);overflow:hidden}
+.row .track i{display:block;height:100%;background:var(--acc);border-radius:999px}
+.row .v{font-size:13px;color:var(--muted);text-align:right;white-space:nowrap}
+.empty{padding:32px;text-align:center;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<h1 id="title">Статистика</h1>
+<div class="sub">Сводка по числам из заметки</div>
+<div class="cards">
+  <div class="kpi"><div class="v" id="kTotal">0</div><div class="k">Записей</div></div>
+  <div class="kpi"><div class="v" id="kCats">0</div><div class="k">Категорий</div></div>
+  <div class="kpi"><div class="v" id="kSum">0</div><div class="k">Сумма</div></div>
+  <div class="kpi"><div class="v" id="kAvg">0</div><div class="k">Среднее</div></div>
+</div>
+<div class="panel"><h2>По категориям</h2><div id="rows"></div></div>
+<div class="empty" id="empty" style="display:none">В заметке нет чисел</div>
+<script>
+/* ДАННЫЕ: ИИ вписывает сюда содержимое заметки.
+   ROWS — категории вида ["Название", число]. Если в заметке нет чисел,
+   впиши записи как ["Название", null] — сводка посчитает только количество. */
+const ROWS=[["Категория",10]];
+
+const rowsEl=document.getElementById("rows"),
+      empty=document.getElementById("empty");
+
+function fmt(n){
+  if(n==null)return "—";
+  const r=Math.round(n*100)/100;
+  return String(r).replace(/\B(?=(\d{3})+(?!\d))/g," ");
+}
+function draw(){
+  const nums=ROWS.map(r=>Number(r[1])).filter(v=>isFinite(v));
+  const sum=nums.reduce((a,b)=>a+b,0);
+  document.getElementById("kTotal").textContent=ROWS.length;
+  document.getElementById("kCats").textContent=new Set(ROWS.map(r=>String(r[0]))).size;
+  document.getElementById("kSum").textContent=nums.length?fmt(sum):"—";
+  document.getElementById("kAvg").textContent=nums.length?fmt(sum/nums.length):"—";
+  const max=Math.max.apply(null,nums.concat([0]));
+  rowsEl.innerHTML=ROWS.map(r=>{
+    const v=Number(r[1]);
+    const w=isFinite(v)&&max>0?Math.round(v/max*100):0;
+    return '<div class="row"><span class="n">'+String(r[0]==null?"":r[0])+'</span>'
+      +'<span class="track"><i style="width:'+w+'%"></i></span>'
+      +'<span class="v">'+(isFinite(v)?fmt(v):"—")+'</span></div>';
+  }).join("");
+  empty.style.display=ROWS.length?"none":"";
+}
+draw();
+</script>
+</body>
+</html>

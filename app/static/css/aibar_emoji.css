@@ -1,0 +1,62 @@
+/* Смайлики в окне палитры: сетка выезжает у поля ввода. */
+
+.aibar-emoji-pop {
+  position: fixed;
+  z-index: 280000;              /* выше оверлея палитры (250000) */
+  width: 328px;
+  max-width: calc(100vw - 24px);
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--bg2, #fff);
+  border: 1px solid var(--border, #e3e6ea);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .3);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .14s ease, visibility .14s ease;
+}
+.aibar-emoji-pop.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.aibar-emoji-tabs {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 7px;
+  flex-wrap: wrap;
+}
+.aibar-emoji-tab {
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-3, #8a93a0);
+  font-size: 11px;
+  cursor: pointer;
+}
+.aibar-emoji-tab:hover { background: var(--bg3, #f1f3f6); color: var(--text, #1a1f26); }
+.aibar-emoji-tab.on {
+  background: var(--accent-soft, rgba(59, 110, 245, .14));
+  color: var(--accent, #3b6ef5);
+}
+
+.aibar-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+  max-height: 190px;
+  overflow-y: auto;
+}
+.aibar-emoji-cell {
+  border: 0;
+  background: transparent;
+  border-radius: 7px;
+  font-size: 17px;
+  line-height: 1;
+  padding: 4px 0;
+  cursor: pointer;
+}
+.aibar-emoji-cell:hover {
+  background: var(--bg3, #f1f3f6);
+  transform: scale(1.18);
+}

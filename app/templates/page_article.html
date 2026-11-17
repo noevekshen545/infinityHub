@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html class="pg-page_article" lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Чтение</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+/* === ТЕМЫ === */
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#0d1117;--border:#30363d;--text:#c9d1d9;--text2:#8b949e;--text3:#484f58;
+--accent:#58a6ff;--accent2:#1f6feb;--link:#58a6ff;--card:#161b22;--hover:#21262d;--red:#da3633;--green:#238636}
+body.light{--bg:#ffffff;--bg2:#f6f8fa;--bg3:#ffffff;--border:#d0d7de;--text:#1f2328;--text2:#333333;--text3:#333333;
+--accent:#0969da;--accent2:#0969da;--link:#0969da;--card:#ffffff;--hover:#f3f4f6;--red:#cf222e;--green:#1a7f37}
+body.sepia{--bg:#f4ecd8;--bg2:#efe6d1;--bg3:#f4ecd8;--border:#d4c9b0;--text:#5b4636;--text2:#7d6b5d;--text3:#a89888;
+--accent:#8b6914;--accent2:#8b6914;--link:#8b6914;--card:#efe6d1;--hover:#e8deca;--red:#a33;--green:#5a5}
+body.green{--bg:#0a1a0a;--bg2:#0f2a0f;--bg3:#0a1a0a;--border:#1a3a1a;--text:#a8d8a8;--text2:#6a9a6a;--text3:#4a6a4a;
+--accent:#4adf4a;--accent2:#2a8f2a;--link:#4adf4a;--card:#0f2a0f;--hover:#1a3a1a;--red:#da3633;--green:#4adf4a}
+body.paper{--bg:#faf8f5;--bg2:#fff;--bg3:#faf8f5;--border:#e0ddd8;--text:#333;--text2:#666;--text3:#999;
+--accent:#c0392b;--accent2:#c0392b;--link:#c0392b;--card:#fff;--hover:#f5f3f0;--red:#c0392b;--green:#27ae60}
+
+body{font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--text);min-height:100vh;
+transition:background .3s,color .3s}
+
+/* === ПАНЕЛЬ НАСТРОЕК === */
+.toolbar{position:sticky;top:0;z-index:100;background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.toolbar .back{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:5px;cursor:pointer;font-size:12px;text-decoration:none;white-space:nowrap}
+.toolbar .back:hover{background:var(--hover)}
+.toolbar .sep{width:1px;height:24px;background:var(--border)}
+.toolbar .btn{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px}
+.toolbar .btn:hover{background:var(--hover)}
+.toolbar .btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.toolbar .grp{display:flex;align-items:center;gap:4px}
+.toolbar .grp label{font-size:11px;color:var(--text2);white-space:nowrap}
+.toolbar select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:4px;font-size:12px;outline:none}
+
+/* === НАВИГАЦИЯ === */
+.nav{max-width:780px;margin:0 auto;padding:12px 16px;display:flex;justify-content:space-between;gap:10px}
+.nav a{background:var(--bg2);border:1px solid var(--border);color:var(--text2);padding:8px 14px;border-radius:6px;text-decoration:none;font-size:13px;transition:all .2s;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav a:hover{border-color:var(--accent);color:var(--text)}
+.nav a.disabled{opacity:.3;pointer-events:none}
+
+/* === КОНТЕНТ === */
+.article{max-width:780px;margin:0 auto;padding:20px 16px 60px}
+.art-meta{margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.art-num{font-size:11px;color:var(--text3);margin-bottom:6px}
+.art-title{font-size:26px;font-weight:700;color:var(--text);line-height:1.35;margin-bottom:12px}
+.art-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.art-tags .tg{background:var(--bg2);border:1px solid var(--border);padding:3px 10px;border-radius:4px;font-size:12px;color:var(--text2)}
+.art-tags a{color:var(--link);font-size:12px}
+.art-body{font-size:17px;line-height:1.85;color:var(--text);white-space:pre-wrap;word-wrap:break-word}
+.art-body p{margin-bottom:12px}
+
+/* === КОММЕНТАРИИ === */
+.cmt-section{margin-top:30px;border-top:2px solid var(--border);padding-top:20px}
+.cmt-header{font-size:18px;font-weight:600;color:var(--text);margin-bottom:16px}
+.cmt{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px}
+.cmt.d0{border-left:3px solid var(--accent)}
+.cmt.d1{margin-left:24px;border-left:3px solid var(--red)}
+.cmt.d2{margin-left:48px;border-left:3px solid var(--green)}
+.cmt.d3{margin-left:72px;border-left:3px solid var(--text3)}
+.cmt-head{margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.cmt-author{color:var(--accent);font-weight:600;font-size:13px}
+.cmt-score{color:var(--text3);font-size:11px}
+.cmt-body{color:var(--text);font-size:14px;line-height:1.65;white-space:pre-wrap;word-wrap:break-word}
+
+/* === ЗАГРУЗКА === */
+.loading{text-align:center;padding:60px;color:var(--text2)}
+.err{color:var(--red);padding:20px;text-align:center}
+
+/* === МОДАЛКА НАСТРОЕК === */
+.modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;justify-content:center;align-items:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto}
+.modal h3{font-size:16px;color:var(--text);margin-bottom:16px}
+.modal .row{margin-bottom:14px}
+.modal .row label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px}
+.modal .row select,.modal .row input[type=range]{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:4px;font-size:13px;outline:none}
+.modal .themes{display:flex;gap:6px;flex-wrap:wrap}
+.modal .themes .t{padding:6px 14px;border:2px solid var(--border);border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
+.modal .themes .t:hover{border-color:var(--accent)}
+.modal .themes .t.on{border-color:var(--accent);background:var(--accent);color:#fff}
+.modal .t-dark{background:#0d1117;color:#c9d1d9}
+.modal .t-light{background:#fff;color:#1f2328}
+.modal .t-sepia{background:#f4ecd8;color:#5b4636}
+.modal .t-green{background:#0a1a0a;color:#a8d8a8}
+.modal .t-paper{background:#faf8f5;color:#333}
+.modal .close{background:var(--accent);border:none;color:#fff;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;margin-top:8px;width:100%}
+.range-val{float:right;color:var(--accent);font-weight:600}
+
+@media(max-width:600px){
+  .toolbar{padding:6px 10px}
+  .art-title{font-size:20px}
+  .art-body{font-size:15px}
+  .article{padding:12px 10px 40px}
+  .cmt.d1{margin-left:12px}.cmt.d2{margin-left:24px}.cmt.d3{margin-left:36px}
+}
+</style><script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+</head><body>
+
+<!-- Панель инструментов -->
+
+<!-- AI Assistant Floating Window (like books/ZIM) -->
+<div class="notes-ai-float" id="notesAiFloat" style="display:none">
+  <div class="notes-ai-header" id="notesAiHeader">
+    <span style="font-size:18px">🤖</span>
+    <span style="font-size:14px;font-weight:600;flex:1">AI Ассистент</span>
+    <button onclick="notesAiMinimize()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px">−</button>
+    <button onclick="notesAiClose()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px">✕</button>
+  </div>
+  <div class="notes-ai-body" id="notesAiBody">
+    <div id="notesAiMessages" style="flex:1;overflow-y:auto;padding:12px;min-height:200px">
+      <div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Задайте вопрос по этой заметке...</div>
+    </div>
+    <div style="padding:12px;border-top:1px solid var(--border)">
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <input id="notesAiInput" placeholder="Ваш вопрос..." style="flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none" onkeydown="if(event.key==='Enter'&&!event.shiftKey)notesAiAsk()">
+        <button onclick="notesAiAsk()" style="width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--purple));border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">▶</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="notesAiQuick('Улучши этот текст, исправь ошибки. Верни только улучшенный текст.')" style="padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;cursor:pointer">✨ Улучшить</button>
+        <button onclick="notesAiQuick('Сделай краткое резюме этого текста.')" style="padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;cursor:pointer">📝 Резюме</button>
+        <button onclick="notesAiQuick('Исправь все грамматические и пунктуационные ошибки. Верни только исправленный текст.')" style="padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;cursor:pointer">✏️ Грамматика</button>
+        <button onclick="notesAiQuick('Расширь этот текст, добавь деталей и примеров.')" style="padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;cursor:pointer">📖 Расширить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notes AI Toggle Button -->
+<div style="position:fixed;bottom:20px;right:20px;z-index:150">
+  <button onclick="toggleNotesAi()" style="width:50px;height:50px;background:linear-gradient(135deg,var(--accent),var(--purple));border:none;border-radius:50%;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(79,110,247,.3);transition:transform .2s" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">🤖</button>
+</div>
+
+<div class="toolbar">
+  <a class="back" id="backBtn" href="/">← Назад</a>
+  <div class="sep"></div>
+  <button class="btn" onclick="openSettings()">⚙ Настройки</button>
+  <div class="sep"></div>
+  <button class="btn" onclick="translateArticle()">🌐 Перевести</button>
+  <button class="btn" onclick="openChat()">💬 Спросить</button><button class="btn" onclick="addToQdrant('article', window.location.href, document.title)" title="В векторную БД"><i class="fa-solid fa-database"></i> В БД</button>
+  <div class="sep"></div>
+  <div class="grp">
+    <button class="btn" onclick="chSize(-1)">A-</button>
+    <button class="btn" onclick="chSize(1)">A+</button>
+  </div>
+  <div class="sep"></div>
+  <div class="grp">
+    <button class="btn" id="themeBtn" onclick="cycleTheme()">Тема</button>
+  </div>
+  <div style="flex:1"></div>
+  <span id="artInfo" style="font-size:11px;color:var(--text3)"></span>
+</div>
+
+<!-- Навигация -->
+<div class="nav">
+  <a id="navPrev" class="disabled" href="#">← Пред.</a>
+  <a id="navNext" class="disabled" href="#">След. →</a>
+</div>
+
+<!-- Контент -->
+<div class="article">
+  <div id="content"><div class="loading">Загрузка статьи...</div></div>
+</div>
+
+<!-- Модалка настроек -->
+<div class="modal-bg" id="settingsModal">
+  <div class="modal">
+    <h3>⚙ Настройки чтения</h3>
+
+    <div class="row">
+      <label>Тема</label>
+      <div class="themes" id="themePicker">
+        <div class="t t-dark" onclick="setTheme('dark')">Тёмная</div>
+        <div class="t t-light" onclick="setTheme('light')">Светлая</div>
+        <div class="t t-sepia" onclick="setTheme('sepia')">Сепия</div>
+        <div class="t t-green" onclick="setTheme('green')">Зелёная</div>
+        <div class="t t-paper" onclick="setTheme('paper')">Бумага</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <label>Шрифт</label>
+      <select id="fontFamily" onchange="applySettings()">
+        <option value="Georgia,'Times New Roman',serif">Georgia (Serif)</option>
+        <option value="'Palatino Linotype','Book Antiqua',serif">Palatino</option>
+        <option value="Garamond,serif">Garamond</option>
+        <option value="'Courier New',monospace">Courier (Mono)</option>
+        <option value="system-ui,-apple-system,sans-serif">System (Sans)</option>
+        <option value="Verdana,sans-serif">Verdana</option>
+        <option value="Tahoma,sans-serif">Tahoma</option>
+        <option value="'Comic Sans MS',cursive">Comic Sans</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <label>Размер текста: <span class="range-val" id="sizeVal">17</span>px</label>
+      <input type="range" id="fontSize" min="12" max="32" value="17" oninput="applySettings()">
+    </div>
+
+    <div class="row">
+      <label>Межстрочный интервал: <span class="range-val" id="lhVal">1.85</span></label>
+      <input type="range" id="lineHeight" min="12" max="30" value="18" oninput="applySettings()">
+    </div>
+
+    <div class="row">
+      <label>Ширина текста: <span class="range-val" id="mwVal">780</span>px</label>
+      <input type="range" id="maxWidth" min="500" max="1200" value="780" step="10" oninput="applySettings()">
+    </div>
+
+    <button class="close" onclick="closeSettings()">Готово</button>
+  </div>
+</div>
+
+<!-- Модалка перевода -->
+<div class="modal-bg" id="translateModal">
+  <div class="modal" style="max-width:600px">
+    <h3>🌐 Перевод статьи</h3>
+    <div class="row">
+      <label>Модель</label>
+      <div style="position:relative">
+        <button class="btn" id="translateModelBtn" onclick="toggleTranslateModelMenu()" style="width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center">
+          <span id="translateModelName">Загрузка...</span><span style="font-size:10px">▼</span>
+        </button>
+        <div id="translateModelMenu" class="dropdown-menu" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border);border-radius:6px;max-height:200px;overflow-y:auto;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,.3)"></div>
+      </div>
+    </div>
+    <div class="row">
+      <label>С языка</label>
+      <select id="translateFrom">
+        <option value="en">Английский</option>
+        <option value="de">Немецкий</option>
+        <option value="fr">Французский</option>
+        <option value="es">Испанский</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>На язык</label>
+      <select id="translateTo">
+        <option value="ru">Русский</option>
+        <option value="en">Английский</option>
+      </select>
+    </div>
+    <div id="translateStatus" style="color:var(--text2);font-size:12px;margin:8px 0"></div>
+    <div id="translateResult" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;max-height:300px;overflow-y:auto;font-size:14px;line-height:1.6;margin-top:10px"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="close" onclick="doTranslate()" style="flex:1">Перевести</button>
+      <button class="btn" id="applyTranslateBtn" onclick="applyTranslate()" style="flex:1;display:none;background:#238636;color:#fff">Применить</button>
+      <button class="btn" onclick="closeTranslate()" style="flex:1">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модалка чата -->
+<div class="modal-bg" id="chatModal">
+  <div class="modal" style="max-width:600px">
+    <h3>💬 Спросить по статье</h3>
+    <div id="chatMessages" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;min-height:150px;max-height:300px;overflow-y:auto;font-size:14px;line-height:1.6;margin-bottom:10px">
+      <div style="color:var(--text3)">Задайте вопрос по содержимому статьи...</div>
+    </div>
+    <div class="row" style="margin-bottom:8px">
+      <div style="display:flex;gap:8px">
+        <input id="chatQuestion" type="text" placeholder="Ваш вопрос..." style="flex:1;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;outline:none" onkeydown="if(event.key==='Enter')askQuestion()">
+        <button class="btn" onclick="askQuestion()" id="askBtn">Спросить</button>
+      </div>
+    </div>
+    <div class="row" style="margin-bottom:8px">
+      <label style="font-size:11px;color:var(--text3)"><input type="checkbox" id="searchAll" style="margin-right:4px">Искать по всей базе данных</label>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" onclick="clearChat()" style="flex:1">Очистить</button>
+      <button class="btn" onclick="closeChat()" style="flex:1">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const P=new URLSearchParams(location.search);
+const F=P.get('file')||'',IDX=parseInt(P.get('index')||'1'),FN=P.get('name')||'';
+
+// Настройки (сохраняются в localStorage)
+const LS='jsonview_';
+function getSettings(){
+  return{
+    theme:localStorage.getItem(LS+'theme')||'dark',
+    font:localStorage.getItem(LS+'font')||"Georgia,'Times New Roman',serif",
+    size:parseInt(localStorage.getItem(LS+'size')||'17'),
+    lh:parseFloat(localStorage.getItem(LS+'lh')||'1.85'),
+    mw:parseInt(localStorage.getItem(LS+'mw')||'780'),
+  }
+}
+function saveSettings(s){
+  localStorage.setItem(LS+'theme',s.theme);
+  localStorage.setItem(LS+'font',s.font);
+  localStorage.setItem(LS+'size',s.size);
+  localStorage.setItem(LS+'lh',s.lh);
+  localStorage.setItem(LS+'mw',s.mw);
+}
+
+let settings=getSettings();
+let currentIdx=IDX;
+
+// Применить настройки
+function applySettings(){
+  settings.font=document.getElementById('fontFamily').value;
+  settings.size=parseInt(document.getElementById('fontSize').value);
+  settings.lh=parseFloat(document.getElementById('lineHeight').value)/10;
+  settings.mw=parseInt(document.getElementById('maxWidth').value);
+  saveSettings(settings);
+  renderSettings();
+}
+
+function renderSettings(){
+  document.body.className=settings.theme==='dark'?'':settings.theme;
+  document.getElementById('fontFamily').value=settings.font;
+  document.getElementById('fontSize').value=settings.size;
+  document.getElementById('lineHeight').value=Math.round(settings.lh*10);
+  document.getElementById('maxWidth').value=settings.mw;
+  document.getElementById('sizeVal').textContent=settings.size;
+  document.getElementById('lhVal').textContent=settings.lh.toFixed(2);
+  document.getElementById('mwVal').textContent=settings.mw;
+
+  // Применяем к контенту
+  document.querySelectorAll('.art-body,.cmt-body').forEach(el=>{
+    el.style.fontFamily=settings.font;
+    el.style.fontSize=settings.size+'px';
+    el.style.lineHeight=settings.lh;
+  });
+  document.querySelectorAll('.article').forEach(el=>{
+    el.style.maxWidth=settings.mw+'px';
+  });
+
+  // Тема пикер
+  document.querySelectorAll('#themePicker .t').forEach(el=>{
+    el.classList.toggle('on',el.textContent.toLowerCase().includes(settings.theme) ||
+      (settings.theme==='dark'&&el.textContent==='Тёмная') ||
+      (settings.theme==='light'&&el.textContent==='Светлая') ||
+      (settings.theme==='sepia'&&el.textContent==='Сепия') ||
+      (settings.theme==='green'&&el.textContent==='Зелёная') ||
+      (settings.theme==='paper'&&el.textContent==='Бумага'));
+  });
+}
+
+function setTheme(t){settings.theme=t;saveSettings(settings);renderSettings()}
+function cycleTheme(){
+  const themes=['dark','light','sepia','green','paper'];
+  const i=themes.indexOf(settings.theme);
+  setTheme(themes[(i+1)%themes.length]);
+}
+function chSize(d){settings.size=Math.max(12,Math.min(32,settings.size+d));saveSettings(settings);renderSettings()}
+
+function openSettings(){document.getElementById('settingsModal').classList.add('open')}
+function closeSettings(){document.getElementById('settingsModal').classList.remove('open')}
+
+// Навигация
+function buildNavUrl(idx){
+  return`/article?file=${encodeURIComponent(F)}&index=${idx}&name=${encodeURIComponent(FN)}`;
+}
+
+// Загрузка статьи
+async function loadArticle(){
+  document.getElementById('content').innerHTML='<div class="loading">Загрузка...</div>';
+  try{
+    const r=await fetch(`/api/item?f=${encodeURIComponent(F)}&i=${currentIdx}`);
+    if(!r.ok)throw new Error('Статья не найдена');
+    const it=await r.json();
+
+    const title=it.title||'Без заголовка';
+    const text=it.selftext||it.text||it.question||it.body||'';
+    articleText=text;
+    const url=it.url||'';
+    const author=it.author||'';
+    const score=it.score||0;
+    const answers=it.answers||it.comments||[];
+    const views=it.views||0;
+
+    let source='';
+    if(it.subreddit)source='r/'+it.subreddit;
+    else if(it.article_id||it.hubs)source='habr';
+    else source='mail';
+
+    let meta='';
+    if(author)meta+=`<span class="tg">👤 ${esc(author)}</span>`;
+    if(source)meta+=`<span class="tg">📡 ${esc(source)}</span>`;
+    meta+=`<span class="tg">⬆ ${score}</span>`;
+    if(views)meta+=`<span class="tg">👁 ${views}</span>`;
+    if(it.hubs&&it.hubs.length)meta+=`<span class="tg">🏷 ${esc(it.hubs.slice(0,5).join(', '))}</span>`;
+    if(it.tags&&it.tags.length)meta+=`<span class="tg">🔖 ${esc(it.tags.slice(0,6).join(', '))}</span>`;
+    if(url)meta+=`<a href="${esc(url)}" target="_blank" class="tg" style="color:var(--link)">🔗 Источник</a>`;
+
+    // Enhance text: auto-detect images, videos, links
+    let bodyHtml=esc(text);
+    // Convert image URLs to <img>
+    bodyHtml=bodyHtml.replace(/(https?:\/\/[^\s<]+\.(jpg|jpeg|png|gif|webp|svg|bmp))/gi,'<img src="$1" loading="lazy" style="max-width:100%;border-radius:6px;margin:10px 0" onerror="this.style.display=\'none\'">');
+    // Convert YouTube/video URLs to embeds
+    bodyHtml=bodyHtml.replace(/(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+))/gi,'<iframe width="100%" height="315" src="https://www.youtube.com/embed/$2" frameborder="0" allowfullscreen style="border-radius:8px;margin:10px 0"></iframe>');
+    // Convert video URLs to <video>
+    bodyHtml=bodyHtml.replace(/(https?:\/\/[^\s<]+\.(mp4|webm|ogv|mov))/gi,'<video controls style="max-width:100%;border-radius:6px;margin:10px 0"><source src="$1"></video>');
+    // Convert plain URLs to links
+    bodyHtml=bodyHtml.replace(/(?<!["'=])(https?:\/\/[^\s<]+)(?![^<]*>)/g,'<a href="$1" target="_blank" style="color:var(--link)">$1</a>');
+
+    let html=`<div class="art-meta">
+      <div class="art-num">#${it._index} · ${esc(FN)}</div>
+      <div class="art-title">${esc(title)}</div>
+      <div class="art-tags">${meta}</div>
+    </div>
+    <div class="art-body">${bodyHtml}</div>`;
+
+    if(answers.length){
+      const lbl=answers[0]&&answers[0].body?'Комментарии':'Ответы';
+      html+=`<div class="cmt-section">
+        <div class="cmt-header">${lbl} (${answers.length})</div>
+        ${answers.slice(0,200).map(a=>{
+          let t=a.body||a.text||'';
+          let au=a.author||'';
+          const sc=a.score||0;
+          const dl=Math.min(a.depth||a.level||0,3);
+          // Enhance comment text
+          t=esc(t);
+          t=t.replace(/(https?:\/\/[^\s<]+\.(jpg|jpeg|png|gif|webp))/gi,'<img src="$1" loading="lazy" style="max-width:100%;max-height:300px;border-radius:4px;margin:6px 0" onerror="this.style.display=\'none\'">');
+          t=t.replace(/(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+))/gi,'<iframe width="100%" height="200" src="https://www.youtube.com/embed/$2" frameborder="0" allowfullscreen style="border-radius:6px;margin:6px 0"></iframe>');
+          t=t.replace(/(?<!["'=])(https?:\/\/[^\s<]+)(?![^<]*>)/g,'<a href="$1" target="_blank" style="color:var(--link)">$1</a>');
+          const accepted=a.is_accepted||a.accepted?'<span style="color:var(--green);font-weight:600"> ✓ Принят</span>':'';
+          return'<div class="cmt d'+dl+'"><div class="cmt-head"><span class="cmt-author">'+esc(au)+'</span>'+accepted+'<span class="cmt-score">['+(sc>0?'+':'')+sc+']</span></div><div class="cmt-body">'+t+'</div></div>';
+        }).join('')}
+        ${answers.length>200?`<div style="color:var(--text3);font-size:12px;padding:8px 0">... и ещё ${answers.length-200}</div>`:''}
+      </div>`;
+    }
+
+    document.getElementById('content').innerHTML=html;
+
+    // Навигация
+    const prev=document.getElementById('navPrev');
+    const next=document.getElementById('navNext');
+    if(it._prev){prev.href=buildNavUrl(currentIdx-1);prev.textContent='← '+it._prev;prev.classList.remove('disabled')}
+    else{prev.classList.add('disabled');prev.textContent='← Назад'}
+    if(it._next){next.href=buildNavUrl(currentIdx+1);next.textContent=it._next+' →';next.classList.remove('disabled')}
+    else{next.classList.add('disabled');next.textContent='Вперёд →'}
+
+    document.getElementById('artInfo').textContent=`#${currentIdx} · ${esc(FN)}`;
+    document.title=esc(title);
+
+    // Применяем настройки
+    renderSettings();
+
+  }catch(e){
+    document.getElementById('content').innerHTML=`<div class="err">Ошибка: ${e.message}</div>`;
+  }
+}
+
+function esc(t){if(!t)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+
+// === ПЕРЕВОД ===
+let articleText='';
+function openTranslate(){document.getElementById('translateModal').classList.add('open');initTranslateModelSelector()}
+function closeTranslate(){document.getElementById('translateModal').classList.remove('open')}
+async function translateArticle(){
+  if(!articleText){alert('Статья еще не загружена');return}
+  openTranslate();
+  document.getElementById('translateResult').style.display='none';
+  document.getElementById('translateStatus').textContent='';
+}
+let _translateModels=[];
+async function initTranslateModelSelector(){
+  const menu=document.getElementById('translateModelMenu');
+  const btn=document.getElementById('translateModelName');
+  if(!menu||!btn)return;
+  try{
+    const r=await fetch('/api/models');
+    const d=await r.json();
+    _translateModels=d.models||[];
+    const saved=localStorage.getItem(LS+'translate_model')||'';
+    const current=_translateModels.includes(saved)?saved:(_translateModels[0]||'gemma-3-1b-it@q8_0');
+    btn.textContent=current;
+    menu.innerHTML=_translateModels.map(m=>`<div onclick="selectTranslateModel('${m}')" style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);${m===current?'background:var(--accent);color:#fff':''}">${m}</div>`).join('');
+  }catch(e){btn.textContent='Ошибка'}
+}
+function selectTranslateModel(m){
+  localStorage.setItem(LS+'translate_model',m);
+  document.getElementById('translateModelName').textContent=m;
+  document.getElementById('translateModelMenu').style.display='none';
+}
+function toggleTranslateModelMenu(){
+  const menu=document.getElementById('translateModelMenu');
+  menu.style.display=menu.style.display==='none'?'block':'none';
+}
+async function doTranslate(){
+  const model=document.getElementById('translateModelName').textContent;
+  const from=document.getElementById('translateFrom').value;
+  const to=document.getElementById('translateTo').value;
+  const status=document.getElementById('translateStatus');
+  const result=document.getElementById('translateResult');
+  status.textContent='Перевод...';result.style.display='none';
+  try{
+    // Strip HTML for clean translation
+    const src=window._originalArticleText||articleText;
+    const td=document.createElement('div');
+    td.innerHTML=src;
+    const clean=(td.textContent||td.innerText||'').slice(0,8000);
+    const r=await fetch('/api/translate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:clean,from,to,model})
+    });
+    const d=await r.json();
+    if(d.error){status.textContent='Ошибка: '+d.error;return}
+    status.textContent='Модель: '+model;
+    result.style.display='block';
+    result.textContent=d.translated;
+    const applyBtn=document.getElementById('applyTranslateBtn');
+    if(applyBtn)applyBtn.style.display='';
+    window._lastTranslation=d.translated;
+  }catch(e){status.textContent='Ошибка: '+e.message}
+}
+function applyTranslate(){
+  if(!window._lastTranslation)return;
+  if(!window._originalArticleText)window._originalArticleText=articleText;
+  window._showTranslationArticle=true;
+  articleText=window._lastTranslation;
+  const artContent=document.getElementById('artContent');
+  if(artContent){
+    artContent.innerHTML=window._lastTranslation.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    artContent.innerHTML+=`<div style="margin-top:12px;display:flex;gap:8px"><button class="btn" onclick="toggleArticleOriginal()" style="font-size:12px"><i class="fa-solid fa-language"></i> Оригинал</button><button class="btn" onclick="formatArticleText()" style="font-size:12px"><i class="fa-solid fa-wand-magic-sparkles"></i> AI форматирование</button></div>`;
+  }
+  closeTranslate();
+}
+function toggleArticleOriginal(){
+  const artContent=document.getElementById('artContent');
+  if(!artContent||!window._originalArticleText)return;
+  if(window._showTranslationArticle){
+    artContent.innerHTML=window._originalArticleText.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    artContent.innerHTML+=`<div style="margin-top:12px"><button class="btn" onclick="toggleArticleOriginal()" style="font-size:12px"><i class="fa-solid fa-language"></i> Перевод</button></div>`;
+    window._showTranslationArticle=false;
+  }else{
+    artContent.innerHTML=window._lastTranslation.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    artContent.innerHTML+=`<div style="margin-top:12px;display:flex;gap:8px"><button class="btn" onclick="toggleArticleOriginal()" style="font-size:12px"><i class="fa-solid fa-file-lines"></i> Оригинал</button><button class="btn" onclick="formatArticleText()" style="font-size:12px"><i class="fa-solid fa-wand-magic-sparkles"></i> AI форматирование</button></div>`;
+    window._showTranslationArticle=true;
+  }
+}
+async function formatArticleText(){
+  const src=window._showTranslationArticle&&window._lastTranslation?window._lastTranslation:window._originalArticleText||articleText;
+  if(!src)return;
+  // Strip HTML tags and clean entities
+  const d=document.createElement('div');
+  d.innerHTML=src;
+  const text=d.textContent||d.innerText||'';
+  const clean=text.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/\s{3,}/g,'  ').trim();
+  if(!clean)return;
+  try{
+    const r=await fetch('/api/translate',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:clean.slice(0,6000),from:'auto',to:'auto',instruction:'Отформатируй этот текст красиво: исправь структуру, добавь абзацы, заголовки, списки где нужно. Удали мусор, исправь HTML-сущности. Сохрани язык оригинала. Ответь ТОЛЬКО отформатированным текстом, без пояснений.'})
+    });
+    const d=await r.json();
+    const formatted=d.translated||d.translation;
+    if(formatted){
+      window._lastTranslation=formatted;
+      window._showTranslationArticle=true;
+      const artContent=document.getElementById('artContent');
+      if(artContent){
+        artContent.innerHTML=formatted.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+        artContent.innerHTML+=`<div style="margin-top:12px;display:flex;gap:8px"><button class="btn" onclick="toggleArticleOriginal()" style="font-size:12px"><i class="fa-solid fa-file-lines"></i> Оригинал</button><button class="btn" onclick="formatArticleText()" style="font-size:12px"><i class="fa-solid fa-wand-magic-sparkles"></i> AI форматирование</button></div>`;
+      }
+    }
+  }catch(e){alert('Ошибка: '+e.message)}
+}
+
+// === ЧАТ ===
+let chatHistory=[];
+function openChat(){document.getElementById('chatModal').classList.add('open')}
+function closeChat(){document.getElementById('chatModal').classList.remove('open')}
+function clearChat(){chatHistory=[];document.getElementById('chatMessages').innerHTML='<div style="color:var(--text3)">Задайте вопрос по содержимому статьи...</div>'}
+async function askQuestion(){
+  const q=document.getElementById('chatQuestion').value.trim();
+  if(!q)return;
+  document.getElementById('chatQuestion').value='';
+  const searchAll=document.getElementById('searchAll').checked;
+  const msgDiv=document.getElementById('chatMessages');
+  if(!chatHistory.length)msgDiv.innerHTML='';
+  chatHistory.push({role:'user',content:q});
+  msgDiv.innerHTML+=`<div style="margin-bottom:8px"><strong style="color:var(--accent)">Вы:</strong> ${esc(q)}</div>`;
+  msgDiv.innerHTML+=`<div style="margin-bottom:8px" id="thinking"><strong style="color:var(--green)">AI:</strong> <span style="color:var(--text3)">Думаю...</span></div>`;
+  msgDiv.scrollTop=msgDiv.scrollHeight;
+  try{
+    let r;
+    if(searchAll){
+      r=await fetch('/api/ask-database',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({question:q})
+      });
+    }else{
+      r=await fetch('/api/ask',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({article:articleText,question:q})
+      });
+    }
+    const d=await r.json();
+    const think=document.getElementById('thinking');
+    if(think)think.remove();
+    const answer=d.answer||'Нет ответа';
+    chatHistory.push({role:'assistant',content:answer});
+    let sourcesHtml='';
+    if(d.sources&&d.sources.length){
+      sourcesHtml='<div style="margin-top:6px;font-size:11px;color:var(--text3)">Источники: '+d.sources.map(s=>esc(s.file)+' #'+s.index).join(', ')+'</div>';
+    }
+    msgDiv.innerHTML+=`<div style="margin-bottom:8px"><strong style="color:var(--green)">AI:</strong> ${esc(answer)}${sourcesHtml}</div>`;
+  }catch(e){
+    const think=document.getElementById('thinking');
+    if(think)think.remove();
+    msgDiv.innerHTML+=`<div style="color:var(--red);margin-bottom:8px">Ошибка: ${e.message}</div>`;
+  }
+  msgDiv.scrollTop=msgDiv.scrollHeight;
+}
+
+// Кнопка назад
+document.getElementById('backBtn').href=`/list?file=${encodeURIComponent(F)}&name=${encodeURIComponent(FN)}`;
+
+// Клавиатурная навигация
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft'||e.key==='j'){const p=document.getElementById('navPrev');if(!p.classList.contains('disabled'))location.href=p.href}
+  if(e.key==='ArrowRight'||e.key==='l'){const n=document.getElementById('navNext');if(!n.classList.contains('disabled'))location.href=n.href}
+  if(e.key==='Escape')closeSettings();
+});
+
+loadArticle();
+</script></body></html>

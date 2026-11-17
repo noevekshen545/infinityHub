@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html class="pg-page_avatar" lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Infinity Avatar</title>
+<script>
+/* Окно-оверлей 3D-аватара (Electron открывает /avatar?embed=1).
+   Здесь только включаем прозрачный режим и подключаем панель управления.
+   Обычная страница /avatar этот блок не трогает — условие по query. */
+(function () {
+  if (!/[?&]embed=1/.test(location.search)) return;
+  document.documentElement.classList.add('av-embed');
+  var css = document.createElement('link');
+  css.rel = 'stylesheet';
+  css.href = '/static/css/avatar_overlay.css';
+  document.head.appendChild(css);
+  var js = document.createElement('script');
+  js.src = '/static/js/avatar_overlay.js';
+  js.defer = true;
+  document.head.appendChild(js);
+})();
+</script>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/libs/winbox.min.css">
+<link rel="stylesheet" href="/static/libs/xterm.min.css">
+<script src="./d3.v6.min.js" defer></script>
+<script src="./vendor/es-module-shims/es-module-shims.js" async></script>
+<script src="/static/libs/winbox.bundle.min.js" defer></script>
+<script src="/static/libs/xterm.min.js" defer></script>
+<script src="/static/libs/xterm-addon-fit.min.js" defer></script>
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;--text:#c9d1d9;--text2:#8b949e;--text3:#484f58;--accent:#58a6ff;--accent2:#1f6feb;--green:#238636;--red:#da3633;--orange:#d29922;--purple:#8b5cf6;--glass:rgba(22,27,34,0.55);--glass-border:rgba(255,255,255,0.12);--shadow-lg:0 8px 32px rgba(0,0,0,.5)}
+body.light{--bg:#fff;--bg2:#f3f3f3;--bg3:#e8e8e8;--border:#e0e0e0;--text:#1a1a1a;--text2:#666;--text3:#999;--accent:#0078d4;--accent2:#006cbd;--glass:rgba(255,255,255,0.55);--glass-border:rgba(0,0,0,0.1);--shadow-lg:0 8px 32px rgba(0,0,0,.15)}
+div[style*="bottom: 0px"][style*="z-index: 10000"] canvas { display:none !important }
+div[style*="bottom: 0px"][style*="z-index: 10000"] { display:none !important }
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:Segoe UI,system-ui,sans-serif;color:var(--text)}
+#main{width:100%;height:100%;position:relative}
+#left{position:absolute;left:0;top:0;bottom:48px;width:calc(100% - 300px);overflow:hidden}
+#right{position:absolute;right:0;top:0;bottom:48px;width:300px;overflow-y:auto;overflow-x:hidden;background:var(--bg2);border-left:1px solid var(--glass-border);z-index:10}
+#bottom{position:absolute;left:0;right:0;bottom:0;height:48px;background:var(--glass);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-top:1px solid var(--glass-border);display:flex;align-items:center;z-index:20}
+#right .pages{height:100%;display:flex;flex-direction:column}
+#right .page{flex:1;overflow-y:auto;padding:8px;display:block}
+#right .page.hidden{display:none}
+#left #view{position:absolute;left:0;top:0;width:100%;height:100%;z-index:0}
+#left #view video{width:100%;height:100%;object-fit:cover}
+#left #avatar{position:absolute;left:0;top:0;width:100%;height:100%;z-index:1}
+#left #loading{position:absolute;left:0;top:0;width:100%;height:100%;z-index:2;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#left #loading #loading-back{position:absolute;inset:0;background:var(--bg)}
+#left #loading #loading-top{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:bootSpin .9s linear infinite}
+@keyframes bootSpin{to{transform:rotate(360deg)}}
+#left #loading #loading-value{position:absolute;bottom:20px;font-size:12px;color:var(--text2)}
+.avatar-drag-handle{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:5;cursor:grab;padding:8px 16px;border-radius:0 0 8px 8px;background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--glass-border);border-top:none;display:flex;align-items:center;gap:8px;opacity:0;transition:opacity .2s;color:var(--text2);font-size:12px;user-select:none;-webkit-user-select:none}
+#main:hover .avatar-drag-handle{opacity:1}
+.avatar-drag-handle:hover{opacity:1!important}
+.avatar-drag-handle-title{white-space:nowrap}
+.avatar-reset-pos{cursor:pointer;padding:4px;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.avatar-reset-pos:hover{background:rgba(255,255,255,.1);color:var(--text)}
+/* Right panel styles */
+.row{display:flex;align-items:center;gap:6px;padding:4px 6px;width:100%}
+.column{display:flex;flex-direction:column;gap:4px;width:100%}
+.fill{flex:1;min-width:0}
+.text{font-size:12px;color:var(--text);white-space:nowrap}
+.text.label{width:72px;flex-shrink:0;font-weight:500;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.vbar{height:1px;background:var(--border);margin:6px 8px}
+.rowWrap{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.command{display:flex;align-items:center;justify-content:center;padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:12px;color:var(--text2);transition:all .15s;gap:4px;white-space:nowrap}
+.command:hover{background:var(--bg);border-color:var(--accent);color:var(--text)}
+.command.selected{background:var(--accent);border-color:var(--accent);color:#fff}
+.command svg{width:16px;height:16px;flex-shrink:0}
+input[type="text"],input[type="number"],input[type="url"],textarea{background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:6px 8px;outline:none;width:100%;transition:border-color .15s;font-family:inherit}
+input:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:none}
+input[type="range"]{-webkit-appearance:none;appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;flex:1;min-width:40px}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg2)}
+/* Floating buttons */
+#floating-buttons{position:fixed;right:8px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;z-index:9999}
+.floating-btn{width:40px;height:40px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:16px;transition:all .2s;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.floating-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.floating-btn svg{width:20px;height:20px;fill:currentColor}
+/* Floating panels */
+.floating-panel{position:fixed;bottom:70px;right:20px;width:360px;max-width:90vw;height:480px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);z-index:100000;display:flex;flex-direction:column;overflow:hidden;transition:all .3s ease}
+.floating-panel.hidden{display:none}
+.floating-panel-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-bottom:1px solid var(--border)}
+.floating-panel-header span{font-size:14px;font-weight:600;color:var(--text)}
+.floating-panel-close{cursor:pointer;font-size:18px;color:var(--text2);padding:4px 8px;border-radius:4px}
+.floating-panel-close:hover{background:var(--accent);color:#fff}
+.floating-panel-content{flex:1;overflow-y:auto;padding:16px}
+.chat-panel-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;max-height:300px}
+.chat-msg{display:flex;max-width:85%;animation:msgFadeIn .2s ease}
+.chat-msg.user{align-self:flex-end}
+.chat-msg.ai{align-self:flex-start}
+.chat-msg-bubble{padding:10px 14px;border-radius:18px;font-size:13px;line-height:1.5;word-wrap:break-word}
+.chat-msg.user .chat-msg-bubble{background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.chat-msg.ai .chat-msg-bubble{background:var(--bg3);color:var(--text);border-bottom-left-radius:4px;border:1px solid var(--border)}
+.chat-panel-tools{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--bg3);border-top:1px solid var(--border)}
+.chat-panel-tools textarea{width:100%;min-height:44px;max-height:120px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:13px;font-family:inherit;resize:none;outline:none}
+.chat-panel-tools textarea:focus{border-color:var(--accent)}
+.chat-tools-row{display:flex;align-items:center;gap:6px}
+.chat-tools-row .command{width:32px;height:32px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.chat-tools-row .command:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chat-tools-row .filler{flex:1}
+@keyframes msgFadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* Bottom toolbar */
+#bottom .pages{width:100%;height:100%}
+#bottom .page.fill{width:100%;height:100%}
+#bottom .row.fill{width:100%;height:100%;padding:6px 8px}
+#bottom textarea{width:100%;height:100%;background:transparent;border:none;color:var(--text);font-size:14px;padding:4px 8px;resize:none;outline:none;font-family:inherit}
+#bottom .row[style*="column-gap:0"]{padding:0 8px 6px;display:flex;align-items:center;gap:4px}
+#bottom .command{width:32px;height:32px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);flex-shrink:0}
+#bottom .command:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+#bottom .command svg{width:16px;height:16px}
+#bottom .text{font-size:12px;color:var(--text2)}
+#bottom .filler{flex:1}
+/* Bone control panel */
+#bonecontrolpanel .bone-control-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+#bonecontrolpanel .bone-bone{display:flex;align-items:center;gap:4px;padding:3px 6px;border-radius:4px;cursor:pointer;font-size:11px;color:var(--text2)}
+#bonecontrolpanel .bone-bone:hover{background:var(--bg3)}
+#bonecontrolpanel .bone-bone.selected{background:var(--accent);color:#fff}
+/* Modal */
+.tm-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:200000;display:flex;align-items:center;justify-content:center}
+.tm-modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;width:400px;max-width:90vw;box-shadow:0 24px 64px rgba(0,0,0,.4)}
+.tm-modal h3{margin-bottom:16px;font-size:16px;font-weight:700;color:var(--text)}
+.tm-modal input{width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;margin-bottom:16px}
+.tm-modal input:focus{border-color:var(--accent)}
+.tm-modal-actions{display:flex;gap:8px}
+.tm-modal-actions button{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-size:13px;font-weight:600}
+.tm-modal-actions button:first-child{background:var(--accent);border-color:var(--accent);color:#fff}
+.tm-modal-actions button:first-child:hover{background:var(--accent2)}
+.tm-modal-actions button:last-child{background:var(--bg3);color:var(--text)}
+.tm-modal-actions button:last-child:hover{background:var(--bg)}
+/* WinBox */
+.winbox{background:var(--bg2)!important;border:1px solid rgba(255,255,255,.1)!important;border-radius:0!important;box-shadow:0 8px 32px rgba(0,0,0,.25)!important}
+body.light .winbox{background:#fff!important;border:1px solid rgba(0,0,0,.12)!important}
+.winbox .wb-header{background:var(--bg3)!important}
+.winbox .wb-title{font-size:13px!important;font-weight:500!important;color:var(--text)!important}
+.winbox .wb-body{background:#000!important;margin:0!important;top:0!important;overflow:hidden!important}
+.winbox .wb-body>div{width:100%;height:100%;overflow-y:auto}
+.winbox.wb-chat .wb-body{background:var(--bg2)!important}
+.winbox.wb-settings .wb-body{background:var(--bg2)!important}
+.winbox .wb-control *{background-color:transparent!important}
+.winbox .wb-min,.winbox .wb-max,.winbox .wb-full{filter:invert(1)}
+.winbox .wb-close:hover{background:#c42b1c!important;filter:none!important}
+/* Buttons */
+button{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:4px}
+button:hover{background:var(--bg);border-color:var(--accent)}
+.button-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.button-primary:hover{background:var(--accent2);border-color:var(--accent2)}
+/* Scrollbar */
+#right::-webkit-scrollbar{width:4px}
+#right::-webkit-scrollbar-track{background:transparent}
+#right::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+/* Responsive */
+@media(max-width:768px){#left{width:100%;bottom:48px}#right{display:none}}
+/* #siteFrame hidden placeholder */
+#siteFrame{display:none}
+</style>
+<link rel="stylesheet" href="portable.css">
+<style>
+/* portable.css рассчитан на «виджет» рабочего стола: #main — карточка 300×500,
+   правая колонка скрыта (настройки открываются плавающей панелью). А шаблон
+   этой страницы по-старому отдаёт #left ширину calc(100% - 300px) — внутри
+   карточки это 0px, поэтому у модели не было места и аватар не отображался. */
+#left{width:auto!important;right:0!important}
+/* Отдельная страница настроек аватара (не окно-оверлей ?embed=1).
+   Окно открывается именно как настройки, поэтому аватар, плавающие кнопки
+   и WinBox здесь не нужны: правая панель (те же контролы, что в WinBox)
+   просто занимает всю страницу и открыта сразу. #main — контейнер страницы,
+   его не скрываем (внутри него лежит #right), скрываем только модель. */
+html:not(.av-embed) #main{
+  position:fixed!important;
+  inset:0!important;
+  width:auto!important;
+  height:auto!important;
+  pointer-events:auto!important;
+}
+html:not(.av-embed) #left,
+html:not(.av-embed) #floating-buttons{display:none!important}
+html:not(.av-embed) #right{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  width:auto!important;
+  border-left:0!important;
+  background:transparent!important;
+  overflow-y:auto!important;
+}
+html:not(.av-embed) #right .pages{height:auto;position:static}
+/* Страницу прокручивает сама правая колонка: страницы не делят высоту
+   пополам и не получают по своей полосе прокрутки — иначе настройки
+   выглядели обрезанными на середине. Строка вкладок тоже не нужна:
+   на этой странице открыт один раздел целиком. */
+html:not(.av-embed) #right .pages > .row{display:none!important}
+html:not(.av-embed) #right .page{flex:0 0 auto;overflow:visible;height:auto}
+</style>
+<script nomodule>alert("You browser doesn't seem to support modules. Use a modern browser to run Enterprise.");</script>
+<script type="importmap">
+{ "imports":
+  {
+    "three": "./vendor/three/build/three.module.js",
+    "three/addons/": "./vendor/three/addons/",
+    "dompurify": "./vendor/dompurify/dompurify.es.mjs",
+    "marked": "./vendor/marked/marked.esm.js",
+    "motion-engine": "./motion-engine-main/src/MotionEngine.js",
+    "motion-studio": "./motion-engine-main/src/MotionStudio.js",
+    "motion-motions": "./motion-engine-main/src/motions.js",
+    "motion-motions-th": "./motion-engine-main/src/motions_th.js",
+    "motion-engine/": "./motion-engine-main/src/"
+  }
+}
+</script>
+<script src="./vendor/speech-sdk/microsoft.cognitiveservices.speech.sdk.bundle-min.js" defer></script>
+<script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+</head><body>
+
+<!-- Loading overlay -->
+<style>
+#boot-loader{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:linear-gradient(135deg,#0d1117 0%,#161b22 100%);color:#c9d1d9;z-index:999999;font-family:system-ui,-apple-system,sans-serif;transition:opacity .3s ease}
+#boot-loader.gone{opacity:0;pointer-events:none}
+#boot-spinner{width:48px;height:48px;border:3px solid #30363d;border-top-color:#58a6ff;border-radius:50%;animation:bootSpin .9s linear infinite}
+@keyframes bootSpin{to{transform:rotate(360deg)}}
+#boot-title{font-size:18px;font-weight:600;background:linear-gradient(135deg,#58a6ff,#8b5cf6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+#boot-hint{font-size:12px;color:#8b949e}
+</style>
+
+<div id="boot-loader">
+  <div id="boot-spinner"></div>
+  <div id="boot-title">Infinity Avatar</div>
+  <div id="boot-hint">Loading...</div>
+</div>
+
+<script>
+// Boot loader hide
+function hideBoot() {
+  var el = document.getElementById('boot-loader');
+  if (el) { el.classList.add('gone'); setTimeout(function(){ el.style.display='none'; }, 400); }
+}
+// Hide boot loader on load or after timeout
+if (document.readyState === 'complete') { setTimeout(hideBoot, 500); }
+else { window.addEventListener('load', function(){ setTimeout(hideBoot, 800); }); }
+setTimeout(hideBoot, 8000);
+</script>
+
+<!-- ====== MAIN AVATAR UI ====== -->
+<div id="" class="">
+
+  <div id="main" class="ratio-wide layout-land presence-video">
+
+    <div id="avatar-drag-handle" class="avatar-drag-handle">
+      <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z" fill="currentColor"/>
+      </svg>
+      <div class="avatar-drag-handle-title">Drag to reposition</div>
+      <div id="avatar-reset-pos" class="avatar-reset-pos" title="Reset position">
+        <svg viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="currentColor"/>
+        </svg>
+      </div>
+    </div>
+
+    <div id="left" class="noselect nodrag">
+      <div id="view">
+        <video id="video" autoplay loop muted playsinline>
+          <source id="view-video" src="" type="video/mp4">
+        </video>
+      </div>
+      <div id="avatar"></div>
+      <div class="starttransparent"></div>
+      <div id="loading">
+        <div id="loading-back"></div>
+        <div id="loading-top"></div>
+        <div id="loading-value"></div>
+      </div>
+    </div>
+
+    <div id="right">
+      <div class="pages">
+        <div class="row noselect nodrag">
+          <div class="command selected" data-i18n-title="Avatar" data-show="right-avatar">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7ZM14 7C14 8.10457 13.1046 9 12 9C10.8954 9 10 8.10457 10 7C10 5.89543 10.8954 5 12 5C13.1046 5 14 5.89543 14 7Z" fill="currentColor" />
+              <path d="M16 15C16 14.4477 15.5523 14 15 14H9C8.44772 14 8 14.4477 8 15V21H6V15C6 13.3431 7.34315 12 9 12H15C16.6569 12 18 13.3431 18 15V21H16V15Z" fill="currentColor" />
+            </svg>
+          </div>
+        </div>
+
+        <div id="right-avatar" class="page noselect nodrag">
+          <div class="vbar"></div>
+          <div class="row">
+            <div class="text label" data-i18n-text="Avatar"></div>
+            <div class="column">
+              <div id="avatars" class="rowWrap">
+                <label for="avatar-name-file" class="command" data-avatar-name="FILE">
+                  <svg viewBox="-2 -2 28 28" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M4 1.5C2.89543 1.5 2 2.39543 2 3.5V4.5C2 4.55666 2.00236 4.61278 2.00698 4.66825C0.838141 5.07811 0 6.19118 0 7.5V19.5C0 21.1569 1.34315 22.5 3 22.5H21C22.6569 22.5 24 21.1569 24 19.5V7.5C24 5.84315 22.6569 4.5 21 4.5H11.874C11.4299 2.77477 9.86384 1.5 8 1.5H4ZM9.73244 4.5C9.38663 3.9022 8.74028 3.5 8 3.5H4V4.5H9.73244ZM3 6.5C2.44772 6.5 2 6.94772 2 7.5V19.5C2 20.0523 2.44772 20.5 3 20.5H21C21.5523 20.5 22 20.0523 22 19.5V7.5C22 6.94772 21.5523 6.5 21 6.5H3Z" fill="currentColor" />
+                  </svg>
+                </label>
+                <input type="file" id="avatar-name-file" accept=".glb" style="display:none">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="text label"></div>
+            <div class="row fill">
+              <div class="command" data-item="avatar-name" data-type="option" data-avatar-name="URL">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14.8284 12L16.2426 13.4142L19.071 10.5858C20.6331 9.02365 20.6331 6.49099 19.071 4.9289C17.509 3.3668 14.9763 3.3668 13.4142 4.9289L10.5858 7.75732L12 9.17154L14.8284 6.34311C15.6095 5.56206 16.8758 5.56206 17.6568 6.34311C18.4379 7.12416 18.4379 8.39049 17.6568 9.17154L14.8284 12Z" fill="currentColor" />
+                  <path d="M12 14.8285L13.4142 16.2427L10.5858 19.0711C9.02372 20.6332 6.49106 20.6332 4.92896 19.0711C3.36686 17.509 3.36686 14.9764 4.92896 13.4143L7.75739 10.5858L9.1716 12L6.34317 14.8285C5.56212 15.6095 5.56212 16.8758 6.34317 17.6569C7.12422 18.4379 8.39055 18.4379 9.1716 17.6569L12 14.8285Z" fill="currentColor" />
+                  <path d="M14.8285 10.5857C15.219 10.1952 15.219 9.56199 14.8285 9.17147C14.4379 8.78094 13.8048 8.78094 13.4142 9.17147L9.1716 13.4141C8.78107 13.8046 8.78107 14.4378 9.1716 14.8283C9.56212 15.2188 10.1953 15.2188 10.5858 14.8283L14.8285 10.5857Z" fill="currentColor" />
+                </svg>
+              </div>
+              <input class="fill" type="text" placeholder="URL" data-item="avatar-url" data-type="value">
+              <div class="command selected" data-item="avatar-body" data-type="option" data-avatar-body="F">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M12 3C9.23858 3 7 5.23858 7 8C7 10.419 8.71776 12.4367 11 12.9V15H8V17H11V21H13V17H16V15H13V12.9C15.2822 12.4367 17 10.419 17 8C17 5.23858 14.7614 3 12 3ZM9 8C9 9.65685 10.3431 11 12 11C13.6569 11 15 9.65685 15 8C15 6.34315 13.6569 5 12 5C10.3431 5 9 6.34315 9 8Z" fill="currentColor" />
+                </svg>
+              </div>
+              <div class="command" data-item="avatar-body" data-type="option" data-avatar-body="M">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M12.1888 7L12.1909 5L19.1909 5.00746L19.1834 12.0075L17.1834 12.0053L17.1873 8.41678L14.143 11.4611C15.4612 13.4063 15.2587 16.0743 13.5355 17.7975C11.5829 19.7501 8.41709 19.7501 6.46447 17.7975C4.51184 15.8449 4.51184 12.6791 6.46447 10.7264C8.16216 9.02873 10.777 8.80709 12.7141 10.0615L15.7718 7.00382L12.1888 7ZM7.87868 12.1406C9.05025 10.9691 10.9497 10.9691 12.1213 12.1406C13.2929 13.3122 13.2929 15.2117 12.1213 16.3833C10.9497 17.5549 9.05025 17.5549 7.87868 16.3833C6.70711 15.2117 6.70711 13.3122 7.87868 12.1406Z" fill="currentColor" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="vbar"></div>
+
+          <div class="row">
+            <div class="text label" data-i18n-text="Emotion"></div>
+            <div class="rowWrap">
+              <div class="command" data-i18n-text="Neutral" data-mood="neutral">Neutral</div>
+              <div class="command" data-i18n-text="Happy" data-mood="happy">Happy</div>
+              <div class="command" data-i18n-text="Angry" data-mood="angry">Angry</div>
+              <div class="command" data-i18n-text="Sad" data-mood="sad">Sad</div>
+              <div class="command" data-i18n-text="Fear" data-mood="fear">Fear</div>
+              <div class="command" data-i18n-text="Disgust" data-mood="disgust">Disgust</div>
+              <div class="command" data-i18n-text="Love" data-mood="love">Love</div>
+              <div class="command" data-i18n-text="Sleep" data-mood="sleep">Sleep</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="text label" data-i18n-text="Pose"></div>
+            <div id="poses" class="rowWrap">
+              <div id="pose-repeat" class="command selected">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18.3701 7.99993L13.8701 10.598V8.99993H6.88989V12.9999H4.88989V6.99993H13.8701V5.40186L18.3701 7.99993Z" fill="currentColor" />
+                  <path d="M10.1299 16.9999H19.1101V10.9999H17.1101V14.9999H10.1299V13.4019L5.62988 15.9999L10.1299 18.598V16.9999Z" fill="currentColor" />
+                </svg>
+              </div>
+              <label for="pose-file" class="command" data-pose="FILE">
+                <svg viewBox="-2 -2 28 28" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M4 1.5C2.89543 1.5 2 2.39543 2 3.5V4.5C2 4.55666 2.00236 4.61278 2.00698 4.66825C0.838141 5.07811 0 6.19118 0 7.5V19.5C0 21.1569 1.34315 22.5 3 22.5H21C22.6569 22.5 24 21.1569 24 19.5V7.5C24 5.84315 22.6569 4.5 21 4.5H11.874C11.4299 2.77477 9.86384 1.5 8 1.5H4ZM9.73244 4.5C9.38663 3.9022 8.74028 3.5 8 3.5H4V4.5H9.73244ZM3 6.5C2.44772 6.5 2 6.94772 2 7.5V19.5C2 20.0523 2.44772 20.5 3 20.5H21C21.5523 20.5 22 20.0523 22 19.5V7.5C22 6.94772 21.5523 6.5 21 6.5H3Z" fill="currentColor" />
+                </svg>
+              </label>
+              <input type="file" id="pose-file" accept=".fbx" style="display:none">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="text label" data-i18n-text="Gesture"></div>
+            <div id="gestures" class="rowWrap">
+              <div id="gesture-repeat" class="command selected">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18.3701 7.99993L13.8701 10.598V8.99993H6.88989V12.9999H4.88989V6.99993H13.8701V5.40186L18.3701 7.99993Z" fill="currentColor" />
+                  <path d="M10.1299 16.9999H19.1101V10.9999H17.1101V14.9999H10.1299V13.4019L5.62988 15.9999L10.1299 18.598V16.9999Z" fill="currentColor" />
+                </svg>
+              </div>
+              <div id="gesture-mirror" class="command">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M13 7H11V17H13V7Z" fill="currentColor" />
+                  <path d="M5.99996 7.75732L7.41418 9.17154L5.58572 11L9.99996 11V13L5.58579 13L7.41418 14.8284L5.99996 16.2426L1.75732 12L5.99996 7.75732Z" fill="currentColor" />
+                  <path d="M18 16.2427L16.5858 14.8285L18.4143 13H14V11L18.4142 11L16.5858 9.17161L18 7.75739L22.2427 12L18 16.2427Z" fill="currentColor" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="text label" data-i18n-text="Action"></div>
+            <div id="animations" class="rowWrap">
+              <div id="animation-repeat" class="command selected">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18.3701 7.99993L13.8701 10.598V8.99993H6.88989V12.9999H4.88989V6.99993H13.8701V5.40186L18.3701 7.99993Z" fill="currentColor" />
+                  <path d="M10.1299 16.9999H19.1101V10.9999H17.1101V14.9999H10.1299V13.4019L5.62988 15.9999L10.1299 18.598V16.9999Z" fill="currentColor" />
+                </svg>
+              </div>
+              <label for="animation-file" class="command" data-animation="FILE">
+                <svg viewBox="-2 -2 28 28" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M4 1.5C2.89543 1.5 2 2.39543 2 3.5V4.5C2 4.55666 2.00236 4.61278 2.00698 4.66825C0.838141 5.07811 0 6.19118 0 7.5V19.5C0 21.1569 1.34315 22.5 3 22.5H21C22.6569 22.5 24 21.1569 24 19.5V7.5C24 5.84315 22.6569 4.5 21 4.5H11.874C11.4299 2.77477 9.86384 1.5 8 1.5H4ZM9.73244 4.5C9.38663 3.9022 8.74028 3.5 8 3.5H4V4.5H9.73244ZM3 6.5C2.44772 6.5 2 6.94772 2 7.5V19.5C2 20.0523 2.44772 20.5 3 20.5H21C21.5523 20.5 22 20.0523 22 19.5V7.5C22 6.94772 21.5523 6.5 21 6.5H3Z" fill="currentColor" />
+                </svg>
+              </label>
+              <input type="file" id="animation-file" accept=".fbx" style="display:none">
+            </div>
+          </div>
+
+          <div class="vbar"></div>
+
+          <div class="row">
+            <div class="text label" data-i18n-text="Adjust"></div>
+            <div class="column">
+              <div class="row">
+                <div class="command" data-target="avatar-brightness" data-range-reset="1">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM12 18C15.3137 18 18 15.3137 18 12C18 8.68629 15.3137 6 12 6C8.68629 6 6 8.68629 6 12C6 15.3137 8.68629 18 12 18Z" fill="currentColor" />
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M11 0H13V4.06189C12.6724 4.02104 12.3387 4 12 4C11.6613 4 11.3276 4.02104 11 4.06189V0ZM7.0943 5.68018L4.22173 2.80761L2.80752 4.22183L5.6801 7.09441C6.09071 6.56618 6.56608 6.0908 7.0943 5.68018ZM4.06189 11H0V13H4.06189C4.02104 12.6724 4 12.3387 4 12C4 11.6613 4.02104 11.3276 4.06189 11ZM5.6801 16.9056L2.80751 19.7782L4.22173 21.1924L7.0943 18.3198C6.56608 17.9092 6.09071 17.4338 5.6801 16.9056ZM11 19.9381V24H13V19.9381C12.6724 19.979 12.3387 20 12 20C11.6613 20 11.3276 19.979 11 19.9381ZM16.9056 18.3199L19.7781 21.1924L21.1923 19.7782L18.3198 16.9057C17.9092 17.4339 17.4338 17.9093 16.9056 18.3199ZM19.9381 13H24V11H19.9381C19.979 11.3276 20 11.6613 20 12C20 12.3387 19.979 12.6724 19.9381 13ZM18.3198 7.0943L21.1923 4.22183L19.7781 2.80762L16.9056 5.6801C17.4338 6.09071 17.9092 6.56608 18.3198 7.0943Z" fill="currentColor" />
+                  </svg>
+                </div>
+                <input type="range" min="0" max="2" step="0.05" value="1" data-item="avatar-brightness" data-type="value" data-range="percentage" data-avatar-brightness="brightness">
+                <div class="text">100%</div>
+              </div>
+              <div class="row">
+                <div class="command" data-target="avatar-contrast" data-range-reset="1">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 18C10.4633 18 9.06151 17.4223 8 16.4722C6.7725 15.3736 6 13.777 6 12C6 10.223 6.7725 8.62643 8 7.52779C9.06151 6.57771 10.4633 6 12 6V18Z" fill="currentColor" />
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12C20 16.4183 16.4183 20 12 20Z" fill="currentColor" />
+                  </svg>
+                </div>
+                <input type="range" min="0" max="2" step="0.05" value="1" data-item="avatar-contrast" data-type="value" data-range="percentage" data-avatar-contrast="contrast">
+                <div class="text">100%</div>
+              </div>
+              <div class="row">
+                <div class="command" data-target="avatar-saturate" data-range-reset="1">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.20348 2.00378C9.46407 2.00378 10.5067 3.10742 10.6786 4.54241L19.1622 13.0259L11.384 20.8041C10.2124 21.9757 8.31291 21.9757 7.14134 20.8041L2.8987 16.5615C1.72713 15.3899 1.72713 13.4904 2.8987 12.3188L5.70348 9.51404V4.96099C5.70348 3.32777 6.82277 2.00378 8.20348 2.00378ZM8.70348 4.96099V6.51404L7.70348 7.51404V4.96099C7.70348 4.63435 7.92734 4.36955 8.20348 4.36955C8.47963 4.36955 8.70348 4.63435 8.70348 4.96099ZM8.70348 10.8754V9.34247L4.31291 13.733C3.92239 14.1236 3.92239 14.7567 4.31291 15.1473L8.55555 19.3899C8.94608 19.7804 9.57924 19.7804 9.96977 19.3899L16.3337 13.0259L10.7035 7.39569V10.8754C10.7035 10.9184 10.7027 10.9612 10.7012 11.0038H8.69168C8.69941 10.9625 8.70348 10.9195 8.70348 10.8754Z" fill="currentColor" />
+                    <path d="M16.8586 16.8749C15.687 18.0465 15.687 19.946 16.8586 21.1175C18.0302 22.2891 19.9297 22.2891 21.1013 21.1175C22.2728 19.946 22.2728 18.0465 21.1013 16.8749L18.9799 14.7536L16.8586 16.8749Z" fill="currentColor" />
+                  </svg>
+                </div>
+                <input type="range" min="0" max="2" step="0.05" value="1" data-item="avatar-saturate" data-type="value" data-range="percentage" data-avatar-saturate="saturate">
+                <div class="text">100%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="text label" data-i18n-text="PoseMovement"></div>
+            <div class="column">
+              <div class="row">
+                <div class="command" data-target="pose-movement" data-range-reset="1">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 21.5L17.5 13L13 10L15 2.5L6.5 11L11 14L9 21.5Z" fill="currentColor" />
+                  </svg>
+                </div>
+                <input type="range" min="0" max="1" step="0.05" value="1" data-item="pose-movement" data-type="value" data-range="float" data-pose-movement="">
+                <div class="text">1</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="text label" data-i18n-text="Visible"></div>
+            <div id="skinnedmeshes" class="rowWrap"></div>
+          </div>
+
+          <div class="vbar"></div>
+
+          <div class="row">
+            <div class="text label" data-i18n-text="Emoji"></div>
+            <div id="emojis" class="rowWrap"></div>
+          </div>
+          <div class="row">
+            <div class="text label" data-i18n-text="Morphs"></div>
+            <div id="morphs" class="column"></div>
+          </div>
+          <div class="row">
+            <div class="text label" data-i18n-text="Data"></div>
+            <textarea id="morphdata" rows="1" readonly></textarea>
+          </div>
+
+          <div class="vbar"></div>
+
+          <div class="row">
+            <div class="text label" data-i18n-text="UserMotions"></div>
+            <div class="rowWrap">
+              <div id="refreshusermotions" class="command" onclick="refreshUserAnimations()" title="Refresh list">⟳</div>
+              <label for="upload-motion-file" class="command" title="Upload .fbx/.glb/.vrma/.json">⤴</label>
+              <input type="file" id="upload-motion-file" accept=".fbx,.glb,.gltf,.vrma,.json" style="display:none">
+            </div>
+          </div>
+          <div class="row">
+            <div class="text label"></div>
+            <div id="usermotions-list" class="rowWrap" style="max-width:300px;flex-wrap:wrap;gap:4px"></div>
+          </div>
+        </div>
+
+        <div id="right-sessions" class="page">
+          <div id="sessions">
+            <div id="session-0" class="session selected"></div>
+            <div id="session-1" class="session"></div>
+          </div>
+        </div>
+
+        <div id="right-session" class="page noselect nodrag hidden">
+          <div class="vbar"></div>
+          <div class="row">
+            <div class="text label" data-i18n-text="Session"></div>
+            <div id="directory" class="column fill">
+              <div id="entry-0" class="entry row">
+                <div class="command fill selected" data-session="0">Nimet&ouml;n</div>
+                <div class="command" data-entry-move="up">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.6569 16.2427L19.0711 14.8285L12.0001 7.75739L4.92896 14.8285L6.34317 16.2427L12.0001 10.5858L17.6569 16.2427Z" fill="currentColor" />
+                  </svg>
+                </div>
+                <div class="command" data-entry-move="down">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.34317 7.75732L4.92896 9.17154L12 16.2426L19.0711 9.17157L17.6569 7.75735L12 13.4142L6.34317 7.75732Z" fill="currentColor" />
+                  </svg>
+                </div>
+              </div>
+              <div id="entry-1" class="entry row">
+                <div class="command fill" data-session="1">Nimet&ouml;n</div>
+                <div class="command" data-entry-move="up">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.6569 16.2427L19.0711 14.8285L12.0001 7.75739L4.92896 14.8285L6.34317 16.2427L12.0001 10.5858L17.6569 16.2427Z" fill="currentColor" />
+                  </svg>
+                </div>
+                <div class="command" data-entry-move="down">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.34317 7.75732L4.92896 9.17154L12 16.2426L19.0711 9.17157L17.6569 7.75735L12 13.4142L6.34317 7.75732Z" fill="currentColor" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="vbar"></div>
+          <div class="row">
+            <div class="text label" data-i18n-text="Title"></div>
+            <input class="fill" type="text" data-i18n-placeholder="Name" data-item="name" data-type="value">
+            <div id="session-duplicate" class="command">
+              <svg viewBox="-2 -2 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 5H7V3H21V17H19V5Z" fill="currentColor" />
+                <path d="M9 13V11H11V13H13V15H11V17H9V15H7V13H9Z" fill="currentColor" />
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M3 7H17V21H3V7ZM5 9H15V19H5V9Z" fill="currentColor" />
+              </svg>
+            </div>
+            <div id="session-delete" class="command">
+              <svg viewBox="-1 -1 26 26" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z" fill="currentColor" />
+                <path d="M9 9H11V17H9V9Z" fill="currentColor" />
+                <path d="M13 9H15V17H13V9Z" fill="currentColor" />
+              </svg>
+            </div>
+          </div>
+          <div class="row">
+            <div class="text label" data-i18n-text="Theme"></div>
+            <div class="column">
+              <div id="languages" class="rowWrap"></div>
+              <div class="rowWrap">
+                <div class="command selected" data-i18n-text="Dark" data-item="theme-brightness" data-type="option" data-theme-brightness="dark"></div>
+                <div class="command" data-i18n-text="Light" data-item="theme-brightness" data-type="option" data-theme-brightness="light"></div>
+              </div>
+              <div class="rowWrap">
+                <div class="command selected" data-i18n-text="theme-wide" data-item="theme-ratio" data-type="option" data-theme-ratio="wide"></div>
+                <div class="command" data-i18n-text="theme-43" data-item="theme-ratio" data-type="option" data-theme-ratio="normal"></div>
+              </div>
+              <div class="rowWrap">
+                <div class="command selected" data-i18n-text="theme-landscape" data-item="theme-layout" data-type="option" data-theme-layout="land"></div>
+                <div class="command" data-i18n-text="theme-portrait" data-item="theme-layout" data-type="option" data-theme-layout="port"></div>
+                <div class="command" data-i18n-text="theme-full" data-item="theme-layout" data-type="option" data-theme-layout="full"></div>
+              </div>
+            </div>
+          </div>
+          <div class="vbar"></div>
+          <div class="row">
+            <div class="text label" data-i18n-text="JSON"></div>
+            <input id="json" type="text" placeholder="JSON">
+          </div>
+          <div class="vbar"></div>
+          <div class="row">
+            <div class="text">Note: API keys are not stored for security reasons.</div>
+          </div>
+          <div class="row">
+            <div class="text label" style="width: 8rem">OpenAI</div>
+            <input id="apikey-openai" class="apikey" type="text" placeholder="API key not specified; using proxy/JWT">
+          </div>
+          <div class="row">
+            <div class="text label" style="width: 8rem">Gemini</div>
+            <input id="apikey-gemini" class="apikey" type="text" placeholder="API key not specified; using proxy/JWT">
+          </div>
+          <div class="row">
+            <div class="text label" style="width: 8rem">Grok</div>
+            <input id="apikey-grok" class="apikey" type="text" placeholder="API key not specified; using proxy/JWT">
+          </div>
+          <div class="row">
+            <div class="text label" style="width: 8rem">GoogleTTS</div>
+            <input id="apikey-gtts" class="apikey" type="text" placeholder="API key not specified; using proxy/JWT">
+          </div>
+          <div class="row">
+            <div class="text label" style="width: 8rem">MicrosoftTTS</div>
+            <input id="apikey-microsoft" class="apikey" type="text" placeholder="API key not specified; using proxy/JWT">
+          </div>
+          <div class="row">
+            <div class="text label" style="width: 8rem">ElevenLabs</div>
+            <input id="apikey-eleven" class="apikey" type="text" placeholder="API key not specified; using proxy/JWT">
+          </div>
+        </div>
+      </div>
+
+      <div class="starttransparent"></div>
+    </div>
+
+    <div id="bottom">
+      <div class="pages noselect nodrag">
+        <div class="page fill">
+          <div class="row fill">
+            <textarea id="input" class="starttransparent" data-i18n-placeholder="input" autocapitalize="sentences"></textarea>
+          </div>
+        </div>
+        <div class="row" style="column-gap:0;">
+          <div id="selectall" class="command starttransparent">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10.5858 13.4142L7.75735 10.5858L6.34314 12L10.5858 16.2427L17.6568 9.1716L16.2426 7.75739L10.5858 13.4142Z" fill="currentColor" />
+            </svg>
+          </div>
+          <div id="flag" class="command starttransparent">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M7 8V13C7 15.7614 9.23858 18 12 18C14.7614 18 17 15.7614 17 13V8H7ZM5 4H19V13C19 16.866 15.866 20 12 20C8.13401 20 5 16.866 5 13V4Z" fill="currentColor" />
+            </svg>
+          </div>
+          <div id="score" class="text starttransparent" style="margin-left:-8px;">0</div>
+          <div id="scripttag" class="command starttransparent">
+            <svg viewBox="-4 -4 32 32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17 9H7V7H17V9Z" fill="currentColor" /><path d="M7 13H17V11H7V13Z" fill="currentColor" /><path fill-rule="evenodd" clip-rule="evenodd" d="M2 18V2H22V18H16V22H14C11.7909 22 10 20.2091 10 18H2ZM12 16V18C12 19.1046 12.8954 20 14 20V16H20V4H4V16H12Z" fill="currentColor" />
+            </svg>
+          </div>
+          <div id="scriptstatus" class="text starttransparent" style="margin-left:-8px;">1/1</div>
+          <div class="filler"></div>
+          <div id="record" class="command starttransparent" data-i18n-title="Record">
+            <svg viewBox="-2 -2 28 28" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M9 4C9 2.34315 10.3431 1 12 1C13.6569 1 15 2.34315 15 4V12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12V4ZM13 4V12C13 12.5523 12.5523 13 12 13C11.4477 13 11 12.5523 11 12V4C11 3.44772 11.4477 3 12 3C12.5523 3 13 3.44772 13 4Z" fill="currentColor" />
+              <path d="M18 12C18 14.973 15.8377 17.441 13 17.917V21H17V23H7V21H11V17.917C8.16229 17.441 6 14.973 6 12V9H8V12C8 14.2091 9.79086 16 12 16C14.2091 16 16 14.2091 16 12V9H18V12Z" fill="currentColor" />
+            </svg>
+          </div>
+          <div id="motion" class="command starttransparent" data-i18n-title="Motion">
+            <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 34.498047 3 C 32.014047 3 30 5.0150469 30 7.4980469 C 30 9.9830469 32.014047 12 34.498047 12 C 36.987047 12 39 9.9830469 39 7.4980469 C 39 5.0150469 36.987047 3 34.498047 3 z M 20 10 A 2 2 0 0 0 18.919922 10.316406 L 18.917969 10.316406 L 18.886719 10.322266 L 11.957031 15.294922 A 2 2 0 0 0 11 17 A 2 2 0 0 0 13 19 A 2 2 0 0 0 14.287109 18.527344 L 14.289062 18.529297 L 20.283203 14.21875 L 24.691406 15.619141 L 19.757812 23.660156 L 19.757812 23.664062 A 4 4 0 0 0 19 26 A 4 4 0 0 0 21.210938 29.572266 L 28.755859 34.226562 L 27.048828 43.009766 A 2.5 2.5 0 0 0 27 43.5 A 2.5 2.5 0 0 0 29.5 46 A 2.5 2.5 0 0 0 31.955078 43.962891 L 31.957031 43.962891 L 33.984375 33.289062 L 33.978516 33.273438 A 2 2 0 0 0 34 33 A 2 2 0 0 0 33.345703 31.523438 L 33.339844 31.507812 L 27.9375 26.720703 L 32.607422 17.486328 L 32.605469 17.482422 A 3 3 0 0 0 33 16 A 3 3 0 0 0 31.193359 13.248047 L 31.191406 13.244141 L 28.685547 11.849609 L 20.519531 10.066406 L 20.507812 10.068359 A 2 2 0 0 0 20 10 z M 34.212891 18.742188 L 31.972656 23.171875 L 33.181641 25.837891 L 33.193359 25.845703 C 33.513359 26.525703 34.199 27 35 27 L 42 27 C 43.105 27 44 26.105 44 25 C 44 23.895 43.105 23 42 23 L 36 23 L 34.212891 18.742188 z M 17.517578 28.414062 L 15.242188 32 L 7.5 32 C 6.119 32 5 33.119 5 34.5 C 5 35.881 6.119 37 7.5 37 L 15.931641 37 C 17.228641 37 18.445312 36.3705 19.195312 35.3125 L 21.480469 32.089844 C 20.653469 31.578844 20.055828 31.208125 20.048828 31.203125 C 18.904828 30.555125 18.031578 29.569062 17.517578 28.414062 z" fill="currentColor"/>
+            </svg>
+          </div>
+          <div id="copy" class="command starttransparent">
+            <svg viewBox="-2 -2 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 7H7V5H13V7Z" fill="currentColor" />
+              <path d="M13 11H7V9H13V11Z" fill="currentColor" />
+              <path d="M7 15H13V13H7V15Z" fill="currentColor" />
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M3 19V1H17V5H21V23H7V19H3ZM15 17V3H5V17H15ZM17 7V19H9V21H19V7H17Z" fill="currentColor" />
+            </svg>
+          </div>
+          <div id="delete" class="command starttransparent">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z" fill="currentColor" />
+              <path d="M9 9H11V17H9V9Z" fill="currentColor" />
+              <path d="M13 9H15V17H13V9Z" fill="currentColor" />
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="starttransparent"></div>
+    </div>
+  </div>
+
+  <!-- ====== FLOATING BUTTONS ====== -->
+  <div id="floating-buttons">
+    <div id="btn-chat" class="floating-btn" title="Chat">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z" fill="currentColor"/><path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z" fill="currentColor"/></svg>
+    </div>
+    <div id="btn-settings" class="floating-btn" title="Settings">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" fill="currentColor"/></svg>
+    </div>
+    <div id="bonecontroltoggle" class="floating-btn" title="Bone Control">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2L4 6V12L12 22L20 12V6L12 2ZM12 4.5L18 7.5V11L12 18L6 11V7.5L12 4.5Z" fill="currentColor"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+    </div>
+    <div id="btn-toggle-model" class="floating-btn" title="Hide Model">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/></svg>
+    </div>
+  </div>
+
+  <!-- ====== CHAT PANEL ====== -->
+  <div id="chat-panel" class="floating-panel hidden">
+    <div class="floating-panel-header">
+      <span>Chat</span>
+      <div class="floating-panel-close" id="chat-panel-close">&times;</div>
+    </div>
+    <div id="chat-panel-messages" class="chat-panel-messages"></div>
+    <div id="chat-panel-tools" class="chat-panel-tools">
+      <textarea id="chat-panel-input" placeholder="Type a message..." rows="1"></textarea>
+      <div class="chat-tools-row">
+        <div class="command" data-target="selectall"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10.5858 13.4142L7.75735 10.5858L6.34314 12L10.5858 16.2427L17.6568 9.1716L16.2426 7.75739L10.5858 13.4142Z" fill="currentColor"/></svg></div>
+        <div class="command" data-target="flag"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M7 8V13C7 15.7614 9.23858 18 12 18C14.7614 18 17 15.7614 17 13V8H7ZM5 4H19V13C19 16.866 15.866 20 12 20C8.13401 20 5 16.866 5 13V4Z" fill="currentColor"/></svg></div>
+        <div class="text" style="margin-left:-8px;" data-target="score">0</div>
+        <div class="filler"></div>
+        <div class="command" title="Record" data-target="record"><svg viewBox="-2 -2 28 28" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9 4C9 2.34315 10.3431 1 12 1C13.6569 1 15 2.34315 15 4V12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12V4ZM13 4V12C13 12.5523 12.5523 13 12 13C11.4477 13 11 12.5523 11 12V4C11 3.44772 11.4477 3 12 3C12.5523 3 13 3.44772 13 4Z" fill="currentColor"/><path d="M18 12C18 14.973 15.8377 17.441 13 17.917V21H17V23H7V21H11V17.917C8.16229 17.441 6 14.973 6 12V9H8V12C8 14.2091 9.79086 16 12 16C14.2091 16 16 14.2091 16 12V9H18V12Z" fill="currentColor"/></svg></div>
+        <div class="command" title="Motion" data-target="motion"><svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg"><path d="M 34.498047 3 C 32.014047 3 30 5.0150469 30 7.4980469 C 30 9.9830469 32.014047 12 34.498047 12 C 36.987047 12 39 9.9830469 39 7.4980469 C 39 5.0150469 36.987047 3 34.498047 3 z M 20 10 A 2 2 0 0 0 18.919922 10.316406 L 18.917969 10.316406 L 18.886719 10.322266 L 11.957031 15.294922 A 2 2 0 0 0 11 17 A 2 2 0 0 0 13 19 A 2 2 0 0 0 14.287109 18.527344 L 14.289062 18.529297 L 20.283203 14.21875 L 24.691406 15.619141 L 19.757812 23.660156 L 19.757812 23.664062 A 4 4 0 0 0 19 26 A 4 4 0 0 0 21.210938 29.572266 L 28.755859 34.226562 L 27.048828 43.009766 A 2.5 2.5 0 0 0 27 43.5 A 2.5 2.5 0 0 0 29.5 46 A 2.5 2.5 0 0 0 31.955078 43.962891 L 31.957031 43.962891 L 33.984375 33.289062 L 33.978516 33.273438 A 2 2 0 0 0 34 33 A 2 2 0 0 0 33.345703 31.523438 L 33.339844 31.507812 L 27.9375 26.720703 L 32.607422 17.486328 L 32.605469 17.482422 A 3 3 0 0 0 33 16 A 3 3 0 0 0 31.193359 13.248047 L 31.191406 13.244141 L 28.685547 11.849609 L 20.519531 10.066406 L 20.507812 10.068359 A 2 2 0 0 0 20 10 z M 34.212891 18.742188 L 31.972656 23.171875 L 33.181641 25.837891 L 33.193359 25.845703 C 33.513359 26.525703 34.199 27 35 27 L 42 27 C 43.105 27 44 26.105 44 25 C 44 23.895 43.105 23 42 23 L 36 23 L 34.212891 18.742188 z M 17.517578 28.414062 L 15.242188 32 L 7.5 32 C 6.119 32 5 33.119 5 34.5 C 5 35.881 6.119 37 7.5 37 L 15.931641 37 C 17.228641 37 18.445312 36.3705 19.195312 35.3125 L 21.480469 32.089844 C 20.653469 31.578844 20.055828 31.208125 20.048828 31.203125 C 18.904828 30.555125 18.031578 29.569062 17.517578 28.414062 z" fill="currentColor"/></svg></div>
+        <div class="command" data-target="copy"><svg viewBox="-2 -2 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 7H7V5H13V7Z" fill="currentColor"/><path d="M13 11H7V9H13V11Z" fill="currentColor"/><path d="M7 15H13V13H7V15Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M3 19V1H17V5H21V23H7V19H3ZM15 17V3H5V17H15ZM17 7V19H9V21H19V7H17Z" fill="currentColor"/></svg></div>
+        <div class="command" data-target="delete"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z" fill="currentColor"/><path d="M9 9H11V17H9V9Z" fill="currentColor"/><path d="M13 9H15V17H13V9Z" fill="currentColor"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== BONE CONTROL PANEL ====== -->
+  <div id="bonecontrolpanel" class="floating-panel hidden" style="width:320px;">
+    <div class="floating-panel-header">
+      <span>Bone Control</span>
+      <div class="floating-panel-close" id="bonecontrol-close">&times;</div>
+    </div>
+    <div class="floating-panel-content">
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+        <div id="bonecontrolrecord" class="command" style="background:var(--red);color:#fff;border-color:var(--red)">Record</div>
+        <div id="bonecontrolplay" class="command">Play</div>
+        <div id="bonecontrolstop" class="command">Stop</div>
+        <div id="bonecontrolsmooth" class="command selected">Smooth</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center">
+        <span id="bonecontrolframes" style="font-size:11px;color:var(--text2)">0 frames</span>
+        <span style="font-size:11px;color:var(--text2);flex:1;text-align:right">FPS</span>
+        <input type="range" min="10" max="60" step="1" value="30" data-item="bonecontrol-fps" data-type="value" data-range="int" data-bonecontrol-fps="fps" style="width:60%">
+      </div>
+      <div class="bone-control-grid"></div>
+    </div>
+  </div>
+
+  <!-- ====== AVATAR SIZE MODAL ====== -->
+  <div id="avatar-size-modal" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10001;display:flex;align-items:center;justify-content:center">
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:20px;width:320px;max-width:90vw">
+      <h3 style="margin:0 0 12px;font-size:15px">Avatar Window Size</h3>
+      <div style="display:flex;gap:12px;margin-bottom:12px">
+        <div style="flex:1">
+          <label style="display:block;font-size:11px;color:var(--text2);margin-bottom:4px">Width</label>
+          <input id="avatar-size-w" type="number" min="50" max="2000" value="300" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px;box-sizing:border-box" />
+        </div>
+        <div style="flex:1">
+          <label style="display:block;font-size:11px;color:var(--text2);margin-bottom:4px">Height</label>
+          <input id="avatar-size-h" type="number" min="50" max="2000" value="500" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px;box-sizing:border-box" />
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Min 50x50, max 2000x2000</div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="button" onclick="hideAvatarSizeModal()" style="padding:6px 14px">Cancel</button>
+        <button class="button button-primary" onclick="applyAvatarSize()" style="padding:6px 14px">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SETTINGS PANEL ====== -->
+  <div id="settings-panel" class="floating-panel hidden">
+    <div class="floating-panel-header">
+      <span>Settings</span>
+      <div class="floating-panel-close" id="settings-panel-close">&times;</div>
+    </div>
+    <div id="settings-panel-content" class="settings-panel-content"></div>
+  </div>
+
+  <!-- ====== SAVE BONE ANIMATION MODAL ====== -->
+  <div id="save-bone-anim-modal" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10001;display:flex;align-items:center;justify-content:center">
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:20px;width:360px;max-width:90vw">
+      <h3 style="margin:0 0 12px;font-size:15px">Save Animation</h3>
+      <input id="save-bone-anim-name" type="text" placeholder="Animation name" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px;margin-bottom:10px;box-sizing:border-box" />
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="button" onclick="hideSaveBoneAnim()">Cancel</button>
+        <button class="button button-primary" onclick="saveBoneAnim()">Save</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<iframe id="siteFrame" src="/" style="display:none"></iframe>
+
+<!-- Служебные поля движка аватара (portable.js). Их нет в разметке этой
+     страницы, но loadConfig/scriptInit обращаются к ним напрямую: без них
+     падал alert «Invalid JSON settings» и модель не загружалась. -->
+<div style="display:none" aria-hidden="true">
+  <textarea id="script" readonly></textarea>
+  <textarea id="json" readonly></textarea>
+  <span id="scriptstatus"></span>
+</div>
+<!-- В окне-оверлее скрытый iframe сайта не нужен: он только грузит
+     всё приложение вторым экземпляром. -->
+<script>
+if (/[?&]embed=1/.test(location.search)) {
+  var _sf = document.getElementById('siteFrame');
+  if (_sf) _sf.remove();
+}
+</script>
+<!-- Общие настройки речи: без них portable.js не знает голос, выбранный во
+     вкладке «Распознавание и синтез речи», и аватар говорил бы 'xenia'. -->
+<script src="/static/js/speech_config.js"></script>
+<script type="module" src="portable.js"></script>
+</body></html>

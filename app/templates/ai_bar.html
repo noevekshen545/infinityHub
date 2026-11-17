@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Запрос к ИИ</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/css/design.css">
+<link rel="stylesheet" href="/static/css/ai_bar.css">
+<link rel="stylesheet" href="/static/css/aibar_voice.css">
+<link rel="stylesheet" href="/static/css/aibar_messenger.css">
+<link rel="stylesheet" href="/static/css/aibar_emoji.css">
+<link rel="stylesheet" href="/static/css/quick_notes.css">
+<link rel="stylesheet" href="/static/css/ai_bar_v2.css">
+<link rel="stylesheet" href="/static/css/aibar_shell_v3.css">
+<script>(function(){try{var k="infinity_theme";var v=localStorage.getItem(k)||"light";
+if(["light","dark","sepia","warm","paper","ocean","forest","midnight","rose"].indexOf(v)<0)v="light";
+if(v!=="dark")document.documentElement.className+=" "+v;
+document.documentElement.setAttribute("data-theme",v);}catch(e){}})();</script>
+<script src="/static/js/theme.js" defer></script>
+</head>
+<!-- aibar-solo: окно прозрачное, фон рисует только панель. Иначе по краям
+     виден чёрный прямоугольник поверх рабочего стола. -->
+<body class="aibar-solo">
+
+<div class="aibar-overlay" id="aibarOverlay">
+  <!-- Панель ввода: появляется на Shift+Space, когда переписки ещё нет -->
+  <div class="aibar-panel" id="aibarPanel">
+    <div class="aibar-input-row">
+      <i class="fas fa-robot"></i>
+      <input class="aibar-input" id="aibarInput" type="text" autocomplete="off" spellcheck="false"
+             placeholder="Спросить ИИ-агента…">
+    </div>
+    <div class="aibar-hint">
+      <span><kbd>Enter</kbd> отправить</span>
+      <span><kbd>Shift</kbd>+<kbd>Space</kbd> скрыть</span>
+      <span><kbd>Esc</kbd> закрыть</span>
+    </div>
+  </div>
+
+  <!-- Мини-панель: ответ агента и продолжение переписки -->
+  <div class="aibar-thread" id="aibarThread">
+    <div class="aibar-thread-head">
+      <button class="aibar-iconbtn aibar-back" title="К запросу" style="display:none"><i class="fas fa-arrow-left"></i></button>
+      <button class="aibar-iconbtn aibar-music" title="Музыка"><i class="fas fa-music"></i></button>
+      <span class="spacer"></span>
+      <button class="aibar-iconbtn" id="aibarOpenAgent" title="Открыть страницу агента"><i class="fas fa-up-right-from-square"></i></button>
+      <button class="aibar-iconbtn" id="aibarClear" title="Очистить переписку"><i class="fas fa-eraser"></i></button>
+      <button class="aibar-iconbtn" id="aibarClose" title="Закрыть (Esc)"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="aibar-log" id="aibarLog">
+      <div class="aibar-empty">Задайте вопрос агенту — ответ появится здесь</div>
+    </div>
+    <div class="aibar-thread-foot">
+      <div class="aibar-input-row">
+        <i class="fas fa-arrow-turn-up-left"></i>
+        <input class="aibar-input" id="aibarInput2" type="text" autocomplete="off" spellcheck="false"
+               placeholder="Ответить агенту…">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/media_playback.js" defer></script>
+<script src="/static/js/audio_eq.js" defer></script>
+<script src="/static/js/aibar_player.js" defer></script>
+<script src="/static/js/aibar_voice.js" defer></script>
+<script src="/static/js/aibar_messenger.js" defer></script>
+<script src="/static/js/aibar_emoji.js" defer></script>
+<script src="/static/js/quick_notes_ui.js" defer></script>
+<script src="/static/js/aibar_notes.js" defer></script>
+<script src="/static/js/ai_bar.js" defer></script>
+</body>
+</html>

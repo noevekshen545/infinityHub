@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Продвинутый калькулятор</title>
+  <style>
+    :root {
+      --bg: #f3f5f9;
+      --card: #ffffff;
+      --text: #2d3748;
+      --text-secondary: #5a6b7a;
+      --border: #e2e8f0;
+      --accent: #5b8fa3;
+      --accent-light: #e6f0f5;
+      --btn-num: #f7fafc;
+      --btn-op: #edf2f7;
+      --btn-func: #f0f4f8;
+      --btn-eq: #6d9bb0;
+      --danger: #d47676;
+      --radius: 12px;
+      --shadow: 0 6px 20px rgba(0,0,0,0.05);
+    }
+    body.dark {
+      --bg: #1a202c;
+      --card: #2d3748;
+      --text: #e2e8f0;
+      --text-secondary: #a0aec0;
+      --border: #4a5568;
+      --accent: #7aa2b7;
+      --accent-light: #2c4457;
+      --btn-num: #4a5568;
+      --btn-op: #3e4b5c;
+      --btn-func: #3a4556;
+      --btn-eq: #5c8a9a;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',system-ui,sans-serif; }
+    body {
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 15px;
+      transition: background 0.2s;
+    }
+    .main-container {
+      background: var(--card);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 750px;
+      overflow: hidden;
+      position: relative;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      flex: 1;
+    }
+    .tab-btn {
+      padding: 6px 12px;
+      border: none;
+      background: transparent;
+      border-radius: 16px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: 0.15s;
+      white-space: nowrap;
+      font-size: 0.85rem;
+    }
+    .tab-btn.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+    .header-actions { display: flex; gap: 4px; }
+    .icon-btn {
+      background: none; border: none; font-size: 1.3rem; cursor: pointer;
+      padding: 4px 6px; border-radius: 50%; color: var(--text);
+    }
+    .panel { display: none; padding: 15px 20px; animation: fade 0.2s; }
+    .panel.active { display: block; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    .display-area {
+      background: var(--btn-num); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px 15px;
+      margin-bottom: 12px; text-align: right; position: relative;
+    }
+    .memory-indicator {
+      position: absolute; left: 12px; top: 8px; font-size: 0.75rem;
+      font-weight: bold; color: var(--accent); display: none;
+      background: var(--accent-light); padding: 2px 8px; border-radius: 10px;
+    }
+    .expression {
+      font-size: 1rem; color: var(--text-secondary); min-height: 24px;
+      word-break: break-all; padding-right: 80px;
+    }
+    .result { font-size: 2rem; font-weight: 600; color: var(--text); margin-top: 4px; }
+    .result.error { color: var(--danger); font-size: 1.2rem; }
+    .display-buttons { position: absolute; right: 12px; top: 10px; display: flex; gap: 6px; }
+    .display-buttons button { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-secondary); padding: 2px 4px; border-radius: 4px; }
+    .history-panel {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 8px; max-height: 180px;
+      overflow-y: auto; margin-bottom: 10px; display: none;
+    }
+    .history-item { padding: 5px 8px; cursor: pointer; border-radius: 6px; font-size: 0.85rem; }
+    .history-item:hover { background: var(--accent-light); }
+    .btn-grid { display: grid; gap: 7px; }
+    .btn-grid.basic { grid-template-columns: repeat(4, 1fr); }
+    .btn-grid.scientific { grid-template-columns: repeat(5, 1fr); }
+    .calc-btn {
+      background: var(--btn-num); border: 1px solid transparent;
+      border-radius: 8px; padding: 12px 4px; font-size: 1rem;
+      cursor: pointer; transition: 0.15s; color: var(--text);
+      font-weight: 500; text-align: center;
+    }
+    .calc-btn.operator { background: var(--btn-op); }
+    .calc-btn.func { background: var(--btn-func); font-size: 0.85rem; }
+    .calc-btn.equals { background: var(--btn-eq); color: white; font-weight: bold; }
+    .calc-btn.clear { background: #fce4e4; color: var(--danger); }
+    .calc-btn:hover { filter: brightness(0.95); }
+    .canvas-container {
+      border: 1px solid var(--border); border-radius: 8px;
+      overflow: hidden; background: #fdfdfd; margin-bottom: 8px;
+    }
+    canvas { display: block; width: 100%; height: auto; }
+    .area-toolbar {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-bottom: 8px; align-items: center;
+    }
+    .area-info {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 10px; background: var(--btn-num); border-radius: 8px;
+      font-size: 0.9rem; flex-wrap: wrap; gap: 10px;
+    }
+    .converter-row {
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    }
+    .converter-input {
+      flex: 1; min-width: 100px; padding: 11px; border: 1px solid var(--border);
+      border-radius: 8px; background: var(--btn-num); color: var(--text);
+    }
+    .unit-select {
+      flex: 1; min-width: 120px; padding: 10px; border: 1px solid var(--border);
+      border-radius: 8px; background: var(--btn-num); color: var(--text);
+    }
+    .swap-icon { font-size: 1.8rem; cursor: pointer; color: var(--accent); user-select: none; }
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: var(--text); color: var(--card); padding: 8px 20px;
+      border-radius: 20px; z-index: 200; opacity: 0; transition: opacity 0.3s;
+      font-size: 0.9rem;
+    }
+    @media (max-width: 600px) {
+      .tab-btn { padding: 5px 10px; font-size: 0.75rem; }
+      .btn-grid { gap: 4px; }
+      .calc-btn { padding: 10px 2px; font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="main-container">
+  <div class="header">
+    <div class="tab-nav">
+      <button class="tab-btn active" data-mode="basic">🔢 Базовый</button>
+      <button class="tab-btn" data-mode="scientific">🔬 Инженерный</button>
+      <button class="tab-btn" data-mode="graph">📈 График</button>
+      <button class="tab-btn" data-mode="area">📐 Площадь</button>
+      <button class="tab-btn" data-mode="converter">🔄 Конвертер</button>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="infoBtn" title="Помощь">❓</button>
+      <button class="icon-btn" id="themeToggle" title="Тема">🌙</button>
+    </div>
+  </div>
+
+  <!-- Базовый / Инженерный -->
+  <div class="panel active" id="panel-basic">
+    <div class="display-area">
+      <span class="memory-indicator" id="memIndicator">M</span>
+      <div class="expression" id="expr"></div>
+      <div class="result" id="result">0</div>
+      <div class="display-buttons">
+        <button id="copyResult" title="Копировать">📋</button>
+        <button id="toggleHistory" title="История">🕒</button>
+      </div>
+    </div>
+    <div class="history-panel" id="historyPanel"><div id="historyList"></div></div>
+    <div class="btn-grid basic" id="calcGrid"></div>
+  </div>
+
+  <!-- График -->
+  <div class="panel" id="panel-graph">
+    <div style="display:flex; gap:10px; margin-bottom:10px;">
+      <input type="text" id="graphFunc" placeholder="f(x) = sin(x)" style="flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--btn-num); color:var(--text);">
+      <button id="plotGraph" class="calc-btn" style="padding:10px 20px;">Построить</button>
+    </div>
+    <canvas id="graphCanvas" width="500" height="300"></canvas>
+  </div>
+
+  <!-- Площадь -->
+  <div class="panel" id="panel-area">
+    <div class="area-toolbar">
+      <select id="shapeSelect" class="unit-select" style="width:auto; flex:none;">
+        <option value="rect">▬ Прямоугольник</option>
+        <option value="circle">● Круг</option>
+        <option value="triangle">△ Треугольник</option>
+        <option value="polygon">⬡ Полигон</option>
+        <option value="ellipse">⬭ Эллипс</option>
+        <option value="line">📏 Отрезок</option>
+      </select>
+      <select id="unitSelect" class="unit-select" style="width:auto; flex:none;">
+        <option value="cm">см</option>
+        <option value="m">м</option>
+        <option value="km">км</option>
+        <option value="in">дюйм</option>
+        <option value="ft">фут</option>
+        <option value="px">px</option>
+      </select>
+      <button id="snapBtn" class="calc-btn">📏 Сетка</button>
+      <button id="undoShapeBtn" class="calc-btn">↩</button>
+      <button id="clearShapesBtn" class="calc-btn clear">🗑</button>
+      <button id="exportCanvasBtn" class="calc-btn">⬇️ PNG</button>
+    </div>
+    <div class="canvas-container"><canvas id="areaCanvas" width="560" height="360"></canvas></div>
+    <div class="area-info">
+      <span>📏 <strong id="liveArea">—</strong> <span id="areaUnit">кв.ед.</span></span>
+      <span>📐 <strong id="livePerim">—</strong> <span id="perimUnit">ед.</span></span>
+      <span id="liveDims"></span>
+    </div>
+    <div id="shapesList" style="font-size:0.8rem; max-height:60px; overflow-y:auto;"></div>
+  </div>
+
+  <!-- Конвертер -->
+  <div class="panel" id="panel-converter">
+    <div id="categoryTabs" style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px;"></div>
+    <div class="converter-row">
+      <input type="number" class="converter-input" id="convInput" value="1">
+      <select class="unit-select" id="convFrom"></select>
+      <span class="swap-icon" id="swapUnits">⇄</span>
+      <select class="unit-select" id="convTo"></select>
+    </div>
+    <div class="result" id="convResult" style="text-align:center; margin-top:15px;">—</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  // ======= СОСТОЯНИЕ =======
+  let currentMode = 'basic';
+  let expression = '';
+  let memory = 0;
+  let lastResult = null;
+  let history = [];
+  let degMode = 'deg';
+
+  // График
+  let graphScale = 40, graphOffsetX = 0, graphOffsetY = 0, graphDragging = false;
+
+  // Площадь
+  let shapes = [];
+  let activeShape = 'rect';
+  let drawing = null;
+  let snapToGrid = true;
+  let areaUnit = 'cm'; // текущая единица измерения
+  const unitFactors = { px:1, cm:1, m:100, km:100000, in:1, ft:1 }; // масштаб не применяем, только подписи
+  let areaCanvas, areaCtx;
+
+  // Конвертер
+  let convCategory = 'length';
+  let currencyRates = null;
+  const unitData = {
+    length: {
+      meter:{name:'Метр (м)', factor:1}, cm:{name:'Сантиметр (см)', factor:0.01},
+      mm:{name:'Миллиметр (мм)', factor:0.001}, km:{name:'Километр (км)', factor:1000},
+      inch:{name:'Дюйм (in)', factor:0.0254}, foot:{name:'Фут (ft)', factor:0.3048},
+      yard:{name:'Ярд (yd)', factor:0.9144}, mile:{name:'Миля (mi)', factor:1609.344},
+      nautical_mile:{name:'Морская миля', factor:1852}
+    },
+    area_conv: {
+      sqm:{name:'Кв. метр', factor:1}, sqcm:{name:'Кв. см', factor:0.0001},
+      sqkm:{name:'Кв. км', factor:1e6}, hectare:{name:'Гектар', factor:10000},
+      acre:{name:'Акр', factor:4046.856}, sqft:{name:'Кв. фут', factor:0.092903}
+    },
+    volume: {
+      liter:{name:'Литр', factor:1}, ml:{name:'Миллилитр', factor:0.001},
+      cubic_meter:{name:'Куб. метр', factor:1000}, gallon_us:{name:'Галлон US', factor:3.78541}
+    },
+    mass: {
+      kg:{name:'Килограмм', factor:1}, gram:{name:'Грамм', factor:0.001},
+      ton:{name:'Тонна', factor:1000}, pound:{name:'Фунт', factor:0.453592},
+      ounce:{name:'Унция', factor:0.0283495}
+    },
+    temperature: { C:{name:'Цельсий'}, F:{name:'Фаренгейт'}, K:{name:'Кельвин'} },
+    speed: {
+      mps:{name:'м/с', factor:1}, kmh:{name:'км/ч', factor:0.277778},
+      mph:{name:'миль/ч', factor:0.44704}, knot:{name:'узел', factor:0.514444}
+    },
+    time: {
+      sec:{name:'Секунда', factor:1}, min:{name:'Минута', factor:60},
+      hour:{name:'Час', factor:3600}, day:{name:'День', factor:86400}
+    },
+    pressure: {
+      pascal:{name:'Па', factor:1}, atm:{name:'Атм', factor:101325},
+      bar:{name:'Бар', factor:100000}, mmHg:{name:'мм рт.ст.', factor:133.322}
+    },
+    energy: {
+      joule:{name:'Дж', factor:1}, cal:{name:'Кал', factor:4.184},
+      kcal:{name:'Ккал', factor:4184}, watt_hour:{name:'Вт·ч', factor:3600}
+    },
+    power: { watt:{name:'Вт', factor:1}, kw:{name:'кВт', factor:1000}, hp:{name:'л.с.', factor:745.7} },
+    angle: { degree:{name:'Градус', factor:1}, radian:{name:'Радиан', factor:57.2958} },
+    data: { bit:{name:'Бит', factor:1}, byte:{name:'Байт', factor:8}, kB:{name:'КБ', factor:8000}, MB:{name:'МБ', factor:8e6} },
+    currency: { USD:{name:'USD'}, EUR:{name:'EUR'}, RUB:{name:'RUB'}, GBP:{name:'GBP'} }
+  };
+
+  const $ = s => document.querySelector(s);
+  const exprEl = $('#expr'), resultEl = $('#result');
+  const memInd = $('#memIndicator');
+  const historyPanel = $('#historyPanel'), historyList = $('#historyList');
+  const calcGrid = $('#calcGrid');
+  const toastEl = $('#toast');
+
+  // ======= ТЕМА =======
+  const themeToggle = $('#themeToggle');
+  if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark'); themeToggle.textContent = '☀️';
+  }
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+    const dark = document.body.classList.contains('dark');
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+    themeToggle.textContent = dark ? '☀️' : '🌙';
+  });
+
+  function playClick() {
+    if (!window._audioCtx) window._audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = window._audioCtx.createOscillator(), gain = window._audioCtx.createGain();
+    osc.frequency.value = 800; gain.gain.value = 0.03;
+    osc.connect(gain); gain.connect(window._audioCtx.destination);
+    osc.start(); osc.stop(window._audioCtx.currentTime+0.05);
+  }
+  function toast(msg) {
+    toastEl.textContent = msg; toastEl.style.opacity = 1;
+    setTimeout(() => toastEl.style.opacity = 0, 2000);
+  }
+
+  // ======= ИСТОРИЯ =======
+  function addHistory(expr, res) {
+    history.unshift({expr, res});
+    if (history.length > 20) history.pop();
+    renderHistory();
+  }
+  function renderHistory() {
+    historyList.innerHTML = history.map((h,i) =>
+      `<div class="history-item" data-index="${i}"><small>${h.expr||'='}</small> <b>${h.res}</b></div>`
+    ).join('');
+    historyList.querySelectorAll('.history-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.dataset.index);
+        expression = history[idx].expr;
+        lastResult = null;
+        updateDisplay();
+        historyPanel.style.display = 'none';
+      });
+    });
+  }
+  $('#toggleHistory').addEventListener('click', () => {
+    historyPanel.style.display = historyPanel.style.display === 'block' ? 'none' : 'block';
+  });
+
+  // ======= ПАМЯТЬ =======
+  function updateMemIndicator() { memInd.style.display = memory !== 0 ? 'block' : 'none'; }
+  function memoryOp(op) {
+    const val = parseFloat(resultEl.textContent) || 0;
+    switch(op) {
+      case 'MC': memory = 0; break;
+      case 'MR': expression += memory; updateDisplay(); break;
+      case 'M+': memory += val; break;
+      case 'M-': memory -= val; break;
+    }
+    updateMemIndicator();
+  }
+
+  function updateDisplay() {
+    exprEl.textContent = expression;
+    if (expression === '' && lastResult !== null) resultEl.textContent = formatNum(lastResult);
+    else if (expression === '') resultEl.textContent = '0';
+    resultEl.classList.remove('error');
+  }
+  function formatNum(n) {
+    if (isNaN(n)) return 'Ошибка';
+    if (!isFinite(n)) return n > 0 ? '∞' : '-∞';
+    return parseFloat(n.toPrecision(12)).toString();
+  }
+
+  // ======= ВЫЧИСЛЕНИЯ =======
+  function factorial(n) {
+    if (n < 0 || !Number.isInteger(n)) return NaN;
+    if (n === 0 || n === 1) return 1;
+    if (n > 170) return Infinity;
+    let r = 1; for (let i=2; i<=n; i++) r *= i; return r;
+  }
+  function nCr(n,k) { return factorial(n)/(factorial(k)*factorial(n-k)); }
+  function nPr(n,k) { return factorial(n)/factorial(n-k); }
+
+  function preprocess(expr) {
+    let e = expr;
+    e = e.replace(/π/g, 'Math.PI').replace(/(?<![a-zA-Z])e(?![a-zA-Z])/g, 'Math.E');
+    e = e.replace(/\^/g, '**').replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+    e = e.replace(/(\d+)!/g, 'factorial($1)');
+    e = e.replace(/(\d+)%/g, '($1/100)');
+    const funcs = { sin:'Math.sin',cos:'Math.cos',tan:'Math.tan',asin:'Math.asin',acos:'Math.acos',atan:'Math.atan',
+                    sinh:'Math.sinh',cosh:'Math.cosh',tanh:'Math.tanh',log:'Math.log10',ln:'Math.log',sqrt:'Math.sqrt',
+                    cbrt:'Math.cbrt',abs:'Math.abs',exp:'Math.exp' };
+    for (let [k,v] of Object.entries(funcs)) {
+      e = e.replace(new RegExp(`(?<![a-zA-Z])${k}\\(`, 'g'), `${v}(`);
+    }
+    e = e.replace(/nCr\((\d+),(\d+)\)/g, 'nCr($1,$2)').replace(/nPr\((\d+),(\d+)\)/g, 'nPr($1,$2)');
+    if (degMode === 'deg') {
+      e = e.replace(/Math\.(sin|cos|tan)\(/g, 'Math.$1((Math.PI/180)*');
+      e = e.replace(/Math\.(asin|acos|atan)\(/g, '(180/Math.PI)*Math.$1(');
+    } else if (degMode === 'grad') {
+      e = e.replace(/Math\.(sin|cos|tan)\(/g, 'Math.$1((Math.PI/200)*');
+      e = e.replace(/Math\.(asin|acos|atan)\(/g, '(200/Math.PI)*Math.$1(');
+    }
+    return e;
+  }
+
+  function evaluate() {
+    if (!expression.trim()) return;
+    try {
+      const processed = preprocess(expression);
+      const result = new Function('factorial','nCr','nPr','Math','return (' + processed + ')')(factorial, nCr, nPr, Math);
+      addHistory(expression, formatNum(result));
+      lastResult = result;
+      expression = '';
+      updateDisplay();
+      resultEl.textContent = formatNum(result);
+    } catch (e) {
+      resultEl.textContent = 'Ошибка'; resultEl.classList.add('error');
+    }
+  }
+
+  // ======= СЕТКИ КНОПОК =======
+  function buildBasicGrid() {
+    calcGrid.className = 'btn-grid basic';
+    calcGrid.innerHTML = '';
+    const rows = [
+      ['MC','MR','M+','M-'], ['C','⌫','(',')'], ['%','√','^2','÷'],
+      ['7','8','9','×'], ['4','5','6','−'], ['1','2','3','+'], ['±','0','.','=']
+    ];
+    rows.forEach(row => row.forEach(btn => {
+      const b = document.createElement('button');
+      b.className = 'calc-btn';
+      if (btn === '=') b.classList.add('equals');
+      else if (['+','−','×','÷'].includes(btn)) b.classList.add('operator');
+      else if (['MC','MR','M+','M-','C','⌫'].includes(btn)) b.classList.add('func');
+      b.textContent = btn;
+      b.addEventListener('click', () => { playClick(); handleAction(btn); });
+      calcGrid.appendChild(b);
+    }));
+  }
+  function buildScientificGrid() {
+    calcGrid.className = 'btn-grid scientific';
+    calcGrid.innerHTML = '';
+    const rows = [
+      ['sin','cos','tan','asin','deg'],
+      ['sinh','cosh','tanh','log','ln'],
+      ['π','e','nCr(','nPr(','abs('],
+      ['7','8','9','÷','('],
+      ['4','5','6','×',')'],
+      ['1','2','3','−','√'],
+      ['0','.','±','+','='],
+      ['C','⌫','%','^','']
+    ];
+    rows.forEach(row => row.forEach(btn => {
+      if (btn === '') return;
+      const b = document.createElement('button');
+      b.className = 'calc-btn';
+      if (btn === '=') b.classList.add('equals');
+      else if (['+','−','×','÷'].includes(btn)) b.classList.add('operator');
+      else b.classList.add('func');
+      b.textContent = btn;
+      b.addEventListener('click', () => {
+        playClick();
+        if (btn === 'deg') {
+          degMode = degMode === 'deg' ? 'rad' : (degMode === 'rad' ? 'grad' : 'deg');
+          b.textContent = degMode.toUpperCase();
+          return;
+        }
+        handleAction(btn);
+      });
+      calcGrid.appendChild(b);
+    }));
+  }
+  function handleAction(action) {
+    if (['MC','MR','M+','M-'].includes(action)) { memoryOp(action); return; }
+    switch(action) {
+      case 'C': expression = ''; lastResult = null; break;
+      case '⌫': expression = expression.slice(0,-1); break;
+      case '=': evaluate(); return;
+      case '√': expression += 'sqrt('; break;
+      case '^2': expression += '^2'; break;
+      case '±': expression = expression.startsWith('-') ? expression.slice(1) : '-' + expression; break;
+      default: expression += action;
+    }
+    updateDisplay();
+  }
+
+  // ======= ГРАФИК =======
+  const graphCanvas = $('#graphCanvas');
+  const gctx = graphCanvas.getContext('2d');
+  function drawGraph() {
+    const funcStr = $('#graphFunc').value;
+    if (!funcStr) return;
+    gctx.clearRect(0,0,graphCanvas.width,graphCanvas.height);
+    gctx.strokeStyle = '#aaa'; gctx.lineWidth = 1;
+    const w = graphCanvas.width, h = graphCanvas.height;
+    const cx = w/2 + graphOffsetX, cy = h/2 + graphOffsetY;
+    gctx.beginPath(); gctx.moveTo(0,cy); gctx.lineTo(w,cy); gctx.stroke();
+    gctx.beginPath(); gctx.moveTo(cx,0); gctx.lineTo(cx,h); gctx.stroke();
+    try {
+      const f = new Function('x', `return (${funcStr})`);
+      gctx.beginPath(); gctx.strokeStyle = '#5b8fa3'; gctx.lineWidth = 2;
+      for (let px = 0; px < w; px++) {
+        const x = (px - cx) / graphScale;
+        const y = f(x);
+        const py = cy - y * graphScale;
+        if (px === 0) gctx.moveTo(px, py);
+        else gctx.lineTo(px, py);
+      }
+      gctx.stroke();
+    } catch(e) { toast('Ошибка в функции'); }
+  }
+  $('#plotGraph').addEventListener('click', drawGraph);
+  graphCanvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    graphScale *= e.deltaY < 0 ? 1.1 : 0.9;
+    drawGraph();
+  });
+  graphCanvas.addEventListener('mousedown', () => graphDragging = true);
+  window.addEventListener('mousemove', e => {
+    if (!graphDragging) return;
+    graphOffsetX += e.movementX; graphOffsetY += e.movementY;
+    drawGraph();
+  });
+  window.addEventListener('mouseup', () => graphDragging = false);
+
+  // ======= ПЛОЩАДЬ =======
+  areaCanvas = $('#areaCanvas');
+  areaCtx = areaCanvas.getContext('2d');
+
+  function getCanvasPos(e) {
+    const rect = areaCanvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (areaCanvas.width / rect.width),
+      y: (e.clientY - rect.top) * (areaCanvas.height / rect.height)
+    };
+  }
+  function gridSnap(p) {
+    if (!snapToGrid) return p;
+    const g = 20;
+    return { x: Math.round(p.x/g)*g, y: Math.round(p.y/g)*g };
+  }
+
+  function drawAll() {
+    areaCtx.clearRect(0,0,areaCanvas.width,areaCanvas.height);
+    if (snapToGrid) {
+      areaCtx.strokeStyle = '#e0e0e0'; areaCtx.lineWidth = 0.5;
+      for (let x=0; x<areaCanvas.width; x+=20) { areaCtx.beginPath(); areaCtx.moveTo(x,0); areaCtx.lineTo(x,areaCanvas.height); areaCtx.stroke(); }
+      for (let y=0; y<areaCanvas.height; y+=20) { areaCtx.beginPath(); areaCtx.moveTo(0,y); areaCtx.lineTo(areaCanvas.width,y); areaCtx.stroke(); }
+    }
+    shapes.forEach(s => drawShape(s));
+    if (drawing) drawTempShape();
+    updateAreaInfo();
+  }
+
+  function drawShape(shape) {
+    areaCtx.save();
+    areaCtx.strokeStyle = '#5b8fa3'; areaCtx.lineWidth = 2;
+    areaCtx.fillStyle = 'rgba(91,143,163,0.2)';
+    switch(shape.type) {
+      case 'rect':
+        const x = Math.min(shape.x1, shape.x2), y = Math.min(shape.y1, shape.y2);
+        const w = Math.abs(shape.x2 - shape.x1), h = Math.abs(shape.y2 - shape.y1);
+        areaCtx.fillRect(x,y,w,h); areaCtx.strokeRect(x,y,w,h); break;
+      case 'circle':
+        const r = Math.hypot(shape.x2 - shape.x1, shape.y2 - shape.y1);
+        areaCtx.beginPath(); areaCtx.arc(shape.x1, shape.y1, r, 0, 2*Math.PI);
+        areaCtx.fill(); areaCtx.stroke(); break;
+      case 'triangle':
+        areaCtx.beginPath(); areaCtx.moveTo(shape.p1.x, shape.p1.y);
+        areaCtx.lineTo(shape.p2.x, shape.p2.y); areaCtx.lineTo(shape.p3.x, shape.p3.y);
+        areaCtx.closePath(); areaCtx.fill(); areaCtx.stroke(); break;
+      case 'polygon':
+        if (shape.points.length < 3) break;
+        areaCtx.beginPath(); areaCtx.moveTo(shape.points[0].x, shape.points[0].y);
+        for (let i=1; i<shape.points.length; i++) areaCtx.lineTo(shape.points[i].x, shape.points[i].y);
+        areaCtx.closePath(); areaCtx.fill(); areaCtx.stroke(); break;
+      case 'ellipse':
+        const cx = (shape.x1 + shape.x2)/2, cy = (shape.y1 + shape.y2)/2;
+        const rx = Math.abs(shape.x2 - shape.x1)/2, ry = Math.abs(shape.y2 - shape.y1)/2;
+        areaCtx.beginPath(); areaCtx.ellipse(cx, cy, rx, ry, 0, 0, 2*Math.PI);
+        areaCtx.fill(); areaCtx.stroke(); break;
+      case 'line':
+        areaCtx.beginPath(); areaCtx.moveTo(shape.x1, shape.y1); areaCtx.lineTo(shape.x2, shape.y2);
+        areaCtx.strokeStyle = '#5b8fa3'; areaCtx.lineWidth = 2; areaCtx.stroke(); break;
+    }
+    areaCtx.restore();
+  }
+
+  function drawTempShape() {
+    if (!drawing || drawing.points.length === 0) return;
+    areaCtx.save();
+    areaCtx.strokeStyle = '#aaa'; areaCtx.lineWidth = 2;
+    areaCtx.fillStyle = 'rgba(200,200,200,0.5)';
+    const pts = drawing.points.concat(drawing.current ? [drawing.current] : []);
+    switch(drawing.type) {
+      case 'rect': if (pts.length>=2) { const x=Math.min(pts[0].x,pts[1].x), y=Math.min(pts[0].y,pts[1].y), w=Math.abs(pts[1].x-pts[0].x), h=Math.abs(pts[1].y-pts[0].y); areaCtx.fillRect(x,y,w,h); areaCtx.strokeRect(x,y,w,h); } break;
+      case 'circle': if (pts.length>=2) { const r=Math.hypot(pts[1].x-pts[0].x,pts[1].y-pts[0].y); areaCtx.beginPath(); areaCtx.arc(pts[0].x,pts[0].y,r,0,2*Math.PI); areaCtx.fill(); areaCtx.stroke(); } break;
+      case 'triangle': if (pts.length>=3) { areaCtx.beginPath(); areaCtx.moveTo(pts[0].x,pts[0].y); areaCtx.lineTo(pts[1].x,pts[1].y); areaCtx.lineTo(pts[2].x,pts[2].y); areaCtx.closePath(); areaCtx.fill(); areaCtx.stroke(); } break;
+      case 'polygon': if (pts.length>=3) { areaCtx.beginPath(); areaCtx.moveTo(pts[0].x,pts[0].y); for(let i=1;i<pts.length;i++) areaCtx.lineTo(pts[i].x,pts[i].y); areaCtx.closePath(); areaCtx.fill(); areaCtx.stroke(); } break;
+      case 'ellipse': if (pts.length>=2) { const cx=(pts[0].x+pts[1].x)/2, cy=(pts[0].y+pts[1].y)/2, rx=Math.abs(pts[1].x-pts[0].x)/2, ry=Math.abs(pts[1].y-pts[0].y)/2; areaCtx.beginPath(); areaCtx.ellipse(cx,cy,rx,ry,0,0,2*Math.PI); areaCtx.fill(); areaCtx.stroke(); } break;
+      case 'line': if (pts.length>=2) { areaCtx.beginPath(); areaCtx.moveTo(pts[0].x,pts[0].y); areaCtx.lineTo(pts[1].x,pts[1].y); areaCtx.stroke(); } break;
+    }
+    areaCtx.restore();
+  }
+
+  function finishDrawing() {
+    if (!drawing) return;
+    const ptsCount = drawing.points.length;
+    if (drawing.type === 'rect' || drawing.type === 'circle' || drawing.type === 'ellipse' || drawing.type === 'line') {
+      if (ptsCount < 1) return;
+      const current = drawing.current || drawing.points[0];
+      const shape = { type: drawing.type, x1: drawing.points[0].x, y1: drawing.points[0].y, x2: current.x, y2: current.y };
+      shapes.push(shape);
+    } else if (drawing.type === 'triangle') {
+      if (ptsCount < 2) return;
+      const current = drawing.current || drawing.points[1];
+      const shape = { type: 'triangle', p1: drawing.points[0], p2: drawing.points[1], p3: current };
+      shapes.push(shape);
+    } else if (drawing.type === 'polygon') {
+      if (ptsCount < 2) return;
+      const points = drawing.points.concat(drawing.current ? [drawing.current] : []);
+      if (points.length < 3) return;
+      shapes.push({ type: 'polygon', points });
+    }
+    drawing = null;
+    drawAll();
+  }
+
+  function updateAreaInfo() {
+    let totalArea = 0, totalPerim = 0;
+    shapes.forEach(s => {
+      switch(s.type) {
+        case 'rect': const w=Math.abs(s.x2-s.x1), h=Math.abs(s.y2-s.y1); totalArea+=w*h; totalPerim+=2*(w+h); break;
+        case 'circle': const r=Math.hypot(s.x2-s.x1, s.y2-s.y1); totalArea+=Math.PI*r*r; totalPerim+=2*Math.PI*r; break;
+        case 'triangle': const a=Math.hypot(s.p1.x-s.p2.x,s.p1.y-s.p2.y), b=Math.hypot(s.p2.x-s.p3.x,s.p2.y-s.p3.y), c=Math.hypot(s.p3.x-s.p1.x,s.p3.y-s.p1.y); totalPerim+=a+b+c; totalArea+=Math.abs((s.p1.x*(s.p2.y-s.p3.y)+s.p2.x*(s.p3.y-s.p1.y)+s.p3.x*(s.p1.y-s.p2.y))/2); break;
+        case 'polygon': if(s.points.length>=3) { let per=0; for(let i=0;i<s.points.length;i++){ const n=(i+1)%s.points.length; per+=Math.hypot(s.points[i].x-s.points[n].x, s.points[i].y-s.points[n].y); } totalPerim+=per; let areaP=0; for(let i=0;i<s.points.length;i++){ const j=(i+1)%s.points.length; areaP+=s.points[i].x*s.points[j].y; areaP-=s.points[j].x*s.points[i].y; } totalArea+=Math.abs(areaP)/2; } break;
+        case 'ellipse': const rx=Math.abs(s.x2-s.x1)/2, ry=Math.abs(s.y2-s.y1)/2; totalArea+=Math.PI*rx*ry; totalPerim+=2*Math.PI*Math.sqrt((rx*rx+ry*ry)/2); break;
+        case 'line': totalPerim += Math.hypot(s.x2-s.x1, s.y2-s.y1); break;
+      }
+    });
+    const unit = areaUnit;
+    const areaSuffix = { px:'кв.пикс.', cm:'кв.см', m:'кв.м', km:'кв.км', in:'кв.дюйм', ft:'кв.фут' }[unit] || 'кв.ед.';
+    const perimSuffix = { px:'пикс.', cm:'см', m:'м', km:'км', in:'дюйм', ft:'фут' }[unit] || 'ед.';
+    $('#liveArea').textContent = totalArea.toFixed(1);
+    $('#areaUnit').textContent = areaSuffix;
+    $('#livePerim').textContent = totalPerim.toFixed(1);
+    $('#perimUnit').textContent = perimSuffix;
+    $('#shapesList').innerHTML = shapes.map((s,i) => `<span>${s.type} #${i+1} </span>`).join('');
+  }
+
+  areaCanvas.addEventListener('mousedown', e => {
+    if (currentMode !== 'area') return;
+    if (e.button !== 0) return; // только левая кнопка
+    const pos = gridSnap(getCanvasPos(e));
+    if (['rect','circle','ellipse','line'].includes(activeShape)) {
+      drawing = { type: activeShape, points: [pos], current: pos };
+    } else if (activeShape === 'triangle') {
+      if (!drawing || drawing.type !== 'triangle') drawing = { type:'triangle', points:[pos], current:pos };
+      else if (drawing.points.length < 2) { drawing.points.push(pos); drawing.current = pos; }
+      else { drawing.points.push(pos); finishDrawing(); }
+    } else if (activeShape === 'polygon') {
+      if (!drawing || drawing.type !== 'polygon') drawing = { type:'polygon', points:[pos], current:pos };
+      else {
+        const first = drawing.points[0];
+        const dist = Math.hypot(pos.x-first.x, pos.y-first.y);
+        if (dist < 15 && drawing.points.length >= 3) { finishDrawing(); }
+        else { drawing.points.push(pos); drawing.current = pos; }
+      }
+    }
+    drawAll();
+  });
+
+  areaCanvas.addEventListener('mousemove', e => {
+    if (!drawing) return;
+    drawing.current = gridSnap(getCanvasPos(e));
+    drawAll();
+  });
+
+  areaCanvas.addEventListener('mouseup', e => {
+    if (e.button !== 0) return;
+    if (!drawing) return;
+    if (['rect','circle','ellipse','line'].includes(drawing.type) && drawing.points.length === 1) {
+      drawing.current = gridSnap(getCanvasPos(e));
+      finishDrawing();
+    }
+  });
+
+  areaCanvas.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    if (!drawing) return;
+    drawing.current = getCanvasPos(e); // без привязки
+    finishDrawing();
+  });
+
+  $('#shapeSelect').addEventListener('change', e => { activeShape = e.target.value; drawing = null; drawAll(); });
+  $('#unitSelect').addEventListener('change', e => { areaUnit = e.target.value; updateAreaInfo(); });
+  $('#snapBtn').addEventListener('click', () => { snapToGrid = !snapToGrid; toast(snapToGrid ? 'Сетка ВКЛ' : 'Сетка ВЫКЛ'); drawAll(); });
+  $('#undoShapeBtn').addEventListener('click', () => { shapes.pop(); drawing=null; drawAll(); });
+  $('#clearShapesBtn').addEventListener('click', () => { shapes=[]; drawing=null; drawAll(); });
+  $('#exportCanvasBtn').addEventListener('click', () => {
+    const link = document.createElement('a'); link.download = 'area.png'; link.href = areaCanvas.toDataURL(); link.click();
+  });
+
+  // ======= КОНВЕРТЕР =======
+  function populateConverter() {
+    const cats = Object.keys(unitData);
+    $('#categoryTabs').innerHTML = cats.map(c =>
+      `<button class="tab-btn category-btn" data-cat="${c}">${c}</button>`
+    ).join('');
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        convCategory = btn.dataset.cat;
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        populateUnits();
+        convert();
+      });
+    });
+    document.querySelector('.category-btn[data-cat="length"]').classList.add('active');
+    populateUnits();
+  }
+
+  function populateUnits() {
+    const units = unitData[convCategory];
+    const from = $('#convFrom'), to = $('#convTo');
+    from.innerHTML = ''; to.innerHTML = '';
+    Object.keys(units).forEach(key => {
+      from.add(new Option(units[key].name, key));
+      to.add(new Option(units[key].name, key));
+    });
+  }
+
+  function convert() {
+    const value = parseFloat($('#convInput').value);
+    if (isNaN(value)) { $('#convResult').textContent = '—'; return; }
+    const from = $('#convFrom').value, to = $('#convTo').value;
+    if (convCategory === 'temperature') {
+      let c;
+      if (from === 'C') c = value;
+      else if (from === 'F') c = (value - 32) * 5/9;
+      else c = value - 273.15;
+      let res;
+      if (to === 'C') res = c; else if (to === 'F') res = c * 9/5 + 32; else res = c + 273.15;
+      $('#convResult').textContent = formatNum(res);
+    } else if (convCategory === 'currency') {
+      if (!currencyRates) { fetchCurrencies().then(() => convert()); return; }
+      const fromRate = currencyRates[from] || 1;
+      const toRate = currencyRates[to] || 1;
+      $('#convResult').textContent = formatNum(value * toRate / fromRate);
+    } else {
+      const factorFrom = unitData[convCategory][from]?.factor || 1;
+      const factorTo = unitData[convCategory][to]?.factor || 1;
+      $('#convResult').textContent = formatNum(value * factorFrom / factorTo);
+    }
+  }
+
+  async function fetchCurrencies() {
+    try {
+      const res = await fetch('https://api.exchangerate.host/latest?base=USD');
+      const data = await res.json();
+      currencyRates = data.rates;
+      currencyRates['USD'] = 1;
+      convert();
+    } catch(e) { toast('Ошибка загрузки валют'); }
+  }
+
+  $('#convInput').addEventListener('input', convert);
+  $('#convFrom').addEventListener('change', convert);
+  $('#convTo').addEventListener('change', convert);
+  $('#swapUnits').addEventListener('click', () => {
+    const tmp = $('#convFrom').value; $('#convFrom').value = $('#convTo').value; $('#convTo').value = tmp;
+    convert();
+  });
+  populateConverter();
+
+  // ======= ПЕРЕКЛЮЧЕНИЕ РЕЖИМОВ =======
+  function switchMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    historyPanel.style.display = 'none';
+    if (mode === 'basic') {
+      $('#panel-basic').classList.add('active');
+      buildBasicGrid();
+    } else if (mode === 'scientific') {
+      $('#panel-basic').classList.add('active');
+      buildScientificGrid();
+    } else if (mode === 'graph') {
+      $('#panel-graph').classList.add('active');
+    } else if (mode === 'area') {
+      $('#panel-area').classList.add('active');
+      drawAll();
+    } else if (mode === 'converter') {
+      $('#panel-converter').classList.add('active');
+      populateUnits();
+      convert();
+    }
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key >= '1' && e.key <= '5') {
+      e.preventDefault();
+      const modes = ['basic','scientific','graph','area','converter'];
+      switchMode(modes[parseInt(e.key)-1]);
+    }
+    if ((currentMode === 'basic' || currentMode === 'scientific') && !e.ctrlKey) {
+      if (e.key === 'Enter') { e.preventDefault(); evaluate(); }
+      else if (e.key === 'Backspace') { e.preventDefault(); expression = expression.slice(0,-1); updateDisplay(); }
+      else if (/^[\d+\-*/.()%]$/.test(e.key)) { e.preventDefault(); expression += e.key; updateDisplay(); }
+    }
+  });
+
+  $('#copyResult').addEventListener('click', () => {
+    navigator.clipboard.writeText(resultEl.textContent).then(() => toast('Скопировано'));
+  });
+  $('#infoBtn').addEventListener('click', () => toast('Правый клик на холсте — завершить фигуру'));
+  themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+  });
+
+  // Старт
+  switchMode('basic');
+  updateMemIndicator();
+})();
+</script>
+</body>
+</html>

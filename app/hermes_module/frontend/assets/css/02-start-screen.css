@@ -1,0 +1,127 @@
+/* 02-start-screen.css — Стартовый экран, реплика и желе-микрофон */
+/* ---------- стартовый экран ---------- */
+.stage{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(22px,4vh,44px);padding:24px}
+.brand{position:relative;display:grid;place-items:center;width:min(330px,68vw)}
+.halo{position:absolute;width:110%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(79,70,229,.07),transparent 70%);filter:blur(40px)}
+.infinity{position:relative;width:100%;height:auto;overflow:visible}
+.infinity-path-bg{fill:none;stroke:var(--border-2);stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
+.infinity-glow{display:none}
+.infinity-path{fill:none;stroke:url(#infGrad);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:400;stroke-dashoffset:400;animation:draw 2s cubic-bezier(.6,0,.3,1) .2s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.stage.listening .infinity-path{animation-duration:1.1s}
+.status{display:flex;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);font-weight:600}
+.status .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(15,157,108,.15)}
+.stage.listening .status .dot{background:var(--err);box-shadow:0 0 0 3px rgba(220,38,38,.15);animation:blip 1s ease-in-out infinite}
+@keyframes blip{0%,100%{opacity:1}50%{opacity:.35}}
+/* реплика главного экрана: см. .stagesay / .say-slot */
+
+.dock{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:999px;background:var(--surface);
+  border:1px solid var(--border);box-shadow:var(--sh-2)}
+.dock-btn{position:relative;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:var(--text-2);
+  background:var(--surface);border:1px solid var(--border);transition:var(--t);font-size:16px}
+.dock-btn:hover{color:var(--accent);border-color:var(--accent);transform:translateY(-2px)}
+.dock-btn:active{transform:translateY(0) scale(.96)}
+.dock-btn.on{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.dock-btn[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 11px);left:50%;transform:translateX(-50%);
+  background:var(--text);color:var(--bg);font-size:11px;font-weight:500;padding:5px 9px;border-radius:7px;white-space:nowrap;box-shadow:var(--sh-2);animation:tipIn .18s ease;z-index:10}
+@keyframes tipIn{from{opacity:0;transform:translate(-50%,4px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(79,70,229,.35)}50%{box-shadow:0 0 0 10px rgba(79,70,229,0)}}
+
+/* ---------- реплика главного экрана (занимает место статуса) ---------- */
+.say-slot{position:relative;display:flex;align-items:center;justify-content:center;width:min(660px,92vw);min-height:26px}
+.say-slot>[hidden]{display:none!important}
+.stagesay{max-width:min(620px,90vw);text-align:center;font-size:15px;line-height:1.55;color:var(--text-2);
+  max-height:min(36vh,260px);overflow:auto;padding:2px 6px;opacity:0;transform:translateY(6px);transition:var(--t);scrollbar-width:thin}
+.stagesay.show{opacity:1;transform:none}
+.stagesay[data-who="user"]{color:var(--text-2)}
+.stagesay[data-who="agent"]{color:var(--text);cursor:pointer}
+.stagesay[data-who="agent"]:hover{color:var(--text);filter:brightness(1.05)}
+.stagesay .who{display:block;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:5px}
+.stagesay .interim{color:var(--text-3)}
+
+/* ---------- ЖЕЛЕ-МИКРОФОН — точный порт кнопки из bootom.html (Jelly Mic) ---------- */
+.jm-defs{position:absolute;width:0;height:0}
+#jmWrap{position:relative;width:66px;height:66px;flex:0 0 66px;--amp:1;--lvl:0;
+  --j1:var(--accent-3);--j2:var(--accent-2);--j3:var(--accent);          /* ядро желе: свет → тень */
+  --jGlow:color-mix(in srgb,var(--accent-2) 55%,transparent);
+  --jRing:color-mix(in srgb,var(--accent-2) 50%,transparent)}
+#jmWrap .micGlow{position:absolute;left:50%;top:50%;width:110px;height:110px;margin:-55px;border-radius:50%;
+  background:radial-gradient(circle,var(--jGlow),color-mix(in srgb,var(--accent) 28%,transparent) 45%,transparent 70%);
+  filter:blur(8px);pointer-events:none;
+  opacity:calc(.04 + var(--lvl)*.9);transform:scale(calc(.6 + var(--lvl)*.6));transition:opacity .4s}
+#jmWrap .mic{position:absolute;inset:0;width:100%;height:100%;padding:0;border:none;background:none;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;font-size:inherit}
+#jmWrap .goo{position:absolute;inset:-34px;filter:url(#jmGooF);will-change:transform}
+/* Желе-свойства видны ВСЕГДА, а не только в записи: ядро мягко морфится,
+   капли-сферы медленно кружат вокруг ядра и сливаются с ним через gooey-фильтр.
+   В записи (класс .recording) и во время работы агента (.busy) — усиленные версии. */
+#jmWrap .core{position:absolute;inset:34px;border-radius:50%;
+  background:linear-gradient(145deg,var(--j1) 0%,var(--j2) 46%,var(--j3) 100%);
+  box-shadow:inset 0 -7px 16px rgba(0,0,0,.3),inset 0 5px 12px rgba(255,255,255,.38);
+  transition:background .45s ease}
+/* Мягкое «дыхание» ядра — лишь во время записи/работы агента. */
+#jmWrap .mic.recording .core,#jmWrap.busy .core{animation:jmJellyIdle 5.4s ease-in-out infinite}
+@keyframes jmJellyIdle{
+  0%,100%{border-radius:50% 50% 50% 50% / 50% 50% 50% 50%}
+  33%{border-radius:53.5% 46.5% 52% 48% / 48% 52% 46.5% 53.5%}
+  66%{border-radius:46.5% 53.5% 48% 52% / 52% 48% 53.5% 46.5%}
+}
+/* Капли-спутники кружат ТОЛЬКО в записи или когда агент занят. В простое
+   кнопка микрофона выглядит как обычная кнопка — без «пузырьков». */
+#jmWrap .sat{opacity:0}
+#jmWrap .mic.recording .sat,#jmWrap.busy .sat{opacity:.5;animation:jmSatIdle calc(var(--dur) * 1.7) var(--del) ease-in-out infinite}
+@keyframes jmSatIdle{
+  0%{opacity:0;transform:translateY(0) scale(.15)}
+  18%{opacity:.5}
+  50%{opacity:.5;transform:translateY(calc(-42px * var(--amp))) scale(.6)}
+  82%{opacity:.48}
+  100%{opacity:0;transform:translateY(0) scale(.15)}
+}
+#jmWrap .mic.recording .core{background:linear-gradient(145deg,var(--err) 0%,color-mix(in srgb,var(--err) 62%,var(--warn)) 48%,color-mix(in srgb,var(--err) 60%,#000) 100%);
+  animation:jmJellyMorph 3.4s ease-in-out infinite}
+@keyframes jmJellyMorph{
+  0%{border-radius:50% 50% 50% 50% / 50% 50% 50% 50%}
+  25%{border-radius:60% 40% 56% 44% / 44% 56% 40% 60%}
+  50%{border-radius:44% 56% 41% 59% / 59% 41% 56% 44%}
+  75%{border-radius:53% 47% 62% 38% / 39% 61% 47% 53%}
+  100%{border-radius:50% 50% 50% 50% / 50% 50% 50% 50%}
+}
+/* капли-спутники, сливающиеся с ядром через gooey-фильтр */
+#jmWrap .orb-s{position:absolute;left:50%;top:50%;width:0;height:0;transform:rotate(var(--ang))}
+#jmWrap .sat{position:absolute;left:-10px;top:-10px;width:20px;height:20px;border-radius:50%;
+  background:linear-gradient(145deg,var(--j1),var(--j3));opacity:0;transform:translateY(0) scale(.2)}
+#jmWrap .mic.recording .sat{animation:jmSatOut var(--dur) var(--del) ease-in-out infinite}
+#jmWrap .mic.recording .core,#jmWrap .mic.recording .sat{background:linear-gradient(145deg,var(--err),color-mix(in srgb,var(--err) 60%,#000))}
+@keyframes jmSatOut{
+  0%{opacity:0;transform:translateY(0) scale(.15)}
+  18%{opacity:.95}
+  50%{opacity:1;transform:translateY(calc(-44px * var(--amp))) scale(1)}
+  82%{opacity:.9}
+  100%{opacity:0;transform:translateY(0) scale(.15)}
+}
+#jmWrap .ring{position:absolute;left:50%;top:50%;width:66px;height:66px;margin:-33px;border-radius:50%;
+  border:2px solid var(--jRing);opacity:0;pointer-events:none}
+#jmWrap .mic.recording .ring,#jmWrap.busy .ring{animation:jmRipple 2.6s cubic-bezier(.2,.7,.3,1) infinite}
+#jmWrap .mic.recording .ring:nth-of-type(2),#jmWrap.busy .ring:nth-of-type(2){animation-delay:.85s}
+#jmWrap .mic.recording .ring:nth-of-type(3),#jmWrap.busy .ring:nth-of-type(3){animation-delay:1.7s}
+#jmWrap.pulse .ring{animation:jmRipple .8s cubic-bezier(.2,.7,.3,1)}
+#jmWrap.pulse .ring:nth-of-type(2){animation-delay:.12s}
+#jmWrap.pulse .ring:nth-of-type(3){animation-delay:.24s}
+@keyframes jmRipple{0%{opacity:.65;transform:scale(1)}100%{opacity:0;transform:scale(2.6)}}
+#jmWrap .face{position:absolute;inset:0;display:grid;place-items:center;color:#fff;z-index:4;will-change:transform}
+#jmWrap .face>svg{width:26px;height:26px;transition:opacity .25s,transform .35s}
+#jmWrap .wave{position:absolute;display:flex;align-items:center;gap:3px;height:26px;opacity:0;transition:opacity .25s}
+#jmWrap .wave i{display:block;width:3px;height:100%;border-radius:3px;background:#fff;transform:scaleY(.12)}
+#jmWrap .mic.recording .face>svg{opacity:0;transform:scale(.5)}
+#jmWrap .mic.recording .wave{opacity:1}
+/* состояния приложения: агент работает (busy) и дежурство по слову-будильнику (sleep) */
+#jmWrap.busy .core{background:linear-gradient(145deg,color-mix(in srgb,var(--warn) 72%,#fff) 0%,var(--warn) 48%,color-mix(in srgb,var(--warn) 58%,#000) 100%)}
+#jmWrap.busy .micGlow{opacity:calc(.3 + var(--lvl)*.6)}
+#jmWrap.sleep .core{background:linear-gradient(145deg,color-mix(in srgb,var(--accent-3) 55%,#fff) 0%,var(--accent-2) 48%,color-mix(in srgb,var(--accent-2) 45%,#000) 100%)}
+#jmWrap.sleep .micGlow{opacity:.16;transform:scale(.72)}
+
+.hint{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:center;color:var(--text-3);font-size:11.5px}
+.hint b{display:inline-flex;align-items:center;gap:6px;font-weight:500}
+kbd{font-family:var(--font);font-size:10px;font-weight:600;background:var(--surface);border:1px solid var(--border-2);
+  border-bottom-width:2px;border-radius:5px;padding:2px 6px;color:var(--text-2)}

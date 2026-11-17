@@ -1,0 +1,3640 @@
+<!DOCTYPE html>
+<html class="pg-page_html_viewer" lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HTML Viewer — Infinity</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<script src="/static/monaco/min/vs/loader.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box }
+
+/* ===== THEMES ===== */
+:root {
+  --bg: #0f1419; --bg2: #151b23; --bg3: #1c242f; --bg4: #232d3a;
+  --border: rgba(255, 255, 255, 0.08); --border2: rgba(255, 255, 255, 0.12);
+  --text: #e4e8ef; --text2: #a0aec0; --text3: #6b7280;
+  --accent: #6366f1; --accent2: #4f46e5;
+  --accent-glow: rgba(99, 102, 241, 0.25); --accent-light: rgba(99, 102, 241, 0.15);
+  --link: #818cf8; --card: rgba(21, 27, 35, 0.7); --hover: rgba(255, 255, 255, 0.05);
+  --red: #ef4444; --red-light: rgba(239, 68, 68, 0.1);
+  --green: #10b981; --green-light: rgba(16, 185, 129, 0.1);
+  --yellow: #f59e0b; --yellow-light: rgba(245, 158, 11, 0.1);
+  --purple: #a855f7; --purple-light: rgba(168, 85, 247, 0.1);
+  --blue: #3b82f6; --orange: #f97316;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.15);
+  --radius: 14px; --radius-sm: 8px; --radius-lg: 20px; --radius-xl: 32px;
+  --tr: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --glass: rgba(21, 27, 35, 0.6); --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-hover: rgba(28, 36, 47, 0.8);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Literata', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+body.light {
+  --bg: #fafbfc; --bg2: #ffffff; --bg3: #f3f4f6; --bg4: #e5e7eb;
+  --border: rgba(0, 0, 0, 0.06); --border2: rgba(0, 0, 0, 0.1);
+  --text: #111827; --text2: #333333; --text3: #333333;
+  --accent: #4f46e5; --accent2: #4338ca;
+  --accent-glow: rgba(79, 70, 229, 0.15); --accent-light: rgba(79, 70, 229, 0.1);
+  --link: #4338ca; --card: rgba(255, 255, 255, 0.8); --hover: rgba(0, 0, 0, 0.03);
+  --red: #dc2626; --red-light: rgba(220, 38, 38, 0.08);
+  --green: #047857; --green-light: rgba(5, 150, 105, 0.08);
+  --yellow: #b45309; --yellow-light: rgba(217, 119, 6, 0.08);
+  --purple: #6d28d9; --purple-light: rgba(124, 58, 237, 0.08);
+  --blue: #2563eb; --orange: #c2410c;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+  --glass: rgba(255, 255, 255, 0.72); --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-hover: rgba(255, 255, 255, 0.85);
+}
+body.sepia {
+  --bg: #f4ecd8; --bg2: #efe6d1; --bg3: #e8dcc7; --bg4: #ddd0bb;
+  --border: rgba(91, 70, 54, 0.15); --text: #5b4636; --text2: #7d6b5d; --text3: #a08b78;
+  --accent: #8b6914; --accent2: #6b5010;
+  --accent-glow: rgba(139, 105, 20, 0.2); --accent-light: rgba(139, 105, 20, 0.12);
+  --card: #efe6d1; --hover: rgba(91, 70, 54, 0.05);
+  --shadow: 0 8px 24px rgba(91, 70, 54, 0.15);
+  --glass: rgba(239, 230, 209, 0.8); --glass-border: rgba(91, 70, 54, 0.12);
+}
+body.warm {
+  --bg: #1a1410; --bg2: #2a1f18; --bg3: #3a2f28; --bg4: #4a3f38;
+  --border: rgba(212, 165, 116, 0.1); --text: #e8d8c8; --text2: #a89888; --text3: #7a6a5a;
+  --accent: #d4a574; --accent2: #b08554;
+  --accent-glow: rgba(212, 165, 116, 0.25); --accent-light: rgba(212, 165, 116, 0.15);
+  --card: #2a1f18; --hover: rgba(212, 165, 116, 0.08);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --glass: rgba(42, 31, 24, 0.75); --glass-border: rgba(212, 165, 116, 0.12);
+}
+body.paper {
+  --bg: #fdfcf8; --bg2: #faf7f0; --bg3: #f0ebe0; --bg4: #e0d9c8;
+  --border: rgba(80, 60, 40, 0.1); --text: #2c2418; --text2: #5a4a38; --text3: #8a7a68;
+  --accent: #a0522d; --accent2: #803818;
+  --accent-glow: rgba(160, 82, 45, 0.2); --accent-light: rgba(160, 82, 45, 0.12);
+  --card: #faf7f0; --hover: rgba(160, 82, 45, 0.05);
+  --shadow: 0 8px 24px rgba(80, 60, 40, 0.12);
+  --glass: rgba(250, 247, 240, 0.85); --glass-border: rgba(80, 60, 40, 0.1);
+}
+body.ocean {
+  --bg: #0a1628; --bg2: #102038; --bg3: #182840; --bg4: #203050;
+  --border: rgba(100, 180, 255, 0.1); --text: #c8dcf0; --text2: #8aa8c8; --text3: #5a7898;
+  --accent: #4aa3df; --accent2: #2a83bf;
+  --accent-glow: rgba(74, 163, 223, 0.25); --accent-light: rgba(74, 163, 223, 0.15);
+  --card: #102038; --hover: rgba(74, 163, 223, 0.08);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --glass: rgba(16, 32, 56, 0.75); --glass-border: rgba(100, 180, 255, 0.12);
+}
+body.forest {
+  --bg: #0f1a14; --bg2: #16241c; --bg3: #1e3028; --bg4: #263c32;
+  --border: rgba(80, 200, 120, 0.1); --text: #c8e0d0; --text2: #88b098; --text3: #588068;
+  --accent: #4aa878; --accent2: #2a8858;
+  --accent-glow: rgba(74, 168, 120, 0.25); --accent-light: rgba(74, 168, 120, 0.15);
+  --card: #16241c; --hover: rgba(74, 168, 120, 0.08);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --glass: rgba(22, 36, 28, 0.75); --glass-border: rgba(80, 200, 120, 0.12);
+}
+body.midnight {
+  --bg: #05050a; --bg2: #0a0a14; --bg3: #141420; --bg4: #1e1e2c;
+  --border: rgba(150, 120, 255, 0.1); --text: #d0c8f0; --text2: #9088b8; --text3: #605888;
+  --accent: #8a7ae0; --accent2: #6a5ac0;
+  --accent-glow: rgba(138, 122, 224, 0.3); --accent-light: rgba(138, 122, 224, 0.15);
+  --card: #0a0a14; --hover: rgba(138, 122, 224, 0.08);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  --glass: rgba(10, 10, 20, 0.8); --glass-border: rgba(150, 120, 255, 0.12);
+}
+body.rose {
+  --bg: #1a0f14; --bg2: #281820; --bg3: #362028; --bg4: #442830;
+  --border: rgba(255, 120, 160, 0.1); --text: #f0d0dc; --text2: #c08898; --text3: #906878;
+  --accent: #e06a8a; --accent2: #c04a6a;
+  --accent-glow: rgba(224, 106, 138, 0.25); --accent-light: rgba(224, 106, 138, 0.15);
+  --card: #281820; --hover: rgba(224, 106, 138, 0.08);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --glass: rgba(40, 24, 32, 0.75); --glass-border: rgba(255, 120, 160, 0.12);
+}
+
+html { scroll-behavior: smooth }
+body {
+  font-family: var(--font-sans); background: var(--bg); color: var(--text);
+  min-height: 100vh; transition: background 0.4s, color 0.4s;
+  line-height: 1.6; -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale; overflow-x: hidden;
+}
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, var(--accent-glow), transparent),
+    radial-gradient(ellipse 60% 40% at 85% 85%, rgba(168, 85, 247, 0.06), transparent),
+    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(59, 130, 246, 0.03), transparent);
+  pointer-events: none; z-index: 0; transition: opacity 0.4s;
+}
+::selection { background: var(--accent); color: #fff }
+a { color: var(--accent); text-decoration: none; transition: var(--tr) }
+a:hover { color: var(--link) }
+button { font-family: inherit; border: none; cursor: pointer; outline: none; background: none }
+input, textarea, select { font-family: inherit; outline: none }
+
+::-webkit-scrollbar { width: 10px; height: 10px }
+::-webkit-scrollbar-track { background: var(--bg3); border-radius: 5px }
+::-webkit-scrollbar-thumb {
+  background: var(--border2); border-radius: 5px;
+  border: 2px solid var(--bg3); transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--accent) }
+
+.glass-panel {
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ===== FLOATING TOOLBAR ===== */
+.toolbar {
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 1000; background: var(--glass);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl); padding: 6px;
+  display: flex; align-items: center; gap: 4px; flex-wrap: nowrap;
+  box-shadow: var(--shadow-lg), 0 0 0 0.5px rgba(0,0,0,0.05);
+  max-width: calc(100vw - 24px);
+  transition: var(--tr);
+}
+.toolbar:hover { box-shadow: var(--shadow-lg), 0 0 60px var(--accent-glow) }
+.toolbar .btn {
+  background: transparent; border: 1px solid transparent;
+  color: var(--text2); padding: 8px 14px; border-radius: 12px;
+  cursor: pointer; font-size: 13px; font-weight: 500; transition: var(--tr);
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: inherit; text-decoration: none; white-space: nowrap;
+  position: relative;
+}
+.toolbar .btn i { font-size: 14px; transition: var(--tr) }
+.toolbar .btn:hover {
+  background: var(--hover); color: var(--text);
+  transform: translateY(-1px);
+}
+.toolbar .btn:hover i { color: var(--accent) }
+.toolbar .btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent; color: #fff;
+  box-shadow: 0 4px 16px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.toolbar .btn.active i { color: #fff }
+.toolbar .btn .badge {
+  background: var(--red); color: #fff; padding: 2px 7px;
+  border-radius: 10px; font-size: 10px; font-weight: 700;
+  margin-left: 2px; min-width: 18px; text-align: center;
+}
+.toolbar .btn-icon {
+  background: transparent; border: 1px solid transparent;
+  color: var(--text2); padding: 8px 10px; border-radius: 12px;
+  cursor: pointer; font-size: 15px; transition: var(--tr);
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+}
+.toolbar .btn-icon:hover {
+  background: var(--hover); color: var(--accent);
+  transform: rotate(15deg);
+}
+.toolbar .sep {
+  width: 1px; height: 20px;
+  background: linear-gradient(to bottom, transparent, var(--border2), transparent);
+  margin: 0 2px; flex-shrink: 0;
+}
+.toolbar .brand {
+  font-size: 16px; font-weight: 800; color: var(--accent);
+  padding: 6px 12px; border-radius: 10px; cursor: pointer;
+  transition: var(--tr); display: inline-flex; align-items: center; gap: 6px;
+  letter-spacing: -0.3px;
+}
+.toolbar .brand:hover {
+  background: var(--accent-light); transform: scale(1.05);
+}
+.toolbar .search-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 0 12px; transition: var(--tr);
+}
+.toolbar .search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.toolbar .search-box i { color: var(--text3); font-size: 13px }
+.toolbar .search-box input {
+  background: none; border: none; color: var(--text);
+  padding: 8px 4px; font-size: 13px; width: 160px; outline: none;
+  font-family: inherit;
+}
+.toolbar .search-box input::placeholder { color: var(--text3) }
+
+/* ===== LAYOUT ===== */
+.wrap { display: flex; height: 100vh; position: relative; z-index: 1 }
+.sidebar {
+  width: 320px;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-right: 1px solid var(--glass-border);
+  overflow-y: auto; flex-shrink: 0;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+  box-shadow: var(--shadow);
+}
+.sidebar.hidden { width: 0; overflow: hidden; border: none; opacity: 0 }
+.main { flex: 1; overflow-y: auto; position: relative }
+
+/* Fullscreen mode */
+.fullscreen { padding-top: 0 }
+.fullscreen .sidebar { display: none }
+.fullscreen .toolbar { 
+  top: -70px; 
+  border-radius: 0; 
+  max-width: 100%;
+  transition: top 0.3s ease;
+}
+.fullscreen .toolbar:hover {
+  top: 0;
+}
+.fullscreen .wrap { padding-top: 0 }
+.fullscreen .viewer-area { height: 100vh }
+
+/* FS Toolbar */
+.fs-toolbar {
+  display: none;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 8px 16px; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+.fs-toolbar .fs-title {
+  flex: 1; font-size: 14px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fs-btn {
+  padding: 6px 12px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); cursor: pointer;
+  font-size: 12px; display: inline-flex; align-items: center; gap: 6px;
+  transition: var(--tr); font-weight: 500;
+}
+.fs-btn:hover {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+  transform: translateY(-1px); box-shadow: 0 4px 12px var(--accent-glow);
+}
+.fs-btn i { font-size: 12px }
+body.fullscreen .fs-toolbar { display: flex !important }
+
+/* ===== TREE ===== */
+.tree-label {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; font-size: 13px; cursor: pointer;
+  transition: var(--tr); border-radius: var(--radius-sm);
+  margin: 2px 6px; font-weight: 500;
+}
+.tree-label:hover { background: var(--hover); color: var(--accent) }
+.tree-children {
+  margin-left: 18px;
+  border-left: 1px solid var(--border);
+  padding-left: 4px;
+}
+.tree-file {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; font-size: 13px; cursor: pointer;
+  transition: var(--tr); border-radius: var(--radius-sm);
+  margin: 2px 6px; position: relative;
+}
+.tree-file:hover {
+  background: var(--accent-light); color: var(--accent);
+  transform: translateX(2px);
+}
+.tree-file .icon {
+  color: var(--accent); width: 16px; text-align: center;
+  font-size: 12px;
+}
+.tree-file::before {
+  content: ''; position: absolute; left: -5px; top: 50%;
+  transform: translateY(-50%); width: 3px; height: 0;
+  background: var(--accent); border-radius: 0 2px 2px 0;
+  transition: height 0.2s;
+}
+.tree-file:hover::before { height: 60% }
+
+/* ===== VIEWER ===== */
+.viewer-area { padding: 0; height: 100vh }
+.viewer-area iframe { width: 100%; height: 100%; border: none; background: #fff }
+.viewer-area .html-content {
+  padding: 32px; max-width: 900px; margin: 0 auto; line-height: 1.7;
+}
+.viewer-area .html-content img { max-width: 100%; height: auto; border-radius: var(--radius-sm) }
+.viewer-area .html-content a { color: var(--accent); text-decoration: underline }
+.viewer-area .extracted-text {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 32px; margin: 24px auto;
+  font-family: var(--font-serif);
+  font-size: 17px; line-height: 1.85;
+  white-space: pre-wrap;
+  max-width: 900px;
+  box-shadow: var(--shadow);
+}
+
+/* ===== SELECTION POPUP ===== */
+.sel-popup {
+  position: fixed; z-index: 2500;
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 6px;
+  box-shadow: var(--shadow-lg);
+  display: none; min-width: 220px;
+  animation: menuIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.sel-popup.show { display: block }
+@keyframes menuIn {
+  from { opacity: 0; transform: scale(0.92) translateY(4px) }
+  to { opacity: 1; transform: scale(1) translateY(0) }
+}
+.sel-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border: none; background: none;
+  color: var(--text); cursor: pointer; font-size: 13px;
+  width: 100%; border-radius: 8px; text-align: left;
+  transition: background 0.15s; font-weight: 500;
+}
+.sel-btn:hover { background: var(--accent-light); color: var(--accent) }
+.sel-btn i { width: 18px; text-align: center; color: var(--accent) }
+
+/* ===== MONACO EDITOR PANEL ===== */
+.editor-panel {
+  position: fixed; bottom: 0; right: 0;
+  width: 70%; height: 60%;
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg) 0 0 0;
+  z-index: 80; display: flex; flex-direction: column;
+  box-shadow: -4px -4px 24px rgba(0,0,0,.3), var(--shadow-lg);
+  transition: height 0.3s, opacity 0.3s;
+  user-select: none; overflow: visible;
+}
+.editor-panel.minimized { height: 44px; overflow: hidden }
+.editor-panel.maximized {
+  width: 100% !important; height: 100% !important;
+  border-radius: 0 !important; top: 0 !important; left: 0 !important;
+  z-index: 90;
+}
+.editor-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--bg3), var(--bg4));
+  cursor: move; flex-shrink: 0; overflow: visible;
+}
+.editor-header h4 {
+  flex: 1; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 8px;
+  color: var(--text);
+}
+.editor-header h4 i { color: var(--accent) }
+.editor-tabs {
+  display: flex; gap: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2); overflow-x: auto; flex-shrink: 0;
+}
+.editor-tab {
+  padding: 8px 16px; font-size: 12px;
+  background: var(--bg3); border-right: 1px solid var(--border);
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  white-space: nowrap; color: var(--text2);
+  transition: background 0.15s; font-weight: 500;
+}
+.editor-tab:hover { background: var(--bg); color: var(--text) }
+.editor-tab.active {
+  background: var(--bg2); color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+.editor-tab .close {
+  padding: 2px 6px; border-radius: 4px; font-size: 10px;
+  cursor: pointer; transition: var(--tr);
+}
+.editor-tab .close:hover { background: var(--red); color: #fff }
+.editor-actions { display: flex; gap: 4px; position: relative; flex-wrap: wrap }
+.ed-btn {
+  padding: 5px 10px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); cursor: pointer;
+  font-size: 11px; display: inline-flex; align-items: center; gap: 4px;
+  transition: var(--tr); font-weight: 500;
+}
+.ed-btn:hover {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+  transform: translateY(-1px); box-shadow: 0 2px 8px var(--accent-glow);
+}
+.ed-btn:hover i { color: #fff }
+.ed-btn.save { background: var(--green); border-color: var(--green); color: #fff }
+.ed-btn.del { background: var(--red); border-color: var(--red); color: #fff }
+.ed-btn.preview { background: var(--accent); border-color: var(--accent); color: #fff }
+.ed-btn.refresh { background: var(--purple); border-color: var(--purple); color: #fff }
+.ed-btn.ai-chat { background: var(--orange); border-color: var(--orange); color: #fff }
+#monacoContainer { flex: 1; position: relative; min-height: 0; display: flex; flex-direction: column }
+#monacoEditor { width: 100%; height: 100%; min-height: 200px }
+#splitPreview { width: 50%; height: 100%; border: none; border-left: 2px solid var(--border); background: #fff }
+
+/* Plugin dropdown */
+.plugin-dropdown {
+  position: fixed;
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 10000; min-width: 260px; display: none;
+  overflow: hidden; max-height: 400px; overflow-y: auto;
+}
+.plugin-dropdown.show { display: block }
+.plugin-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; cursor: pointer; font-size: 13px;
+  color: var(--text); transition: all 0.15s;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+.plugin-item:last-child { border-bottom: none }
+.plugin-item:hover { background: var(--accent); color: #fff }
+.plugin-item i { width: 18px; text-align: center; color: var(--accent); flex-shrink: 0 }
+.plugin-item:hover i { color: #fff }
+.plugin-item .pname { flex: 1 }
+.plugin-item .shortcut {
+  margin-left: auto; font-size: 10px; color: var(--text3);
+  background: var(--bg3); padding: 3px 8px; border-radius: 6px;
+  white-space: nowrap; font-family: var(--font-mono); font-weight: 600;
+}
+.plugin-item:hover .shortcut { color: #fff; background: rgba(255,255,255,.2) }
+.plugin-item.create-new {
+  border-top: 2px solid var(--accent);
+  background: var(--accent-light);
+}
+.plugin-item.create-new:hover { background: var(--green); color: #fff }
+.plugin-item.create-new i { color: var(--green) }
+.plugin-item.create-new:hover i { color: #fff }
+
+/* Resize handles */
+.editor-panel .resize-n { top: -4px; left: 10px; right: 10px; height: 8px; cursor: n-resize }
+.editor-panel .resize-s { bottom: -4px; left: 10px; right: 10px; height: 8px; cursor: s-resize }
+.editor-panel .resize-e { right: -4px; top: 10px; bottom: 10px; width: 8px; cursor: e-resize }
+.editor-panel .resize-w { left: -4px; top: 10px; bottom: 10px; width: 8px; cursor: w-resize }
+.editor-panel .resize-ne { top: -4px; right: -4px; width: 12px; height: 12px; cursor: ne-resize }
+.editor-panel .resize-nw { top: -4px; left: -4px; width: 12px; height: 12px; cursor: nw-resize }
+.editor-panel .resize-se { bottom: -4px; right: -4px; width: 12px; height: 12px; cursor: se-resize }
+.editor-panel .resize-sw { bottom: -4px; left: -4px; width: 12px; height: 12px; cursor: sw-resize }
+
+/* ===== FILE MANAGER MODAL ===== */
+.fm-modal {
+  position: fixed; top: 80px; right: 50px;
+  width: 850px; height: 620px;
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  z-index: 200; display: flex; flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  transition: height 0.3s, transform 0.3s;
+  user-select: none;
+  animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.92) translateY(16px) }
+  to { opacity: 1; transform: scale(1) translateY(0) }
+}
+.fm-modal.minimized { height: 44px; overflow: hidden }
+.fm-modal.maximized {
+  width: 100% !important; height: 100% !important;
+  top: 0 !important; left: 0 !important; border-radius: 0 !important;
+}
+.fm-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--bg3), var(--bg4));
+  cursor: move; flex-shrink: 0;
+}
+.fm-header h3 {
+  flex: 1; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.fm-header h3 i { color: var(--accent) }
+.fm-header .fm-actions { display: flex; gap: 4px }
+.fm-header .fm-actions button {
+  padding: 5px 10px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); cursor: pointer;
+  font-size: 12px; transition: var(--tr);
+}
+.fm-header .fm-actions button:hover {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+  transform: translateY(-1px);
+}
+.fm-toolbar {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 6px; align-items: center;
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.fm-toolbar button {
+  padding: 7px 14px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); cursor: pointer;
+  font-size: 12px; transition: var(--tr); font-weight: 500;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.fm-toolbar button:hover {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+  transform: translateY(-1px); box-shadow: 0 2px 8px var(--accent-glow);
+}
+.fm-search { padding: 10px 16px; border-bottom: 1px solid var(--border) }
+.fm-search input {
+  width: 100%; padding: 9px 14px;
+  background: var(--bg3); border: 1.5px solid var(--border);
+  border-radius: 10px; color: var(--text); font-size: 13px;
+  outline: none; transition: var(--tr); font-family: inherit;
+}
+.fm-search input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.fm-body { flex: 1; display: flex; overflow: hidden; min-height: 0 }
+.fm-tree {
+  width: 280px; border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 8px 0; flex-shrink: 0;
+}
+.fm-content { flex: 1; overflow-y: auto; padding: 16px; min-width: 0 }
+.fm-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 14px; font-size: 13px; cursor: pointer;
+  transition: var(--tr); border-radius: var(--radius-sm);
+  margin: 2px 6px;
+}
+.fm-item:hover {
+  background: var(--accent-light); color: var(--accent);
+  transform: translateX(2px);
+}
+.fm-item .name {
+  flex: 1; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; font-weight: 500;
+}
+.fm-item .actions {
+  display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s;
+}
+.fm-item:hover .actions { opacity: 1 }
+.fm-item .actions button {
+  padding: 4px 8px; background: none; border: none;
+  color: var(--text2); cursor: pointer; font-size: 12px;
+  border-radius: 6px; transition: var(--tr);
+}
+.fm-item .actions button:hover {
+  background: var(--accent); color: #fff;
+}
+.fm-item .actions button.del:hover { background: var(--red); color: #fff }
+.fm-folder-toggle {
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+  padding: 7px 14px; font-size: 13px; transition: var(--tr);
+  border-radius: var(--radius-sm); margin: 2px 6px; font-weight: 500;
+}
+.fm-folder-toggle:hover { background: var(--hover); color: var(--accent) }
+.fm-children { margin-left: 18px; border-left: 1px solid var(--border); padding-left: 4px }
+.fm-children.collapsed { display: none }
+
+/* Resize handles */
+.fm-modal .resize-handle { position: absolute; z-index: 3 }
+.fm-modal .resize-handle.n { top: -4px; left: 10px; right: 10px; height: 8px; cursor: n-resize }
+.fm-modal .resize-handle.s { bottom: -4px; left: 10px; right: 10px; height: 8px; cursor: s-resize }
+.fm-modal .resize-handle.e { right: -4px; top: 10px; bottom: 10px; width: 8px; cursor: e-resize }
+.fm-modal .resize-handle.w { left: -4px; top: 10px; bottom: 10px; width: 8px; cursor: w-resize }
+.fm-modal .resize-handle.se { bottom: -4px; right: -4px; width: 12px; height: 12px; cursor: se-resize }
+.fm-modal .resize-handle.sw { bottom: -4px; left: -4px; width: 12px; height: 12px; cursor: sw-resize }
+.fm-modal .resize-handle.ne { top: -4px; right: -4px; width: 12px; height: 12px; cursor: ne-resize }
+.fm-modal .resize-handle.nw { top: -4px; left: -4px; width: 12px; height: 12px; cursor: nw-resize }
+
+/* ===== FAVORITES PANEL ===== */
+.fav-panel {
+  position: fixed; right: 0; top: 70px; bottom: 0;
+  width: 380px;
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-left: 1px solid var(--glass-border);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+.fav-panel.open { transform: translateX(0) }
+.fav-header {
+  padding: 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--bg3), var(--bg4));
+  position: sticky; top: 0; z-index: 2;
+}
+.fav-header h3 {
+  flex: 1; font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.fav-header h3 i { color: var(--yellow) }
+.fav-item {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: var(--tr);
+}
+.fav-item:hover {
+  background: var(--accent-light);
+  transform: translateX(4px);
+}
+.fav-item .title {
+  font-weight: 600; font-size: 14px;
+  margin-bottom: 6px; color: var(--text);
+}
+.fav-item .meta {
+  font-size: 11px; color: var(--text3);
+  line-height: 1.5;
+}
+
+/* ===== AI CHAT PANEL ===== */
+.ai-panel {
+  position: fixed; right: 0; top: 70px; bottom: 0;
+  width: 420px;
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-left: 1px solid var(--glass-border);
+  z-index: 50; display: none; flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  animation: slideInRight 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px) }
+  to { opacity: 1; transform: translateX(0) }
+}
+.ai-panel.open { display: flex }
+.ai-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, var(--bg3), var(--bg4));
+}
+.ai-header h3 {
+  flex: 1; font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.ai-header h3 i { color: var(--green) }
+.ai-messages {
+  flex: 1; overflow-y: auto; padding: 18px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.ai-messages::-webkit-scrollbar { width: 6px }
+.ai-messages::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px }
+.ai-msg {
+  max-width: 88%; padding: 12px 16px;
+  border-radius: 16px; font-size: 14px; line-height: 1.6;
+  animation: msgIn 0.25s ease;
+}
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(8px) }
+  to { opacity: 1; transform: translateY(0) }
+}
+.ai-msg.user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+.ai-msg.ai {
+  align-self: flex-start;
+  background: var(--bg3); color: var(--text);
+  border-bottom-left-radius: 4px;
+  border: 1px solid var(--border);
+}
+.ai-input {
+  padding: 14px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px;
+  background: var(--bg2);
+}
+.ai-input input {
+  flex: 1; padding: 12px 16px;
+  background: var(--bg3); border: 1.5px solid var(--border);
+  border-radius: 12px; color: var(--text);
+  outline: none; transition: var(--tr); font-size: 14px;
+  font-family: inherit;
+}
+.ai-input input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.ai-input button {
+  padding: 12px 18px;
+  background: linear-gradient(135deg, var(--green), #059669);
+  border: none; border-radius: 12px; color: #fff;
+  cursor: pointer; font-weight: 600;
+  transition: var(--tr);
+  box-shadow: 0 2px 8px var(--green-light);
+}
+.ai-input button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--green-light);
+}
+
+/* Search bar in sidebar */
+.search-bar {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.search-bar input {
+  width: 100%; padding: 9px 14px;
+  background: var(--bg3); border: 1.5px solid var(--border);
+  border-radius: 10px; color: var(--text); font-size: 13px;
+  outline: none; transition: var(--tr); font-family: inherit;
+}
+.search-bar input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* Welcome */
+.welcome {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 100%; color: var(--text2); text-align: center;
+  padding: 40px;
+}
+.welcome i {
+  font-size: 80px; color: var(--accent);
+  margin-bottom: 20px;
+  opacity: 0.3;
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) }
+  50% { transform: translateY(-10px) }
+}
+.welcome h2 {
+  font-size: 24px; font-weight: 700;
+  color: var(--text); margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+.welcome p { font-size: 14px; color: var(--text3) }
+
+/* ===== WGET MODAL ===== */
+.wget-modal {
+  position: fixed; top: 100px; left: 100px;
+  width: 580px;
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  z-index: 200; display: none; flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  user-select: none; min-width: 380px;
+  animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.wget-modal.minimized { height: 44px; overflow: hidden }
+.wget-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--bg3), var(--bg4));
+  cursor: move; flex-shrink: 0;
+}
+.wget-header h3 {
+  flex: 1; font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+}
+.wget-header h3 i { color: var(--green) }
+.wget-header .wget-actions { display: flex; gap: 4px }
+.wget-header .wget-actions button {
+  padding: 5px 10px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); cursor: pointer;
+  font-size: 12px; transition: var(--tr);
+}
+.wget-header .wget-actions button:hover {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+
+/* Modal overlay */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,.6); z-index: 200;
+  display: none; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+.modal-overlay.show { display: flex }
+.modal-box {
+  background: var(--bg2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  width: 580px; max-width: 95vw; max-height: 90vh;
+  overflow-y: auto; box-shadow: var(--shadow-lg);
+  animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, var(--bg3), var(--bg4));
+  position: sticky; top: 0; z-index: 2;
+}
+.modal-header h3 {
+  flex: 1; font-size: 17px; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+  letter-spacing: -0.3px;
+}
+.modal-header h3 i { color: var(--accent) }
+.modal-body { padding: 24px }
+.field { margin-bottom: 16px }
+.field label {
+  display: block; font-size: 12px; color: var(--text2);
+  margin-bottom: 6px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.field input, .field select {
+  width: 100%; padding: 10px 14px;
+  background: var(--bg3); border: 1.5px solid var(--border);
+  border-radius: 10px; color: var(--text); font-size: 13px;
+  outline: none; transition: var(--tr); font-family: inherit;
+}
+.field input:focus, .field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
+.check {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; font-size: 13px; cursor: pointer;
+  font-weight: 500;
+}
+.check input {
+  accent-color: var(--accent);
+  width: 18px; height: 18px; cursor: pointer;
+}
+.actions { display: flex; gap: 10px; margin-top: 20px }
+.actions button {
+  flex: 1; padding: 12px; border: none; border-radius: 10px;
+  cursor: pointer; font-size: 13px; font-weight: 600;
+  transition: var(--tr); display: inline-flex;
+  align-items: center; justify-content: center; gap: 6px;
+}
+.btn-go {
+  background: linear-gradient(135deg, var(--green), #059669);
+  color: #fff;
+  box-shadow: 0 2px 8px var(--green-light);
+}
+.btn-go:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--green-light);
+}
+.btn-cancel {
+  background: var(--bg3); color: var(--text);
+  border: 1.5px solid var(--border) !important;
+}
+.btn-cancel:hover {
+  border-color: var(--accent) !important;
+  color: var(--accent);
+}
+
+details {
+  margin-top: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px 12px;
+}
+details summary {
+  cursor: pointer; color: var(--accent);
+  font-size: 13px; padding: 8px 0;
+  font-weight: 600;
+}
+
+/* ===== NOTIFICATION TOAST ===== */
+.notification-toast {
+  position: fixed; bottom: 30px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; padding: 12px 24px;
+  border-radius: var(--radius);
+  font-size: 14px; font-weight: 600;
+  z-index: 9999; box-shadow: 0 6px 20px var(--accent-glow);
+  animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex; align-items: center; gap: 10px;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 30px) }
+  to { opacity: 1; transform: translate(-50%, 0) }
+}
+.notification-toast.success {
+  background: linear-gradient(135deg, var(--green), #059669);
+  box-shadow: 0 6px 20px var(--green-light);
+}
+.notification-toast.error {
+  background: linear-gradient(135deg, var(--red), #b91c1c);
+  box-shadow: 0 6px 20px var(--red-light);
+}
+
+/* ===== THEME PICKER ===== */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.theme-btn {
+  padding: 12px 10px;
+  border: 2px solid var(--border);
+  border-radius: 12px; cursor: pointer;
+  font-size: 12px; font-weight: 600;
+  transition: var(--tr);
+  display: flex; flex-direction: column;
+  align-items: center; gap: 6px;
+  background: var(--bg2);
+}
+.theme-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+.theme-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+.theme-btn .icon { font-size: 22px }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .toolbar .btn span { display: none }
+  .toolbar .search-box { display: none }
+  .fav-panel, .ai-panel { width: 100% }
+  .fm-modal { width: 95%; right: 2.5%; top: 80px }
+  .wget-modal { width: 95%; left: 2.5%; top: 80px }
+}
+@media (max-width: 768px) {
+  .toolbar { padding: 4px; gap: 2px; top: 8px; border-radius: 20px }
+  .toolbar .btn { padding: 6px 10px; font-size: 11px }
+  .toolbar .btn span { display: none }
+  .toolbar .sep { height: 16px }
+  .wrap { padding-top: 50px }
+  .sidebar { width: 100%; position: absolute; z-index: 10; height: calc(100vh - 50px) }
+  .viewer-area { height: calc(100vh - 50px) }
+  .editor-panel { width: 100%; height: 70% }
+  .editor-panel.maximized { height: 100% }
+}
+</style>
+<script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+    <!-- Свои модальные диалоги вместо window.prompt(): в Electron-оболочке
+         нативный prompt() не поддерживается (возвращает null), и кнопки
+         «Создать файл/папку» выглядели как «ничего не происходит». -->
+    <script src="/static/js/dialogs.js" defer></script>
+<link rel="stylesheet" href="/static/fonts/site-fonts.css">
+</head><body>
+
+<!-- FLOATING TOOLBAR -->
+<div class="toolbar">
+  <a class="brand" href="/" title="Главная">
+    <i class="fas fa-code"></i>
+    <span>HTML</span>
+  </a>
+  <div class="sep"></div>
+  <button class="btn" onclick="toggleSidebar()" title="Папки (B)">
+    <i class="fas fa-folder-tree"></i><span>Папки</span>
+  </button>
+  <button class="btn" onclick="toggleFavorites()" title="Избранное (F)">
+    <i class="fas fa-star"></i><span>Избранное</span>
+    <span class="badge" id="favBadge" style="display:none">0</span>
+  </button>
+  <button class="btn" onclick="openWget()" title="Скачать сайт (W)">
+    <i class="fas fa-download"></i><span>Скачать</span>
+  </button>
+  <button class="btn" onclick="openFileManager()" title="Файловый менеджер (M)">
+    <i class="fas fa-folder-open"></i><span>Файлы</span>
+  </button>
+  <button class="btn" onclick="openEditor()" title="Редактор кода (E)">
+    <i class="fas fa-code"></i><span>Код</span>
+  </button>
+  <button class="btn" onclick="toggleAiChat()" title="AI чат (A)">
+    <i class="fas fa-robot"></i><span>AI</span>
+  </button>
+  <div class="sep"></div>
+  <div class="search-box">
+    <i class="fas fa-search"></i>
+    <input id="globalSearch" placeholder="Поиск..." onkeydown="if(event.key==='Enter')globalSearchAction()">
+  </div>
+  <div class="sep"></div>
+  <button class="btn-icon" id="fsBtn" onclick="toggleFullscreen()" title="Полный экран (F11)">
+    <i class="fas fa-expand"></i>
+  </button>
+  <button class="btn-icon" onclick="openThemePicker()" title="Тема (T)">
+    <i class="fas fa-palette"></i>
+  </button>
+  <button class="btn-icon" onclick="openTextSettings()" title="Настройки текста">
+    <i class="fas fa-text-height"></i>
+  </button>
+  <button class="btn-icon" onclick="openShortcuts()" title="Горячие клавиши (?)">
+    <i class="fas fa-keyboard"></i>
+  </button>
+</div>
+
+<!-- FS Toolbar -->
+<div class="fs-toolbar">
+  <button class="fs-btn" onclick="toggleFavorites()"><i class="fas fa-star"></i></button>
+  <button class="fs-btn" onclick="extractText()"><i class="fas fa-text-width"></i> Текст</button>
+  <button class="fs-btn" onclick="openSearchModal()"><i class="fas fa-search"></i></button>
+  <button class="fs-btn" onclick="aiFormatText()"><i class="fas fa-robot"></i> AI</button>
+  <button class="fs-btn" onclick="toggleAiChat()"><i class="fas fa-comments"></i></button>
+  <button class="fs-btn" onclick="openThemePicker()"><i class="fas fa-palette"></i></button>
+  <button class="fs-btn" onclick="openTextSettings()"><i class="fas fa-text-height"></i></button>
+  <span class="fs-title" id="fsTitle"></span>
+  <button class="fs-btn" onclick="toggleFullscreen()"><i class="fas fa-compress"></i></button>
+</div>
+
+<div class="wrap">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="search-bar">
+      <input id="treeSearch" placeholder="Поиск файлов..." oninput="filterTree(this.value)">
+    </div>
+    <div id="treeView" style="padding:8px 0"></div>
+  </div>
+
+  <!-- Main viewer -->
+  <div class="main" id="mainArea">
+    <div class="welcome" id="welcomeScreen">
+      <i class="fas fa-globe"></i>
+      <h2>HTML Viewer</h2>
+      <p>Выберите HTML файл из дерева слева или скачайте сайт</p>
+      <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+        <button class="fs-btn" onclick="openWget()" style="padding:10px 20px;font-size:14px">
+          <i class="fas fa-download"></i> Скачать сайт
+        </button>
+        <button class="fs-btn" onclick="openFileManager()" style="padding:10px 20px;font-size:14px">
+          <i class="fas fa-folder-open"></i> Файловый менеджер
+        </button>
+      </div>
+    </div>
+    <div class="viewer-area" id="viewerArea" style="display:none"></div>
+  </div>
+</div>
+
+<!-- Selection popup -->
+<div class="sel-popup" id="selPopup">
+  <button class="sel-btn" onclick="selAddFav()"><i class="fas fa-star" style="color:var(--yellow)"></i> В избранное</button>
+  <button class="sel-btn" onclick="selToNotes()"><i class="fas fa-sticky-note" style="color:var(--accent)"></i> В заметки</button>
+  <button class="sel-btn" onclick="selTranslate()"><i class="fas fa-language" style="color:var(--green)"></i> Перевести</button>
+  <button class="sel-btn" onclick="selAskAi()"><i class="fas fa-robot" style="color:var(--purple)"></i> Спросить у AI</button>
+  <button class="sel-btn" onclick="selCopy()"><i class="fas fa-copy"></i> Копировать</button>
+</div>
+
+<!-- Favorites panel -->
+<div class="fav-panel" id="favPanel">
+  <div class="fav-header">
+    <h3><i class="fas fa-star"></i> Избранное</h3>
+    <button class="fs-btn" onclick="toggleFavorites()"><i class="fas fa-times"></i></button>
+  </div>
+  <div id="favList"></div>
+</div>
+
+<!-- AI Chat panel -->
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-header">
+    <h3><i class="fas fa-robot"></i> AI чат</h3>
+    <button class="fs-btn" onclick="toggleAiChat()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="ai-messages" id="aiMessages"></div>
+  <div class="ai-input">
+    <input id="aiInput" placeholder="Вопрос по странице..." onkeydown="if(event.key==='Enter')aiSend()">
+    <button onclick="aiSend()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<!-- Wget modal -->
+<div class="wget-modal" id="wgetModal">
+  <div class="wget-header" id="wgetDragHandle">
+    <h3><i class="fas fa-download"></i> Скачать сайт</h3>
+    <div class="wget-actions">
+      <button onclick="wgetMinimize()"><i class="fas fa-minus"></i></button>
+      <button onclick="closeWget()"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+  <div class="modal-body">
+    <div class="field"><label>URL *</label><input id="wUrl" placeholder="https://example.com"></div>
+    <div class="row">
+      <div class="field"><label>Глубина</label><input type="number" id="wDepth" value="5" min="1" max="20"></div>
+      <div class="field"><label>Задержка (с)</label><input type="number" id="wWait" value="1" min="0" step="0.5"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Скорость</label>
+        <select id="wRate">
+          <option value="">Без ограничений</option>
+          <option value="50k">50K/s</option>
+          <option value="100k">100K/s</option>
+          <option value="500k">500K/s</option>
+          <option value="1m">1M/s</option>
+        </select>
+      </div>
+      <div class="field"><label>Таймаут (с)</label><input type="number" id="wTimeout" value="30" min="5"></div>
+    </div>
+    <div class="check"><input type="checkbox" id="wNoParent" checked><label for="wNoParent">Не подниматься выше URL</label></div>
+    <div class="check"><input type="checkbox" id="wConvert" checked><label for="wConvert">Конвертировать ссылки</label></div>
+    <div class="check"><input type="checkbox" id="wPageReq" checked><label for="wPageReq">Ресурсы страницы</label></div>
+    <details>
+      <summary>Дополнительно</summary>
+      <div style="padding:12px 0">
+        <div class="field"><label>Домены</label><input id="wDomains" placeholder="example.com"></div>
+        <div class="field"><label>Расширения</label><input id="wExt" value="html,htm,css,js,jpg,png,gif,svg"></div>
+      </div>
+    </details>
+    <div class="actions">
+      <button class="btn-cancel" onclick="closeWget()">Отмена</button>
+      <button class="btn-cancel" id="wStopBtn" style="display:none"
+              onclick="stopWget()"><i class="fas fa-stop"></i> Стоп</button>
+      <button class="btn-go" onclick="doWget()"><i class="fas fa-download"></i> Скачать</button>
+    </div>
+    <div id="wgetResult" style="margin-top:16px"></div>
+  </div>
+</div>
+
+<!-- Theme picker modal -->
+<div class="modal-overlay" id="themeModal">
+  <div class="modal-box" style="width:480px">
+    <div class="modal-header">
+      <h3><i class="fas fa-palette"></i> Выбор темы</h3>
+      <button class="fs-btn" onclick="closeThemePicker()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="theme-grid">
+        <div class="theme-btn" data-theme="dark" onclick="setTheme('dark')"><span class="icon">🌙</span>Тёмная</div>
+        <div class="theme-btn" data-theme="light" onclick="setTheme('light')"><span class="icon">☀️</span>Светлая</div>
+        <div class="theme-btn" data-theme="sepia" onclick="setTheme('sepia')"><span class="icon">📜</span>Сепия</div>
+        <div class="theme-btn" data-theme="warm" onclick="setTheme('warm')"><span class="icon">🔥</span>Тёплая</div>
+        <div class="theme-btn" data-theme="paper" onclick="setTheme('paper')"><span class="icon">📄</span>Бумага</div>
+        <div class="theme-btn" data-theme="ocean" onclick="setTheme('ocean')"><span class="icon">🌊</span>Океан</div>
+        <div class="theme-btn" data-theme="forest" onclick="setTheme('forest')"><span class="icon">🌲</span>Лес</div>
+        <div class="theme-btn" data-theme="midnight" onclick="setTheme('midnight')"><span class="icon">🌌</span>Полночь</div>
+        <div class="theme-btn" data-theme="rose" onclick="setTheme('rose')"><span class="icon">🌹</span>Роза</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Text Settings modal -->
+<div class="modal-overlay" id="textSettingsModal">
+  <div class="modal-box" style="width:440px">
+    <div class="modal-header">
+      <h3><i class="fas fa-text-height"></i> Настройки текста</h3>
+      <button class="fs-btn" onclick="closeTextSettings()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Размер текста: <span id="fontSizeLabel" style="color:var(--accent);font-weight:700">16px</span></label>
+        <input type="range" id="fontSize" min="12" max="28" value="16" oninput="applyTextSettings()" style="width:100%;accent-color:var(--accent)">
+      </div>
+      <div class="field">
+        <label>Межстрочный интервал: <span id="lineHeightLabel" style="color:var(--accent);font-weight:700">1.7</span></label>
+        <input type="range" id="lineHeight" min="1.2" max="2.5" value="1.7" step="0.1" oninput="applyTextSettings()" style="width:100%;accent-color:var(--accent)">
+      </div>
+      <div class="field">
+        <label>Шрифт</label>
+        <select id="fontFamily" onchange="applyTextSettings()">
+          <option value="Georgia,'Times New Roman',serif">Georgia (serif)</option>
+          <option value="'Palatino Linotype',serif">Palatino</option>
+          <option value="system-ui,-apple-system,sans-serif">System UI (sans)</option>
+          <option value="'Courier New',monospace">Courier New (mono)</option>
+          <option value="'Literata',serif">Literata</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Максимальная ширина: <span id="maxWidthLabel" style="color:var(--accent);font-weight:700">900px</span></label>
+        <input type="range" id="maxWidth" min="600" max="1200" value="900" step="50" oninput="applyTextSettings()" style="width:100%;accent-color:var(--accent)">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Search modal -->
+<div class="modal-overlay" id="searchModal">
+  <div class="modal-box" style="width:480px">
+    <div class="modal-header">
+      <h3><i class="fas fa-search"></i> Поиск на странице</h3>
+      <button class="fs-btn" onclick="closeSearchModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input id="searchInput" placeholder="Введите текст..." style="flex:1" onkeydown="if(event.key==='Enter')doSearchInPage()">
+        <button class="btn-go" onclick="doSearchInPage()"><i class="fas fa-search"></i></button>
+      </div>
+      <div id="searchCount" style="font-size:13px;color:var(--text2);margin-bottom:10px;font-weight:600"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-cancel" onclick="prevSearchMatch()" style="flex:1;padding:10px"><i class="fas fa-chevron-up"></i> Назад</button>
+        <button class="btn-go" onclick="nextSearchMatch()" style="flex:1;padding:10px"><i class="fas fa-chevron-down"></i> Вперёд</button>
+        <button class="btn-cancel" onclick="clearSearchHL()" style="padding:10px 14px"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Global file search modal: ищет по именам файлов И по содержимому HTML -->
+<div class="modal-overlay" id="globalFileSearchModal">
+  <div class="modal-box" style="width:680px;max-width:calc(100vw - 32px)">
+    <div class="modal-header">
+      <h3><i class="fas fa-search-plus"></i> Поиск по HTML файлам</h3>
+      <button class="fs-btn" onclick="closeGlobalFileSearch()" title="Закрыть (Esc)"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;gap:8px">
+        <input id="globalFileSearchInput" placeholder="Имя файла, заголовок или текст внутри HTML..." style="flex:1" onkeydown="if(event.key==='Enter')doGlobalFileSearch()" oninput="debouncedGlobalFileSearch()">
+        <button class="btn-go" onclick="doGlobalFileSearch()" title="Искать"><i class="fas fa-search"></i></button>
+      </div>
+      <div id="globalFileSearchCount" style="font-size:12px;color:var(--text2);min-height:16px"></div>
+      <div id="globalFileSearchResults" style="overflow-y:auto;max-height:60vh;border-top:1px solid var(--border)"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Строка палитры — кнопка (static/js/shortcut_buttons.js). */
+.sc-row{display:flex;justify-content:space-between;align-items:center;width:100%;
+  padding:10px 14px;background:var(--bg3);border:1px solid transparent;border-radius:10px;
+  color:var(--text);font:inherit;text-align:left;cursor:pointer;transition:border-color .15s,filter .15s}
+.sc-row:hover{border-color:var(--border);filter:brightness(1.06)}
+.sc-row:active{transform:scale(.99)}
+</style>
+<!-- Shortcuts modal -->
+<div class="modal-overlay" id="shortcutsModal">
+  <div class="modal-box" style="width:620px">
+    <div class="modal-header">
+      <h3><i class="fas fa-keyboard"></i> Горячие клавиши</h3>
+      <button class="fs-btn" onclick="closeShortcuts()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+        <button type="button" class="sc-row" data-close="#shortcutsModal" data-key="F11" data-code="F11" onclick="runShortcutButton(this)"><span>Полный экран</span><span class="kbd">F11</span></button>
+        <button type="button" class="sc-row" data-close="#shortcutsModal" data-key="t" data-code="KeyT" onclick="runShortcutButton(this)"><span>Сменить тему</span><span class="kbd">T</span></button>
+        <button type="button" class="sc-row" data-close="#shortcutsModal" data-key="b" data-code="KeyB" onclick="runShortcutButton(this)"><span>Папки</span><span class="kbd">B</span></button>
+        <button type="button" class="sc-row" data-close="#shortcutsModal" data-key="f" data-code="KeyF" onclick="runShortcutButton(this)"><span>Избранное</span><span class="kbd">F</span></button>
+        <button type="button" class="sc-row" data-close="#shortcutsModal" data-key="a" data-code="KeyA" onclick="runShortcutButton(this)"><span>AI чат</span><span class="kbd">A</span></button>
+        <button type="button" class="sc-row" data-close="#shortcutsModal" data-key="e" data-code="KeyE" onclick="runShortcutButton(this)"><span>Редактор</span><span class="kbd">E</span></button>
+        <button type="button" class="sc-row" data-close="#shortcutsModal" data-key="m" data-code="KeyM" onclick="runShortcutButton(this)"><span>Файлы</span><span class="kbd">M</span></button>
+        <button type="button" class="sc-row" data-close="#shortcutsModal" data-key="s" data-code="KeyS" data-ctrl="1" onclick="runShortcutButton(this)"><span>Сохранить</span><span class="kbd">Ctrl+S</span></button>
+        <button type="button" class="sc-row" data-close="#shortcutsModal" data-call="formatHTML()" onclick="runShortcutButton(this)"><span>Форматировать</span><span class="kbd">Ctrl+Shift+F</span></button>
+        <button type="button" class="sc-row" data-close="#shortcutsModal" data-key="Escape" data-code="Escape" onclick="runShortcutButton(this)"><span>Закрыть</span><span class="kbd">Esc</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Monaco Editor Panel -->
+<div class="editor-panel" id="editorPanel" style="display:none">
+  <div class="editor-header" id="editorDragHandle">
+    <h4><i class="fas fa-code"></i> <span id="editorTitle">Редактор</span></h4>
+    <div class="editor-actions" onclick="event.stopPropagation()">
+      <button class="ed-btn" onclick="monacoEditor&&monacoEditor.trigger('editor','editor.action.triggerSuggest')" title="Подсказки (Ctrl+Space)"><i class="fas fa-lightbulb"></i></button>
+      <span style="position:relative" onclick="event.stopPropagation()" class="plugins-wrapper">
+        <button class="ed-btn" onclick="event.stopPropagation();togglePluginsMenu()" title="Плагины" id="pluginsBtn"><i class="fas fa-puzzle-piece"></i></button>
+      </span>
+      <div class="plugin-dropdown" id="pluginMenu" style="position:fixed"></div>
+      <button class="ed-btn" onclick="toggleSplitView()" title="Split View" id="splitViewBtn"><i class="fas fa-columns"></i></button>
+      <button class="ed-btn" onclick="showVersions()" title="История версий"><i class="fas fa-history"></i></button>
+      <button class="ed-btn preview" onclick="previewInViewer()" title="Открыть в просмотре"><i class="fas fa-eye"></i></button>
+      <button class="ed-btn refresh" onclick="refreshEditor()" title="Обновить из файла"><i class="fas fa-sync"></i></button>
+      <button class="ed-btn refresh" onclick="refreshViewer()" title="Обновить просмотр"><i class="fas fa-external-link-alt"></i></button>
+      <button class="ed-btn" onclick="toggleViewerAutoRefresh()" title="Авто-обновление" id="autoRefreshBtn"><i class="fas fa-clock"></i></button>
+      <button class="ed-btn ai-chat" onclick="openEditorAiChat()" title="AI чат"><i class="fas fa-robot"></i></button>
+      <button class="ed-btn" onclick="formatHTML()" title="Форматировать"><i class="fas fa-magic"></i></button>
+      <button class="ed-btn save" onclick="saveEditorContent()" title="Сохранить (Ctrl+S)"><i class="fas fa-save"></i></button>
+      <button class="ed-btn" onclick="renameCurrentFile()" title="Переименовать"><i class="fas fa-pen"></i></button>
+      <button class="ed-btn del" onclick="deleteCurrentFile()" title="Удалить"><i class="fas fa-trash"></i></button>
+<button class="ed-btn" onclick="addToQdrant('html', currentHtmlPath, document.title)" title="В векторную БД"><i class="fas fa-database"></i></button>
+      <button class="ed-btn" onclick="minimizeEditor()" title="Свернуть"><i class="fas fa-minus"></i></button>
+      <button class="ed-btn" onclick="maximizeEditor()" title="Развернуть"><i class="fas fa-expand"></i></button>
+      <button class="ed-btn" onclick="closeEditor()" title="Закрыть"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+  <div class="editor-tabs" id="editorTabs"></div>
+  <div id="monacoContainer">
+    <div id="monacoEditor"></div>
+  </div>
+  <div class="resize-handle resize-n" data-dir="n"></div>
+  <div class="resize-handle resize-s" data-dir="s"></div>
+  <div class="resize-handle resize-e" data-dir="e"></div>
+  <div class="resize-handle resize-w" data-dir="w"></div>
+  <div class="resize-handle resize-ne" data-dir="ne"></div>
+  <div class="resize-handle resize-nw" data-dir="nw"></div>
+  <div class="resize-handle resize-se" data-dir="se"></div>
+  <div class="resize-handle resize-sw" data-dir="sw"></div>
+</div>
+
+<!-- Editor AI Chat Panel -->
+<div class="ai-panel" id="editorAiPanel" style="display:none">
+  <div class="ai-header">
+    <h3><i class="fas fa-robot"></i> AI Ассистент</h3>
+    <div style="display:flex;gap:4px;align-items:center">
+      <select id="editorAiModel" style="padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;max-width:160px"></select>
+      <button class="fs-btn" onclick="loadAiModels()"><i class="fas fa-sync"></i></button>
+    </div>
+    <button class="fs-btn" onclick="closeEditorAiChat()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="ai-messages" id="editorAiMessages"></div>
+  <div class="ai-input">
+    <input id="editorAiInput" placeholder="Вопрос или команда..." onkeydown="if(event.key==='Enter')editorAiSend()" style="flex:1">
+    <button onclick="editorAiSend()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+  <div style="padding:6px 14px;border-top:1px solid var(--border);display:flex;gap:6px">
+    <button onclick="editorAiApplyChanges()" style="flex:1;padding:7px;background:var(--accent2);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:11px;font-weight:600"><i class="fas fa-code-branch"></i> Diff</button>
+    <button onclick="editorAiInsertCode()" style="flex:1;padding:7px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:11px;font-weight:600"><i class="fas fa-code"></i> Вставить</button>
+  </div>
+</div>
+
+<!-- Diff Overlay -->
+<div class="modal-overlay" id="diffOverlay">
+  <div class="modal-box" style="width:92vw;height:85vh;display:flex;flex-direction:column;max-width:1400px">
+    <div class="modal-header">
+      <h3><i class="fas fa-code-branch"></i> AI изменения</h3>
+      <div style="display:flex;gap:6px">
+        <button class="btn-go" onclick="diffApplyAll()" style="padding:8px 16px;font-size:12px"><i class="fas fa-check-double"></i> Применить все</button>
+        <button class="btn-cancel" onclick="diffCancel()" style="padding:8px 16px;font-size:12px"><i class="fas fa-times"></i> Отмена</button>
+      </div>
+    </div>
+    <div id="diffEditorContainer" style="flex:1;min-height:0;display:flex;flex-direction:column;padding:8px"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap" id="diffActionsFooter">
+      <span style="font-size:12px;color:var(--text2);flex:1" id="diffStatus">Изменения не выбраны</span>
+      <button class="fs-btn" onclick="diffApplyAll()" style="background:var(--green);color:#fff"><i class="fas fa-check"></i> Применить все</button>
+      <button class="fs-btn" onclick="diffCancel()" style="background:var(--red);color:#fff"><i class="fas fa-times"></i> Отменить</button>
+    </div>
+  </div>
+</div>
+
+<!-- File Manager Modal -->
+<div class="fm-modal" id="fmModal" style="display:none">
+  <div class="fm-header" id="fmDragHandle">
+    <h3><i class="fas fa-folder-open"></i> Файловый менеджер</h3>
+    <div class="fm-actions">
+      <button onclick="fmMinimize()"><i class="fas fa-minus"></i></button>
+      <button onclick="fmMaximize()"><i class="fas fa-expand"></i></button>
+      <button onclick="closeFileManager()"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+  <div class="fm-toolbar">
+    <button onclick="fmNewFile()"><i class="fas fa-file-plus"></i> Файл</button>
+    <button onclick="fmNewFolder()"><i class="fas fa-folder-plus"></i> Папка</button>
+    <button onclick="fmRefresh()"><i class="fas fa-sync"></i> Обновить</button>
+  </div>
+  <div class="fm-search">
+    <input id="fmSearchInput" placeholder="Поиск файлов..." oninput="filterFMTree(this.value)">
+  </div>
+  <div class="fm-body">
+    <div class="fm-tree" id="fmTree"></div>
+    <div class="fm-content" id="fmContent">
+      <div style="text-align:center;padding:40px;color:var(--text2)">Выберите файл</div>
+    </div>
+  </div>
+  <div class="resize-handle n" data-dir="n"></div>
+  <div class="resize-handle s" data-dir="s"></div>
+  <div class="resize-handle e" data-dir="e"></div>
+  <div class="resize-handle w" data-dir="w"></div>
+  <div class="resize-handle se" data-dir="se"></div>
+  <div class="resize-handle sw" data-dir="sw"></div>
+  <div class="resize-handle ne" data-dir="ne"></div>
+  <div class="resize-handle nw" data-dir="nw"></div>
+</div>
+
+<script>
+// Каталоги HTML-библиотеки. Раньше сюда подставлялся шаблон {{html_dirs}}:
+// если подстановка не сработала, вся строка становилась синтаксической
+// ошибкой и мёртвал весь блок скриптов (дерево файлов и кнопки создания).
+// Теперь каталоги берутся с сервера — /api/html/dirs.
+let HTML_DIRS = [];
+async function fmLoadDirs(){
+  try{
+    const r=await fetch('/api/html/dirs');
+    const d=await r.json();
+    HTML_DIRS=Array.isArray(d.dirs)?d.dirs.filter(Boolean):[];
+  }catch(e){ HTML_DIRS=[]; }
+  return HTML_DIRS;
+}
+
+// === STATE ===
+let currentHtmlPath = '';
+let currentHtmlContent = '';
+let currentHtmlTitle = '';
+let favorites = JSON.parse(localStorage.getItem('html_favorites')||'[]');
+let aiContext = '';
+let aiHistory = [];
+let backendConfig = null;
+let backendModel = 'gemma-3-1b-it@q8_0';
+
+// === THEME ===
+function getTheme() { return localStorage.getItem('html_theme') || 'dark' }
+function setTheme(t) {
+  document.body.className = '';
+  if (t !== 'dark') document.body.classList.add(t);
+  localStorage.setItem('html_theme', t);
+  document.querySelectorAll('.theme-btn').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === t);
+  });
+  showToast('🎨 Тема: ' + t, 'success');
+}
+function openThemePicker() {
+  const modal = document.getElementById('themeModal');
+  modal.classList.add('show');
+  document.querySelectorAll('.theme-btn').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === getTheme());
+  });
+}
+function closeThemePicker() {
+  document.getElementById('themeModal').classList.remove('show');
+}
+function cycleTheme() {
+  const themes = ['dark','light','sepia','warm','paper','ocean','forest','midnight','rose'];
+  const current = getTheme();
+  const next = themes[(themes.indexOf(current) + 1) % themes.length];
+  setTheme(next);
+}
+
+// === TREE ===
+async function loadTree() {
+  try {
+    const r = await fetch('/api/html/tree');
+    const d = await r.json();
+    renderTree(d.tree);
+  } catch(e) { console.error(e) }
+}
+
+function renderTree(tree) {
+  const el = document.getElementById('treeView');
+  if (!tree || !tree.children || !tree.children.length) {
+    el.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text3)">Нет HTML файлов</div>';
+    return;
+  }
+  el.innerHTML = tree.children.map(dir => renderDir(dir)).join('');
+}
+
+function renderDir(node) {
+  const id = 'd' + Math.random().toString(36).substr(2, 9);
+  let h = `<div class="tree-item">`;
+  h += `<div class="tree-label" onclick="td('${id}')">
+    <i class="fas fa-folder" style="color:var(--orange);width:16px"></i>
+    <span>${esc(node.name)}</span>`;
+  if (node.files && node.files.length)
+    h += `<span style="font-size:10px;color:var(--text3);margin-left:auto;background:var(--bg3);padding:2px 8px;border-radius:10px;font-weight:600">${node.files.length}</span>`;
+  h += `</div><div class="tree-children" id="${id}" style="display:none">`;
+  (node.children || []).forEach(c => { h += renderDir(c) });
+  (node.files || []).forEach(f => {
+    h += `<div class="tree-file" onclick="openHtml('${escJs(f.path)}','${escJs(f.title||f.filename)}')">
+      <i class="fas fa-file-code icon"></i>
+      <span>${esc(f.title||f.filename)}</span>
+    </div>`;
+  });
+  h += `</div></div>`;
+  return h;
+}
+
+function td(id) {
+  const e = document.getElementById(id);
+  e.style.display = e.style.display === 'none' ? '' : 'none';
+}
+
+function filterTree(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.tree-file').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// === OPEN HTML ===
+async function openHtml(path, title) {
+  currentHtmlPath = path;
+  currentHtmlTitle = title;
+  currentViewPath = path;
+  document.getElementById('welcomeScreen').style.display = 'none';
+  const va = document.getElementById('viewerArea');
+  va.style.display = 'block';
+  va.innerHTML = '<div style="text-align:center;padding:60px"><i class="fas fa-spinner fa-spin" style="font-size:32px;color:var(--accent)"></i><p style="margin-top:12px;color:var(--text2)">Загрузка...</p></div>';
+  document.getElementById('fsTitle').textContent = title;
+
+  try {
+    const r = await fetch('/api/html/view?f=' + encodeURIComponent(path));
+    const d = await r.json();
+    if (d.ok) {
+      currentHtmlContent = d.content;
+      aiContext = extractTextFromHtml(d.content);
+      console.log(`Извлечено ${aiContext.length} символов текста для AI`);
+      va.innerHTML = `<iframe id="htmlFrame" srcdoc="${d.content.replace(/"/g,'&quot;')}" style="width:100%;height:100%;border:none;background:#fff" sandbox="allow-same-origin"></iframe>`;
+      setupSelectionListener();
+    } else {
+      va.innerHTML = `<div style="padding:24px;color:var(--red)">${esc(d.error)}</div>`;
+    }
+  } catch(e) {
+    va.innerHTML = `<div style="padding:24px;color:var(--red)">${esc(e.message)}</div>`;
+  }
+}
+
+// === SELECTION LISTENER ===
+function setupSelectionListener() {
+  document.addEventListener('mouseup', function(e) {
+    const popup = document.getElementById('selPopup');
+    if (popup.contains(e.target)) return;
+
+    setTimeout(() => {
+      const sel = window.getSelection();
+      const text = sel.toString().trim();
+      if (text.length > 2) {
+        popup.style.left = Math.min(e.clientX, window.innerWidth - 240) + 'px';
+        popup.style.top = (e.clientY + 10) + 'px';
+        popup.classList.add('show');
+        popup._selectedText = text;
+      } else {
+        popup.classList.remove('show');
+      }
+    }, 10);
+  });
+
+  document.addEventListener('mousedown', function(e) {
+    const popup = document.getElementById('selPopup');
+    if (!popup.contains(e.target)) popup.classList.remove('show');
+  });
+}
+
+// === SELECTION ACTIONS ===
+function selAddFav() {
+  if (!currentHtmlPath) return;
+  const sel = document.getElementById('selPopup')._selectedText || '';
+  const fav = {
+    id: Date.now(),
+    path: currentHtmlPath,
+    title: currentHtmlTitle,
+    text: sel.substring(0, 200),
+    date: new Date().toISOString()
+  };
+  favorites.unshift(fav);
+  localStorage.setItem('html_favorites', JSON.stringify(favorites));
+  document.getElementById('selPopup').classList.remove('show');
+  showToast('⭐ Добавлено в избранное', 'success');
+  renderFavorites();
+  updateFavBadge();
+}
+
+async function selToNotes() {
+  const sel = document.getElementById('selPopup')._selectedText || '';
+  document.getElementById('selPopup').classList.remove('show');
+
+  const title = `Выделение: ${currentHtmlTitle}`;
+  const content = `**Источник:** ${currentHtmlTitle} (${currentHtmlPath})\n\n**Выделенный текст:**\n\n${sel}`;
+
+  try {
+    const r = await fetch('/api/notes/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, content, folder: '' })
+    });
+    const d = await r.json();
+    if (d.ok || d.id) {
+      showToast('📝 Сохранено в заметки', 'success');
+    } else {
+      showToast('Ошибка: ' + (d.error || ''), 'error');
+    }
+  } catch(e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+function selTranslate() {
+  const sel = document.getElementById('selPopup')._selectedText || '';
+  document.getElementById('selPopup').classList.remove('show');
+  toggleAiChat();
+  aiHistory = [];
+  document.getElementById('aiMessages').innerHTML = '';
+  aiSendMsg(`Переведи на русский:\n\n${sel}`);
+}
+
+function selAskAi() {
+  const sel = document.getElementById('selPopup')._selectedText || '';
+  document.getElementById('selPopup').classList.remove('show');
+  toggleAiChat();
+  aiHistory = [];
+  document.getElementById('aiMessages').innerHTML = '';
+  aiSendMsg(`Вот выделенный текст со страницы "${currentHtmlTitle}":\n\n"${sel}"\n\nОтветь на вопрос по этому тексту. Контекст:\n\n${aiContext.substring(0, 3000)}`);
+}
+
+function selCopy() {
+  const sel = document.getElementById('selPopup')._selectedText || '';
+  navigator.clipboard.writeText(sel);
+  document.getElementById('selPopup').classList.remove('show');
+  showToast('📋 Скопировано', 'success');
+}
+
+// === FAVORITES ===
+function toggleFavorites() {
+  document.getElementById('favPanel').classList.toggle('open');
+  renderFavorites();
+}
+
+function updateFavBadge() {
+  const badge = document.getElementById('favBadge');
+  if (favorites.length > 0) {
+    badge.style.display = '';
+    badge.textContent = favorites.length;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function renderFavorites() {
+  const el = document.getElementById('favList');
+  if (!favorites.length) {
+    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text3)"><i class="fas fa-star" style="font-size:48px;opacity:0.3;margin-bottom:12px;display:block"></i><p>Нет избранных страниц</p></div>';
+    return;
+  }
+  el.innerHTML = favorites.map(f => `
+    <div class="fav-item" onclick="openHtml('${escJs(f.path)}','${escJs(f.title)}')">
+      <div class="title">${esc(f.title)}</div>
+      <div class="meta">${f.text ? esc(f.text.substring(0, 80)) + '...' : 'Страница полностью'}</div>
+      <div class="meta" style="margin-top:4px">${new Date(f.date).toLocaleString('ru')}
+        <button onclick="event.stopPropagation();delFav(${f.id})" style="float:right;background:none;border:none;color:var(--red);cursor:pointer;padding:2px 6px"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function delFav(id) {
+  favorites = favorites.filter(f => f.id !== id);
+  localStorage.setItem('html_favorites', JSON.stringify(favorites));
+  renderFavorites();
+  updateFavBadge();
+  showToast('🗑 Удалено из избранного');
+}
+
+// === AI CHAT ===
+function toggleAiChat() {
+  document.getElementById('aiPanel').classList.toggle('open');
+}
+
+function aiSend() {
+  const input = document.getElementById('aiInput');
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = '';
+  aiSendMsg(q);
+}
+
+function aiSendMsg(q) {
+  const msgs = document.getElementById('aiMessages');
+  msgs.innerHTML += `<div class="ai-msg user">${esc(q)}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  let contextMsg = '';
+  if (aiContext && aiContext.length > 0) {
+    const ctx = aiContext.substring(0, 8000);
+    contextMsg = `Контекст страницы "${currentHtmlTitle}":\n${ctx}\n\n`;
+  }
+
+  fetch('/api/ask', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      question: contextMsg + 'Вопрос: ' + q,
+      model: backendModel || undefined,
+      system_prompt: 'Ты ассистент для работы с HTML страницами. Используй контекст.'
+    })
+  }).then(r => r.json()).then(d => {
+    msgs.innerHTML += `<div class="ai-msg ai">${esc(d.answer || 'Нет ответа')}</div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  }).catch(e => {
+    msgs.innerHTML += `<div class="ai-msg ai" style="color:var(--red)">Ошибка: ${esc(e.message)}</div>`;
+  });
+}
+
+// === EXTRACT TEXT ===
+function extractText() {
+  if (!currentHtmlContent) return;
+  const text = extractTextFromHtml(currentHtmlContent);
+  const fs = localStorage.getItem('html_fontSize') || '16';
+  const lh = localStorage.getItem('html_lineHeight') || '1.7';
+  const ff = localStorage.getItem('html_fontFamily') || "Georgia,'Times New Roman',serif";
+  const mw = localStorage.getItem('html_maxWidth') || '900';
+
+  const va = document.getElementById('viewerArea');
+  va.innerHTML = `
+    <div style="padding:24px">
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="fs-btn" onclick="openHtml('${escJs(currentHtmlPath)}','${escJs(currentHtmlTitle)}')"><i class="fas fa-eye"></i> Просмотр</button>
+        <button class="fs-btn" onclick="openSearchModal()"><i class="fas fa-search"></i> Поиск</button>
+        <button class="fs-btn" onclick="navigator.clipboard.writeText(document.getElementById('extText').textContent)"><i class="fas fa-copy"></i> Копировать</button>
+        <button class="fs-btn" onclick="aiFormatText()"><i class="fas fa-robot"></i> AI формат</button>
+        <button class="fs-btn" onclick="toggleAiChat();aiSendMsg('Проанализируй:\n\n'+document.getElementById('extText').textContent.substring(0,4000))"><i class="fas fa-comments"></i> AI чат</button>
+      </div>
+      <div class="extracted-text" id="extText" style="font-family:${ff};font-size:${fs}px;line-height:${lh};max-width:${mw}px">${esc(text)}</div>
+    </div>
+  `;
+}
+
+function extractTextFromHtml(html) {
+  let text = html
+    .replace(new RegExp('<script[^>]*>[\s\S]*?<' + '/script>', 'gi'), '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<noscript[^>]*>[\s\S]*?<\/noscript>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<\/?(?:div|p|h[1-6]|li|td|th|tr|table|ul|ol|blockquote|pre|section|article|aside|header|footer|nav|main|figure|figcaption|details|summary|hr|br)[^>]*>/gi, '\n')
+    .replace(/<\/?(?:strong|b)[^>]*>/gi, '**')
+    .replace(/<\/?(?:em|i)[^>]*>/gi, '*')
+    .replace(/<\/?(?:code|kbd)[^>]*>/gi, '`')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#(\d+);/g, (m, c) => String.fromCharCode(c))
+    .replace(/&([a-z]+);/g, (m, e) => {
+      const map = { "apos": "'", "copy": "©", "reg": "®", "trade": "™", "mdash": "—", "ndash": "–", "laquo": "«", "raquo": "»", "lsquo": "'", "rsquo": "'", "ldquo": '"', "rdquo": '"' };
+      return map[e] || m;
+    });
+  text = text.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  text = text.split('\n').filter(line => line.trim().length > 0 && /[\wа-яА-ЯёЁa-zA-Z0-9]/.test(line)).join('\n');
+  return text;
+}
+
+// === FULLSCREEN ===
+function toggleFullscreen() {
+  document.body.classList.toggle('fullscreen');
+  const btn = document.getElementById('fsBtn');
+  if (btn) btn.classList.toggle('active');
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('hidden');
+}
+
+// === WGET ===
+let wgetDragState = { dragging: false, startX: 0, startY: 0, startLeft: 0, startTop: 0 };
+
+function openWget() {
+  document.getElementById('wgetModal').style.display = 'flex';
+  setupWgetDrag();
+}
+function closeWget() {
+  document.getElementById('wgetModal').style.display = 'none';
+  document.getElementById('wgetResult').innerHTML = '';
+}
+function wgetMinimize() {
+  document.getElementById('wgetModal').classList.toggle('minimized');
+}
+
+function setupWgetDrag() {
+  const modal = document.getElementById('wgetModal');
+  const handle = document.getElementById('wgetDragHandle');
+  if (!modal || !handle || handle.dataset.setup === 'yes') return;
+  handle.dataset.setup = 'yes';
+
+  handle.addEventListener('mousedown', e => {
+    if (e.target.closest('.wget-actions')) return;
+    wgetDragState.dragging = true;
+    wgetDragState.startX = e.clientX;
+    wgetDragState.startY = e.clientY;
+    const rect = modal.getBoundingClientRect();
+    wgetDragState.startLeft = rect.left;
+    wgetDragState.startTop = rect.top;
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!wgetDragState.dragging) return;
+    const dx = e.clientX - wgetDragState.startX;
+    const dy = e.clientY - wgetDragState.startY;
+    modal.style.left = (wgetDragState.startLeft + dx) + 'px';
+    modal.style.top = (wgetDragState.startTop + dy) + 'px';
+  });
+  document.addEventListener('mouseup', () => { wgetDragState.dragging = false });
+}
+
+async function doWget() {
+  const url = document.getElementById('wUrl').value.trim();
+  if (!url) { alert('Введите URL'); return }
+  const btn = document.querySelector('#wgetModal .btn-go');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...'; }
+
+  try {
+    const r = await fetch('/api/wget/download', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url, options: {
+          depth: parseInt(document.getElementById('wDepth').value) || 5,
+          wait: parseFloat(document.getElementById('wWait').value) || 0,
+          limit_rate: document.getElementById('wRate').value || undefined,
+          no_parent: document.getElementById('wNoParent').checked,
+          convert_links: document.getElementById('wConvert').checked,
+          page_requisites: document.getElementById('wPageReq').checked,
+          timeout: parseInt(document.getElementById('wTimeout').value) || 30,
+          domains: document.getElementById('wDomains').value || undefined,
+          extensions: document.getElementById('wExt').value || undefined
+        }
+      })
+    });
+
+    const text = await r.text();
+    let d;
+    try { d = JSON.parse(text) } catch(e) {
+      document.getElementById('wgetResult').innerHTML = `<div style="padding:14px;background:var(--red-light);border:1px solid var(--red);border-radius:10px;color:var(--red)">Ошибка: ${esc(text.substring(0, 200))}</div>`;
+      return;
+    }
+
+    if (d.ok) {
+      window._wgetJobId = d.job_id;
+      const stopBtn = document.getElementById('wStopBtn');
+      if (stopBtn) stopBtn.style.display = '';
+      pollWgetStatus(d.job_id);
+    } else {
+      document.getElementById('wgetResult').innerHTML = `<div style="padding:14px;background:var(--red-light);border:1px solid var(--red);border-radius:10px;color:var(--red)">Ошибка: ${esc(d.error)}</div>`;
+    }
+  } catch(e) {
+    console.error('Wget error:', e);
+    document.getElementById('wgetResult').innerHTML = `<div style="padding:14px;background:var(--red-light);border:1px solid var(--red);border-radius:10px;color:var(--red)">Ошибка: ${esc(e.message)}</div>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-download"></i> Скачать'; }
+  }
+}
+
+async function stopWget() {
+  const jobId = window._wgetJobId;
+  if (!jobId) return;
+  try {
+    await fetch('/api/wget/cancel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ job_id: jobId })
+    });
+  } catch (e) { console.error('Cancel error:', e); }
+}
+
+// Кнопка «Стоп» прерывает загрузку: раньше загрузчик шёл через системный
+// wget, которого в Windows нет, и прервать скачивание было нечем.
+function pollWgetStatus(jobId) {
+  const resultDiv = document.getElementById('wgetResult');
+  const stopBtn = document.getElementById('wStopBtn');
+  const hideStop = () => { if (stopBtn) stopBtn.style.display = 'none'; };
+  let pollCount = 0;
+  const maxPolls = 600;
+
+  const interval = setInterval(async () => {
+    pollCount++;
+    if (pollCount > maxPolls) { clearInterval(interval); hideStop(); return; }
+
+    try {
+      const r = await fetch('/api/wget/status?job_id=' + encodeURIComponent(jobId));
+      const d = await r.json();
+
+      if (d.status === 'completed' || (d.status || '').startsWith('completed ')) {
+        clearInterval(interval); hideStop();
+        const limited = (d.status || '').indexOf('ограничено') >= 0;
+        resultDiv.innerHTML = `<div style="padding:14px;background:var(--green-light);border:1px solid var(--green);border-radius:10px">
+          <i class="fas fa-check" style="color:var(--green)"></i> <strong>Загрузка завершена!</strong><br>
+          ${limited ? `<span style="font-size:12px;color:var(--text2)">Остановлена по лимиту (${esc(d.status)})<br></span>` : ''}
+          <span style="font-size:12px;color:var(--text2)">Файлов: ${d.files_downloaded || 0}, Размер: ${fmtSize(d.total_size || 0)}</span><br>
+          <span style="font-size:12px;color:var(--text2)">Папка: ${esc(d.output_dir || '')}</span>
+        </div>`;
+        fmTreeCache = null; fmCacheTime = 0; loadFMTree();
+      } else if (d.status === 'cancelled') {
+        clearInterval(interval); hideStop();
+        resultDiv.innerHTML = `<div style="padding:14px;background:var(--accent-light);border:1px solid var(--accent);border-radius:10px">
+          <i class="fas fa-stop" style="color:var(--accent)"></i> <strong>Загрузка остановлена</strong><br>
+          <span style="font-size:12px;color:var(--text2)">Уже скачано: ${d.files_downloaded || 0} файлов (${fmtSize(d.total_size || 0)})</span>
+        </div>`;
+        fmTreeCache = null; fmCacheTime = 0; loadFMTree();
+      } else if (d.status && d.status.startsWith('error')) {
+        clearInterval(interval); hideStop();
+        resultDiv.innerHTML = `<div style="padding:14px;background:var(--red-light);border:1px solid var(--red);border-radius:10px;color:var(--red)">Ошибка: ${esc(d.status)}</div>`;
+      } else {
+        const elapsed = Math.round((Date.now() - (d.started_at * 1000)) / 1000);
+        const sizeStr = fmtSize(d.total_size || 0);
+        const currentUrl = d.current_url ? esc(d.current_url.substring(0, 80)) : '';
+        resultDiv.innerHTML = `<div style="padding:14px;background:var(--accent-light);border:1px solid var(--accent);border-radius:10px">
+          <i class="fas fa-spinner fa-spin" style="color:var(--accent)"></i> <strong>Скачивание...</strong> ${elapsed}с<br>
+          ${currentUrl ? `<span style="font-size:11px;color:var(--text2)">📥 ${currentUrl}</span><br>` : ''}
+          <span style="font-size:12px;color:var(--text2)">Файлов: ${d.files_downloaded || 0}, Размер: ${sizeStr}</span>
+          <div style="height:6px;background:var(--bg3);border-radius:3px;margin-top:8px;overflow:hidden">
+            <div style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;width:${Math.min(100, elapsed / 3)}%;transition:width 0.3s"></div>
+          </div>
+        </div>`;
+      }
+    } catch(e) {
+      console.error('Poll error:', e);
+    }
+  }, 1000);
+}
+
+// === UTILS ===
+function esc(s) { if (!s) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') }
+/* Экранирование значения для ВСТРАИВАНИЯ в inline-onclick в одинарных кавычках.
+   esc() выше НЕ годится для путей Windows: backslash в JS-литерале — это escape,
+   поэтому '<корень>\data' превращается в 'E:compilinfinitydata' и
+   сервер отвечает «Файл не найден». Обратный слэш экранируем первым, затем
+   одинарную кавычку; HTML-сущности (&amp; и т.п.) разворачиваются браузером
+   обратно в исходные символы уже после разбора атрибута. */
+function escJs(v) {
+  if (v === null || v === undefined) return '';
+  return String(v)
+    .replace(/\\/g, '\\\\')   // \ -> \\   (обязательно первым!)
+    .replace(/'/g, "\\'")    // ' -> \'
+    .replace(/\r/g, '')
+    .replace(/\n/g, '\\n')
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e');
+}
+/* То же, но для двойных кавычек внутри JS-строки (значения передаются как JSON). */
+function escJsAttr(v) { return escJs(v).replace(/"/g, '\\"'); }
+function fmtSize(b) { if (!b) return '0 B'; const u = ['B', 'KB', 'MB', 'GB', 'TB']; let i = 0; while (b >= 1024 && i < u.length - 1) { b /= 1024; i++ } return b.toFixed(1) + ' ' + u[i] }
+function showToast(msg, type = '') {
+  const t = document.createElement('div');
+  t.className = 'notification-toast ' + type;
+  t.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${msg}`;
+  document.body.appendChild(t);
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translate(-50%, 30px)';
+    t.style.transition = 'all 0.3s';
+    setTimeout(() => t.remove(), 300);
+  }, 2500);
+}
+
+function openShortcuts() {
+  document.getElementById('shortcutsModal').classList.add('show');
+}
+function closeShortcuts() {
+  document.getElementById('shortcutsModal').classList.remove('show');
+}
+
+// === TEXT SETTINGS ===
+function openTextSettings() {
+  const modal = document.getElementById('textSettingsModal');
+  modal.classList.add('show');
+}
+function closeTextSettings() {
+  document.getElementById('textSettingsModal').classList.remove('show');
+}
+
+function applyTextSettings() {
+  const fontSize = document.getElementById('fontSize').value;
+  const lineHeight = document.getElementById('lineHeight').value;
+  const fontFamily = document.getElementById('fontFamily').value;
+  const maxWidth = document.getElementById('maxWidth').value;
+
+  document.getElementById('fontSizeLabel').textContent = fontSize + 'px';
+  document.getElementById('lineHeightLabel').textContent = lineHeight;
+  document.getElementById('maxWidthLabel').textContent = maxWidth + 'px';
+
+  const ext = document.querySelector('.extracted-text');
+  if (ext) {
+    ext.style.fontSize = fontSize + 'px';
+    ext.style.lineHeight = lineHeight;
+    ext.style.fontFamily = fontFamily;
+    ext.style.maxWidth = maxWidth + 'px';
+  }
+
+  localStorage.setItem('html_fontSize', fontSize);
+  localStorage.setItem('html_lineHeight', lineHeight);
+  localStorage.setItem('html_fontFamily', fontFamily);
+  localStorage.setItem('html_maxWidth', maxWidth);
+}
+
+function loadTextSettings() {
+  const fs = localStorage.getItem('html_fontSize') || '16';
+  const lh = localStorage.getItem('html_lineHeight') || '1.7';
+  const ff = localStorage.getItem('html_fontFamily') || "Georgia,'Times New Roman',serif";
+  const mw = localStorage.getItem('html_maxWidth') || '900';
+
+  document.getElementById('fontSize').value = fs;
+  document.getElementById('lineHeight').value = lh;
+  document.getElementById('fontFamily').value = ff;
+  document.getElementById('maxWidth').value = mw;
+  applyTextSettings();
+}
+
+// === TEXT SEARCH ===
+let searchMatches = [];
+let searchIdx = -1;
+
+function openSearchModal() {
+  document.getElementById('searchModal').classList.add('show');
+  setTimeout(() => document.getElementById('searchInput').focus(), 100);
+}
+function closeSearchModal() {
+  document.getElementById('searchModal').classList.remove('show');
+}
+
+function doSearchInPage() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+
+  clearSearchHL();
+
+  const ext = document.querySelector('.extracted-text') || document.getElementById('aiFormatted');
+  if (!ext) { showToast('Сначала откройте текст', 'error'); return; }
+
+  const text = ext.textContent;
+  const lower = text.toLowerCase();
+  const ql = q.toLowerCase();
+  searchMatches = [];
+  let idx = 0;
+  while ((idx = lower.indexOf(ql, idx)) >= 0) {
+    searchMatches.push(idx);
+    idx += ql.length;
+  }
+
+  if (!searchMatches.length) {
+    document.getElementById('searchCount').textContent = '❌ Не найдено';
+    return;
+  }
+
+  const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  ext.innerHTML = ext.textContent.replace(regex, '<mark class="search-hl" style="background:var(--yellow);color:#000;padding:2px 4px;border-radius:3px">$1</mark>');
+  searchIdx = 0;
+  highlightCurrentMatch();
+  document.getElementById('searchCount').textContent = `${searchMatches.length} совпадений`;
+}
+
+function highlightCurrentMatch() {
+  document.querySelectorAll('.search-hl').forEach(m => m.style.background = 'var(--yellow)');
+  const marks = document.querySelectorAll('.search-hl');
+  if (searchIdx >= 0 && searchIdx < marks.length) {
+    marks[searchIdx].style.background = 'var(--orange)';
+    marks[searchIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+function nextSearchMatch() {
+  if (!searchMatches.length) return;
+  searchIdx = (searchIdx + 1) % searchMatches.length;
+  highlightCurrentMatch();
+  document.getElementById('searchCount').textContent = `${searchIdx + 1}/${searchMatches.length}`;
+}
+
+function prevSearchMatch() {
+  if (!searchMatches.length) return;
+  searchIdx = (searchIdx - 1 + searchMatches.length) % searchMatches.length;
+  highlightCurrentMatch();
+  document.getElementById('searchCount').textContent = `${searchIdx + 1}/${searchMatches.length}`;
+}
+
+function clearSearchHL() {
+  document.querySelectorAll('.search-hl').forEach(m => {
+    const parent = m.parentNode;
+    parent.replaceChild(document.createTextNode(m.textContent), m);
+    parent.normalize();
+  });
+  searchMatches = [];
+  searchIdx = -1;
+  document.getElementById('searchCount').textContent = '';
+}
+
+// === AI FORMAT TEXT ===
+async function aiFormatText() {
+  if (!aiContext || aiContext.length < 10) {
+    showToast('Нет текста', 'error');
+    return;
+  }
+
+  const va = document.getElementById('viewerArea');
+  va.innerHTML = '<div style="text-align:center;padding:60px"><i class="fas fa-robot fa-spin" style="font-size:40px;color:var(--accent)"></i><p style="margin-top:14px;color:var(--text2);font-size:15px">AI форматирует текст...</p></div>';
+
+  try {
+    const CHUNK_SIZE = 7000;
+    const text = aiContext;
+    const paragraphs = text.split(/\n\n+/);
+    const chunks = [];
+    let currentChunk = '';
+
+    for (const p of paragraphs) {
+      if ((currentChunk + '\n\n' + p).length > CHUNK_SIZE && currentChunk.length > 0) {
+        chunks.push(currentChunk);
+        currentChunk = p;
+      } else {
+        currentChunk = currentChunk ? currentChunk + '\n\n' + p : p;
+      }
+    }
+    if (currentChunk) chunks.push(currentChunk);
+
+    const total = chunks.length;
+    const formattedParts = [];
+
+    for (let i = 0; i < total; i++) {
+      if (total > 1) {
+        va.innerHTML = `<div style="text-align:center;padding:60px"><i class="fas fa-robot fa-spin" style="font-size:40px;color:var(--accent)"></i><p style="margin-top:14px;color:var(--text2);font-size:15px">AI форматирует текст... (часть ${i + 1}/${total})</p></div>`;
+      }
+      const r = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: `Отформатируй часть ${i+1}/${total} текста для чтения. Не добавляй заголовков вроде "Вот форматированный текст". Верни ТОЛЬКО отформатированный Markdown текст.\n\n${chunks[i]}`,
+          model: backendModel || undefined,
+          system_prompt: 'Ты редактор. Верни ТОЛЬКО Markdown текст без лишних комментариев.'
+        })
+      });
+      const d = await r.json();
+      const part = d.answer || chunks[i];
+      formattedParts.push(part);
+    }
+
+    const formatted = formattedParts.join('\n\n');
+
+    let html = formatted
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, '<code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:0.9em">$1</code>')
+      .replace(/^- (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+      .replace(/\n\n/g, '<br><br>')
+      .replace(/\n/g, '<br>');
+
+    const fs = localStorage.getItem('html_fontSize') || '16';
+    const lh = localStorage.getItem('html_lineHeight') || '1.7';
+    const ff = localStorage.getItem('html_fontFamily') || "Georgia,'Times New Roman',serif";
+    const mw = localStorage.getItem('html_maxWidth') || '900';
+
+    va.innerHTML = `
+      <div style="padding:24px">
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button class="fs-btn" onclick="extractText()"><i class="fas fa-undo"></i> Обычный</button>
+          <button class="fs-btn" onclick="openSearchModal()"><i class="fas fa-search"></i> Поиск</button>
+          <button class="fs-btn" onclick="navigator.clipboard.writeText(document.getElementById('aiFormatted').textContent)"><i class="fas fa-copy"></i> Копировать</button>
+          <button class="fs-btn" onclick="toggleAiChat()"><i class="fas fa-comments"></i> AI чат</button>
+        </div>
+        <div id="aiFormatted" style="padding:32px;max-width:${mw}px;margin:0 auto;font-family:${ff};font-size:${fs}px;line-height:${lh};color:var(--text);background:var(--glass);border-radius:var(--radius-lg);box-shadow:var(--shadow)">${html}</div>
+      </div>
+    `;
+    setTimeout(applyTextSettings, 50);
+  } catch(e) {
+    va.innerHTML = `<div style="padding:24px;color:var(--red)">Ошибка: ${esc(e.message)}</div>`;
+  }
+}
+
+// === GLOBAL SEARCH ===
+// Гибрид: если файл не открыт — глобальный поиск по всем HTML файлам (имя + содержимое)
+// Если файл уже открыт — старый in-page поиск.
+function globalSearchAction() {
+  const q = document.getElementById('globalSearch').value.trim();
+  if (!q) return;
+  if (!currentHtmlPath) {
+    openGlobalFileSearch(q);
+  } else {
+    openSearchModal();
+    document.getElementById('searchInput').value = q;
+    doSearchInPage();
+  }
+}
+
+// === GLOBAL FILE SEARCH (по всем HTML: имя + заголовок + содержимое) ===
+let _gfsTimer = null;
+let _gfsLastQuery = '';
+
+function openGlobalFileSearch(initialQuery) {
+  const m = document.getElementById('globalFileSearchModal');
+  if (!m) return;
+  m.classList.add('show');
+  const inp = document.getElementById('globalFileSearchInput');
+  if (initialQuery) {
+    inp.value = initialQuery;
+    doGlobalFileSearch();
+  }
+  setTimeout(() => inp.focus(), 100);
+}
+
+function closeGlobalFileSearch() {
+  const m = document.getElementById('globalFileSearchModal');
+  if (m) m.classList.remove('show');
+}
+
+function debouncedGlobalFileSearch() {
+  clearTimeout(_gfsTimer);
+  _gfsTimer = setTimeout(doGlobalFileSearch, 300);
+}
+
+function _gfsEscapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function _gfsHighlight(text, query) {
+  if (!query) return text;
+  const re = new RegExp('(' + _gfsEscapeRegex(query) + ')', 'gi');
+  return text.replace(re, '<mark style="background:var(--yellow);color:#000;padding:0 2px;border-radius:3px">$1</mark>');
+}
+
+async function doGlobalFileSearch() {
+  const q = document.getElementById('globalFileSearchInput').value.trim();
+  const cnt = document.getElementById('globalFileSearchCount');
+  const box = document.getElementById('globalFileSearchResults');
+  if (!q) {
+    box.innerHTML = '';
+    cnt.textContent = 'Введите запрос для поиска по именам и содержимому HTML файлов';
+    _gfsLastQuery = '';
+    return;
+  }
+  if (q === _gfsLastQuery && box.dataset.loading === '0') return;
+  _gfsLastQuery = q;
+  box.dataset.loading = '1';
+  cnt.textContent = 'Поиск...';
+  box.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text2)"><i class="fas fa-spinner fa-spin"></i> Идёт поиск...</div>';
+
+  try {
+    const r = await fetch('/api/html/search?q=' + encodeURIComponent(q));
+    const d = await r.json();
+    const items = (d && d.results) ? d.results : [];
+    box.dataset.loading = '0';
+
+    if (!items.length) {
+      cnt.textContent = '❌ Ничего не найдено';
+      box.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text3)">По запросу «' + esc(q) + '» ничего не найдено</div>';
+      return;
+    }
+
+    cnt.textContent = '✓ ' + items.length + ' файл(ов) найдено';
+
+    box.innerHTML = items.map((it, idx) => {
+      const title = it.title || it.filename || it.path || '';
+      const path = it.path || '';
+      const preview = (it.preview || '').slice(0, 300);
+      const score = typeof it.score === 'number' ? it.score : 0;
+      const titleHi = _gfsHighlight(esc(title), q);
+      const pathHi = _gfsHighlight(esc(path), q);
+      const previewHi = _gfsHighlight(esc(preview), q);
+      const safePath = escJs(path);
+      const safeTitle = escJs(title);
+      const safeQ = escJs(q);
+      return `<div class="gfs-item" style="padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='var(--hover)'" onmouseout="this.style.background=''" onclick="openFromGlobalSearch('${safePath}','${safeTitle}','${safeQ}')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <i class="fas fa-file-code" style="color:var(--accent)"></i>
+          <div style="font-weight:600;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${titleHi}</div>
+          <div style="font-size:10px;color:var(--text3);background:var(--bg3);padding:2px 7px;border-radius:10px;font-weight:600">${score}</div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-family:var(--font-mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${pathHi}</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.5;max-height:4.5em;overflow:hidden">${previewHi}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    box.dataset.loading = '0';
+    cnt.textContent = 'Ошибка';
+    box.innerHTML = '<div style="padding:24px;color:var(--red)"><i class="fas fa-circle-exclamation"></i> ' + esc(e.message) + '</div>';
+  }
+}
+
+async function openFromGlobalSearch(path, title, query) {
+  closeGlobalFileSearch();
+  try {
+    await openHtml(path, title);
+    if (query) {
+      setTimeout(() => {
+        const sInp = document.getElementById('searchInput');
+        if (sInp) {
+          sInp.value = query;
+          doSearchInPage();
+        }
+      }, 700);
+    }
+  } catch(e) {
+    showToast('Ошибка открытия: ' + e.message, 'error');
+  }
+}
+
+// Закрытие по Esc и клику по фону модала
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const m = document.getElementById('globalFileSearchModal');
+    if (m && m.classList.contains('show')) closeGlobalFileSearch();
+  }
+});
+
+// === INIT ===
+setTheme(getTheme());
+loadTree();
+renderFavorites();
+updateFavBadge();
+setTimeout(loadTextSettings, 100);
+
+// Load backend config
+(async function loadBackendConfig() {
+  try {
+    const r = await fetch('/api/config');
+    const d = await r.json();
+    if (d.config) {
+      backendConfig = d.config;
+      backendModel = d.config.lm_studio_model || 'gemma-3-1b-it@q8_0';
+    }
+  } catch(e) { console.warn('Backend config load failed:', e); }
+})();
+
+// Deeplink: /html/viewer?path=<full>&title=<...>&q=<...>
+// Авто-открывает файл и подсвечивает запрос в нём (если передан q)
+(async function bootFromUrl(){
+  try {
+    const ps = new URLSearchParams(location.search);
+    const p = ps.get('path') || ps.get('f');
+    if (!p) return;
+    const t = ps.get('title') || (p.split('/').pop() || p);
+    const q = ps.get('q') || '';
+    // Ждём загрузку дерева, чтобы синхронизировать состояние
+    await new Promise(r => setTimeout(r, 250));
+    await openHtml(p, t);
+    if (q) {
+      setTimeout(() => {
+        const sInp = document.getElementById('searchInput');
+        if (sInp) {
+          sInp.value = q;
+          doSearchInPage();
+        }
+      }, 800);
+    }
+  } catch(e) { console.error('bootFromUrl error:', e); }
+})();
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 's') {
+    e.preventDefault();
+    saveEditorContent();
+  }
+  if (e.ctrlKey && e.shiftKey && e.key === 'F') {
+    e.preventDefault();
+    formatHTML();
+  }
+  if (e.ctrlKey && e.key === 'h') {
+    e.preventDefault();
+    if (monacoEditor) monacoEditor.trigger('source', 'editor.action.startFindReplaceAction');
+  }
+
+  // Global shortcuts (only when not in input)
+  const tag = e.target.tagName.toLowerCase();
+  const inInput = tag === 'input' || tag === 'textarea' || e.target.isContentEditable;
+  if (inInput) return;
+
+  if (e.key === 'Escape') {
+    const diffOverlay = document.getElementById('diffOverlay');
+    if (diffOverlay && diffOverlay.classList.contains('show')) { diffClose(); return; }
+    document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+    const pm = document.getElementById('pluginMenu');
+    if (pm) pm.classList.remove('show');
+  }
+  if (e.key === 'F11') { e.preventDefault(); toggleFullscreen() }
+  if (e.key === 't' || e.key === 'T') cycleTheme();
+  if (e.key === 'b' || e.key === 'B') toggleSidebar();
+  if (e.key === 'f' || e.key === 'F') toggleFavorites();
+  if (e.key === 'a' || e.key === 'A') toggleAiChat();
+  if (e.key === 'e' || e.key === 'E') openEditor();
+  if (e.key === 'm' || e.key === 'M') openFileManager();
+  if (e.key === 'w' || e.key === 'W') openWget();
+  if (e.key === '?') openShortcuts();
+});
+
+// Close modals on outside click
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => {
+    if (e.target === m) m.classList.remove('show');
+  });
+});
+
+// === MONACO EDITOR ===
+let monacoEditor = null;
+let editorTabs = [];
+let activeTabIndex = -1;
+let currentViewPath = '';
+let editorDragState = { dragging: false, startX: 0, startY: 0, startLeft: 0, startTop: 0 };
+let autoRefreshInterval = null;
+let autoRefreshActive = false;
+let refreshDebounceTimer = null;
+let fileVersions = {};
+let maxVersions = 20;
+
+function initMonaco() {
+  require.config({ paths: { vs: '/static/monaco/min/vs' } });
+  require(['vs/editor/editor.main'], function() {
+    monacoEditor = monaco.editor.create(document.getElementById('monacoEditor'), {
+      value: '',
+      language: 'html',
+      theme: getTheme() === 'light' ? 'vs' : 'vs-dark',
+      automaticLayout: true,
+      minimap: { enabled: true },
+      fontSize: 14,
+      wordWrap: 'on',
+      scrollBeyondLastLine: false,
+      tabSize: 2,
+      folding: true,
+      lineNumbers: 'on',
+      renderWhitespace: 'selection',
+      bracketPairColorization: { enabled: true },
+      suggestOnTriggerCharacters: true,
+      quickSuggestions: true,
+      formatOnPaste: true,
+      formatOnType: true
+    });
+
+    // Emmet-like snippets (полный список)
+    const emmetSnippets = [
+      { l: '!', k: 'html5', t: '<!DOCTYPE html>\n<html lang="ru">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width,initial-scale=1">\n\t<title>${1:Title}</title>\n<script src=\"/static/js/i18n.js\">' + '<' + '/script>\n</head>\n<body>\n\t${0}\n</body>\n</html>', d: 'HTML5' },
+      { l: 'div', k: 'div', t: '<div class="${1:}">\n\t${0}\n</div>', d: 'Div' },
+      { l: 'p', k: 'p', t: '<p>${0}</p>', d: 'Параграф' },
+      { l: 'a', k: 'a', t: '<a href="${1:}">${0:link}</a>', d: 'Ссылка' },
+      { l: 'img', k: 'img', t: '<img src="${1:}" alt="${0:}">', d: 'Картинка' },
+      { l: 'ul', k: 'ul', t: '<ul>\n\t<li>${0}</li>\n</ul>', d: 'Список' },
+      { l: 'form', k: 'form', t: '<form action="${1:}" method="${2:post}">\n\t${0}\n</form>', d: 'Форма' },
+      { l: 'input', k: 'input', t: '<input type="${1:text}" name="${2:}">', d: 'Input' },
+      { l: 'button', k: 'button', t: '<button type="${1:button}">${0:Click}</button>', d: 'Кнопка' },
+      { l: 'table', k: 'table', t: '<table>\n\t<thead>\n\t\t<tr><th>${1:}</th></tr>\n\t</thead>\n\t<tbody>\n\t\t<tr><td>${0:}</td></tr>\n\t</tbody>\n</table>', d: 'Таблица' },
+      { l: 'header', k: 'header', t: '<header>\n\t${0}\n</header>', d: 'Шапка' },
+      { l: 'footer', k: 'footer', t: '<footer>\n\t${0}\n</footer>', d: 'Подвал' },
+      { l: 'nav', k: 'nav', t: '<nav>\n\t${0}\n</nav>', d: 'Навигация' },
+      { l: 'section', k: 'section', t: '<section>\n\t${0}\n</section>', d: 'Секция' },
+      { l: 'script', k: 'script', t: '<script>\n\t${0}\n' + '<' + '/script>', d: 'JS' },
+      { l: 'style', k: 'style', t: '<style>\n\t${0}\n<\/style>', d: 'CSS' },
+    ];
+
+    monaco.languages.registerCompletionItemProvider('html', {
+      triggerCharacters: ['.', '>', '#', ' ', ':'],
+      provideCompletionItems: (model, position) => {
+        const word = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: word.startColumn,
+          endColumn: word.endColumn
+        };
+        const suggestions = emmetSnippets.map(s => ({
+          label: s.l,
+          kind: monaco.languages.CompletionItemKind.Snippet,
+          insertText: s.t,
+          insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          range: range,
+          documentation: s.d
+        }));
+        return { suggestions };
+      }
+    });
+
+    monacoEditor.onDidChangeModelContent(() => {
+      if (activeTabIndex >= 0 && activeTabIndex < editorTabs.length) {
+        editorTabs[activeTabIndex].content = monacoEditor.getValue();
+      }
+      scheduleSplitUpdate();
+    });
+  });
+  setupEditorDrag();
+  setupEditorResize();
+  loadPlugins();
+}
+
+function setupEditorDrag() {
+  const handle = document.getElementById('editorDragHandle');
+  const panel = document.getElementById('editorPanel');
+  if (!handle || !panel) return;
+
+  handle.addEventListener('mousedown', e => {
+    if (e.target.closest('.editor-actions')) return;
+    editorDragState.dragging = true;
+    editorDragState.startX = e.clientX;
+    editorDragState.startY = e.clientY;
+    const rect = panel.getBoundingClientRect();
+    editorDragState.startLeft = rect.left;
+    editorDragState.startTop = rect.top;
+    panel.style.bottom = 'auto';
+    panel.style.right = 'auto';
+    panel.style.left = editorDragState.startLeft + 'px';
+    panel.style.top = editorDragState.startTop + 'px';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!editorDragState.dragging) return;
+    const dx = e.clientX - editorDragState.startX;
+    const dy = e.clientY - editorDragState.startY;
+    panel.style.left = (editorDragState.startLeft + dx) + 'px';
+    panel.style.top = (editorDragState.startTop + dy) + 'px';
+  });
+
+  document.addEventListener('mouseup', () => { editorDragState.dragging = false });
+}
+
+function setupEditorResize() {
+  const panel = document.getElementById('editorPanel');
+  if (!panel) return;
+
+  panel.querySelectorAll('.resize-handle').forEach(h => {
+    h.addEventListener('mousedown', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const dir = h.dataset.dir;
+      const startX = e.clientX, startY = e.clientY;
+      const rect = panel.getBoundingClientRect();
+      const startW = rect.width, startH = rect.height;
+      const startL = rect.left, startT = rect.top;
+
+      function onMove(e2) {
+        const dx = e2.clientX - startX;
+        const dy = e2.clientY - startY;
+        let newW = startW, newH = startH, newL = startL, newT = startT;
+
+        if (dir.includes('e')) newW = startW + dx;
+        if (dir.includes('w')) { newW = startW - dx; newL = startL + dx }
+        if (dir.includes('s')) newH = startH + dy;
+        if (dir.includes('n')) { newH = startH - dy; newT = startT + dy }
+
+        if (newW >= 300) { panel.style.width = newW + 'px'; panel.style.left = newL + 'px' }
+        if (newH >= 200) { panel.style.height = newH + 'px'; panel.style.top = newT + 'px' }
+        if (monacoEditor) monacoEditor.layout();
+      }
+
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+
+function getLangFromPath(path) {
+  if (!path) return 'html';
+  const ext = path.split('.').pop().toLowerCase();
+  const map = { js: 'javascript', css: 'css', json: 'json', md: 'markdown', py: 'python', xml: 'xml', ts: 'typescript' };
+  return map[ext] || 'html';
+}
+
+function renderEditorTabs() {
+  const el = document.getElementById('editorTabs');
+  el.innerHTML = editorTabs.map((t, i) => `
+    <div class="editor-tab ${i === activeTabIndex ? 'active' : ''}" onclick="switchEditorTab(${i})">
+      <i class="fas fa-file-code" style="font-size:10px"></i>
+      ${esc(t.name)}
+      <span class="close" onclick="event.stopPropagation();closeEditorTab(${i})">✕</span>
+    </div>
+  `).join('');
+}
+
+function switchEditorTab(idx) {
+  if (idx < 0 || idx >= editorTabs.length) return;
+  if (activeTabIndex >= 0 && monacoEditor) {
+    editorTabs[activeTabIndex].content = monacoEditor.getValue();
+  }
+  activeTabIndex = idx;
+  const tab = editorTabs[idx];
+  document.getElementById('editorTitle').textContent = tab.name;
+  if (monacoEditor) {
+    monacoEditor.setValue(tab.content || '');
+    monaco.editor.setModelLanguage(monacoEditor.getModel(), tab.lang || 'html');
+  }
+  renderEditorTabs();
+}
+
+function closeEditorTab(idx) {
+  editorTabs.splice(idx, 1);
+  if (editorTabs.length === 0) { closeEditor(); return; }
+  if (activeTabIndex >= editorTabs.length) activeTabIndex = editorTabs.length - 1;
+  switchEditorTab(activeTabIndex);
+  if (monacoEditor) monacoEditor.layout();
+}
+
+async function openEditor(path) {
+  if (!path) path = currentViewPath;
+  if (!path) { showToast('Откройте страницу', 'error'); return; }
+
+  const existing = editorTabs.findIndex(t => t.path === path);
+  if (existing >= 0) {
+    switchEditorTab(existing);
+    document.getElementById('editorPanel').style.display = 'flex';
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/html/view?f=' + encodeURIComponent(path));
+    const d = await r.json();
+    if (!d.ok) { showToast('Ошибка: ' + (d.error || ''), 'error'); return; }
+
+    const name = path.split('/').pop() || path;
+    const lang = getLangFromPath(path);
+
+    editorTabs.push({ path, content: d.content || '', name, lang });
+    activeTabIndex = editorTabs.length - 1;
+
+    document.getElementById('editorPanel').style.display = 'flex';
+    document.getElementById('editorTitle').textContent = name;
+    renderEditorTabs();
+
+    if (monacoEditor) {
+      monacoEditor.setValue(d.content);
+      monaco.editor.setModelLanguage(monacoEditor.getModel(), lang);
+      monacoEditor.layout();
+    } else {
+      initMonaco();
+      setTimeout(() => {
+        if (monacoEditor) {
+          monacoEditor.setValue(d.content);
+          monaco.editor.setModelLanguage(monacoEditor.getModel(), lang);
+          monacoEditor.layout();
+        }
+      }, 500);
+    }
+  } catch(e) { showToast('Ошибка: ' + e.message, 'error'); console.error(e) }
+}
+
+function closeEditor() { document.getElementById('editorPanel').style.display = 'none' }
+function minimizeEditor() { document.getElementById('editorPanel').classList.toggle('minimized') }
+function maximizeEditor() { document.getElementById('editorPanel').classList.toggle('maximized') }
+
+let splitViewActive = false;
+function toggleSplitView() {
+  splitViewActive = !splitViewActive;
+  const btn = document.getElementById('splitViewBtn');
+  if (btn) btn.classList.toggle('active', splitViewActive);
+
+  const panel = document.getElementById('editorPanel');
+  const container = document.getElementById('monacoContainer');
+
+  if (splitViewActive) {
+    panel.style.flexDirection = 'column';
+    let iframe = document.getElementById('splitPreview');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'splitPreview';
+      iframe.style.cssText = 'width:100%;height:40%;border:none;border-top:2px solid var(--border);background:#fff';
+      container.after(iframe);
+    }
+    iframe.style.display = 'block';
+    container.style.height = '60%';
+    updateSplitPreview();
+  } else {
+    const sp = document.getElementById('splitPreview');
+    if (sp) sp.style.display = 'none';
+    container.style.height = '100%';
+  }
+  if (monacoEditor) setTimeout(() => monacoEditor.layout(), 100);
+}
+
+function updateSplitPreview() {
+  const iframe = document.getElementById('splitPreview');
+  if (!iframe || activeTabIndex < 0) return;
+  const tab = editorTabs[activeTabIndex];
+  const content = monacoEditor ? monacoEditor.getValue() : tab.content;
+  iframe.srcdoc = content;
+}
+
+let splitUpdateTimer = null;
+function scheduleSplitUpdate() {
+  if (splitViewActive && document.getElementById('splitPreview')) {
+    if (splitUpdateTimer) clearTimeout(splitUpdateTimer);
+    splitUpdateTimer = setTimeout(updateSplitPreview, 300);
+  }
+}
+
+function saveVersion(comment) {
+  if (activeTabIndex < 0 || !monacoEditor) return;
+  const tab = editorTabs[activeTabIndex];
+  const content = monacoEditor.getValue();
+  if (!fileVersions[tab.path]) fileVersions[tab.path] = [];
+  fileVersions[tab.path].push({
+    content, timestamp: Date.now(),
+    comment: comment || 'Автосохранение'
+  });
+  if (fileVersions[tab.path].length > maxVersions) {
+    fileVersions[tab.path] = fileVersions[tab.path].slice(-maxVersions);
+  }
+  localStorage.setItem('file_versions_' + tab.path, JSON.stringify(fileVersions[tab.path]));
+}
+
+function loadVersions(path) {
+  try {
+    const data = localStorage.getItem('file_versions_' + path);
+    if (data) fileVersions[path] = JSON.parse(data);
+  } catch(e) {}
+}
+
+function showVersions() {
+  if (activeTabIndex < 0) return;
+  const tab = editorTabs[activeTabIndex];
+  loadVersions(tab.path);
+  const versions = fileVersions[tab.path] || [];
+
+  let html = '<div style="padding:20px"><h4 style="margin-bottom:14px"><i class="fas fa-history" style="color:var(--accent)"></i> История версий</h4>';
+  if (!versions.length) {
+    html += '<p style="color:var(--text2)">Нет сохранённых версий.</p>';
+  } else {
+    html += '<div style="max-height:400px;overflow-y:auto">';
+    versions.slice().reverse().forEach((v, i) => {
+      const d = new Date(v.timestamp);
+      const dateStr = d.toLocaleString('ru');
+      const idx = versions.length - 1 - i;
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:10px;margin-bottom:8px">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${esc(v.comment)}</div>
+          <div style="font-size:11px;color:var(--text3)">${dateStr} · ${v.content.length} символов</div>
+        </div>
+        <button onclick="restoreVersion(${idx})" style="padding:5px 12px;background:var(--green);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:11px;font-weight:600"><i class="fas fa-undo"></i></button>
+      </div>`;
+    });
+    html += '</div>';
+    html += `<button onclick="clearVersions()" style="margin-top:14px;padding:8px 16px;background:var(--red);border:none;border-radius:10px;color:#fff;cursor:pointer;font-size:12px;font-weight:600;width:100%"><i class="fas fa-trash"></i> Очистить</button>`;
+  }
+  html += '</div>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay show';
+  overlay.innerHTML = `<div class="modal-box" style="width:520px">${html}</div>`;
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove() };
+  document.body.appendChild(overlay);
+}
+
+function restoreVersion(idx) {
+  if (activeTabIndex < 0 || !monacoEditor) return;
+  const tab = editorTabs[activeTabIndex];
+  const versions = fileVersions[tab.path] || [];
+  if (idx >= 0 && idx < versions.length) {
+    if (confirm('Восстановить версию?')) {
+      monacoEditor.setValue(versions[idx].content);
+      showToast('✓ Версия восстановлена', 'success');
+      document.querySelector('.modal-overlay.show')?.remove();
+    }
+  }
+}
+
+function clearVersions() {
+  if (activeTabIndex < 0) return;
+  const tab = editorTabs[activeTabIndex];
+  if (confirm('Удалить все версии?')) {
+    fileVersions[tab.path] = [];
+    localStorage.removeItem('file_versions_' + tab.path);
+    showToast('✓ История очищена', 'success');
+    document.querySelector('.modal-overlay.show')?.remove();
+  }
+}
+
+function saveEditorContent() {
+  if (activeTabIndex < 0 || activeTabIndex >= editorTabs.length) { showToast('Нет файла', 'error'); return; }
+  const tab = editorTabs[activeTabIndex];
+  if (!monacoEditor) { showToast('Редактор не загружен', 'error'); return; }
+  const content = monacoEditor.getValue();
+  tab.content = content;
+  saveVersion('Ручное сохранение');
+
+  fetch('/api/html/file/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: tab.path, content })
+  }).then(r => r.json()).then(d => {
+    if (d.ok) showToast('✓ ' + tab.name + ' сохранён', 'success');
+    else showToast('Ошибка: ' + (d.error || ''), 'error');
+  }).catch(e => showToast('Ошибка: ' + e.message, 'error'));
+}
+
+setInterval(() => {
+  if (activeTabIndex >= 0 && monacoEditor) {
+    const tab = editorTabs[activeTabIndex];
+    const content = monacoEditor.getValue();
+    if (content !== tab.content) saveVersion('Автосохранение');
+  }
+}, 30000);
+
+const origOpenEditor = openEditor;
+openEditor = async function(path) {
+  await origOpenEditor(path);
+  if (activeTabIndex >= 0) {
+    const tab = editorTabs[activeTabIndex];
+    loadVersions(tab.path);
+  }
+};
+
+function formatHTML() {
+  if (!monacoEditor) return;
+  monacoEditor.getAction('editor.action.formatDocument').run();
+}
+
+function previewInViewer() {
+  if (activeTabIndex < 0) { showToast('Нет файла', 'error'); return; }
+  const tab = editorTabs[activeTabIndex];
+  if (monacoEditor) tab.content = monacoEditor.getValue();
+  const va = document.getElementById('viewerArea');
+  va.style.display = 'block';
+  document.getElementById('welcomeScreen').style.display = 'none';
+  va.innerHTML = `<iframe srcdoc="${tab.content.replace(/"/g, '&quot;')}" style="width:100%;height:100%;border:none;background:#fff" sandbox="allow-same-origin"></iframe>`;
+  document.getElementById('fsTitle').textContent = tab.name;
+}
+
+function refreshEditor() {
+  if (activeTabIndex < 0) { showToast('Нет файла', 'error'); return; }
+  const tab = editorTabs[activeTabIndex];
+  fetch('/api/html/view?f=' + encodeURIComponent(tab.path))
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok && monacoEditor) {
+        tab.content = d.content;
+        const cursorPos = monacoEditor.getPosition();
+        monacoEditor.setValue(d.content);
+        if (cursorPos) monacoEditor.setPosition(cursorPos);
+        showToast('✓ Обновлено', 'success');
+      }
+    }).catch(e => showToast('Ошибка: ' + e.message, 'error'));
+}
+
+function refreshViewer() {
+  if (!currentViewPath) { showToast('Нет страницы', 'error'); return; }
+  openHtml(currentViewPath, currentHtmlTitle);
+  showToast('✓ Страница обновлена', 'success');
+}
+
+let viewerAutoRefreshInterval = null;
+function toggleViewerAutoRefresh() {
+  const btn = document.getElementById('autoRefreshBtn');
+  if (viewerAutoRefreshInterval) {
+    clearInterval(viewerAutoRefreshInterval);
+    viewerAutoRefreshInterval = null;
+    btn.style.background = '';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    showToast('Авто-обновление выключено');
+  } else {
+    viewerAutoRefreshInterval = setInterval(refreshViewer, 5000);
+    btn.style.background = 'var(--accent)';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color = '#fff';
+    showToast('Авто-обновление: 5 сек', 'success');
+  }
+}
+
+async function renameCurrentFile() {
+  if (activeTabIndex < 0) return;
+  const tab = editorTabs[activeTabIndex];
+  const name = await InfinityDialogs.prompt({label:'Новое имя:', value:tab.name});
+  if (!name) return;
+  const r = await fetch('/api/html/file/rename', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ old_path: tab.path, new_name: name })
+  });
+  const d = await r.json();
+  if (d.ok) {
+    tab.path = d.new_path;
+    tab.name = name;
+    tab.lang = getLangFromPath(d.new_path);
+    document.getElementById('editorTitle').textContent = name;
+    renderEditorTabs();
+    showToast('✓ Переименовано', 'success');
+    fmTreeCache = null; fmCacheTime = 0;
+    debouncedReloadTrees();
+  } else showToast('Ошибка: ' + (d.error || ''), 'error');
+}
+
+async function deleteCurrentFile() {
+  if (activeTabIndex < 0) return;
+  const tab = editorTabs[activeTabIndex];
+  if (!confirm(`Удалить ${tab.name}?`)) return;
+  const r = await fetch('/api/html/file/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: tab.path })
+  });
+  const d = await r.json();
+  if (d.ok) {
+    showToast('✓ Удалено', 'success');
+    closeEditorTab(activeTabIndex);
+    fmTreeCache = null; fmCacheTime = 0;
+    debouncedReloadTrees();
+  } else showToast('Ошибка: ' + (d.error || ''), 'error');
+}
+
+function debouncedReloadTrees() {
+  if (refreshDebounceTimer) clearTimeout(refreshDebounceTimer);
+  refreshDebounceTimer = setTimeout(() => {
+    loadTree();
+    loadFMTree();
+    refreshDebounceTimer = null;
+  }, 500);
+}
+
+// === PLUGINS ===
+let loadedPlugins = [];
+
+async function loadPlugins() {
+  const pluginFiles = ['beautify', 'minify', 'lorem', 'colors', 'md2html', 'table', 'base64', 'image-embed'];
+  const menu = document.getElementById('pluginMenu');
+  if (!menu) return;
+  menu.innerHTML = '';
+  loadedPlugins = [];
+
+  for (const name of pluginFiles) {
+    try {
+      const r = await fetch('/plugins/' + name + '.js');
+      if (!r.ok) continue;
+      const text = await r.text();
+      const moduleMatch = text.match(/export default\s*({[\s\S]*});/);
+      if (moduleMatch) {
+        try {
+          const plugin = eval('(' + moduleMatch[1] + ')');
+          if (plugin && plugin.action) {
+            plugin._file = name;
+            loadedPlugins.push(plugin);
+
+            menu.innerHTML += `
+              <div class="plugin-item" onclick="event.stopPropagation();runPlugin('${name}')">
+                <i class="${plugin.icon}"></i>
+                <span class="pname">${plugin.name}</span>
+                ${plugin.shortcut ? `<span class="shortcut">${plugin.shortcut}</span>` : ''}
+              </div>`;
+          }
+        } catch(e) { console.warn('Plugin parse error:', name, e); }
+      }
+    } catch(e) { console.warn('Plugin load error:', name, e); }
+  }
+
+  menu.innerHTML += `
+    <div class="plugin-item create-new" onclick="event.stopPropagation();createNewPlugin()">
+      <i class="fas fa-plus-circle"></i>
+      <span class="pname"><strong>Создать плагин...</strong></span>
+    </div>`;
+}
+
+function togglePluginsMenu() {
+  const menu = document.getElementById('pluginMenu');
+  const btn = document.getElementById('pluginsBtn');
+  if (!menu || !btn) return;
+
+  if (menu.classList.contains('show')) {
+    menu.classList.remove('show');
+    return;
+  }
+
+  const rect = btn.getBoundingClientRect();
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.right = (window.innerWidth - rect.right) + 'px';
+  menu.classList.add('show');
+}
+
+function runPlugin(name) {
+  const plugin = loadedPlugins.find(p => p._file === name);
+  if (plugin && monacoEditor) {
+    try { plugin.action(monacoEditor); }
+    catch(e) { showToast('Ошибка плагина: ' + e.message, 'error'); }
+  }
+  const menu = document.getElementById('pluginMenu');
+  if (menu) menu.classList.remove('show');
+}
+
+async function createNewPlugin() {
+  const name = await InfinityDialogs.prompt({label:'Имя плагина:', value:'my-plugin'});
+  if (!name) return;
+
+  const template = `// === ${name} Plugin ===
+export default {
+  id: '${name}',
+  name: '${name}',
+  icon: 'fas fa-star',
+  title: 'Мой плагин',
+  shortcut: 'Ctrl+Shift+P',
+  action: (editor) => {
+    const sel = editor.getSelection();
+    const text = editor.getModel().getValueInRange(sel);
+    const result = text.toUpperCase();
+    editor.executeEdits('${name}', [{ range: sel, text: result }]);
+  }
+};
+`;
+
+  editorTabs.push({ path: '/plugins/' + name + '.js', content: template, name: name + '.js', lang: 'javascript' });
+  activeTabIndex = editorTabs.length - 1;
+
+  if (monacoEditor) {
+    monacoEditor.setValue(template);
+    monaco.editor.setModelLanguage(monacoEditor.getModel(), 'javascript');
+    monacoEditor.layout();
+  }
+
+  const menu = document.getElementById('pluginMenu');
+  if (menu) menu.classList.remove('show');
+  showToast('Шаблон создан', 'success');
+}
+
+document.addEventListener('keydown', e => {
+  if (!monacoEditor) return;
+  for (const plugin of loadedPlugins) {
+    if (plugin.shortcut) {
+      const parts = plugin.shortcut.toLowerCase().split('+');
+      const ctrl = parts.includes('ctrl');
+      const shift = parts.includes('shift');
+      const key = parts[parts.length - 1];
+
+      if (e.ctrlKey === ctrl && e.shiftKey === shift && e.key.toLowerCase() === key) {
+        e.preventDefault();
+        plugin.action(monacoEditor);
+        return;
+      }
+    }
+  }
+});
+
+document.addEventListener('click', e => {
+  const menu = document.getElementById('pluginMenu');
+  const btn = document.getElementById('pluginsBtn');
+  if (menu && !menu.classList.contains('show')) return;
+  if (menu && !menu.contains(e.target) && btn && !btn.contains(e.target)) {
+    menu.classList.remove('show');
+  }
+});
+
+// === FILE MANAGER ===
+let fmTreeCache = null;
+let fmCacheTime = 0;
+let fmCollapsedFolders = new Set();
+let fmDragState = { dragging: false, startX: 0, startY: 0, startLeft: 0, startTop: 0 };
+
+function openFileManager() {
+  document.getElementById('fmModal').style.display = 'flex';
+  loadFMTree();
+  setupFMDragResize();
+}
+function closeFileManager() { document.getElementById('fmModal').style.display = 'none' }
+function fmMinimize() { document.getElementById('fmModal').classList.toggle('minimized') }
+function fmMaximize() { document.getElementById('fmModal').classList.toggle('maximized') }
+
+function setupFMDragResize() {
+  const modal = document.getElementById('fmModal');
+  const handle = document.getElementById('fmDragHandle');
+  if (!modal || !handle || handle.dataset.setup === 'yes') return;
+  handle.dataset.setup = 'yes';
+
+  handle.addEventListener('mousedown', e => {
+    if (e.target.closest('.fm-actions')) return;
+    fmDragState.dragging = true;
+    fmDragState.startX = e.clientX;
+    fmDragState.startY = e.clientY;
+    const rect = modal.getBoundingClientRect();
+    fmDragState.startLeft = rect.left;
+    fmDragState.startTop = rect.top;
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!fmDragState.dragging) return;
+    const dx = e.clientX - fmDragState.startX;
+    const dy = e.clientY - fmDragState.startY;
+    modal.style.left = (fmDragState.startLeft + dx) + 'px';
+    modal.style.top = (fmDragState.startTop + dy) + 'px';
+    modal.style.right = 'auto';
+    modal.style.bottom = 'auto';
+  });
+  document.addEventListener('mouseup', () => { fmDragState.dragging = false });
+
+  modal.querySelectorAll('.resize-handle').forEach(h => {
+    h.addEventListener('mousedown', e => {
+      e.preventDefault(); e.stopPropagation();
+      const dir = h.dataset.dir;
+      const startX = e.clientX, startY = e.clientY;
+      const rect = modal.getBoundingClientRect();
+      const startW = rect.width, startH = rect.height, startL = rect.left, startT = rect.top;
+      function onMove(e2) {
+        const dx = e2.clientX - startX, dy = e2.clientY - startY;
+        let newW = startW, newH = startH, newL = startL, newT = startT;
+        if (dir.includes('e')) newW = startW + dx;
+        if (dir.includes('w')) { newW = startW - dx; newL = startL + dx }
+        if (dir.includes('s')) newH = startH + dy;
+        if (dir.includes('n')) { newH = startH - dy; newT = startT + dy }
+        if (newW >= 500) { modal.style.width = newW + 'px'; modal.style.left = newL + 'px' }
+        if (newH >= 200) { modal.style.height = newH + 'px'; modal.style.top = newT + 'px' }
+      }
+      function onUp() { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp) }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}
+
+async function loadFMTree() {
+  const el = document.getElementById('fmTree');
+  try {
+    const now = Date.now();
+    if (fmTreeCache && (now - fmCacheTime) < 30000) {
+      el.innerHTML = renderFMTree(fmTreeCache);
+      return;
+    }
+    fetch('/api/html/folders')
+      .then(r => r.json())
+      .then(d => {
+        fmTreeCache = d.tree;
+        fmCacheTime = now;
+        el.innerHTML = renderFMTree(d.tree);
+      });
+  } catch(e) { el.innerHTML = '<div style="padding:14px;color:var(--red)">' + e.message + '</div>' }
+}
+
+function renderFMTree(tree) {
+  if (!tree) return '';
+  return tree.children.map(dir => renderFMDir(dir, '')).join('');
+}
+
+function renderFMDir(node, prefix) {
+  const folderId = 'fmf_' + (prefix || 'root') + '_' + node.name.replace(/[^a-zA-Z0-9]/g, '_');
+  const collapsed = fmCollapsedFolders.has(folderId);
+  let h = `<div class="fm-folder-toggle" onclick="toggleFMFolder('${folderId}')">`;
+  h += `<i class="fas fa-chevron-${collapsed ? 'right' : 'down'}" style="width:12px;font-size:10px;color:var(--text3)"></i>`;
+  h += `<i class="fas fa-folder" style="color:var(--orange);width:16px"></i>`;
+  h += `<span>${esc(node.name)}</span></div>`;
+  h += `<div class="fm-children ${collapsed ? 'collapsed' : ''}" id="${folderId}">`;
+  (node.children || []).forEach(c => { h += renderFMDir(c, folderId) });
+  (node.files || []).forEach(f => {
+    const safePath = f.path.replace(/"/g, '&quot;');
+    h += `<div class="fm-item" data-fm-path="${safePath}">`;
+    h += `<i class="fas fa-file-code" style="color:var(--accent);width:16px"></i>`;
+    h += `<span class="name" onclick="fmOpenFile(this.closest('.fm-item').dataset.fmPath)" title="${esc(f.path)}">${esc(f.title || f.filename)}</span>`;
+    h += `<div class="actions">`;
+    h += `<button onclick="event.stopPropagation();openEditor(this.closest('.fm-item').dataset.fmPath)" title="Редактировать"><i class="fas fa-pen"></i></button>`;
+    h += `<button class="del" onclick="event.stopPropagation();fmDeleteFile(this.closest('.fm-item').dataset.fmPath)" title="Удалить"><i class="fas fa-trash"></i></button>`;
+    h += `</div></div>`;
+  });
+  h += `</div>`;
+  return h;
+}
+
+function toggleFMFolder(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (fmCollapsedFolders.has(id)) {
+    fmCollapsedFolders.delete(id);
+    el.classList.remove('collapsed');
+  } else {
+    fmCollapsedFolders.add(id);
+    el.classList.add('collapsed');
+  }
+  const toggle = el.previousElementSibling;
+  if (toggle) {
+    const icon = toggle.querySelector('.fa-chevron-right,.fa-chevron-down');
+    if (icon) {
+      icon.className = fmCollapsedFolders.has(id) ? 'fas fa-chevron-right' : 'fas fa-chevron-down';
+    }
+  }
+}
+
+function filterFMTree(q) {
+  q = q.toLowerCase().trim();
+  document.querySelectorAll('#fmTree .fm-item').forEach(el => {
+    const name = el.querySelector('.name');
+    if (!name) return;
+    const text = name.textContent.toLowerCase();
+    el.style.display = (!q || text.includes(q)) ? '' : 'none';
+  });
+  if (q) {
+    document.querySelectorAll('#fmTree .fm-children').forEach(container => {
+      const visibleChildren = Array.from(container.querySelectorAll('.fm-item')).filter(c => c.style.display !== 'none').length;
+      container.classList.toggle('collapsed', visibleChildren === 0);
+    });
+  }
+}
+
+async function fmOpenFile(path) {
+  if (!path) return;
+  try {
+    const r = await fetch('/api/html/view?f=' + encodeURIComponent(path));
+    const d = await r.json();
+    document.getElementById('fmContent').innerHTML = `<div style="padding:16px"><h4 style="margin-bottom:12px">${esc(d.title || path)}</h4><pre style="background:var(--bg);padding:16px;border-radius:10px;overflow:auto;max-height:500px;font-size:12px;white-space:pre-wrap;border:1px solid var(--border)">${esc(d.content ? d.content.substring(0, 5000) : '')}</pre></div>`;
+  } catch(e) {}
+}
+
+async function fmDeleteFile(path) {
+  if (!path) { showToast('Нет пути', 'error'); return; }
+  if (!confirm('Удалить файл?')) return;
+  const r = await fetch('/api/html/file/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) });
+  const d = await r.json();
+  if (d.ok) { showToast('✓ Удалено', 'success'); loadFMTree(); }
+  else showToast('Ошибка: ' + (d.error || ''), 'error');
+}
+
+/* ============================================================
+   СОЗДАНИЕ ФАЙЛА / ПАПКИ
+   Раньше здесь стоял window.prompt() с двумя вопросами (имя + абсолютный путь каталога). В Electron-оболочке prompt() не поддерживается — он возвращает null, и кнопки «Файл»/«Папка» выглядели как «ничего не происходит».
+   Плюс пустой каталога давал путь вида «/new.html», а сервер отвечал 403 «Доступ разрешён только внутри HTML-библиотеки».
+   Теперь — своя модалка: имя, выбор каталога из библиотеки, и путь строится на серверной стороне строго внутри HTML-библиотеки.
+   ============================================================ */
+
+// Каталоги для выпадающего списка: корни библиотеки + подпапки дерева.
+function fmFolderOptions() {
+  const opts = [];
+  const seen = new Set();
+  const push = (p, label) => {
+    if (!p) return;
+    const key = String(p).replace(/\\/g, '/').toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    opts.push({ value: p, label: label || p });
+  };
+  (HTML_DIRS || []).forEach(d => push(d, String(d).replace(/[\\/]+$/, '')));
+  const walk = (node) => {
+    if (!node) return;
+    (node.children || []).forEach(c => {
+      if (c.path) push(c.path, c.name);
+      walk(c);
+    });
+  };
+  if (fmTreeCache) walk(fmTreeCache);
+  return opts;
+}
+
+// Имя файла: убираем слеши и недопустимые символы, добавляем .html.
+function fmCleanFileName(raw, isFile) {
+  let n = String(raw || '').trim().replace(/[\\/]+/g, '_').replace(/[<>:"|?*]/g, '_').replace(/^\.+/, '');
+  if (!n) return '';
+  if (isFile && !/\.(html?|htm)$/i.test(n)) n += '.html';
+  return n;
+}
+
+async function fmCreateDialog(kind) {
+  const isFile = kind === 'file';
+  const dirs = await fmLoadDirs();
+  if (!dirs.length) {
+    showToast('Не настроен каталог HTML-библиотеки', 'error');
+    return;
+  }
+  const D = window.InfinityDialogs;
+  if (!D || !D.form) {           // страховка: скрипт диалогов ещё не загрузился
+    showToast('Модуль диалогов недоступен', 'error');
+    return;
+  }
+  const options = fmFolderOptions();
+  const res = await D.form({
+    title: isFile ? 'Новый файл' : 'Новая папка',
+    icon: isFile ? 'fas fa-file-plus' : 'fas fa-folder-plus',
+    okText: 'Создать',
+    fields: [
+      { name: 'name', label: isFile ? 'Имя файла' : 'Имя папки', value: isFile ? 'new.html' : 'new_folder', required: true },
+      { name: 'dir', label: 'Расположение', type: 'select', value: options[0] ? options[0].value : '', options },
+      ...(isFile ? [{ name: 'open', label: 'Открыть в редакторе сразу', type: 'checkbox', value: true }] : [])
+    ]
+  });
+  if (!res) return;                 // отмена
+
+  const name = fmCleanFileName(res.name, isFile);
+  if (!name) { showToast('Недопустимое имя', 'error'); return; }
+  const dir = String(res.dir || '').replace(/[\\/]+$/, '');
+  const path = dir ? dir + '/' + name : name;
+
+  const body = isFile
+    ? { path, content: '<!DOCTYPE html>\n<html>\n<head><meta charset="utf-8"><title>' + name + '</title></head>\n<body>\n<h1>' + name + '</h1>\n</body>\n</html>' }
+    : { path };
+
+  try {
+    const r = await fetch(isFile ? '/api/html/file/create' : '/api/html/folder/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!d.ok) { showToast('Ошибка: ' + (d.error || 'не удалось создать'), 'error'); return; }
+    const created = d.path || path;      // сервер вернул абсолютный путь
+    showToast(isFile ? '✓ Файл создан' : '✓ Папка создана', 'success');
+    fmTreeCache = null; fmCacheTime = 0;
+    loadFMTree();
+    if (isFile && res.open) openEditor(created);
+  } catch (e) {
+    showToast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function fmNewFile() { await fmCreateDialog('file'); }
+async function fmNewFolder() { await fmCreateDialog('folder'); }
+
+function fmRefresh() { fmTreeCache = null; fmCacheTime = 0; loadFMTree() }
+
+// === EDITOR AI CHAT ===
+let editorAiModelsList = [];
+let editorAiLastResponse = '';
+let editorAiDiffOriginal = '';
+let editorAiDiffModified = '';
+
+async function loadAiModels() {
+  try {
+    const r = await fetch('/api/ask-models');
+    const d = await r.json();
+    editorAiModelsList = d.models || [];
+    if (!editorAiModelsList.length) editorAiModelsList = [backendModel];
+    const sel = document.getElementById('editorAiModel');
+    sel.innerHTML = editorAiModelsList.map(m => `<option value="${esc(m)}" ${m === backendModel ? 'selected' : ''}>${esc(m)}</option>`).join('');
+  } catch(e) { console.error('Load models error:', e); }
+}
+
+function openEditorAiChat() {
+  const panel = document.getElementById('editorAiPanel');
+  panel.classList.add('open');
+  panel.style.display = 'flex';
+  if (editorAiModelsList.length === 0) loadAiModels();
+}
+function closeEditorAiChat() {
+  const panel = document.getElementById('editorAiPanel');
+  panel.classList.remove('open');
+  panel.style.display = 'none';
+}
+
+async function editorAiSend() {
+  const input = document.getElementById('editorAiInput');
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = '';
+
+  const msgs = document.getElementById('editorAiMessages');
+  msgs.innerHTML += `<div class="ai-msg user">${esc(q)}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const currentCode = monacoEditor ? monacoEditor.getValue() : '';
+  const model = document.getElementById('editorAiModel').value || backendModel;
+  const activeTab = activeTabIndex >= 0 ? editorTabs[activeTabIndex] : null;
+  const lang = activeTab ? activeTab.lang || 'html' : 'html';
+
+  try {
+    const r = await fetch('/api/ask-agent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: currentCode,
+        request: q,
+        model,
+        lang
+      })
+    });
+    const d = await r.json();
+    const answer = d.answer || 'Нет ответа';
+    editorAiLastResponse = answer;
+
+    msgs.innerHTML += `<div class="ai-msg ai">${formatAiResponse(answer)}</div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+
+    // Priority 1: try diff format
+    const diffCode = extractDiffFromResponse(answer, currentCode);
+    if (diffCode && diffCode !== currentCode) {
+      editorAiDiffOriginal = currentCode;
+      editorAiDiffModified = diffCode;
+      msgs.innerHTML += `<div class="ai-msg ai" style="background:var(--accent-light);border:1px solid var(--accent);font-size:12px">
+        <i class="fas fa-code-branch"></i> Найдены изменения.
+        <button onclick="showDiffFromGlobals()" style="padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;margin-left:8px">
+          <i class="fas fa-eye"></i> Просмотреть diff
+        </button>
+      </div>`;
+      return;
+    }
+
+    // Priority 2: try full code block (fallback)
+    const fullCodeMatch = answer.match(/```(?:\w*)\n([\s\S]*?)```/);
+    if (fullCodeMatch) {
+      const fullCode = fullCodeMatch[1].trim();
+      if (fullCode.length > 10 && fullCode !== currentCode) {
+        editorAiDiffOriginal = currentCode;
+        editorAiDiffModified = fullCode;
+        msgs.innerHTML += `<div class="ai-msg ai" style="background:var(--accent-light);border:1px solid var(--accent);font-size:12px">
+          <i class="fas fa-code-branch"></i> Изменения (полный код).
+          <button onclick="showDiffFromGlobals()" style="padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;margin-left:8px">
+            <i class="fas fa-eye"></i> Просмотреть diff
+          </button>
+        </div>`;
+      }
+    }
+  } catch(e) {
+    console.error('AI error:', e);
+    msgs.innerHTML += `<div class="ai-msg ai" style="color:var(--red)">Ошибка: ${esc(e.message)}</div>`;
+  }
+}
+
+function extractDiffFromResponse(text, originalCode) {
+  const diffBlocks = text.match(/```diff\n([\s\S]*?)```/g);
+  if (!diffBlocks) return null;
+
+  const origLines = originalCode.split('\n');
+  const allPositions = [];
+
+  for (const block of diffBlocks) {
+    const lines = block.replace(/```diff\n/, '').replace(/```$/, '').split('\n');
+    let searchFrom = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const l = lines[i];
+      if (l.startsWith('@@') || l.startsWith(' ') || l === '') continue;
+
+      if (l.startsWith('-')) {
+        const removed = [l.substring(1)];
+        const added = [];
+        let j = i + 1;
+        while (j < lines.length && (lines[j].startsWith('-') || lines[j].startsWith('+'))) {
+          if (lines[j].startsWith('-')) removed.push(lines[j].substring(1));
+          else added.push(lines[j].substring(1));
+          j++;
+        }
+        i = j - 1;
+
+        const matchIdx = matchDiffLines(origLines, removed, searchFrom);
+        if (matchIdx >= 0) {
+          allPositions.push({ start: matchIdx, end: matchIdx + removed.length, lines: added });
+          searchFrom = matchIdx + 1;
+        }
+      } else if (l.startsWith('+')) {
+        const added = [l.substring(1)];
+        let j = i + 1;
+        while (j < lines.length && lines[j].startsWith('+')) {
+          added.push(lines[j].substring(1));
+          j++;
+        }
+        allPositions.push({ start: searchFrom, end: searchFrom, lines: added });
+        i = j - 1;
+      }
+    }
+  }
+
+  if (!allPositions.length) return null;
+
+  const result = [...origLines];
+  for (let p = allPositions.length - 1; p >= 0; p--) {
+    const { start, end, lines } = allPositions[p];
+    result.splice(start, end - start, ...lines);
+  }
+
+  const resultStr = result.join('\n');
+  return resultStr !== originalCode ? resultStr : null;
+}
+
+function matchDiffLines(allLines, searchLines, fromIdx) {
+  if (!searchLines.length) return -1;
+
+  // 1) Exact match with trim()
+  for (let i = fromIdx; i <= allLines.length - searchLines.length; i++) {
+    let match = true;
+    for (let j = 0; j < searchLines.length; j++) {
+      if (allLines[i + j].trim() !== searchLines[j].trim()) { match = false; break; }
+    }
+    if (match) return i;
+  }
+
+  // 2) Partial match — first + last line with trim, middle lines with includes
+  if (searchLines.length >= 2) {
+    const first = searchLines[0].trim();
+    const last = searchLines[searchLines.length - 1].trim();
+    for (let i = fromIdx; i <= allLines.length - searchLines.length; i++) {
+      if (allLines[i].trim() !== first) continue;
+      if (allLines[i + searchLines.length - 1].trim() !== last) continue;
+      let match = true;
+      for (let j = 1; j < searchLines.length - 1; j++) {
+        if (!allLines[i + j].includes(searchLines[j].trim()) && !searchLines[j].trim().includes(allLines[i + j].trim())) {
+          match = false; break;
+        }
+      }
+      if (match) return i;
+    }
+  }
+
+  // 3) Single-line fallback: find line that contains the search text
+  if (searchLines.length === 1) {
+    const q = searchLines[0].trim();
+    for (let i = fromIdx; i < allLines.length; i++) {
+      if (allLines[i].includes(q) || q.includes(allLines[i].trim())) return i;
+    }
+  }
+
+  // 4) Last resort: just use fromIdx position
+  return fromIdx < allLines.length ? fromIdx : -1;
+}
+
+function formatAiResponse(text) {
+  return esc(text)
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre style="background:var(--bg);padding:10px;border-radius:8px;overflow-x:auto;font-size:12px;border:1px solid var(--border)"><code>$2</code></pre>')
+    .replace(/`([^`]+)`/g, '<code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:11px">$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+}
+
+function editorAiApplyChanges() {
+  if (editorAiDiffModified && monacoEditor) {
+    showDiffFromGlobals();
+  } else if (editorAiLastResponse) {
+    const codeMatch = editorAiLastResponse.match(/```(?:html|css|js)?\n([\s\S]*?)```/);
+    if (codeMatch) {
+      const code = codeMatch[1].trim();
+      if (monacoEditor) {
+        monacoEditor.setValue(code);
+        showToast('✓ Код применён', 'success');
+      }
+    } else {
+      showToast('Нет кода в ответе', 'error');
+    }
+  } else {
+    showToast('Нет ответа', 'error');
+  }
+}
+
+function editorAiInsertCode() {
+  if (!editorAiLastResponse) { showToast('Нет ответа', 'error'); return; }
+  const codeMatch = editorAiLastResponse.match(/```(?:html|css|js)?\n([\s\S]*?)```/);
+  if (codeMatch && monacoEditor) {
+    const code = codeMatch[1].trim();
+    const sel = monacoEditor.getSelection();
+    const op = { range: sel, text: code, forceMoveMarkers: true };
+    monacoEditor.executeEdits('ai-insert', [op]);
+    showToast('✓ Код вставлен', 'success');
+  } else {
+    showToast('Нет кода в ответе', 'error');
+  }
+}
+
+// === DIFF OVERLAY ===
+let diffEditorInstance = null;
+
+function showDiffFromGlobals() {
+  if (editorAiDiffOriginal && editorAiDiffModified) {
+    showDiff(editorAiDiffOriginal, editorAiDiffModified);
+  } else {
+    showToast('Нет изменений для отображения', 'error');
+  }
+}
+
+function showDiff(original, modified) {
+  const overlay = document.getElementById('diffOverlay');
+  const container = document.getElementById('diffEditorContainer');
+  container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2)"><i class="fas fa-spinner fa-spin" style="font-size:24px"></i><p>Загрузка diff...</p></div>';
+  overlay.classList.add('show');
+
+  const doRenderDiff = () => {
+    const el = document.getElementById('diffMonacoEditor') || (() => {
+      container.innerHTML = '<div id="diffMonacoEditor" style="width:100%;height:100%"></div>';
+      return document.getElementById('diffMonacoEditor');
+    })();
+    if (!el) return;
+    try {
+      if (diffEditorInstance) { diffEditorInstance.dispose(); diffEditorInstance = null; }
+      const lang = 'html';
+      const origModel = monaco.editor.createModel(original, lang);
+      const modModel = monaco.editor.createModel(modified, lang);
+      diffEditorInstance = monaco.editor.createDiffEditor(el, {
+        enableSplitViewResizing: false,
+        renderSideBySide: true,
+        theme: getTheme() === 'light' ? 'vs' : 'vs-dark',
+        automaticLayout: true,
+        fontSize: 13,
+        wordWrap: 'on',
+        scrollBeyondLastLine: false
+      });
+      diffEditorInstance.setModel({ original: origModel, modified: modModel });
+    } catch(e) { console.error('Diff editor error:', e); }
+  };
+
+  if (typeof monaco !== 'undefined' && monaco.editor) {
+    setTimeout(doRenderDiff, 100);
+  } else {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text2)"><i class="fas fa-code"></i><p>Diff не поддерживается</p></div>';
+  }
+}
+
+function diffApplyAll() {
+  if (diffEditorInstance && editorAiDiffModified && monacoEditor) {
+    monacoEditor.setValue(editorAiDiffModified);
+    const tab = activeTabIndex >= 0 ? editorTabs[activeTabIndex] : null;
+    if (tab) tab.content = editorAiDiffModified;
+    showToast('✓ Все изменения применены', 'success');
+  }
+  diffClose();
+}
+
+function diffCancel() {
+  diffClose();
+  showToast('Изменения отклонены');
+}
+
+function diffClose() {
+  document.getElementById('diffOverlay').classList.remove('show');
+  if (diffEditorInstance) {
+    try { diffEditorInstance.dispose(); } catch(e) {}
+    diffEditorInstance = null;
+  }
+  document.getElementById('diffEditorContainer').innerHTML = '';
+  editorAiDiffOriginal = '';
+  editorAiDiffModified = '';
+}
+
+window.initMonaco = initMonaco;
+</script>
+</body></html>

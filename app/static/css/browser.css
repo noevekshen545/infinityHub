@@ -1,0 +1,1035 @@
+/* ============================================================================
+   Встроенный браузер Infinity (окно обёртки Electron, кнопка-глобус).
+   ----------------------------------------------------------------------------
+   Оформление строится на тех же токенах, что и всё приложение (--bg, --bg2,
+   --text, --accent …), поэтому браузер меняется вместе с темой. Хром рисуем
+   сами: окно frameless, своя полоса вкладок, тулбар и панели.
+   ========================================================================== */
+
+* { box-sizing: border-box; }
+
+/* Атрибут hidden ОБЯЗАН побеждать авторские `display: flex` панелей.
+   Сам по себе hidden даёт display:none только из UA-стилей, и любое наше
+   правило с display его перебивает — из-за этого панель закладок, загрузок,
+   история и выпадающее меню были видны постоянно, хотя в разметке стоят
+   hidden. Одно правило здесь чинит все панели сразу. */
+[hidden] { display: none !important; }
+
+html, body.electron-browser {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg, #0f1419);
+  color: var(--text, #e6eaf0);
+  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Всё окно — колонка: хром сверху, область вкладок растягивается. */
+.bb-chrome {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  /* Контекст позиционирования для абсолютных панелей (.bb-panel, .bb-menu)
+     и тостов: без него они считают координаты от вьюпорта, и любая будущая
+     рамка/отступ хрома сдвинет их. */
+  position: relative;
+  /* Вся верхняя часть перетаскивает окно; интерактивные зоны — no-drag. */
+  -webkit-app-region: drag;
+}
+.bb-chrome button,
+.bb-chrome input,
+.bb-chrome select,
+.bb-chrome textarea,
+.bb-chrome a,
+.bb-chrome .bb-views,
+.bb-chrome .bb-panel-body,
+.bb-chrome .bb-tabstrip,
+.bb-chrome .bb-tabs,
+.bb-chrome .bb-tab,
+.bb-chrome .bb-tab * {
+  -webkit-app-region: no-drag;
+}
+
+/* ---------- Полоса вкладок ---------- */
+.bb-tabstrip {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 6px 6px 0;
+  background: var(--bg, #0f1419);
+  border-bottom: 1px solid var(--border, #262d39);
+  min-height: 40px;
+}
+.bb-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* Вкладки не сжимаются (flex-shrink:0), поэтому при переполнении панель
+     прокручивается. Полосу показываем тонкую и только когда она нужна:
+     скрытая полоса не давала понять, что справа есть ещё вкладки. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg4, #262d39) transparent;
+  /* Высота вкладки 34px + полоса 6px ровно дают min-height полосы (40px),
+     поэтому её появление не сдвигает тулбар под ней. */
+  padding-bottom: 0;
+}
+.bb-tabs::-webkit-scrollbar { height: 6px; }
+.bb-tabs::-webkit-scrollbar-track { background: transparent; }
+.bb-tabs::-webkit-scrollbar-thumb {
+  background: var(--bg4, #262d39);
+  border-radius: 3px;
+}
+.bb-tabs::-webkit-scrollbar-thumb:hover { background: #3a4453; }
+
+.bb-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 220px;
+  min-width: 120px;
+  height: 34px;
+  padding: 0 8px 0 12px;
+  border-radius: 9px 9px 0 0;
+  background: var(--bg2, #161b23);
+  color: var(--text-2, #9aa5b4);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background .12s, color .12s;
+}
+.bb-tab:hover { background: var(--bg3, #1d232d); }
+.bb-tab.active {
+  background: var(--bg3, #1d232d);
+  color: var(--text, #e6eaf0);
+}
+.bb-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 2px;
+  background: var(--accent, #5b8cff);
+  border-radius: 2px;
+}
+.bb-tab.incognito { color: var(--text-3, #6b7686); font-style: italic; }
+.bb-tab-fav {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  object-fit: contain;
+}
+.bb-tab-fav-ph {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--bg4, #262d39);
+}
+.bb-tab-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bb-tab-close {
+  width: 20px; height: 20px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: .6;
+  flex-shrink: 0;
+}
+.bb-tab-close:hover { background: var(--bg4, #262d39); opacity: 1; }
+.bb-tab-close svg { width: 10px; height: 10px; }
+
+.bb-tab-add {
+  width: 30px; height: 30px;
+  margin-bottom: 2px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2, #9aa5b4);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.bb-tab-add:hover { background: var(--bg3, #1d232d); color: var(--text, #e6eaf0); }
+.bb-tab-add svg { width: 14px; height: 14px; }
+
+/* Кнопки режима/окна справа */
+.bb-win {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 6px;
+  margin-bottom: 2px;
+  flex-shrink: 0;
+}
+.bb-win-btn {
+  width: 30px; height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-2, #9aa5b4);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.bb-win-btn:hover { background: var(--bg3, #1d232d); color: var(--text, #e6eaf0); }
+.bb-win-btn.active { color: var(--accent, #5b8cff); }
+.bb-win-btn svg { width: 13px; height: 13px; }
+.bb-win-close:hover { background: #e5484d; color: #fff; }
+
+/* ---------- Тулбар ---------- */
+.bb-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--bg2, #161b23);
+  border-bottom: 1px solid var(--border, #262d39);
+}
+.bb-nav {
+  width: 32px; height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2, #9aa5b4);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .12s, color .12s, opacity .12s;
+}
+.bb-nav:hover:not(:disabled) { background: var(--bg3, #1d232d); color: var(--text, #e6eaf0); }
+.bb-nav:disabled { opacity: .35; cursor: default; }
+.bb-nav svg { width: 16px; height: 16px; }
+.bb-nav.active { color: var(--accent, #5b8cff); }
+
+/* Иконки установленных Chrome-расширений */
+.bb-ext-icons { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.bb-ext-icons[hidden] { display: none; }
+.bb-ext-btn {
+  width: 28px; height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  color: var(--text-2, #9aa5b4);
+  transition: background .12s, opacity .12s;
+}
+.bb-ext-btn:hover { background: var(--bg3, #1d232d); }
+.bb-ext-btn img { width: 18px; height: 18px; display: block; border-radius: 3px; }
+.bb-ext-btn .bb-ext-glyph { font-size: 14px; line-height: 1; }
+
+/* Адресная строка */
+.bb-omnibox {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  margin: 0 6px;
+  padding: 0 6px 0 10px;
+  border-radius: 17px;
+  background: var(--bg3, #1d232d);
+  border: 1px solid var(--border, #262d39);
+  transition: border-color .12s, background .12s;
+}
+.bb-omnibox:focus-within {
+  border-color: var(--accent, #5b8cff);
+  background: var(--bg, #0f1419);
+}
+.bb-omni-lock {
+  display: grid;
+  place-items: center;
+  color: var(--text-3, #6b7686);
+  flex-shrink: 0;
+}
+.bb-omni-lock svg { width: 13px; height: 13px; }
+.bb-omni-lock.secure { color: #3fb950; }
+.bb-omni-lock.insecure { color: #d29922; }
+#bbUrl {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text, #e6eaf0);
+  font-size: 13px;
+  outline: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.bb-star {
+  width: 28px; height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-2, #9aa5b4);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.bb-star:hover { background: var(--bg4, #262d39); }
+.bb-star svg { width: 15px; height: 15px; }
+.bb-star.on { color: #f0b429; }
+.bb-star.on svg path { fill: #f0b429; }
+
+/* ---------- Панель закладок ---------- */
+.bb-bookmarks {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--bg2, #161b23);
+  border-bottom: 1px solid var(--border, #262d39);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.bb-bookmark {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 200px;
+  height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-2, #9aa5b4);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.bb-bookmark:hover { background: var(--bg3, #1d232d); color: var(--text, #e6eaf0); }
+.bb-bookmark span { overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- Область вкладок ---------- */
+.bb-views {
+  flex: 1;
+  position: relative;
+  background: #fff;
+  overflow: hidden;
+}
+.bb-views webview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.bb-views webview[hidden] { display: none; }
+
+/* ---------- Панель загрузок (снизу) ---------- */
+.bb-downloads {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 140px;
+  overflow-y: auto;
+  padding: 8px;
+  background: var(--bg2, #161b23);
+  border-top: 1px solid var(--border, #262d39);
+}
+.bb-dl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--bg3, #1d232d);
+}
+.bb-dl-icon {
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  border-radius: 6px;
+  background: var(--bg4, #262d39);
+  color: var(--text-2, #9aa5b4);
+  flex-shrink: 0;
+}
+.bb-dl-icon svg { width: 14px; height: 14px; }
+.bb-dl-main { flex: 1; min-width: 0; }
+.bb-dl-name {
+  font-size: 12px;
+  color: var(--text, #e6eaf0);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bb-dl-status { font-size: 11px; color: var(--text-3, #6b7686); }
+.bb-dl-bar {
+  height: 4px;
+  margin-top: 4px;
+  border-radius: 2px;
+  background: var(--bg4, #262d39);
+  overflow: hidden;
+}
+.bb-dl-bar > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent, #5b8cff);
+  transition: width .2s;
+}
+.bb-dl.done .bb-dl-bar > i { background: #3fb950; }
+.bb-dl.cancelled .bb-dl-bar > i,
+.bb-dl.interrupted .bb-dl-bar > i { background: #e5484d; }
+.bb-dl-open {
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent, #5b8cff);
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.bb-dl-open:hover { filter: brightness(1.1); }
+
+/* ---------- Выдвижные панели (история/загрузки) ---------- */
+.bb-panel {
+  position: absolute;
+  top: 44px;
+  right: 8px;
+  width: 380px;
+  max-width: calc(100% - 16px);
+  max-height: calc(100% - 60px);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg2, #161b23);
+  border: 1px solid var(--border, #262d39);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.35);
+  z-index: 50;
+  overflow: hidden;
+}
+.bb-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border, #262d39);
+  font-weight: 600;
+  font-size: 13px;
+}
+.bb-panel-head span { flex: 1; }
+.bb-panel-clear, .bb-panel-close {
+  border: 0;
+  border-radius: 6px;
+  background: var(--bg3, #1d232d);
+  color: var(--text-2, #9aa5b4);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 10px;
+}
+.bb-panel-close { padding: 4px 10px; font-size: 16px; line-height: 1; }
+.bb-panel-clear:hover, .bb-panel-close:hover { background: var(--bg4, #262d39); color: var(--text, #e6eaf0); }
+.bb-panel-body {
+  overflow-y: auto;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.bb-panel-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--text-2, #9aa5b4);
+  text-align: left;
+  cursor: pointer;
+}
+.bb-panel-item:hover { background: var(--bg3, #1d232d); }
+.bb-panel-item .t {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text, #e6eaf0);
+  font-size: 12px;
+}
+.bb-panel-item .u {
+  font-size: 11px;
+  color: var(--text-3, #6b7686);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bb-panel-empty { padding: 20px; text-align: center; color: var(--text-3, #6b7686); font-size: 12px; }
+
+/* ---------- Панель расширений: тумблер и версия ---------- */
+.bb-ext-ver {
+  color: var(--text-3, #6b7686);
+  font-size: 10px;
+  font-weight: 400;
+}
+.bb-ext-warn { color: #d9a441; }
+.bb-ext-switch {
+  flex-shrink: 0;
+  width: 34px; height: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border, #262d39);
+  background: var(--bg4, #262d39);
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  transition: background .15s;
+}
+.bb-ext-switch span {
+  position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--text-3, #6b7686);
+  transition: left .15s, background .15s;
+}
+.bb-ext-switch.on { background: var(--accent, #5b8cff); border-color: var(--accent, #5b8cff); }
+.bb-ext-switch.on span { left: 16px; background: #fff; }
+
+/* ---------- Выпадающее меню ---------- */
+.bb-menu {
+  position: absolute;
+  top: 84px;
+  right: 8px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  background: var(--bg2, #161b23);
+  border: 1px solid var(--border, #262d39);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.35);
+  z-index: 60;
+}
+.bb-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text, #e6eaf0);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.bb-menu button:hover { background: var(--bg3, #1d232d); }
+.bb-menu kbd {
+  font: 11px/1 system-ui;
+  color: var(--text-3, #6b7686);
+  background: var(--bg3, #1d232d);
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+.bb-menu-sep { height: 1px; margin: 4px 6px; background: var(--border, #262d39); }
+
+/* Страница загрузки вкладки (до готовности webview) */
+.bb-tab-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--bg, #0f1419);
+  color: var(--text-3, #6b7686);
+  font-size: 13px;
+}
+.bb-tab-loading i {
+  width: 18px; height: 18px;
+  border: 2px solid var(--bg4, #262d39);
+  border-top-color: var(--accent, #5b8cff);
+  border-radius: 50%;
+  animation: bb-spin .7s linear infinite;
+}
+@keyframes bb-spin { to { transform: rotate(360deg); } }
+
+/* ---------- Всплывающие уведомления (тосты) ----------
+   Пока лежало в JS как alert() — в frameless-окне это модальное окно
+   системы, которое перехватывает фокус и выглядит чужеродно. */
+.bb-toasts {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 70;
+  pointer-events: none;
+}
+.bb-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 520px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--bg2, #161b23);
+  border: 1px solid var(--border, #262d39);
+  box-shadow: 0 12px 40px rgba(0,0,0,.45);
+  color: var(--text, #e6eaf0);
+  font-size: 12.5px;
+  pointer-events: auto;
+  animation: bb-toast-in .18s ease-out;
+}
+.bb-toast.hide { animation: bb-toast-out .18s ease-in forwards; }
+.bb-toast-ico {
+  width: 20px; height: 20px;
+  display: grid; place-items: center;
+  border-radius: 5px;
+  flex-shrink: 0;
+  background: var(--bg4, #262d39);
+  color: var(--text-2, #9aa5b4);
+}
+.bb-toast-ico svg { width: 12px; height: 12px; }
+.bb-toast.ok  { border-color: #3fb95055; }
+.bb-toast.ok  .bb-toast-ico { background: #3fb950; color: #fff; }
+.bb-toast.err { border-color: #e5484d55; }
+.bb-toast.err .bb-toast-ico { background: #e5484d; color: #fff; }
+.bb-toast-msg { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Подробный тост («Подробнее» у расширения): текст переносится, а не
+   обрезается многоточием — иначе половина сообщения об ошибке не видна. */
+.bb-toast.wide { max-width: 620px; align-items: flex-start; }
+.bb-toast.wide .bb-toast-msg { white-space: pre-wrap; overflow: visible; text-overflow: clip; word-break: break-word; }
+.bb-toast-act {
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent, #5b8cff);
+  color: #fff;
+  font-size: 11.5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.bb-toast-act:hover { filter: brightness(1.1); }
+@keyframes bb-toast-in  { from { opacity: 0; transform: translateY(8px); } }
+@keyframes bb-toast-out { to   { opacity: 0; transform: translateY(8px); } }
+
+/* ============================================================================
+   Ниже — UI для поиска по странице, зума, читаемого режима, перевода,
+   контекстного меню и управления загрузками.
+   ========================================================================== */
+
+/* ---------- Индикатор масштаба ---------- */
+.bb-zoom-badge {
+  position: absolute;
+  top: 96px;
+  right: 12px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: var(--bg2, #161b23);
+  border: 1px solid var(--border, #262d39);
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  color: var(--text, #e6eaf0);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  z-index: 65;
+  pointer-events: none;
+}
+
+/* ---------- Панель поиска по странице (Ctrl+F) ---------- */
+.bb-find {
+  position: absolute;
+  top: 88px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 10px;
+  background: var(--bg2, #161b23);
+  border: 1px solid var(--border, #262d39);
+  box-shadow: 0 12px 40px rgba(0,0,0,.45);
+  z-index: 68;
+}
+.bb-find input {
+  width: 200px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--border, #262d39);
+  border-radius: 7px;
+  background: var(--bg, #0f1419);
+  color: var(--text, #e6eaf0);
+  font-size: 12.5px;
+  outline: none;
+}
+.bb-find input:focus { border-color: var(--accent, #5b8cff); }
+.bb-find-count {
+  min-width: 62px;
+  text-align: center;
+  color: var(--text-3, #6b7686);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+.bb-find-count.none { color: #e5484d; }
+.bb-find-btn {
+  width: 26px; height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-2, #9aa5b4);
+  display: grid; place-items: center;
+  cursor: pointer;
+}
+.bb-find-btn:hover { background: var(--bg3, #1d232d); color: var(--text, #e6eaf0); }
+.bb-find-btn svg { width: 13px; height: 13px; }
+
+/* ---------- Читаемый режим и перевод: общая панель-«лист» ---------- */
+.bb-reader {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  overflow-y: auto;
+  background: var(--bg, #0f1419);
+  color: var(--text, #e6eaf0);
+  padding: 32px 20px 64px;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.bb-reader-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  font: 15px/1.75 "Segoe UI", system-ui, Georgia, serif;
+}
+.bb-reader h1 { font-size: 25px; line-height: 1.3; margin: 0 0 6px; }
+.bb-reader h2 { font-size: 19px; margin: 26px 0 8px; }
+.bb-reader h3 { font-size: 16px; margin: 20px 0 6px; }
+.bb-reader p { margin: 0 0 14px; }
+.bb-reader a { color: var(--accent, #5b8cff); }
+.bb-reader img, .bb-reader pre { max-width: 100%; }
+.bb-reader pre {
+  overflow-x: auto;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--bg2, #161b23);
+  font: 12.5px/1.6 ui-monospace, Consolas, monospace;
+}
+.bb-reader blockquote {
+  margin: 0 0 14px;
+  padding-left: 14px;
+  border-left: 3px solid var(--border, #262d39);
+  color: var(--text-2, #9aa5b4);
+}
+.bb-reader-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border, #262d39);
+  color: var(--text-3, #6b7686);
+  font-size: 12px;
+}
+.bb-reader-badge {
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: var(--accent, #5b8cff);
+  color: #fff;
+  font-size: 11px;
+}
+.bb-reader-err { color: #e5484d; }
+
+/* ---------- Контекстное меню вкладки ---------- */
+.bb-ctx {
+  position: fixed;
+  min-width: 216px;
+  padding: 6px;
+  border-radius: 10px;
+  background: var(--bg2, #161b23);
+  border: 1px solid var(--border, #262d39);
+  box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  z-index: 90;
+}
+.bb-ctx button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text, #e6eaf0);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.bb-ctx button:hover { background: var(--bg3, #1d232d); }
+.bb-ctx button[disabled] { opacity: .4; cursor: default; }
+.bb-ctx button[disabled]:hover { background: transparent; }
+.bb-ctx button.danger { color: #e5484d; }
+.bb-ctx kbd { font: 11px/1 system-ui; color: var(--text-3, #6b7686); }
+.bb-ctx-sep { height: 1px; margin: 4px 6px; background: var(--border, #262d39); }
+
+/* ---------- Кнопки управления загрузкой ---------- */
+.bb-dl-acts { display: flex; gap: 4px; flex-shrink: 0; }
+.bb-dl-btn {
+  width: 26px; height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--bg4, #262d39);
+  color: var(--text-2, #9aa5b4);
+  display: grid; place-items: center;
+  cursor: pointer;
+}
+.bb-dl-btn:hover { background: var(--accent, #5b8cff); color: #fff; }
+.bb-dl-btn.warn:hover { background: #e5484d; color: #fff; }
+.bb-dl-btn svg { width: 12px; height: 12px; }
+.bb-dl.paused .bb-dl-bar > i { background: #f0b429; }
+.bb-dl.cancelled .bb-dl-name,
+.bb-dl.interrupted .bb-dl-name { text-decoration: line-through; opacity: .65; }
+
+/* ---------- Закладки: папки и действие по ПКМ ---------- */
+.bb-bookmark { position: relative; }
+/* Кнопка раскрытия папки — треугольник справа от названия. */
+.bb-bookmark-open {
+  width: 16px; height: 16px;
+  margin-left: 2px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  display: grid; place-items: center;
+  cursor: pointer;
+  opacity: .55;
+  flex-shrink: 0;
+}
+.bb-bookmark-open:hover { background: var(--bg4, #262d39); opacity: 1; }
+.bb-bookmark-open svg { width: 8px; height: 8px; }
+.bb-bookmarks-add {
+  height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-3, #6b7686);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.bb-bookmarks-add:hover { background: var(--bg3, #1d232d); color: var(--text, #e6eaf0); }
+
+/* Выпадающий список папки закладок. */
+.bb-bm-menu {
+  position: fixed;
+  min-width: 220px;
+  max-width: 340px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 6px;
+  border-radius: 10px;
+  background: var(--bg2, #161b23);
+  border: 1px solid var(--border, #262d39);
+  box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  z-index: 90;
+}
+.bb-bm-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text, #e6eaf0);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.bb-bm-menu button:hover { background: var(--bg3, #1d232d); }
+.bb-bm-menu button span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bb-bm-menu .bb-bm-path { padding: 5px 9px; color: var(--text-3, #6b7686); font-size: 11px; }
+/* Курсор «перенести» на время перетаскивания закладки. */
+.bb-bookmark.dragging { opacity: .4; }
+.bb-bookmark.drop-target { outline: 2px dashed var(--accent, #5b8cff); outline-offset: -2px; }
+
+/* ---------- История: поиск и группировка ---------- */
+.bb-hist-search {
+  height: 28px;
+  margin: 8px 10px 4px;
+  width: calc(100% - 20px);
+  padding: 0 10px;
+  border: 1px solid var(--border, #262d39);
+  border-radius: 7px;
+  background: var(--bg, #0f1419);
+  color: var(--text, #e6eaf0);
+  font-size: 12.5px;
+  outline: none;
+}
+.bb-hist-search:focus { border-color: var(--accent, #5b8cff); }
+.bb-hist-day {
+  padding: 8px 12px 4px;
+  color: var(--text-3, #6b7686);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  border-bottom: 1px solid var(--border, #262d39);
+}
+.bb-hist-del {
+  width: 22px; height: 22px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text-3, #6b7686);
+  display: grid; place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  flex-shrink: 0;
+}
+.bb-panel-item:hover .bb-hist-del { opacity: 1; }
+.bb-hist-del:hover { background: #e5484d; color: #fff; }
+.bb-hist-del svg { width: 10px; height: 10px; }
+
+/* ---------- Вкладка: звук и «закреплена» ---------- */
+.bb-tab-mute {
+  width: 20px; height: 20px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  display: grid; place-items: center;
+  cursor: pointer;
+  opacity: .6;
+  flex-shrink: 0;
+}
+.bb-tab-mute:hover { background: var(--bg4, #262d39); opacity: 1; }
+.bb-tab-mute.muted { color: #e5484d; }
+.bb-tab-mute svg { width: 12px; height: 12px; }
+/* Закреплённая вкладка узкая и без крестика: закрывается только из меню. */
+.bb-tab.pinned { max-width: 46px; min-width: 46px; padding: 0 4px 0 10px; }
+.bb-tab.pinned .bb-tab-title { display: none; }
+.bb-tab.pinned .bb-tab-close { display: none; }
+
+/* ---------- Разделитель дока (режим half) ----------
+   Тонкая полоса по левому краю окна браузера: её перетаскивание меняет
+   ширину браузера и главного окна приложения (сумма не меняется).
+   Показывается только когда оболочка сообщила режим 'half'. */
+.bb-dock-handle {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 7px;
+  z-index: 80;
+  cursor: ew-resize;
+  background: transparent;
+  touch-action: none;
+}
+.bb-dock-handle::after {
+  content: '';
+  position: absolute; left: 2px; top: 0; bottom: 0; width: 2px;
+  background: transparent;
+  transition: background .15s;
+}
+.bb-dock-handle:hover::after,
+.bb-dock-handle.dragging::after { background: var(--accent, #5b8cff); }
+.bb-dock-handle[hidden] { display: none; }
+
+/* ---------- Меню выделения и карточка определения ---------- */
+.bb-selmenu {
+  position: fixed;
+  z-index: 300;
+  /* Меню выделения — не часть перетаскиваемого хрома окна: иначе клики по
+     кнопкам в frameless-окне могут не доходить (drag-регион). */
+  -webkit-app-region: no-drag;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 9px;
+  background: var(--panel, #1b1d22);
+  border: 1px solid var(--border, #33373f);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .45);
+}
+.bb-selmenu[hidden] { display: none; }
+.bb-selmenu button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text, #e6e8ec);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bb-selmenu button:hover { background: rgba(255, 255, 255, .08); }
+.bb-selmenu button i { font-style: normal; font-size: 13px; }
+
+.bb-wordpop {
+  position: fixed;
+  z-index: 300;
+  -webkit-app-region: no-drag;
+  width: min(340px, 92vw);
+  max-height: 46vh;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px 12px;
+  border-radius: 11px;
+  background: var(--panel, #1b1d22);
+  border: 1px solid var(--border, #33373f);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, .5);
+  color: var(--text, #e6e8ec);
+}
+.bb-wordpop[hidden] { display: none; }
+.bb-wordpop-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bb-wordpop-word {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent, #5b8cff);
+  overflow-wrap: anywhere;
+}
+.bb-wordpop-close {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--muted, #8b909a);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+.bb-wordpop-close:hover { color: var(--text, #e6e8ec); }
+.bb-wordpop-phon {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted, #8b909a);
+}
+.bb-wordpop-phon:empty { display: none; }
+.bb-wordpop-body {
+  margin-top: 8px;
+  overflow: auto;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.bb-wordpop-body .bb-word-pos { color: var(--muted, #8b909a); font-style: italic; margin-top: 7px; }
+.bb-wordpop-body .bb-word-def { margin-top: 2px; }
+.bb-wordpop-body .bb-word-loading { color: var(--muted, #8b909a); }
+

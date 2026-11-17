@@ -1,0 +1,145 @@
+/* 05-composer.css — Композер, кнопка отправки и микрофон */
+/* ---------- композер ---------- */
+.composer{flex:none;padding:11px 16px 13px;border-top:1px solid var(--border);background:var(--surface);position:relative}
+.draft-pill{display:none;align-items:center;gap:8px;padding:5px 11px;background:var(--warn-soft);border:1px solid transparent;
+  border-radius:8px;font-size:11.5px;color:var(--warn);margin-bottom:8px}
+.draft-pill.on{display:flex}
+.draft-pill .spacer{flex:1}
+.draft-pill button{color:var(--warn);font-weight:600}
+.suggest{position:absolute;bottom:100%;left:16px;right:16px;background:var(--surface);border:1px solid var(--border);
+  border-radius:11px;box-shadow:var(--sh-2);padding:4px;display:none;z-index:25;margin-bottom:5px;max-height:260px;overflow-y:auto}
+.suggest.on{display:block}
+.suggest button{display:flex;align-items:center;gap:8px;width:100%;padding:7px 9px;border-radius:7px;font-size:12px;color:var(--text-2);transition:var(--t);text-align:left}
+.suggest button:hover,.suggest button.sel{background:var(--accent-soft);color:var(--accent)}
+.suggest button i{color:var(--text-3);width:13px;font-size:10.5px}
+.suggest button b{font-weight:550;color:var(--text)}
+.suggest button small{color:var(--text-3);margin-left:auto;font-size:10.5px;max-width:40%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.atts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.atts:empty{display:none}
+.atts .img-att{position:relative}
+/* Вложение: имя + полный путь под ним. Так сразу видно, что получит агент. */
+.att-chip{align-items:flex-start;text-align:left}
+.att-wrap{display:flex;flex-direction:column;min-width:0;gap:1px}
+.att-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.att-path{font-size:9.5px;font-family:var(--mono);color:var(--text-3);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;max-width:260px;direction:rtl;text-align:left}
+.att-path.bad{color:var(--warn)}
+.att-chip.warn{border-color:var(--warn);background:var(--warn-soft)}
+.att-chip[data-attopen]{cursor:pointer}
+.att-chip[data-attopen]:hover{background:var(--surface-3);border-color:var(--border-2)}
+.imgs .img-att .att-path{max-width:150px;display:block;margin:3px auto 0}
+.atts .img-att img{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.atts .img-att .rm{position:absolute;top:-4px;right:-4px;width:17px;height:17px;border-radius:50%;background:var(--err);color:#fff;
+  display:grid;place-items:center;font-size:8.5px;cursor:pointer;border:2px solid var(--surface)}
+/* ---------- ПОЛОСА ОЧЕРЕДИ (над вводом) ----------
+   Тот же ui.msgQueue, что и в чипе #queueChip: порядок строк = порядок
+   отправки. Строка в один ряд с обрезанным текстом; клик по тексту
+   разворачивает, «сейчас» ставит сообщение в голову очереди. */
+.queue-strip{display:none;margin-bottom:8px;padding:6px 8px 7px;border:1px solid var(--border-2);
+  border-radius:12px;background:var(--surface-2);box-shadow:var(--sh-1)}
+.queue-strip.on{display:block}
+.queue-strip .spacer{flex:1}
+.qs-head{display:flex;align-items:center;gap:7px;padding:1px 3px 6px;font-size:11px;color:var(--text-3)}
+.qs-head>i{color:var(--accent);font-size:10.5px}
+.qs-head b{font-weight:600;color:var(--text-2);font-size:11.5px;white-space:nowrap}
+.qs-list{display:flex;flex-direction:column;gap:3px;max-height:184px;overflow-y:auto;overscroll-behavior:contain}
+.qs-row{display:grid;grid-template-columns:14px 18px minmax(0,1fr) auto auto auto auto;column-gap:6px;row-gap:3px;
+  align-items:center;padding:5px 6px;border-radius:8px;border:1px solid transparent;background:var(--surface);transition:var(--t)}
+.qs-row:hover{border-color:var(--border-2);background:var(--surface-3)}
+.qs-row.drag{opacity:.4}
+.qs-row.target{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 -2px 0 -1px var(--accent)}
+.qs-grip{grid-column:1;grid-row:1;color:var(--text-3);font-size:10.5px;text-align:center;cursor:grab}
+.qs-row.drag .qs-grip{cursor:grabbing}
+.qs-n{grid-column:2;grid-row:1;width:18px;height:18px;border-radius:6px;display:grid;place-items:center;font-size:10px;
+  font-weight:600;color:var(--text-2);background:var(--surface-3)}
+.qs-txt{grid-column:3;grid-row:1;min-width:0;font-size:11.5px;line-height:1.5;color:var(--text);cursor:pointer;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qs-row.exp .qs-txt{grid-column:3/8;grid-row:2;white-space:pre-wrap;overflow:visible;text-overflow:clip;word-break:break-word}
+/* В раскрытой строке текст занимает вторую строку сетки, поэтому значок
+   чужой сессии уходит на третью — иначе он ложится поверх текста. */
+.qs-row.exp .qs-sess{grid-row:3}
+.qs-eta{grid-column:4;grid-row:1;justify-self:end;font-size:10px;color:var(--text-3);white-space:nowrap;
+  font-variant-numeric:tabular-nums}
+.qs-sess{grid-column:3/6;grid-row:2;display:inline-flex;align-items:center;gap:4px;justify-self:start;font-size:10px;
+  color:var(--warn);background:var(--warn-soft);padding:2px 6px;border-radius:6px;white-space:nowrap}
+.qs-btn{grid-column:5;grid-row:1;display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:7px;
+  font-size:10.5px;color:var(--text-2);transition:var(--t);white-space:nowrap}
+.qs-btn>i{font-size:9.5px}
+.qs-btn:hover{background:var(--accent-soft);color:var(--accent)}
+.qs-btn[data-act="edit"]{grid-column:6}
+.qs-btn.x{grid-column:7;padding:3px 5px;color:var(--text-3)}
+.qs-btn.x:hover{background:var(--err-soft);color:var(--err)}
+.qs-btn.all{grid-column:auto;grid-row:auto;padding:3px 8px}
+.qs-btn.all:hover{background:var(--err-soft);color:var(--err)}
+.qs-ta{grid-column:3/8;grid-row:1/span 2;min-width:0;width:100%;resize:vertical;border:1px solid var(--accent);
+  border-radius:8px;outline:none;background:var(--surface);color:var(--text);padding:6px 8px;font-size:11.5px;
+  line-height:1.5;max-height:150px}
+.qs-row.qs-editing{border-color:var(--accent);background:var(--surface)}
+.cbox{border:1px solid var(--border-2);border-radius:14px;background:var(--surface-2);transition:var(--t);overflow:hidden}
+.cbox:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 13%,transparent);background:var(--surface)}
+.cbox.drag-over{border-color:var(--accent);border-style:dashed;background:var(--accent-soft)}
+.cbox textarea{width:100%;border:none;background:transparent;outline:none;resize:none;padding:12px 14px 5px;
+  font-size:13.5px;line-height:1.6;max-height:180px;min-height:44px;color:var(--text)}
+.cbox textarea::placeholder{color:var(--text-3)}
+.crow{display:flex;align-items:center;gap:3px;padding:5px 8px 7px}
+.crow .spacer{flex:1}
+.cbtn{width:31px;height:31px;border-radius:8px;display:grid;place-items:center;color:var(--text-3);transition:var(--t);font-size:12.5px;position:relative}
+.cbtn:hover{background:var(--surface-3);color:var(--accent)}
+.cbtn.on{color:var(--accent);background:var(--accent-soft)}
+/* ---------- ЖЕЛЕ-КНОПКА ОТПРАВКИ — точный порт «Orbit Send» из bootom.html ----------
+   Сфера-ядро + орбитальные частицы (canvas #cOrb), желе-пружина (squash & stretch
+   и морфинг скругления через inline-стили из JS) и всплеск искр при отправке.
+   Цвета берём из акцентов темы (--accent/--accent-2/--accent-3), поэтому кнопка
+   «поддерживает» акцентный цвет в светлой и тёмной теме. */
+.sendWrap{position:relative;width:36px;height:36px;flex:0 0 36px;display:grid;place-items:center}
+.sendOrb{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:1}
+.cbtn.send{width:36px;height:36px;border-radius:50%;color:#fff;font-size:13px;z-index:2;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--accent-2) 80%,#fff) 0%,var(--accent-2) 44%,var(--accent) 100%);
+  box-shadow:0 9px 22px -9px color-mix(in srgb,var(--accent) 90%,transparent),inset 0 1px 0 rgba(255,255,255,.42);
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;will-change:transform,border-radius;
+  transition:box-shadow .3s,filter .3s,background .45s ease}
+.cbtn.send i{display:block;position:relative;z-index:2;will-change:transform}
+.sendWrap.hover .cbtn.send{box-shadow:0 12px 28px -8px color-mix(in srgb,var(--accent-2) 95%,transparent),inset 0 1px 0 rgba(255,255,255,.5)}
+.sendWrap.armed .cbtn.send{filter:saturate(1.06) brightness(1.03)}
+.cbtn.send.stop{background:linear-gradient(145deg,color-mix(in srgb,var(--err) 78%,#fff) 0%,var(--err) 55%,color-mix(in srgb,var(--err) 55%,#000) 100%);
+  box-shadow:0 9px 22px -9px color-mix(in srgb,var(--err) 90%,transparent),inset 0 1px 0 rgba(255,255,255,.4)}
+.cbtn.send::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,255,255,.55);opacity:0;pointer-events:none}
+.cbtn.send.sent::after{animation:sgRingOut .7s ease-out}
+@keyframes sgRingOut{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(2)}}
+.cbtn.send.sent{animation:sgSquash .62s cubic-bezier(.3,1.5,.4,1)}
+@keyframes sgSquash{0%{transform:scale(1)}30%{transform:scale(.82,1.16)}58%{transform:scale(1.12,.9)}100%{transform:scale(1)}}
+.cbtn.send.sent i{animation:sgFlyOut .85s cubic-bezier(.5,0,.3,1)}
+@keyframes sgFlyOut{
+  0%{transform:translate(0,0) scale(1);opacity:1}
+  45%{transform:translate(14px,-14px) scale(.5) rotate(14deg);opacity:0}
+  46%{transform:translate(-12px,12px) scale(.5) rotate(-12deg);opacity:0}
+  100%{transform:translate(0,0) scale(1);opacity:1}}
+/* «горячее» состояние кнопок: агент работает (send) / идёт запись (mic) */
+/* Гало и свечение орбит включаются ТОЛЬКО когда агент работает (класс .stop).
+   В простое кнопка отправки — обычная кнопка без анимации. */
+.sendWrap.hot .cbtn.send{filter:none}
+.cbtn.send.stop{animation:sendHot 1.5s ease-in-out infinite}
+@keyframes sendHot{0%,100%{box-shadow:0 9px 22px -9px color-mix(in srgb,var(--err) 90%,transparent),inset 0 1px 0 rgba(255,255,255,.4),0 0 0 0 rgba(220,38,38,.45)}50%{box-shadow:0 9px 22px -9px color-mix(in srgb,var(--err) 90%,transparent),inset 0 1px 0 rgba(255,255,255,.4),0 0 0 7px rgba(220,38,38,0)}}
+/* ---------- МИКРОФОН В КОМПОЗЕРЕ — те же орбы и желе, что у кнопки отправки ---------- */
+.cmicWrap{position:relative;width:31px;height:31px;flex:0 0 31px;display:grid;place-items:center}
+.cmicWrap .cbtn{position:relative;z-index:2;will-change:transform;
+  transition:background .3s,color .3s,box-shadow .3s,filter .3s}
+.cmicWrap.hover .cbtn{color:var(--accent);background:var(--surface-3)}
+.cmicWrap.armed .cbtn{filter:saturate(1.2) brightness(1.05)}
+/* Кнопка микрофона в чате намеренно без анимации: орбиты и желе выглядели
+   шумно рядом с текстом. Активное состояние обозначается только цветом. */
+.cmicWrap.hot .cbtn{color:var(--err);background:var(--err-soft);box-shadow:none}
+/* желе-отклик микрофона на старт/стоп записи (те же кадры, что у отправки) */
+/* Анимаций желе у микрофона нет вовсе — остался лишь короткий отклик
+   на нажатие, без орбит и «вылета» иконки. */
+.cmicWrap .cbtn::after{opacity:0}
+.cmicWrap .cbtn:active{transform:scale(.94)}
+.cbtn.mic-on{color:var(--err);background:var(--err-soft);box-shadow:none}
+@keyframes pulseMic{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.4)}50%{box-shadow:0 0 0 7px rgba(220,38,38,0)}}
+.cfoot{display:flex;align-items:center;gap:7px;margin-top:8px;flex-wrap:wrap}
+.cfoot .spacer{flex:1}
+.cfoot select{padding:4px 24px 4px 8px;border-radius:7px;border:1px solid var(--border);background:var(--surface);font-size:11px;
+  color:var(--text-2);cursor:pointer;outline:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a1af' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 6px center;background-size:11px}
+.tok{font-size:10.5px;color:var(--text-3);font-variant-numeric:tabular-nums}

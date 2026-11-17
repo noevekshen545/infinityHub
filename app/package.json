@@ -1,0 +1,18 @@
+{
+  "name": "runjson",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@excalidraw/excalidraw": "^0.18.0",
+    "fabric": "^7.4.0",
+    "luckysheet": "^2.1.13",
+    "tldraw": "^4.5.8"
+  }
+}

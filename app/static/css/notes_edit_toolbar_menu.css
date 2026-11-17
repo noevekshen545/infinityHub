@@ -1,0 +1,1113 @@
+/* Компактная панель редактора заметок (Aurora / Studio / Focus).
+   ---------------------------------------------------------------------------
+   Верхняя панель сокращена до трёх действий: «Заметки», «Папки» и «Ещё».
+   Всё остальное (сохранение, версии, экспорт, режимы, инструменты) живёт
+   в выпадающем меню. Кнопки — без собственного фона и рамок: панель не
+   рисует полосу поверх текста, а меню появляется по нажатию.
+
+   Файл подключается после CSS конкретной темы, поэтому перекрывает его
+   оформление .toolbar. Цвета берутся из переменных страницы, чтобы меню
+   следовало всем темам приложения. */
+
+html[data-notes-skin] .toolbar.ed-toolbar {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 4px 2px;
+  margin: 10px 16px 2px;
+  gap: 4px;
+  overflow: visible;
+}
+
+/* Кнопки верхнего ряда: только текст с иконкой, без плашек. */
+html[data-notes-skin] .toolbar.ed-toolbar > .btn.ed-ghost {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--text2);
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 10px;
+  transform: none;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar > .btn.ed-ghost:hover,
+html[data-notes-skin] .toolbar.ed-toolbar > .btn.ed-ghost:focus-visible {
+  background: color-mix(in srgb, var(--text) 7%, transparent);
+  border-color: transparent;
+  color: var(--text);
+  transform: none;
+  box-shadow: none;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar > .btn.ed-ghost.on {
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  color: var(--accent);
+}
+
+/* Focus приглушает панели до 0.32 и на наведении рисует плашку. Для
+   компактной панели плашка не нужна: остаются только три кнопки. */
+html[data-notes-skin] .toolbar.ed-toolbar:hover,
+html[data-notes-skin] .toolbar.ed-toolbar:focus-within,
+html[data-notes-skin] .toolbar.ed-toolbar:has(.ed-menu.open) {
+  opacity: 1;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-caret {
+  font-size: 9px;
+  margin-left: 2px;
+  opacity: 0.65;
+  transition: transform 0.18s ease;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar > .btn.ed-ghost.on .ed-caret {
+  transform: rotate(180deg);
+}
+
+/* ── Выпадающее меню ─────────────────────────────────────────────────── */
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 140;
+  display: none;
+  grid-template-columns: minmax(230px, 1fr) minmax(240px, 1fr);
+  gap: 4px 18px;
+  min-width: 500px;
+  max-width: calc(100vw - 40px);
+  max-height: min(72vh, 640px);
+  overflow: auto;
+  padding: 14px 14px 12px;
+  border-radius: 18px;
+  border: 1px solid var(--glass-border, var(--border));
+  background: var(--panel-bg, var(--bg2));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.08);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  animation: edMenuIn 0.16s ease;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu.open {
+  display: grid;
+}
+
+@keyframes edMenuIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 8px 10px 4px;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu-title:first-child {
+  padding-top: 2px;
+}
+
+/* Пункты меню переиспользуют исходные кнопки (.btn с id), поэтому
+   состояния active / mode-active / бейдж совместного доступа остаются
+   рабочими — меняется только внешний вид. */
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 9px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  box-shadow: none;
+  border-radius: 10px;
+  color: var(--text);
+  font-weight: 500;
+  font-size: 12.5px;
+  text-align: left;
+  transform: none;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn .icon {
+  width: 20px;
+  color: var(--text2);
+  font-size: 13px;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn:hover,
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn:focus-visible {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: transparent;
+  color: var(--accent);
+  transform: none;
+  box-shadow: none;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn:hover .icon,
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn:focus-visible .icon {
+  color: var(--accent);
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn.active,
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn.mode-active {
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  color: var(--accent);
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn.danger {
+  color: var(--red);
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn.danger:hover {
+  background: var(--red-light, color-mix(in srgb, var(--red) 12%, transparent));
+  color: var(--red);
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn.danger .icon {
+  color: var(--red);
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn.ed-accent {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn.ed-accent .icon {
+  color: var(--accent);
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu kbd,
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .ed-theme-name {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--text3);
+  font-family: inherit;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+/* Поля «Папка» и «Режим» — те же select, что были в панели. */
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .ed-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 10px;
+  font-size: 12px;
+  color: var(--text2);
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .ed-field > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 64px;
+  white-space: nowrap;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .ed-field .icon {
+  width: 20px;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .ed-field select {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 9px;
+  padding: 7px 9px;
+  font-size: 12px;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .defmode {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 11.5px;
+  color: var(--text2);
+  cursor: pointer;
+  white-space: normal;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .defmode input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .ed-sep {
+  height: 1px;
+  margin: 8px 6px;
+  background: var(--border);
+}
+
+/* Подписи пунктов не должны скрываться мобильным правилом панели
+   (оно прячет span у .toolbar .btn на средних экранах). */
+@media (max-width: 1180px) {
+  html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .btn span,
+  html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .ed-field span,
+  html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .defmode span {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 720px) {
+  html[data-notes-skin] .toolbar.ed-toolbar .ed-menu {
+    grid-template-columns: 1fr;
+    min-width: 0;
+    width: calc(100vw - 24px);
+    left: -6px;
+    max-height: 68vh;
+  }
+  html[data-notes-skin] .toolbar.ed-toolbar > .btn.ed-ghost span {
+    display: inline;
+  }
+}
+
+@media (max-width: 460px) {
+  html[data-notes-skin] .toolbar.ed-toolbar > .btn.ed-ghost span {
+    display: none;
+  }
+}
+
+/* ── Единая закреплённая панель ─────────────────────────────────────────
+   .toolbar и .format-bar оборачиваются в #edRail скриптом
+   notes_edit_skin_common.js. Панель стоит на месте при прокрутке:
+   инструменты по центру, навигация слева, особенности шаблона справа.
+   Пока страница не прокручена, панель прозрачна и не рисует плашку. */
+html[data-notes-skin] .ed-rail {
+  position: sticky;
+  top: 8px;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  margin: 8px 16px 8px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  background: transparent;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease,
+    opacity 0.22s ease;
+}
+
+html[data-notes-skin] .ed-rail.is-stuck {
+  background: var(--glass, var(--bg2));
+  border-color: var(--glass-border, var(--border));
+  box-shadow: var(--shadow);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+}
+
+html[data-notes-skin] .ed-rail .toolbar.ed-toolbar {
+  position: static;
+  width: max-content;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  gap: 2px;
+  flex-wrap: nowrap;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  opacity: 1;
+  overflow: visible;
+}
+
+/* Инструменты — ровно по центру панели, независимо от ширины навигации.
+   --ed-side ставит скрипт: по ней инструменты не наезжают на боковые зоны,
+   а при нехватке места прокручиваются по горизонтали. */
+html[data-notes-skin] .ed-rail .format-bar {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: calc(100% - var(--ed-side, 0px) * 2);
+  margin: 0;
+  padding: 2px 4px;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: safe center;
+  gap: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  opacity: 1;
+  z-index: 1;
+}
+
+html[data-notes-skin] .ed-rail .format-bar::-webkit-scrollbar { display: none }
+
+html[data-notes-skin] .ed-rail .format-bar .fmt-group,
+html[data-notes-skin] .ed-rail .format-bar .fmt-sep,
+html[data-notes-skin] .ed-rail .format-bar .fmt-btn { flex: 0 0 auto }
+
+html[data-notes-skin] .ed-rail .format-bar .fmt-btn {
+  width: 27px;
+  height: 27px;
+  border-radius: 8px;
+}
+
+html[data-notes-skin] .ed-rail .format-bar .fmt-sep {
+  height: 16px;
+  margin: 0 3px;
+  opacity: 0.85;
+}
+
+html[data-notes-skin] .ed-rail-extra {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+}
+
+/* Навигация сворачивается в «Ещё» при прокрутке: кнопка остаётся на том
+   же месте, а «Заметки» и «Папки» переезжают в начало меню. */
+html[data-notes-skin] .ed-rail .toolbar.ed-toolbar > .btn.ed-ghost.ed-nav-item {
+  max-width: 170px;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.16s ease, max-width 0.22s ease, padding 0.22s ease,
+    margin 0.22s ease, border-width 0.16s ease;
+}
+
+html[data-notes-skin] .ed-rail.is-stuck .toolbar.ed-toolbar > .btn.ed-ghost.ed-nav-item {
+  max-width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  margin: 0;
+  border-width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+html[data-notes-skin] .ed-rail .ed-menu-compact { display: contents }
+
+html[data-notes-skin] .ed-rail .ed-menu-compact > .ed-menu-title,
+html[data-notes-skin] .ed-rail .ed-menu .ed-compact-only { display: none }
+
+html[data-notes-skin] .ed-rail.is-stuck .ed-menu-compact > .ed-menu-title { display: block }
+
+html[data-notes-skin] .ed-rail.is-stuck .ed-menu .btn.ed-compact-only { display: flex }
+
+html[data-notes-skin] .ed-rail.is-stuck .ed-menu .ed-sep.ed-compact-only { display: block }
+
+/* Прогресс чтения — особенность Aurora: тонкая линия под панелью. */
+html[data-notes-skin] .ed-rail-progress {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 1px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transform: scaleX(var(--ed-progress, 0));
+  transform-origin: left center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+html[data-notes-skin="aurora"] .ed-rail.is-stuck .ed-rail-progress { opacity: 0.95 }
+
+html[data-notes-skin="aurora"] .ed-rail { border-radius: 20px }
+
+html[data-notes-skin="aurora"] .ed-rail.is-stuck {
+  background: color-mix(in srgb, var(--glass) 88%, transparent);
+  border-color: var(--glass-border, var(--border));
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--accent) 10%, transparent),
+    var(--shadow-sm);
+}
+
+html[data-notes-skin="studio"] .ed-rail { border-radius: 12px }
+
+html[data-notes-skin="studio"] .ed-rail.is-stuck {
+  background: color-mix(in srgb, var(--bg2) 94%, transparent);
+}
+
+/* Кнопки особенностей шаблона (Focus: «Дзен» и «Машинка», Studio: структура) */
+html[data-notes-skin] .ed-extra-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+html[data-notes-skin] .ed-extra-btn:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+html[data-notes-skin] .ed-extra-btn.on {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* Studio: живой счётчик слов в панели. */
+html[data-notes-skin] .ed-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+html[data-notes-skin] .ed-stat i { font-size: 10px; opacity: 0.7 }
+html[data-notes-skin] .ed-stat b { font-weight: 600; color: var(--text2); min-width: 1ch }
+
+/* ── «Структура»: общая панель для всех шаблонов ────────────────────────
+   Раньше жила только в Studio и появлялась лишь от 1340px. Теперь
+   открывается из меню «Ещё» (или кнопкой в панели), состояние запоминается
+   и не зависит от ширины окна. */
+html[data-notes-skin] .oe-outline {
+  position: fixed;
+  top: 68px;
+  right: 18px;
+  width: 252px;
+  max-height: calc(100vh - 120px);
+  display: none;
+  flex-direction: column;
+  border: 1px solid var(--border2, var(--border));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg2) 96%, transparent);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  z-index: 158;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+
+html[data-notes-skin] .oe-outline.open {
+  display: flex;
+  animation: oe-outline-in 0.18s ease;
+}
+
+@keyframes oe-outline-in {
+  from { opacity: 0; transform: translateY(-6px) }
+  to { opacity: 1; transform: none }
+}
+
+html[data-notes-skin] .oe-outline-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 8px 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+html[data-notes-skin] .oe-outline-head > i { color: var(--accent); font-size: 11px }
+html[data-notes-skin] .oe-outline-head > span { flex: 1 1 auto }
+
+html[data-notes-skin] .oe-outline-count {
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0;
+}
+
+html[data-notes-skin] .oe-outline-mini {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text3);
+  font-size: 9px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+html[data-notes-skin] .oe-outline-mini:hover {
+  background: var(--hover);
+  color: var(--accent);
+}
+
+html[data-notes-skin] .oe-outline-close {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text3);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+html[data-notes-skin] .oe-outline-close:hover {
+  background: var(--hover);
+  color: var(--accent);
+}
+
+html[data-notes-skin] .oe-outline-body {
+  overflow-y: auto;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+html[data-notes-skin] .oe-outline-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 26px;
+  border-radius: 6px;
+}
+
+html[data-notes-skin] .oe-outline-row:hover { background: var(--hover) }
+
+html[data-notes-skin] .oe-outline-row.active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+html[data-notes-skin] .oe-outline-row.lvl-1 { padding-left: 2px }
+html[data-notes-skin] .oe-outline-row.lvl-2 { padding-left: 16px }
+html[data-notes-skin] .oe-outline-row.lvl-3 { padding-left: 30px }
+
+html[data-notes-skin] .oe-outline-toggle {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text3);
+  font-size: 9px;
+  cursor: pointer;
+}
+
+html[data-notes-skin] .oe-outline-toggle:hover {
+  color: var(--accent);
+  background: var(--hover);
+}
+
+html[data-notes-skin] .oe-outline-toggle.empty { visibility: hidden; pointer-events: none }
+html[data-notes-skin] .oe-outline-toggle i { transition: transform 0.15s ease }
+html[data-notes-skin] .oe-outline-toggle.collapsed i { transform: rotate(-90deg) }
+
+html[data-notes-skin] .oe-outline-item {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 8px 6px 2px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text2);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html[data-notes-skin] .oe-outline-row.lvl-2 .oe-outline-item { font-size: 11.5px }
+html[data-notes-skin] .oe-outline-row.lvl-3 .oe-outline-item { font-size: 11px; color: var(--text3) }
+html[data-notes-skin] .oe-outline-row.active .oe-outline-item { color: var(--accent); font-weight: 600 }
+
+html[data-notes-skin] .oe-outline-empty {
+  padding: 12px 10px 14px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--text3);
+}
+
+/* В режиме фокусировки панель скрыта: он и так оставляет только текст. */
+body.notes-focus .oe-outline { display: none !important }
+
+@media (max-width: 900px) {
+  html[data-notes-skin] .oe-outline {
+    top: auto;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    width: auto;
+    max-height: 55vh;
+    border-radius: 16px;
+  }
+}
+
+/* ── Прозрачная панель (опция меню «Ещё») ─────────────────────────────── */
+html[data-notes-skin] .ed-rail.ed-glass {
+  background: color-mix(in srgb, var(--bg2) 58%, transparent) !important;
+  border-color: color-mix(in srgb, var(--border) 55%, transparent) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+html[data-notes-skin] .ed-rail.ed-glass.is-stuck {
+  background: color-mix(in srgb, var(--glass, var(--bg2)) 72%, transparent) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
+}
+
+/* ── Скрытые теги и свойства (опция меню «Ещё») ───────────────────────── */
+body.ed-props-hidden .tags-row,
+body.ed-props-hidden #nbRoot,
+body.ed-props-hidden .pg-note-box { display: none !important }
+
+/* ── Переключатель в меню «Ещё» ───────────────────────────────────────── */
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .ed-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  color: var(--text2);
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .ed-check:hover { background: var(--hover) }
+html[data-notes-skin] .toolbar.ed-toolbar .ed-menu .ed-check input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+  margin: 0;
+}
+
+/* ── «Машинка»: общий режим (из Focus) ────────────────────────────────── */
+html[data-notes-skin]:not([data-notes-skin="focus"]).skin-typewriter .editor {
+  padding-top: 30vh;
+  padding-bottom: 44vh;
+}
+
+/* Focus: панель приглушена, гаснет на время набора и возвращается от мыши. */
+html[data-notes-skin="focus"] .ed-rail { opacity: 0.5 }
+
+html[data-notes-skin="focus"] .ed-rail:hover,
+html[data-notes-skin="focus"] .ed-rail:focus-within { opacity: 1 }
+
+html[data-notes-skin="focus"] .ed-rail.is-dim { opacity: 0.16 }
+
+html[data-notes-skin="focus"] .ed-rail .toolbar.ed-toolbar,
+html[data-notes-skin="focus"] .ed-rail .format-bar { opacity: 1 }
+
+html[data-notes-skin="focus"] .ed-rail .toolbar.ed-toolbar:hover,
+html[data-notes-skin="focus"] .ed-rail .format-bar:hover {
+  background: transparent;
+  border-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Фокусировка: штатный режим редактора прячет панель целиком. */
+html[data-notes-skin] body.notes-focus .ed-rail { display: none }
+
+/* Видимая кнопка выхода из фокусировки. */
+html[data-notes-skin] .ed-focus-exit {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 2400;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 13px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg2) 84%, transparent);
+  color: var(--text2);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+html[data-notes-skin] body.notes-focus .ed-focus-exit { display: inline-flex }
+
+html[data-notes-skin] .ed-focus-exit:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+html[data-notes-skin] .ed-focus-exit i { font-size: 11px }
+
+/* Сдвиг под открытые «Папки» повторяет правила страницы. */
+html[data-notes-skin] body.ne-open .ed-rail { margin-left: 336px }
+html[data-notes-skin="studio"] body.ne-open .ed-rail { margin-left: 316px }
+
+@media (max-width: 1360px) {
+  html[data-notes-skin] .ed-rail .toolbar.ed-toolbar > .btn.ed-ghost { padding: 8px 10px }
+  html[data-notes-skin] .ed-rail .toolbar.ed-toolbar > .btn.ed-ghost span { display: none }
+  html[data-notes-skin] .ed-rail .toolbar.ed-toolbar > .btn.ed-ghost .ed-caret { margin-left: 0 }
+}
+
+@media (max-width: 900px) {
+  html[data-notes-skin] .ed-rail {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px 6px;
+    border-radius: 14px;
+  }
+  html[data-notes-skin] .ed-rail .format-bar {
+    position: static;
+    transform: none;
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+    padding: 2px 0 0;
+  }
+  html[data-notes-skin] .ed-rail-extra {
+    position: static;
+    transform: none;
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  html[data-notes-skin] body.ne-open .ed-rail { margin-left: 16px }
+}
+
+@media print {
+  html[data-notes-skin] .ed-rail { display: none }
+}
+
+
+/* ── Командная палитра (Ctrl K) ─────────────────────────────────────────
+   Общая для Aurora / Studio / Focus: разметку и обработчики строит
+   notes_edit_skin_common.js. Затемнение кликабельно и закрывает палитру. */
+html[data-notes-skin] .pk-back {
+  position: fixed;
+  inset: 0;
+  z-index: 320;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12vh 16px 16px;
+  background: rgba(8, 10, 14, 0.42);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  animation: pk-fade 0.14s ease;
+}
+
+@keyframes pk-fade {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+html[data-notes-skin] .pk {
+  width: 100%;
+  max-width: 560px;
+  max-height: 68vh;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border2, var(--border));
+  border-radius: 16px;
+  background: var(--bg2);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.34);
+  overflow: hidden;
+  animation: pk-in 0.16s ease;
+}
+
+@keyframes pk-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.985) }
+  to { opacity: 1; transform: none }
+}
+
+html[data-notes-skin] .pk-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+html[data-notes-skin] .pk-head > i { color: var(--accent); font-size: 13px }
+
+html[data-notes-skin] .pk-head input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+html[data-notes-skin] .pk-head input::placeholder { color: var(--text3) }
+
+html[data-notes-skin] .pk-head kbd,
+html[data-notes-skin] .pk-foot kbd {
+  padding: 1px 5px;
+  border: 1px solid var(--border2, var(--border));
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  color: var(--text3);
+  font: inherit;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+html[data-notes-skin] .pk-list {
+  overflow-y: auto;
+  padding: 6px;
+}
+
+html[data-notes-skin] .pk-cap {
+  padding: 9px 8px 3px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+html[data-notes-skin] .pk-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text2);
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+html[data-notes-skin] .pk-row > i {
+  width: 16px;
+  flex: 0 0 16px;
+  color: var(--text3);
+  font-size: 12px;
+  text-align: center;
+}
+
+html[data-notes-skin] .pk-row.on,
+html[data-notes-skin] .pk-row:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--text);
+}
+
+html[data-notes-skin] .pk-row.on > i { color: var(--accent) }
+
+html[data-notes-skin] .pk-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-notes-skin] .pk-hint {
+  flex: 0 0 auto;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10.5px;
+  color: var(--text3);
+}
+
+html[data-notes-skin] .pk-empty {
+  padding: 22px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+html[data-notes-skin] .pk-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 10.5px;
+  color: var(--text3);
+}
+
+html[data-notes-skin] .pk-foot > span { display: inline-flex; align-items: center; gap: 4px }
+html[data-notes-skin] .pk-foot > span:last-child { margin-left: auto }
+
+@media (max-width: 640px) {
+  html[data-notes-skin] .pk-back { padding: 8vh 10px 10px }
+  html[data-notes-skin] .pk { max-height: 74vh }
+  html[data-notes-skin] .pk-foot > span:last-child { display: none }
+}
+
+/* Кнопка «Командная палитра» в меню «Ещё»: как остальные пункты, но
+   с подсказкой горячей клавиши справа. */
+html[data-notes-skin] .ed-menu .ed-palette-btn kbd {
+  margin-left: auto;
+  padding: 1px 5px;
+  border: 1px solid var(--border2, var(--border));
+  border-radius: 5px;
+  color: var(--text3);
+  font: inherit;
+  font-size: 10px;
+}
+
+/* ── AI-теги: кнопка в строке тегов и всплывающие предложения ──────────
+   Подбор идёт через Laya (/api/notes/ai-tags). Подсказка занимает свою
+   строку под тегами, чтобы не сдвигать поле ввода. */
+html[data-notes-skin] .tags-row .tag-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text3);
+  font-size: 11px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+html[data-notes-skin] .tags-row .tag-ai-btn:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+}
+
+html[data-notes-skin] .ai-tag-sug {
+  flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  padding: 8px 10px;
+  border: 1px dashed var(--border2, var(--border));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg2) 80%, transparent);
+}
+
+html[data-notes-skin] .ai-tag-sug-head {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text3);
+}
+
+html[data-notes-skin] .ai-tag-sug-head > i { color: var(--accent); font-size: 11px }
+
+html[data-notes-skin] .ai-tag-chip {
+  padding: 3px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+html[data-notes-skin] .ai-tag-chip:hover { background: var(--accent); color: #fff }
+
+html[data-notes-skin] .ai-tag-chip.added {
+  border-color: var(--border);
+  color: var(--text3);
+  background: transparent;
+  cursor: default;
+}
+
+html[data-notes-skin] .ai-tag-sug-close {
+  margin-left: auto;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text3);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+html[data-notes-skin] .ai-tag-sug-close:hover { background: var(--hover); color: var(--accent) }

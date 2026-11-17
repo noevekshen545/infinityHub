@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<style>
+:root {
+  --bg: #ffffff;
+  --fg: #1f2937;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --acc: #4f46e5;
+  --card-bg: #f9fafb;
+  --code-bg: #f3f4f6;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171c;
+    --fg: #e8eaed;
+    --muted: #9aa3af;
+    --line: #2b2f37;
+    --acc: #818cf8;
+    --card-bg: #1f2229;
+    --code-bg: #2b2f37;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--fg);
+}
+.subtitle {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 16px;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 32px 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: var(--acc);
+  border-radius: 2px;
+}
+.timeline {
+  position: relative;
+  padding-left: 24px;
+  margin-bottom: 40px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--line);
+}
+.step {
+  position: relative;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.step:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.step::before {
+  content: '';
+  position: absolute;
+  left: -21px;
+  top: 20px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--acc);
+  z-index: 2;
+}
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.step-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--fg);
+}
+.step-meta {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: monospace;
+  background: var(--code-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.step-desc {
+  color: var(--fg);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.step-code {
+  font-family: monospace;
+  font-size: 13px;
+  background: var(--code-bg);
+  padding: 8px;
+  border-radius: 4px;
+  color: var(--muted);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-right: 6px;
+}
+.tag-bug { background: rgba(220, 38, 38, 0.1); color: var(--danger); }
+.tag-fix { background: rgba(5, 150, 105, 0.1); color: var(--success); }
+.tag-test { background: rgba(217, 119, 6, 0.1); color: var(--warning); }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+}
+.card h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: var(--acc);
+}
+.card ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--fg);
+  font-size: 14px;
+}
+.card li {
+  margin-bottom: 8px;
+}
+.card li::marker {
+  color: var(--acc);
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.btn {
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.btn:hover {
+  background: var(--acc);
+  color: #fff;
+  border-color: var(--acc);
+}
+.btn.active {
+  background: var(--acc);
+  color: #fff;
+  border-color: var(--acc);
+}
+.hidden {
+  display: none;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Анализ бага: Custom-режим</h1>
+  <div class="subtitle">Цепочка событий и план исправления для режима просмотра заметок</div>
+
+  <div class="controls">
+    <button class="btn active" onclick="filterSteps('all')">Все шаги</button>
+    <button class="btn" onclick="filterSteps('bug')">Только ошибки</button>
+    <button class="btn" onclick="filterSteps('fix')">План исправления</button>
+    <button class="btn" onclick="filterSteps('test')">Тестирование</button>
+  </div>
+
+  <div class="section-title">Цепочка возникновения бага</div>
+  <div class="timeline" id="timeline">
+    
+    <div class="step" data-type="bug">
+      <div class="step-header">
+        <div class="step-title">1. Создание новой заметки</div>
+        <div class="step-meta">page_notes_edit.html:4012</div>
+      </div>
+      <div class="step-desc">
+        <span class="tag tag-bug">Bug</span>
+        Новая заметка в редакторе ещё не сохранена, поэтому <code>noteId = ''</code> (пустая строка).
+      </div>
+      <div class="step-code">noteId = ''</div>
+    </div>
+
+    <div class="step" data-type="bug">
+      <div class="step-header">
+        <div class="step-title">2. Переход в Custom-режим</div>
+        <div class="step-meta">URL: /notes/custom?id=&tpl=table</div>
+      </div>
+      <div class="step-desc">
+        <span class="tag tag-bug">Bug</span>
+        Выбор Custom-режима или авто-переход дефолтного режима ведёт на страницу с пустым ID.
+      </div>
+      <div class="step-code">/notes/custom?id=&tpl=table</div>
+    </div>
+
+    <div class="step" data-type="bug">
+      <div class="step-header">
+        <div class="step-title">3. Пустая загрузка данных</div>
+        <div class="step-meta">page_notes_custom.html:1189</div>
+      </div>
+      <div class="step-desc">
+        <span class="tag tag-bug">Bug</span>
+        Функция <code>load()</code> выходит сразу, так как ID пуст. Ничего не грузится.
+      </div>
+      <div class="step-code">if (!id) return;</div>
+    </div>
+
+    <div class="step" data-type="bug">
+      <div class="step-header">
+        <div class="step-title">4. Потеря настроек</div>
+        <div class="step-meta">page_notes_custom.html:1570</div>
+      </div>
+      <div class="step-desc">
+        <span class="tag tag-bug">Bug</span>
+        <code>saveSettings()</code> видит пустой <code>noteId</code> и закрывает настройки, не сохраняя название и промпт.
+      </div>
+      <div class="step-code">if (!noteId) { closeSettings(); return; }</div>
+    </div>
+
+    <div class="step" data-type="bug">
+      <div class="step-header">
+        <div class="step-title">5. Игнорирование промпта ИИ</div>
+        <div class="step-meta">Логика ИИ</div>
+      </div>
+      <div class="step-desc">
+        <span class="tag tag-bug">Bug</span>
+        ИИ получает <code>?tpl=table</code> из URL и использует готовый шаблон «Таблица», игнорируя пользовательский промпт.
+      </div>
+      <div class="step-code">ИИ делает таблицу, игнорируя мой промпт</div>
+    </div>
+
+    <div class="step" data-type="bug">
+      <div class="step-header">
+        <div class="step-title">6. Неверное отображение после возврата</div>
+        <div class="step-meta">page_notes_custom.html:1203</div>
+      </div>
+      <div class="step-desc">
+        <span class="tag tag-bug">Bug</span>
+        После создания заметки (с ID) свойств режима нет. При повторном открытии показывается дефолтное название «Таблица», промпт пуст.
+      </div>
+      <div class="step-code">modeName = p.custom_mode || 'Таблица'</div>
+    </div>
+
+  </div>
+
+  <div class="section-title">План исправления</div>
+  <div class="grid">
+    <div class="card">
+      <h3>1. Редактор (page_notes_edit.html)</h3>
+      <ul>
+        <li>Перед любым переходом на <code>/notes/custom</code> (выбор режима, авто-переход) проверить наличие <code>noteId</code>.</li>
+        <li>Если <code>noteId</code> пуст, сначала создать заметку через существующий механизм сохранения (<code>:5960</code>).</li>
+        <li>Использовать полученный настоящий ID для перехода.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>2. Custom-страница (страховка)</h3>
+      <ul>
+        <li>В <code>saveSettings()</code> при <code>!noteId</code> создать заметку через <code>/api/notes/save</code>.</li>
+        <li>Получить ID, присвоить <code>noteId</code> и записать свойства режима.</li>
+        <li>Аналогично реализовать автосохранение текста.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>3. Тестирование (Playwright)</h3>
+      <ul>
+        <li>Полный цикл: новая заметка → Custom → ввод имени и промпта → «Создать».</li>
+        <li>Перезагрузка страницы.</li>
+        <li>Проверка: модалка показывает введённые данные.</li>
+        <li>Проверка: режим с галочкой появляется в «Мои режимы».</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section-title">Согласование изменений</div>
+  <div class="card" style="border-left: 4px solid var(--warning);">
+    <p style="margin:0; font-weight:600; color:var(--warning);">Важное замечание:</p>
+    <p style="margin:8px 0 0; color:var(--fg);">
+      Пункт 1 плана исправления означает, что переход в Custom-режим из новой заметки автоматически создаст пустую заметку (иначе сохранить режим некуда). Требуется подтверждение этого поведения.
+    </p>
+  </div>
+
+</div>
+
+<script>
+function filterSteps(type) {
+  const steps = document.querySelectorAll('.step');
+  const buttons = document.querySelectorAll('.btn');
+  
+  buttons.forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+
+  steps.forEach(step => {
+    if (type === 'all' || step.dataset.type === type) {
+      step.classList.remove('hidden');
+    } else {
+      step.classList.add('hidden');
+    }
+  });
+}
+</script>
+</body>
+</html>

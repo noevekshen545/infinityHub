@@ -1,0 +1,23 @@
+{
+  "models": {
+    "catalogMode": "replace",
+    "providers": {
+      "openai": {
+        "baseUrl": "http://host.docker.internal:1234/v1",
+        "apiKey": "lm-studio",
+        "models": [
+          {
+            "id": "qwen3.6-35b-a3b@q4_k_m",
+            "name": "MY-LOCAL-QWEN"
+          }
+        ]
+      }
+    }
+  },
+  "gateway": {
+    "auth": {
+      "mode": "token",
+      "token": "e769a991c0b4eb20a246de00724d6c20db8b4873bacd4e7b"
+    }
+  }
+}

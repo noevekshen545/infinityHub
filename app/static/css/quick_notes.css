@@ -1,0 +1,103 @@
+/* Быстрые заметки: общая панель мини-приложения и модуля заметок.
+   Классы с префиксом qn- не пересекаются с существующими стилями. */
+
+.qn-panel { display: flex; flex-direction: column; gap: 8px; min-height: 0; flex: 1; }
+
+.qn-composer { display: flex; gap: 6px; align-items: flex-end; flex-shrink: 0; }
+.qn-input {
+  flex: 1; resize: vertical; min-height: 38px; max-height: 120px;
+  border: 1px solid var(--border, #e3e6ea); border-radius: 10px;
+  background: var(--bg, #fff); color: var(--text, #1a1f26);
+  padding: 8px 10px; font: inherit; font-size: 13px; line-height: 1.45; outline: none;
+}
+.qn-input:focus {
+  border-color: var(--accent, #3b6ef5);
+  box-shadow: 0 0 0 3px var(--accent-soft, rgba(59, 110, 245, .12));
+}
+.qn-add {
+  width: 38px; height: 38px; flex: 0 0 auto; border: 0; border-radius: 10px;
+  background: var(--accent, #3b6ef5); color: #fff; cursor: pointer; font-size: 14px;
+}
+.qn-add:hover { filter: brightness(1.08); }
+
+.qn-status { min-height: 15px; font-size: 11.5px; color: var(--success, #2da44e); }
+.qn-status.err { color: var(--danger, #cf222e); }
+
+.qn-list {
+  flex: 1; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 6px; padding-right: 2px;
+}
+.qn-empty { padding: 20px 10px; text-align: center; font-size: 12px; color: var(--text3, #8b949e); }
+
+.qn-card {
+  border: 1px solid var(--border, #e3e6ea); border-left: 3px solid transparent;
+  border-radius: 10px; background: var(--bg, #fff); padding: 8px 10px;
+}
+.qn-card.pinned {
+  border-left-color: var(--accent, #3b6ef5);
+  background: var(--accent-soft, rgba(59, 110, 245, .06));
+}
+.qn-card-text {
+  font-size: 13px; line-height: 1.45; color: var(--text, #1a1f26);
+  white-space: pre-wrap; word-break: break-word; cursor: text;
+}
+.qn-card-foot { display: flex; align-items: center; gap: 2px; margin-top: 6px; }
+.qn-time { font-size: 10.5px; color: var(--text3, #8b949e); }
+.qn-card-foot .spacer { flex: 1; }
+.qn-card-foot button {
+  border: 0; background: transparent; color: var(--text3, #8b949e);
+  cursor: pointer; width: 26px; height: 24px; border-radius: 6px; font-size: 11px;
+}
+.qn-card-foot button:hover {
+  color: var(--accent, #3b6ef5);
+  background: var(--accent-soft, rgba(59, 110, 245, .1));
+}
+
+.qn-edit {
+  width: 100%; min-height: 64px; resize: vertical; box-sizing: border-box;
+  border: 1px solid var(--accent, #3b6ef5); border-radius: 8px;
+  background: var(--bg, #fff); color: var(--text, #1a1f26);
+  padding: 6px 8px; font: inherit; font-size: 13px; line-height: 1.45;
+}
+
+/* Панель в окне мини-приложения (Shift+Space) */
+.aibar-notes {
+  position: absolute; inset: 0; display: flex; flex-direction: column; gap: 8px;
+  background: var(--bg2, #fff); border: 1px solid var(--border, #e3e6ea);
+  border-radius: 14px; padding: 10px; overflow: hidden;
+}
+html.aibar-solo .aibar-notes { border-radius: 0; border: none; }
+.aibar-notes-head { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.aibar-notes-title { font-size: 13px; font-weight: 600; color: var(--text, #1a1f26); }
+.aibar-notes-head .spacer { flex: 1; }
+.aibar-notes-pin { display: none; }
+html.aibar-solo .aibar-notes-pin {
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.aibar-notes-pin.on {
+  color: var(--accent, #3b6ef5);
+  background: var(--accent-soft, rgba(59, 110, 245, .12));
+}
+.aibar-notes-body { flex: 1; min-height: 0; display: flex; }
+
+/* Модальное окно в модуле заметок */
+.qn-modal {
+  position: fixed; inset: 0; z-index: 6000; display: none;
+  align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .5); backdrop-filter: blur(4px);
+}
+.qn-modal.open { display: flex; }
+.qn-modal .qn-dialog {
+  width: min(560px, 94vw); max-height: 80vh;
+  display: flex; flex-direction: column; gap: 10px;
+  background: var(--bg2, #fff); border: 1px solid var(--border, #e3e6ea);
+  border-radius: 14px; padding: 14px;
+  box-shadow: var(--shadow-lg, 0 16px 48px rgba(0, 0, 0, .3));
+}
+.qn-dialog-head { display: flex; align-items: center; gap: 8px; }
+.qn-dialog-head h3 { margin: 0; font-size: 15px; }
+.qn-dialog-head .spacer { flex: 1; }
+.qn-dialog-close {
+  border: 0; background: transparent; color: var(--text3, #8b949e);
+  cursor: pointer; font-size: 16px;
+}

@@ -1,0 +1,221 @@
+{
+  "_portable": {
+    "_comment": "ПЕРЕНОСИМАЯ СБОРКА. Все пути относительные и разворачиваются от корня папки. Можно писать ${ROOT} — корень сборки, ${APP} — каталог app. Переопределение: переменные INFINITY_ROOT, INFINITY_DATA_DIR, INFINITY_ENGINE_DIR, INFINITY_MODELS_DIR.",
+    "app_dir": "${APP}",
+    "models_dir": "models",
+    "gguf_dir": "models/gguf",
+    "engine_dir": "engine",
+    "data_dir": "data",
+    "logs_dir": "logs",
+    "apps_dir": "apps"
+  },
+  "data_dirs": [],
+  "books_dir": "${ROOT}/data/books",
+  "books_db_path": "",
+  "notes_dir": "${ROOT}/data/notes",
+  "ai_dir": "${ROOT}/data/notes/_ai_answers",
+  "memory_dir": "${ROOT}/data/notes/_memory",
+  "attachments_dir": "${ROOT}/data/notes/_attachments",
+  "plugins_dir": "${ROOT}/data/notes/_plugins",
+  "chat_dir": "${ROOT}/data/notes/_chat_sessions",
+  "html_viewer_dirs": [
+    "${ROOT}/data/html"
+  ],
+  "apps_dirs": [
+    "${ROOT}/apps"
+  ],
+  "apps_dir": "",
+  "default_apps_dir": "defaultapps",
+  "zim_dirs": [
+    "${ROOT}/data/zim"
+  ],
+  "backend": "llamacpp",
+  "llm_provider": {
+    "_comment": "РџСЂРѕРІР°Р№РґРµСЂ РґР»СЏ РіРµРЅРµСЂР°С†РёРё (Р±РёР»РґРµСЂ СЂР°СЃС€РёСЂРµРЅРёР№, РР-СЂРµРєРѕРјРµРЅРґР°С†РёРё, РёСЃРїСЂР°РІР»РµРЅРёРµ РѕРїРµС‡Р°С‚РѕРє). type: local | openai_compatible. Р Р°Р·РґРµР» РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅ РїРѕСЃР»Рµ РїРµСЂРµРЅРѕСЃР° СЃР±РѕСЂРєРё РЅР° Windows вЂ” Р±РµР· РЅРµРіРѕ РІСЃСЏ РіРµРЅРµСЂР°С†РёСЏ С€Р»Р° С‡РµСЂРµР· Р»РѕРєР°Р»СЊРЅСѓСЋ РјРѕРґРµР»СЊ СЃ РјР°Р»РµРЅСЊРєРёРј РѕРєРЅРѕРј РІС‹РІРѕРґР°.",
+    "type": "local",
+    "local": {
+      "url": "http://127.0.0.1:8080",
+      "model": "",
+      "timeout": 300
+    },
+    "openai_compatible": {
+      "base_url": "https://openrouter.ai/api/v1",
+      "api_key": "",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "timeout": 300,
+      "temperature": 0.7,
+      "max_tokens": 16384,
+      "reasoning_enabled": false,
+      "_api_key_hint": "РљР»СЋС‡ РјРѕР¶РЅРѕ Р·Р°РґР°С‚СЊ Р·РґРµСЃСЊ РёР»Рё РїРµСЂРµРјРµРЅРЅРѕР№ РѕРєСЂСѓР¶РµРЅРёСЏ OPENROUTER_API_KEY. Р§С‚РѕР±С‹ РІРєР»СЋС‡РёС‚СЊ: type = openai_compatible.",
+      "available_models": [
+        "nvidia/nemotron-3-super-120b-a12b:free",
+        "google/gemma-4-31b-it:free",
+        "minimax/minimax-m2.5:free",
+        "qwen/qwen3-30b-a3b:free"
+      ]
+    }
+  },
+  "llama_cpp": {
+    "url": "http://127.0.0.1:8080",
+    "port": 8080
+  },
+  "lm_studio": {
+    "url": "http://localhost:1234",
+    "model": "",
+    "embed_model": "",
+    "api_key_env": "LM_STUDIO_API_KEY",
+    "timeout": 120,
+    "max_tokens_default": 4096,
+    "context_tokens_default": 16000,
+    "temperature_default": 0.7,
+    "enable_thinking_default": false
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8281,
+    "workers": 1,
+    "lan_enabled": false
+  },
+  "auth": {
+    "enabled": false,
+    "username": "admin",
+    "password_hash": "",
+    "token": ""
+  },
+  "search": {
+    "limit": 50,
+    "use_embeddings": false,
+    "bm25_limit": 50,
+    "faiss_limit": 50,
+    "cross_encoder_enabled": true,
+    "spell_correction_enabled": false,
+    "recency_boost_enabled": true
+  },
+  "index": {
+    "dir": "${ROOT}/data/index",
+    "faiss_index_path": "${ROOT}/data/index/faiss.index",
+    "embedding_db_path": "${ROOT}/data/index/embeddings.db",
+    "dimension": 768
+  },
+  "ui": {
+    "theme": "light",
+    "font_size": 17,
+    "line_height": 1.85,
+    "max_width": 780,
+    "language": "ru",
+    "speech": {
+      "selection_tts_enabled": true,
+      "voice_input_enabled": true
+    }
+  },
+  "speech": {
+    "_comment": "tts_engine: auto | silero | piper | qwen3 | webspeech | custom:<id>; stt_engine: local | openai | custom:<id>. models_dir вЂ” РіРґРµ РёСЃРєР°С‚СЊ РІРµСЃР° whisper/silero/piper.",
+    "tts_engine": "auto",
+    "tts": {
+      "silero_speaker": "xenia",
+      "piper_voice": "",
+      "qwen3_url": "http://127.0.0.1:7860",
+      "qwen3_speaker": "",
+      "rate": 1.0,
+      "pitch": 0.0
+    },
+    "stt_engine": "local",
+    "stt": {
+      "local_model": "small",
+      "local_threads": 0,
+      "auto_download": false,
+      "local_language": "ru",
+      "models_dir": "${ROOT}/models",
+      "silero_models_dir": "${ROOT}/models",
+      "piper_models_dir": "${ROOT}/models/piper"
+    },
+    "custom_tts_engines": [],
+    "custom_stt_engines": []
+  },
+  "agentai": {
+    "_comment": "РњРѕРґСѓР»СЊ Infinity Agent (AgentAI). venv СЃРѕР·РґР°С‘С‚СЃСЏ РІРЅСѓС‚СЂРё СЃР±РѕСЂРєРё СЃРєСЂРёРїС‚РѕРј setup.bat; РїСѓС‚СЊ РїРµСЂРµРѕРїСЂРµРґРµР»СЏРµС‚СЃСЏ РїРµСЂРµРјРµРЅРЅРѕР№ AGENTAI_INT_PYTHON. URL Р°РіРµРЅС‚Р°: /agentai",
+    "enabled": true,
+    "autostart": true,
+    "mount": "/agentai",
+    "gateway_port": 8642,
+    "ui_port": 9120
+  },
+  "agent": {
+    "max_iterations": 15,
+    "engine": "legacy",
+    "legacy_asio": {
+      "enabled": false,
+      "comment": "РђРіРµРЅС‚ ASIO РѕС‚РєР»СЋС‡С‘РЅ 30.09.2026, Р·Р°РјРµРЅС‘РЅ РјРѕРґСѓР»РµРј Hermes (/hermes). РћС‚РєР°С‚: true."
+    }
+  },
+  "browser": {
+    "enabled": true,
+    "engine": "playwright",
+    "playwright_chrome_path": ""
+  },
+  "collection_db_path": "",
+  "logging": {
+    "level": "INFO",
+    "file": "${ROOT}/logs/server.log",
+    "max_bytes": 10485760,
+    "backup_count": 5
+  },
+  "media": {
+    "music_dirs": [],
+    "video_dirs": [],
+    "auto_index": false,
+    "auto_sync_minutes": 10,
+    "fetch_lyrics": true,
+    "fetch_artist_info": true,
+    "torrent_download_dir": "${ROOT}/data/torrents",
+    "torrent_auto_sort": true,
+    "photo_dirs": []
+  },
+  "qdrant": {
+    "embed_local_only": true,
+    "embed_device": "cpu"
+  },
+  "docker": {
+    "_comment": "autostart: РїРѕРґРЅРёРјР°С‚СЊ Docker UI Рё РґРµРјРѕРЅ РІРјРµСЃС‚Рµ СЃ РїСЂРёР»РѕР¶РµРЅРёРµРј. РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РІС‹РєР»СЋС‡РµРЅРѕ; РїРµСЂРµРєР»СЋС‡Р°С‚РµР»СЊ вЂ” Р°РґРјРёРЅ-РїР°РЅРµР»СЊ в†’ РњРѕРґСѓР»Рё.",
+    "autostart": false
+  },
+  "laya": {
+    "enabled": false,
+    "url": "http://127.0.0.1:8377",
+    "python": "${ROOT}/python/python.exe",
+    "autostart": true,
+    "model": "multilingual",
+    "device": "cpu",
+    "max_loaded": 1,
+    "idle_unload_seconds": 900,
+    "timeout_ms": 1500,
+    "max_chars": 4000,
+    "api_key": "",
+    "log_level": "warning",
+    "features": {
+      "news_semantic": false,
+      "news_briefing_fast": false,
+      "social_triage": false,
+      "media_autotag": false,
+      "media_recommend": false,
+      "books_classify": false,
+      "voice_intent": false,
+      "guard_injection": false,
+      "bot_triage": false,
+      "files_category": false,
+      "notes_auto_tags": false,
+      "notes_semantic_groups": false,
+      "education_auto_terms": false,
+      "extensions_access_warning": false,
+      "search_route": false,
+      "mcp": false
+    },
+    "hf_home": "${ROOT}/models"
+  },
+  "perf": {
+    "page_cache": {
+      "enabled": true,
+      "ttl": 20
+    }
+  }
+}

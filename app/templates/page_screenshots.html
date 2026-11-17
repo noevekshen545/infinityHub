@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Скриншот — редактор</title>
+<style>
+/* Палитра не своя: страница подключается через webui_assets.inject, там на
+   <html> приезжает инлайн-палитра theme.js (активная тема приложения). Поэтому
+   здесь только алиасы --sh-* над общими токенами с запасом на случай, когда
+   тема ещё не применилась. Свои имена --bg/--text не объявляем: инлайн-стили
+   <html> перекрывают любой :root, и страница жила бы в собственной палитре.
+   Текст по акценту берём --bg2: на светлой теме это белый на индиго, на тёмной
+   — почти чёрный на голубом, то есть читаемо в обеих. */
+:root{
+  --sh-bg:var(--bg,#202020); --sh-bg2:var(--bg2,#2b2b2b); --sh-bg3:var(--bg3,#333333);
+  --sh-border:var(--border,rgba(255,255,255,.1)); --sh-border2:var(--border2,rgba(255,255,255,.16));
+  --sh-text:var(--text,#fff); --sh-text2:var(--text2,#c4c4c4); --sh-text3:var(--text3,#9a9a9a);
+  --sh-accent:var(--accent,#4cc2ff); --sh-accent2:var(--accent2,#69d0ff);
+  --sh-danger:var(--danger,#da3633);
+  --sh-on:var(--bg2,#2b2b2b);
+  --sh-grad:linear-gradient(135deg,var(--accent,#4cc2ff),var(--accent2,#69d0ff));
+  --sh-shadow:var(--shadow-lg,0 8px 40px rgba(0,0,0,.5));
+  --r:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:var(--font,system-ui,-apple-system,"Segoe UI",sans-serif);
+     background:var(--sh-bg);color:var(--sh-text);
+     display:flex;flex-direction:column;overflow:hidden;user-select:none}
+
+/* Кнопка встроенного браузера в окне редактора не нужна: снимок никуда не
+   ведут по ссылке, а глобус занимал место в панели управления окном. */
+.win-btns .wb-browser{display:none!important}
+
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--sh-bg2);
+       border-bottom:1px solid var(--sh-border);flex:0 0 auto;flex-wrap:wrap}
+.brand{font-weight:700;font-size:15px;background:var(--sh-grad);-webkit-background-clip:text;
+       -webkit-text-fill-color:transparent;letter-spacing:.2px}
+.meta{display:flex;flex-direction:column;gap:1px;margin-left:6px;min-width:0}
+.meta b{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:38ch}
+.meta span{font-size:11px;color:var(--sh-text3)}
+.spacer{flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;cursor:pointer;
+     font-size:12px;font-weight:600;border:1px solid var(--sh-border);background:var(--sh-bg3);color:var(--sh-text);
+     transition:filter .12s, background .12s, border-color .12s;white-space:nowrap}
+.btn:hover{filter:brightness(1.18)}
+.btn:active{transform:translateY(1px)}
+.btn.prim{background:var(--sh-grad);border:1px solid transparent;color:var(--sh-on)}
+.btn.danger{color:var(--sh-danger);border-color:var(--sh-danger)}
+.btn.danger:hover{background:var(--sh-danger);color:var(--sh-on)}
+.btn:disabled{opacity:.4;cursor:default;filter:none}
+.seg{display:flex;background:var(--sh-bg3);border:1px solid var(--sh-border);border-radius:8px;overflow:hidden}
+.seg .btn{border:none;border-radius:0;background:transparent}
+.seg .btn.on{background:var(--sh-accent);color:var(--sh-on)}
+
+main{flex:1;display:flex;min-height:0}
+.rail{flex:0 0 auto;width:52px;background:var(--sh-bg2);border-right:1px solid var(--sh-border);
+      display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0}
+.tool{width:36px;height:36px;border-radius:9px;border:1px solid transparent;background:transparent;
+      color:var(--sh-text2);cursor:pointer;display:grid;place-items:center;transition:.12s}
+.tool:hover{background:var(--sh-bg3);color:var(--sh-text)}
+.tool.on{background:var(--sh-bg3);border-color:var(--sh-accent);color:var(--sh-accent)}
+.tool svg{width:19px;height:19px}
+.rail hr{width:24px;border:none;border-top:1px solid var(--sh-border);margin:4px 0}
+.swatches{display:flex;flex-direction:column;gap:5px;align-items:center}
+.sw{width:18px;height:18px;border-radius:50%;border:2px solid transparent;cursor:pointer}
+.sw.on{border-color:var(--sh-text)}
+.widths{display:flex;flex-direction:column;gap:4px}
+.w{width:26px;height:20px;border-radius:5px;border:1px solid var(--sh-border);background:var(--sh-bg3);
+   color:var(--sh-text2);cursor:pointer;font-size:10px}
+.w.on{border-color:var(--sh-accent);color:var(--sh-accent)}
+
+.stage{flex:1;position:relative;display:grid;place-items:center;overflow:auto;
+       background:
+         linear-gradient(45deg,var(--sh-bg3) 25%,transparent 25%,transparent 75%,var(--sh-bg3) 75%) 0 0/22px 22px,
+         linear-gradient(45deg,var(--sh-bg3) 25%,var(--sh-bg) 25%,var(--sh-bg) 75%,var(--sh-bg3) 75%) 11px 11px/22px 22px;
+       padding:18px}
+#wrap{position:relative;line-height:0;box-shadow:var(--sh-shadow);border-radius:6px;
+      overflow:hidden;outline:1px solid var(--sh-border)}
+#stage,#live{display:block;image-rendering:auto}
+#live{position:absolute;inset:0;pointer-events:none}
+.cropbox{position:absolute;border:1.5px dashed var(--sh-text);box-shadow:0 0 0 9999px rgba(0,0,0,.55);cursor:move}
+.cropbox i{position:absolute;width:9px;height:9px;background:var(--sh-text);border-radius:2px;cursor:nwse-resize}
+.aspect{position:absolute;top:8px;left:50%;transform:translateX(-50%);display:none;gap:5px;
+        background:var(--sh-bg2);border:1px solid var(--sh-border);border-radius:9px;padding:4px}
+.aspect.show{display:flex}
+.chip{padding:4px 9px;border-radius:6px;font-size:11px;color:var(--sh-text2);cursor:pointer;border:none;background:transparent}
+.chip.on{background:var(--sh-accent);color:var(--sh-on)}
+.hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--sh-text2);
+      background:var(--sh-bg2);border:1px solid var(--sh-border);padding:5px 10px;border-radius:7px;display:none}
+.hint.show{display:block}
+#textin{position:absolute;display:none;z-index:5;background:var(--sh-bg2);border:1px solid var(--sh-accent);
+         border-radius:6px;color:var(--sh-text);padding:4px 6px;outline:none;font-family:inherit}
+
+.side{flex:0 0 208px;background:var(--sh-bg2);border-left:1px solid var(--sh-border);display:flex;
+      flex-direction:column;min-height:0}
+.side h3{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--sh-text3);
+         padding:12px 12px 8px;font-weight:700}
+.thumbs{flex:1;overflow:auto;padding:0 10px 12px;display:flex;flex-direction:column;gap:8px}
+.thumb{border:1px solid var(--sh-border);border-radius:8px;overflow:hidden;cursor:pointer;background:var(--sh-bg3);position:relative}
+.thumb:hover{border-color:var(--sh-accent)}
+.thumb.on{border-color:var(--sh-accent2);box-shadow:0 0 0 1px var(--sh-accent2)}
+.thumb img{width:100%;height:86px;object-fit:cover;display:block}
+.thumb span{display:block;font-size:10px;color:var(--sh-text3);padding:4px 6px;white-space:nowrap;
+            overflow:hidden;text-overflow:ellipsis}
+/* Действия над конкретным снимком в списке: закрыть (убрать из недавних, файл
+   остаётся) и удалить (в .trash). Показываем по наведению, чтобы не засорять
+   миниатюру, но на тач-устройствах кнопки всё равно доступны. */
+.thumb .acts{position:absolute;top:4px;right:4px;display:flex;gap:4px;opacity:0;transition:.12s}
+.thumb:hover .acts,.thumb:focus-within .acts{opacity:1}
+.tact{width:22px;height:22px;border-radius:6px;border:1px solid var(--sh-border);
+      background:var(--sh-bg2);color:var(--sh-text2);cursor:pointer;display:grid;place-items:center;padding:0}
+.tact:hover{color:var(--sh-text);border-color:var(--sh-accent)}
+.tact.rm:hover{color:var(--sh-on);background:var(--sh-danger);border-color:var(--sh-danger)}
+.tact svg{width:12px;height:12px}
+.hrow{display:flex;align-items:center;gap:6px;padding:0 12px 8px}
+.hrow h3{padding:0}
+.hrow .mini{margin-left:auto;font-size:10px;color:var(--sh-text2);background:var(--sh-bg3);
+            border:1px solid var(--sh-border);border-radius:6px;padding:3px 7px;cursor:pointer;white-space:nowrap}
+.hrow .mini:hover{color:var(--sh-text);border-color:var(--sh-accent)}
+.hrow .mini.on{background:var(--sh-accent);color:var(--sh-on);border-color:transparent}
+
+/* ---------- окно выбора заметки ---------- */
+.modal{position:fixed;inset:0;z-index:50;display:none;place-items:center;
+       background:rgba(0,0,0,.55);padding:20px}
+.modal.show{display:grid}
+.pick{width:min(520px,94vw);max-height:80vh;display:flex;flex-direction:column;
+      background:var(--sh-bg);border:1px solid var(--sh-border2);border-radius:12px;
+      box-shadow:var(--sh-shadow);overflow:hidden}
+.pick header{padding:12px 14px;border-bottom:1px solid var(--sh-border);display:flex;flex-direction:column;gap:8px}
+.pick h4{font-size:13px;font-weight:700;color:var(--sh-text)}
+.pick input{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--sh-border);
+            background:var(--sh-bg3);color:var(--sh-text);font:inherit;font-size:12px;outline:none}
+.pick input:focus{border-color:var(--sh-accent)}
+.pick .list{flex:1;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:6px;min-height:120px}
+.pick .row{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:8px;cursor:pointer;
+           border:1px solid transparent;background:var(--sh-bg2)}
+.pick .row:hover,.pick .row.sel{border-color:var(--sh-accent);background:var(--sh-bg3)}
+.pick .row b{font-size:12px;font-weight:600;color:var(--sh-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick .row i{font-size:10px;font-style:normal;color:var(--sh-text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pick .none{padding:22px 12px;text-align:center;font-size:12px;color:var(--sh-text3)}
+.pick footer{padding:10px 14px;border-top:1px solid var(--sh-border);display:flex;gap:8px;justify-content:flex-end}
+
+footer{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--sh-bg2);
+       border-top:1px solid var(--sh-border);font-size:11px;color:var(--sh-text3)}
+.zoom{display:flex;align-items:center;gap:4px}
+.zoom b{min-width:52px;text-align:center;color:var(--sh-text2);font-weight:600;font-size:11px}
+.keys{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
+.keys kbd{background:var(--sh-bg3);border:1px solid var(--sh-border);border-bottom-width:2px;border-radius:4px;
+          padding:1px 5px;font-size:10px;color:var(--sh-text2);font-family:inherit}
+#toast{position:fixed;left:50%;bottom:52px;transform:translateX(-50%) translateY(14px);opacity:0;
+       background:var(--sh-bg2);border:1px solid var(--sh-accent);color:var(--sh-text);padding:9px 15px;border-radius:9px;
+       font-size:12px;transition:.22s;pointer-events:none;z-index:40;box-shadow:var(--sh-shadow)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{border-color:var(--sh-danger);color:var(--sh-danger)}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--sh-text2)}
+.empty .big{font-size:15px;color:var(--sh-text);font-weight:600}
+@media(max-width:900px){.side{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Скриншот</div>
+  <div class="meta"><b id="fname">—</b><span id="fdim">нет снимка</span></div>
+  <div class="spacer"></div>
+  <div class="seg">
+    <button class="btn" id="capFull" title="Весь рабочий стол (Ctrl+Alt+S)">Экран</button>
+    <button class="btn" id="capWin" title="Активное окно (Ctrl+Alt+W)">Окно</button>
+  </div>
+  <button class="btn" id="toClip" title="Копировать картинку в буфер (Ctrl+C)">Копировать</button>
+  <button class="btn" id="toFm" title="Отправить копию в папку «скриншоты» профиля и открыть файловый менеджер (Ctrl+M)">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4l2 2.2h7A1.5 1.5 0 0 1 21 9.7V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z"/>
+      <path d="M12 11.5v5M9.5 14h5"/></svg>
+    В менеджер</button>
+  <button class="btn" id="toNote" title="Прикрепить к заметке: выбрать заметку и вставить снимок в неё">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 4.5h11l3.5 3.5v11.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1z"/>
+      <path d="M8 10h7M8 13.5h7M8 17h4"/></svg>
+    К заметке</button>
+  <button class="btn prim" id="save" title="Сохранить как новый PNG (Ctrl+S)">Сохранить</button>
+  <button class="btn danger" id="del" title="Удалить снимок">Удалить</button>
+</header>
+
+<main>
+  <div class="rail">
+    <button class="tool" data-tool="crop" title="Вырезать область (C)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <path d="M6 2v16h16"/><path d="M2 6h16v16"/></svg></button>
+    <button class="tool" data-tool="pen" title="Каракули от руки (P)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <path d="M3 21c3-1 4-3 6-6l7-9 3 3-9 7c-3 2-5 3-6 6z"/><path d="M14 4l3 3"/></svg></button>
+    <button class="tool" data-tool="rect" title="Прямоугольник (R)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="4" y="6" width="16" height="12" rx="2"/></svg></button>
+    <button class="tool" data-tool="ellipse" title="Овал (E)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <ellipse cx="12" cy="12" rx="8" ry="6"/></svg></button>
+    <button class="tool" data-tool="arrow" title="Стрелка (A)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <path d="M4 20L19 5"/><path d="M10 5h9v9"/></svg></button>
+    <button class="tool" data-tool="text" title="Надпись (T)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <path d="M5 6h14M12 6v13M8 19h8"/></svg></button>
+    <button class="tool" data-tool="mosaic" title="Пикселизация (M)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/>
+        <rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></svg></button>
+    <hr>
+    <div class="swatches" id="swatches"></div>
+    <hr>
+    <div class="widths" id="widths"></div>
+  </div>
+
+  <div class="stage" id="stageBox">
+    <div id="wrap" style="display:none">
+      <canvas id="stage"></canvas>
+      <canvas id="live"></canvas>
+      <div class="aspect" id="aspects">
+        <button class="chip on" data-ar="free">свободно</button>
+        <button class="chip" data-ar="1:1">1:1</button>
+        <button class="chip" data-ar="16:9">16:9</button>
+        <button class="chip" data-ar="4:3">4:3</button>
+        <button class="chip" data-ar="9:16">9:16</button>
+      </div>
+      <input id="textin" type="text" maxlength="120">
+    </div>
+    <div class="empty" id="empty">
+      <div class="big">Снимка пока нет</div>
+      <div>Нажмите <kbd style="background:#21262d;border:1px solid #30363d;border-radius:4px;padding:1px 6px">Ctrl+Alt+S</kbd> или снимите экран здесь</div>
+      <button class="btn prim" id="capEmpty">Снять весь экран</button>
+    </div>
+    <div class="hint" id="hint"></div>
+  </div>
+
+  <aside class="side">
+    <div class="hrow">
+      <h3>Последние снимки</h3>
+      <button class="mini" id="showClosed" title="Показать снимки, закрытые в истории (файлы целы)">закрытые</button>
+    </div>
+    <div class="thumbs" id="thumbs"></div>
+  </aside>
+</main>
+
+<footer>
+  <div class="zoom">
+    <button class="btn" id="zOut">−</button>
+    <b id="zVal">по размеру</b>
+    <button class="btn" id="zIn">+</button>
+    <button class="btn" id="zFit">вписать</button>
+    <button class="btn" id="z100">100%</button>
+  </div>
+  <div class="spacer" style="flex:1"></div>
+  <button class="btn" id="undo" disabled>Отменить</button>
+  <button class="btn" id="redo" disabled>Вернуть</button>
+  <div class="keys">
+    <span><kbd>Ctrl+S</kbd> сохранить</span>
+    <span><kbd>Ctrl+C</kbd> копировать</span>
+    <span><kbd>Ctrl+M</kbd> в менеджер</span>
+    <span><kbd>Ctrl+Z</kbd> отменить</span>
+    <span><kbd>Esc</kbd> закрыть</span>
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<div class="modal" id="notePick" role="dialog" aria-modal="true" aria-label="Выбор заметки">
+  <div class="pick">
+    <header>
+      <h4>Прикрепить снимок к заметке</h4>
+      <input id="noteQ" placeholder="Поиск по заметкам…" autocomplete="off">
+    </header>
+    <div class="list" id="noteList"></div>
+    <footer>
+      <button class="btn" id="pickCancel">Отмена</button>
+      <button class="btn prim" id="pickOk">Прикрепить</button>
+    </footer>
+  </div>
+</div>
+<script src="/static/js/desktop_frame.js" defer></script>
+<script>
+(function () {
+'use strict';
+
+/* Редактор работает в пикселях самого снимка: холст имеет его натуральный
+   размер, а масштабируется стилями. Так линии и текст остаются чёткими при
+   любом увеличении, а сохранённый файл совпадает с тем, что видно на экране. */
+var $ = function (id) { return document.getElementById(id); };
+var wrap = $('wrap'), stage = $('stage'), live = $('live');
+var sctx = stage.getContext('2d'), lctx = live.getContext('2d');
+var base = document.createElement('canvas');      // зафиксированные пиксели
+var bctx = base.getContext('2d');
+
+var COLORS = ['#ff4d4f', '#ffa940', '#ffec3d', '#52c41a', '#1677ff', '#8b5cf6', '#ffffff', '#111111'];
+var WIDTHS = [3, 6, 12];
+
+/* Чья история: редактор открывается из окна-команды, где cookie профиля может
+   и не быть. Сервер пишет метку в страницу, адрес param — запас для ручного
+   открытия. Право доступа проверяет маршрут, не страница. */
+var PROFILE = String((window.__SHOT_PROFILE) ||
+                     (new URLSearchParams(location.search).get('profile')) || '');
+function withProfile(path) {
+  if (!PROFILE) return path;
+  return path + (path.indexOf('?') >= 0 ? '&' : '?') + 'profile=' + encodeURIComponent(PROFILE);
+}
+function fileUrl(name) {
+  return withProfile('/api/screenshots/file/' + encodeURIComponent(name));
+}
+
+var st = {
+  name: '', tool: 'crop', color: COLORS[0], width: WIDTHS[1],
+  zoom: 0,                            // 0 = вписать, иначе множитель
+  crop: null, aspect: 'free',
+  history: [], future: [], dirty: false, drawing: null
+};
+
+function toast(msg, err) {
+  var t = $('toast');
+  t.textContent = msg;
+  t.className = 'show' + (err ? ' err' : '');
+  clearTimeout(t._h);
+  t._h = setTimeout(function () { t.className = ''; }, 2200);
+}
+
+function api(path, body) {
+  if (!body) return fetch(withProfile(path)).then(function (r) { return r.json(); });
+  if (PROFILE) body.profile = PROFILE;
+  return fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' },
+                       body: JSON.stringify(body) })
+    .then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); })
+    .then(function (res) { if (res.status >= 400) throw new Error((res.j && res.j.error) || 'HTTP ' + res.status); return res.j; });
+}
+
+/* ---------- размер и показ ---------- */
+/* Присвоение canvas.width всегда обнуляет содержимое холста, поэтому все
+   изменения размера идут через setBase: сначала задал размеры — потом нарисовал.
+   Раздельные sizeTo/redraw давали пустой холст после кропа и отмены. */
+function setBase(src) {
+  var w = src.width, h = src.height;
+  stage.width = live.width = base.width = w;
+  stage.height = live.height = base.height = h;
+  bctx.clearRect(0, 0, w, h);
+  bctx.drawImage(src, 0, 0);
+  $('fdim').textContent = w + '×' + h + ' px';
+  applyZoom();
+  redraw();
+}
+function applyZoom() {
+  if (!stage.width || !stage.height) return;
+  var box = $('stageBox');
+  var avail = Math.max(120, box.clientWidth - 40);
+  var availH = Math.max(120, box.clientHeight - 40);
+  var fit = Math.min(avail / stage.width, availH / stage.height, 1);
+  var s = st.zoom === 0 ? fit : st.zoom;
+  wrap.style.width = (stage.width * s) + 'px';
+  wrap.style.height = (stage.height * s) + 'px';
+  [stage, live].forEach(function (c) { c.style.width = (c.width * s) + 'px'; c.style.height = (c.height * s) + 'px'; });
+  $('zVal').textContent = st.zoom === 0 ? ('вписать ' + Math.round(s * 100) + '%') : (Math.round(s * 100) + '%');
+  if (st.crop) paintCrop();
+}
+function redraw() {
+  sctx.clearRect(0, 0, stage.width, stage.height);
+  sctx.drawImage(base, 0, 0);
+  paintLive();
+}
+function paintLive() {
+  lctx.clearRect(0, 0, live.width, live.height);
+  var d = st.drawing;
+  if (!d) return;
+  stroke(lctx, d);
+}
+function stroke(c, d) {
+  c.save();
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  c.strokeStyle = d.color; c.fillStyle = d.color; c.lineWidth = d.width;
+  c.font = '600 ' + Math.round(d.width * 5 + 10) + 'px system-ui';
+  var x1 = d.x1, y1 = d.y1, x2 = d.x2, y2 = d.y2;
+  if (d.tool === 'pen') {
+    var p = d.points; if (p.length < 2) { c.restore(); return; }
+    c.beginPath(); c.moveTo(p[0][0], p[0][1]);
+    for (var i = 1; i < p.length; i++) c.lineTo(p[i][0], p[i][1]);
+    c.stroke();
+  } else if (d.tool === 'rect') {
+    c.strokeRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x2 - x1), Math.abs(y2 - y1));
+  } else if (d.tool === 'ellipse') {
+    c.beginPath();
+    c.ellipse((x1 + x2) / 2, (y1 + y2) / 2, Math.abs(x2 - x1) / 2, Math.abs(y2 - y1) / 2, 0, 0, Math.PI * 2);
+    c.stroke();
+  } else if (d.tool === 'arrow') {
+    var a = Math.atan2(y2 - y1, x2 - x1), head = Math.max(10, d.width * 3.4);
+    c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+    c.beginPath(); c.moveTo(x2, y2);
+    c.lineTo(x2 - head * Math.cos(a - 0.5), y2 - head * Math.sin(a - 0.5));
+    c.lineTo(x2 - head * Math.cos(a + 0.5), y2 - head * Math.sin(a + 0.5));
+    c.closePath(); c.fill();
+  } else if (d.tool === 'text') {
+    c.fillText(d.text || '', x1, y1);
+  }
+  c.restore();
+}
+
+/* ---------- история ---------- */
+function pushHistory() {
+  st.history.push(base.toDataURL('image/png'));
+  if (st.history.length > 8) st.history.shift();
+  st.future.length = 0;
+  st.dirty = true;
+  syncButtons();
+}
+function restore(url, done) {
+  var img = new Image();
+  img.onload = function () { setBase(img); done && done(); };
+  img.src = url;
+}
+function undo() {
+  if (!st.history.length) return;
+  st.future.push(base.toDataURL('image/png'));
+  restore(st.history.pop());
+  st.crop = null; hideCrop(); syncButtons();
+}
+function redo() {
+  if (!st.future.length) return;
+  st.history.push(base.toDataURL('image/png'));
+  restore(st.future.pop());
+  syncButtons();
+}
+function syncButtons() {
+  $('undo').disabled = !st.history.length;
+  $('redo').disabled = !st.future.length;
+  $('save').disabled = $('toClip').disabled = $('toFm').disabled = $('toNote').disabled
+    = $('del').disabled = !st.name;
+}
+
+/* ---------- загрузка снимка ---------- */
+function loadShot(name) {
+  return new Promise(function (resolve, reject) {
+    var img = new Image();
+    img.onload = function () {
+      st.name = name; st.history.length = 0; st.future.length = 0; st.dirty = false;
+      st.crop = null;
+      $('fname').textContent = name;
+      wrap.style.display = 'block'; $('empty').style.display = 'none';
+      setBase(img);
+      hideCrop(); syncButtons(); markThumb(name);
+      resolve();
+    };
+    img.onerror = function () { reject(new Error('снимок не загрузился')); };
+    img.src = fileUrl(name) + '&t=' + Date.now();
+  });
+}
+
+/* ---------- снимок ---------- */
+function capture(kind) {
+  $('capFull').disabled = $('capWin').disabled = true;
+  return api('/api/screenshots/capture', { kind: kind, reveal: false })
+    .then(function (r) { if (!r.ok) throw new Error(r.error); return loadShot(r.shot.name); })
+    .then(function () { toast('новый снимок готов'); refreshThumbs(); })
+    .catch(function (e) { toast('' + e.message, true); })
+    .then(function () { $('capFull').disabled = $('capWin').disabled = false; });
+}
+
+/* ---------- галерея ---------- */
+var SHOW_CLOSED = false;      // показывать ли в истории закрытые (но целые) кадры
+
+function refreshThumbs() {
+  return api('/api/screenshots/list?limit=40&hidden=' + (SHOW_CLOSED ? 1 : 0)).then(function (r) {
+    var box = $('thumbs');
+    box.innerHTML = '';
+    var closed = $('showClosed');
+    closed.textContent = r.closed ? ('закрытые ' + r.closed) : 'закрытые';
+    closed.style.display = r.closed ? '' : 'none';
+    if (!(r.shots || []).length) {
+      var n = document.createElement('div');
+      n.className = 'none';
+      n.textContent = 'в истории пусто';
+      box.appendChild(n);
+    }
+    (r.shots || []).forEach(function (s) {
+      var d = document.createElement('div');
+      d.className = 'thumb' + (s.name === st.name ? ' on' : '');
+      d.dataset.name = s.name;
+      d.tabIndex = 0;
+      var im = document.createElement('img');
+      im.loading = 'lazy';
+      im.src = fileUrl(s.name);
+      var lab = document.createElement('span');
+      // Имя файла берётся с диска: в текст оно уходит как текст, а не как разметка.
+      lab.textContent = s.name.replace('shot_', '').replace('.png', '');
+      var acts = document.createElement('div');
+      acts.className = 'acts';
+      var aClose = actButton('close', 'Закрыть в истории (файл останется)');
+      var aDel = actButton('del', 'Удалить снимок (переедет в .trash)');
+      aClose.onclick = function (ev) { ev.stopPropagation(); closeShot(s.name); };
+      aDel.onclick = function (ev) { ev.stopPropagation(); deleteShot(s.name); };
+      acts.appendChild(aClose); acts.appendChild(aDel);
+      d.appendChild(im); d.appendChild(acts); d.appendChild(lab);
+      d.onclick = function () { loadShot(s.name).catch(function (e) { toast('' + e.message, true); }); };
+      box.appendChild(d);
+    });
+  }).catch(function () {});
+}
+function actButton(kind, title) {
+  var b = document.createElement('button');
+  b.className = 'tact' + (kind === 'del' ? ' rm' : '');
+  b.title = title;
+  b.type = 'button';
+  b.innerHTML = kind === 'del'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
+      '<path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
+      '<path d="M6 6l12 12M18 6L6 18"/></svg>';
+  return b;
+}
+/* Закрыть снимок: он уходит из недавних, но файл остаётся в каталоге профиля —
+   открыть его можно той же кнопкой «закрытые» под заголовком истории. */
+function closeShot(name) {
+  return api('/api/screenshots/hide', { name: name, hidden: true })
+    .then(function () {
+      if (st.name === name) clearStage();
+      toast('закрыт в истории: ' + name);
+      return refreshThumbs();
+    })
+    .catch(function (e) { toast('' + e.message, true); });
+}
+function deleteShot(name) {
+  if (!confirm('Удалить ' + name + '? Файл переедет в подпапку .trash.')) return;
+  return api('/api/screenshots/delete', { name: name })
+    .then(function () {
+      if (st.name === name) clearStage();
+      toast('снимок удалён');
+      return refreshThumbs();
+    })
+    .catch(function (e) { toast('' + e.message, true); });
+}
+function clearStage() {
+  st.name = ''; st.history.length = 0; st.future.length = 0; st.dirty = false; st.crop = null;
+  wrap.style.display = 'none'; $('empty').style.display = 'flex';
+  $('fname').textContent = '—'; $('fdim').textContent = 'нет снимка';
+  hideCrop(); syncButtons();
+}
+function markThumb(name) {
+  Array.prototype.forEach.call(document.querySelectorAll('.thumb'), function (t) {
+    t.classList.toggle('on', t.dataset.name === name);
+  });
+}
+
+/* ---------- кроп ---------- */
+function paintCrop() {
+  var el = $('cropbox');
+  if (!el) {
+    el = document.createElement('div'); el.id = 'cropbox'; el.className = 'cropbox';
+    el.innerHTML = '<i style="left:-5px;top:-5px" data-h="nw"></i><i style="right:-5px;top:-5px" data-h="ne"></i>' +
+                   '<i style="left:-5px;bottom:-5px" data-h="sw"></i><i style="right:-5px;bottom:-5px" data-h="se"></i>';
+    wrap.appendChild(el);
+    el.addEventListener('mousedown', cropMouseDown);
+  }
+  var c = st.crop;
+  el.style.display = c ? 'block' : 'none';
+  if (!c) return;
+  var s = live.clientWidth / stage.width;
+  el.style.left = (c.x * s) + 'px'; el.style.top = (c.y * s) + 'px';
+  el.style.width = (c.w * s) + 'px'; el.style.height = (c.h * s) + 'px';
+}
+function hideCrop() { var el = $('cropbox'); if (el) el.style.display = 'none'; $('aspects').classList.remove('show'); }
+function cropMouseDown(e) {
+  if (st.tool !== 'crop') return;
+  var h = e.target.dataset && e.target.dataset.h;
+  var p = toImg(e);
+  var c = st.crop, m = { x: p.x, y: p.y, h: h, c: { x: c.x, y: c.y, w: c.w, h: c.h } };
+  e.preventDefault(); e.stopPropagation();
+  window.addEventListener('mousemove', onDrag, { once: false });
+  window.addEventListener('mouseup', function up() {
+    window.removeEventListener('mousemove', onDrag);
+    window.removeEventListener('mouseup', up);
+  });
+  function onDrag(ev) {
+    var q = toImg(ev), dx = q.x - m.x, dy = q.y - m.y;
+    var c2 = m.c;
+    if (!h) {
+      st.crop = { x: clamp(m.c.x + dx, 0, stage.width - m.c.w), y: clamp(m.c.y + dy, 0, stage.height - m.c.h),
+                  w: m.c.w, h: m.c.h };
+    } else {
+      var x1 = c2.x, y1 = c2.y, x2 = c2.x + c2.w, y2 = c2.y + c2.h;
+      if (h.indexOf('w') >= 0) x1 = clamp(c2.x + dx, 0, x2 - 8);
+      if (h.indexOf('e') >= 0) x2 = clamp(c2.x + c2.w + dx, x1 + 8, stage.width);
+      if (h.indexOf('n') >= 0) y1 = clamp(c2.y + dy, 0, y2 - 8);
+      if (h.indexOf('s') >= 0) y2 = clamp(c2.y + c2.h + dy, y1 + 8, stage.height);
+      st.crop = fitAspect({ x: x1, y: y1, w: x2 - x1, h: y2 - y1 }, h);
+    }
+    paintCrop();
+  }
+}
+function fitAspect(c, handle) {
+  var r = st.aspect === 'free' ? 0 : st.aspect.split(':').map(Number);
+  if (!r) return c;
+  var ratio = r[0] / r[1];
+  if (c.w / c.h > ratio) c.h = Math.round(c.w / ratio); else c.w = Math.round(c.h * ratio);
+  if (handle && handle.indexOf('n') >= 0) c.y = clamp(c.y, 0, stage.height - c.h);
+  if (handle && handle.indexOf('w') >= 0) c.x = clamp(c.x, 0, stage.width - c.w);
+  c.w = Math.min(c.w, stage.width - c.x); c.h = Math.min(c.h, stage.height - c.y);
+  return c;
+}
+function applyCrop() {
+  var c = st.crop;
+  if (!c || c.w < 4 || c.h < 4) return;
+  pushHistory();
+  var out = document.createElement('canvas');
+  out.width = Math.round(c.w); out.height = Math.round(c.h);
+  out.getContext('2d').drawImage(base, Math.round(c.x), Math.round(c.y), out.width, out.height, 0, 0, out.width, out.height);
+  st.crop = null;
+  setBase(out); hideCrop();
+  toast('вырезано ' + out.width + '×' + out.height);
+}
+
+/* ---------- преобразования ---------- */
+function rotate(dir) {
+  pushHistory();
+  var w = base.width, h = base.height;
+  var out = document.createElement('canvas');
+  out.width = h; out.height = w;
+  var c = out.getContext('2d');
+  c.translate(out.width / 2, out.height / 2);
+  c.rotate(dir * Math.PI / 2);
+  c.drawImage(base, -w / 2, -h / 2);
+  setBase(out);
+}
+function flip(horizontal) {
+  pushHistory();
+  var out = document.createElement('canvas');
+  out.width = base.width; out.height = base.height;
+  var c = out.getContext('2d');
+  c.translate(horizontal ? out.width : 0, horizontal ? 0 : out.height);
+  c.scale(horizontal ? -1 : 1, horizontal ? 1 : -1);
+  c.drawImage(base, 0, 0);
+  bctx.clearRect(0, 0, base.width, base.height);
+  bctx.drawImage(out, 0, 0);
+  redraw();
+}
+function mosaic(rect) {
+  var cell = Math.max(6, Math.round(st.width * 2));
+  var tmp = document.createElement('canvas');
+  var w = Math.max(1, Math.round(rect.w / cell)), h = Math.max(1, Math.round(rect.h / cell));
+  tmp.width = w; tmp.height = h;
+  var tc = tmp.getContext('2d');
+  tc.drawImage(base, rect.x, rect.y, rect.w, rect.h, 0, 0, w, h);
+  bctx.imageSmoothingEnabled = false;
+  bctx.drawImage(tmp, 0, 0, w, h, rect.x, rect.y, rect.w, rect.h);
+  bctx.imageSmoothingEnabled = true;
+}
+
+/* ---------- мышь ---------- */
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function toImg(e) {
+  var r = live.getBoundingClientRect();
+  var s = stage.width / r.width;
+  return { x: clamp(Math.round((e.clientX - r.left) * s), 0, stage.width),
+           y: clamp(Math.round((e.clientY - r.top) * s), 0, stage.height) };
+}
+live.parentNode.addEventListener('mousedown', function (e) {
+  if (!st.name || e.button !== 0) return;
+  if (st.crop && st.tool === 'crop' && $('cropbox').style.display === 'block') return;
+  var p = toImg(e);
+  if (st.tool === 'text') { openText(p, e); return; }
+  e.preventDefault();
+  if (st.tool === 'crop') {
+    st.crop = { x: p.x, y: p.y, w: 0, h: 0 };
+    var start = p;
+    move('mousemove', function (ev) {
+      var q = toImg(ev);
+      var box = { x: Math.min(start.x, q.x), y: Math.min(start.y, q.y),
+                  w: Math.abs(q.x - start.x), h: Math.abs(q.y - start.y) };
+      st.crop = fitAspect(box, 'se'); paintCrop();
+    }, function () { if (st.crop.w < 4 || st.crop.h < 4) { st.crop = null; hideCrop(); } else showCropActions(); });
+    return;
+  }
+  /* Пикселизация рисует рамку фиолетовой, а не тем же цветом, что выбран:
+     так видно границы zamazyваемой области, а сам эффект применяется сразу
+     после отпускания кнопки. */
+  st.drawing = st.tool === 'mosaic'
+    ? { tool: 'rect', color: '#8b5cf6', width: 2, x1: p.x, y1: p.y, x2: p.x, y2: p.y, mosaic: true }
+    : { tool: st.tool, color: st.color, width: st.width, x1: p.x, y1: p.y, x2: p.x, y2: p.y, points: [[p.x, p.y]] };
+  move('mousemove', function (ev) {
+    var q = toImg(ev);
+    var cur = st.drawing;
+    if (cur.mosaic) { cur.x2 = q.x; cur.y2 = q.y; }
+    else if (cur.tool === 'pen') { cur.points.push([q.x, q.y]); }
+    else {
+      cur.x2 = q.x; cur.y2 = q.y;
+      if (ev.shiftKey && (cur.tool === 'rect' || cur.tool === 'ellipse')) {
+        var s = Math.max(Math.abs(q.x - cur.x1), Math.abs(q.y - cur.y1));
+        cur.x2 = cur.x1 + s * Math.sign(q.x - cur.x1 || 1);
+        cur.y2 = cur.y1 + s * Math.sign(q.y - cur.y1 || 1);
+      }
+    }
+    paintLive();
+  }, function () {
+    var cur = st.drawing;
+    st.drawing = null;
+    lctx.clearRect(0, 0, live.width, live.height);
+    if (!cur) return;
+    if (cur.mosaic) {
+      var r = normRect(cur);
+      if (r.w < 4 || r.h < 4) return;
+      pushHistory(); mosaic(r); redraw(); return;
+    }
+    if (cur.tool === 'pen' && cur.points.length < 2) return;
+    if (cur.tool !== 'pen' && Math.abs(cur.x2 - cur.x1) < 3 && Math.abs(cur.y2 - cur.y1) < 3) return;
+    pushHistory(); stroke(bctx, cur); redraw();
+  });
+});
+function normRect(d) {
+  return { x: Math.min(d.x1, d.x2), y: Math.min(d.y1, d.y2),
+           w: Math.abs(d.x2 - d.x1), h: Math.abs(d.y2 - d.y1) };
+}
+function move(type, onMove, onUp) {
+  var up = function () { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', up); onUp(); };
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', up);
+}
+function openText(p, e) {
+  var inp = $('textin'), s = live.clientWidth / stage.width;
+  inp.style.display = 'block';
+  inp.style.left = (p.x * s) + 'px'; inp.style.top = (p.y * s - 14) + 'px';
+  inp.style.fontSize = Math.max(12, Math.round((st.width * 5 + 10) * s)) + 'px';
+  inp.value = '';
+  setTimeout(function () { inp.focus(); }, 0);
+  var done = function (ok) {
+    inp.style.display = 'none';
+    inp.removeEventListener('keydown', key);
+    inp.removeEventListener('blur', blur);
+    if (ok && inp.value.trim()) {
+      var d = { tool: 'text', color: st.color, width: st.width, x1: p.x, y1: p.y + st.width * 5 + 10, text: inp.value.trim() };
+      pushHistory(); stroke(bctx, d); redraw();
+    }
+  };
+  var key = function (ev) { if (ev.key === 'Enter') done(true); if (ev.key === 'Escape') done(false); };
+  var blur = function () { done(true); };
+  inp.addEventListener('keydown', key);
+  inp.addEventListener('blur', blur);
+}
+
+/* ---------- сохранение/буфер/удаление ---------- */
+function canvasBlob() {
+  return new Promise(function (res) { stage.toBlob(res, 'image/png'); });
+}
+function save() {
+  if (!st.name) return;
+  return canvasBlob().then(function (blob) {
+    return new Promise(function (res, rej) {
+      var fr = new FileReader();
+      fr.onload = function () { res(fr.result); };
+      fr.onerror = rej;
+      fr.readAsDataURL(blob);
+    });
+  }).then(function (data) { return api('/api/screenshots/save', { data: data }); })
+    .then(function (r) {
+      // Сохранённый кадр и есть то, что на экране: дальше «в буфер» и «в менеджер»
+      // должны работать с копией, а не с исходным снимком.
+      st.name = r.shot.name; st.dirty = false;
+      $('fname').textContent = r.shot.name;
+      toast('сохранено: ' + r.shot.name); return refreshThumbs();
+    })
+    .catch(function (e) { toast('сохранение: ' + e.message, true); })
+    .then(syncButtons);
+}
+function toClipboard() {
+  return api('/api/screenshots/clipboard', { name: st.name })
+    .then(function () { toast('картинка в буфере обмена'); })
+    .catch(function (e) { toast('буфер: ' + e.message, true); });
+}
+/* ---------- в файловый менеджер ----------
+   Копия снимка кладётся в папку «скриншоты» корня профиля — там её видит
+   файловый менеджер, и пользователь может переименовать, перенести, отдать. */
+function openAppWindow(url, title) {
+  if (window.electronAPI && window.electronAPI.openAppWindow) {
+    return window.electronAPI.openAppWindow({ url: url, title: title });
+  }
+  window.open(url, '_blank');
+  return Promise.resolve({ ok: true });
+}
+function toFileManager() {
+  if (!st.name) return;
+  // Правка ещё не сохранена — иначе в менеджер уехал бы кадр без неё.
+  var pre = st.dirty ? save() : Promise.resolve();
+  $('toFm').disabled = true;
+  return pre.then(function () { return api('/api/screenshots/to-filemanager', { name: st.name }); })
+    .then(function (r) {
+      if (!r || !r.ok) throw new Error((r && r.error) || 'не отправлено');
+      toast('копия в «' + r.dir.replace(/^.*[\\/]/, '') + '»: ' + r.name);
+      return refreshThumbs().then(function () { return openAppWindow(location.origin + r.open_url, 'Файловый менеджер'); });
+    })
+    .catch(function (e) { toast('файловый менеджер: ' + e.message, true); })
+    .then(function () { $('toFm').disabled = !st.name; });
+}
+function remove() {
+  if (!st.name) return;
+  return deleteShot(st.name);
+}
+
+/* ---------- крепление к заметке ----------
+   Сердело функции — на сервере: он кладёт файл в папку вложений заметки и дописывает
+   markdown в её текст. Здесь только выбор заметки: список берётся из её же api,
+   поэтому в окне видно ровно те заметки, что у текущего профиля. */
+var PICK = { open: false, notes: [], sel: -1, req: 0, timer: 0, loading: false };
+
+function renderNotes() {
+  var box = $('noteList');
+  box.innerHTML = '';
+  if (!PICK.notes.length) {
+    var n = document.createElement('div');
+    n.className = 'none';
+    n.textContent = PICK.loading ? 'поиск по заметкам…'
+                                 : 'заметок нет — создайте их в модуле «Заметки»';
+    box.appendChild(n);
+    return;
+  }
+  PICK.notes.forEach(function (nt, i) {
+    var d = document.createElement('div');
+    d.className = 'row' + (i === PICK.sel ? ' sel' : '');
+    d.dataset.i = i;
+    var t = document.createElement('b'), s = document.createElement('i');
+    t.textContent = nt.title || 'Без названия';
+    s.textContent = (nt.folder === 'inbox' ? 'входящие' : nt.folder) + ' · ' + (nt.preview || '').replace(/\s+/g, ' ').slice(0, 70);
+    d.appendChild(t); d.appendChild(s);
+    d.onclick = function () { PICK.sel = i; renderNotes(); attachSelected(); };
+    box.appendChild(d);
+  });
+}
+function loadNotes(q) {
+  clearTimeout(PICK.timer);
+  PICK.loading = true;
+  renderNotes();
+  PICK.timer = setTimeout(function () {
+    var token = ++PICK.req;
+    api('/api/screenshots/notes?q=' + encodeURIComponent(q || '')).then(function (r) {
+      if (token !== PICK.req) return;          // пришёл ответ отменённого поиска
+      PICK.notes = r.notes || [];
+      PICK.sel = PICK.notes.length ? 0 : -1;
+      PICK.loading = false;
+      renderNotes();
+    }).catch(function (e) {
+      if (token !== PICK.req) return;
+      PICK.loading = false;
+      renderNotes();
+      toast('заметки: ' + e.message, true);
+    });
+  }, 180);
+}
+function openNotePick() {
+  $('notePick').classList.add('show');
+  PICK.open = true;
+  $('noteQ').value = '';
+  PICK.notes = []; PICK.sel = -1;
+  renderNotes();
+  loadNotes('');
+  setTimeout(function () { $('noteQ').focus(); }, 30);
+}
+function closeNotePick() {
+  $('notePick').classList.remove('show');
+  PICK.open = false;
+}
+function attachSelected() {
+  var nt = PICK.notes[PICK.sel];
+  if (!nt) { toast('выберите заметку', true); return; }
+  return attachToNote(nt);
+}
+function attachToNote(nt) {
+  if (!st.name) return;
+  var pre = st.dirty ? save() : Promise.resolve();
+  $('toNote').disabled = true;
+  return pre.then(function () {
+    return api('/api/screenshots/to-note', { name: st.name, note_id: nt.id });
+  }).then(function (r) {
+    if (!r || !r.ok) throw new Error((r && r.error) || 'не прикреплено');
+    closeNotePick();
+    toast(r.embedded ? 'прикреплено к «' + r.note_title + '»'
+                     : 'вложение добавлено в «' + r.note_title + '» (текст не менялся)');
+    return openAppWindow(location.origin + r.open_url, 'Заметка: ' + r.note_title);
+  }).catch(function (e) { toast('заметка: ' + e.message, true); })
+    .then(function () { $('toNote').disabled = !st.name; });
+}
+function toNote() {
+  if (!st.name) return;
+  openNotePick();
+}
+
+/* ---------- панель инструментов ---------- */
+function setTool(tool) {
+  st.tool = tool;
+  Array.prototype.forEach.call(document.querySelectorAll('.tool'), function (b) {
+    b.classList.toggle('on', b.dataset.tool === tool);
+  });
+  var cropOn = tool === 'crop';
+  $('aspects').classList.toggle('show', cropOn && !!st.crop);
+  if (cropOn) hint('Тяните рамку, чтобы вырезать часть снимка. Enter — применить, Esc — отменить.');
+  else if (tool === 'mosaic') hint('Тяните по области: она станет пиксельной.');
+  else if (tool === 'text') hint('Кликните место надписи, введите текст, нажмите Enter.');
+  else if (tool !== 'crop') hint('');
+  if (!cropOn) { st.crop = null; hideCrop(); }
+  else if (st.crop) paintCrop();
+}
+function hint(msg) {
+  var h = $('hint');
+  if (!msg) { h.classList.remove('show'); return; }
+  h.textContent = msg; h.classList.add('show');
+  clearTimeout(h._t); h._t = setTimeout(function () { h.classList.remove('show'); }, 4200);
+}
+function showCropActions() {
+  hint('Рамку можно двигать и тянуть за углы. Enter — вырезать, Esc — снять выделение.');
+  $('hint').classList.add('show');
+  $('aspects').classList.add('show');
+}
+
+(function buildRail() {
+  var sw = $('swatches');
+  COLORS.forEach(function (c, i) {
+    var b = document.createElement('div');
+    b.className = 'sw' + (i === 0 ? ' on' : '');
+    b.style.background = c; b.dataset.color = c;
+    b.onclick = function () {
+      st.color = c;
+      Array.prototype.forEach.call(sw.children, function (x) { x.classList.toggle('on', x === b); });
+    };
+    sw.appendChild(b);
+  });
+  var wd = $('widths');
+  WIDTHS.forEach(function (w, i) {
+    var b = document.createElement('button');
+    b.className = 'w' + (i === 1 ? ' on' : '');
+    b.textContent = w; b.dataset.width = w;
+    b.onclick = function () {
+      st.width = w;
+      Array.prototype.forEach.call(wd.children, function (x) { x.classList.toggle('on', x === b); });
+    };
+    wd.appendChild(b);
+  });
+})();
+
+Array.prototype.forEach.call(document.querySelectorAll('.tool'), function (b) {
+  b.onclick = function () { setTool(b.dataset.tool); };
+});
+Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (c) {
+  c.onclick = function () {
+    st.aspect = c.dataset.ar;
+    Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (x) { x.classList.toggle('on', x === c); });
+    if (st.crop) { st.crop = fitAspect(st.crop, 'se'); paintCrop(); }
+  };
+});
+$('capFull').onclick = $('capEmpty').onclick = function () { capture('full'); };
+$('capWin').onclick = function () { capture('window'); };
+$('save').onclick = save;
+$('toClip').onclick = toClipboard;
+$('toFm').onclick = toFileManager;
+$('toNote').onclick = toNote;
+$('pickCancel').onclick = closeNotePick;
+$('pickOk').onclick = attachSelected;
+$('noteQ').oninput = function () { loadNotes(this.value); };
+$('noteQ').onkeydown = function (e) {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (!PICK.notes.length) return;
+    var n = PICK.notes.length;
+    PICK.sel = (PICK.sel + (e.key === 'ArrowDown' ? 1 : n - 1)) % n;
+    renderNotes();
+    var sel = document.querySelector('#noteList .row.sel');
+    if (sel) sel.scrollIntoView({ block: 'nearest' });
+    return;
+  }
+  if (e.key === 'Enter') { e.preventDefault(); attachSelected(); return; }
+  if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeNotePick(); }
+};
+$('notePick').addEventListener('click', function (e) {
+  if (e.target === this) closeNotePick();     // клик по затемнению закрывает окно выбора
+});
+$('showClosed').onclick = function () {
+  SHOW_CLOSED = !SHOW_CLOSED;
+  this.classList.toggle('on', SHOW_CLOSED);
+  refreshThumbs();
+};
+$('del').onclick = remove;
+$('undo').onclick = undo;
+$('redo').onclick = redo;
+$('zIn').onclick = function () { st.zoom = clamp((st.zoom || live.clientWidth / stage.width) * 1.25, 0.05, 8); applyZoom(); };
+$('zOut').onclick = function () { st.zoom = clamp((st.zoom || live.clientWidth / stage.width) / 1.25, 0.05, 8); applyZoom(); };
+$('zFit').onclick = function () { st.zoom = 0; applyZoom(); };
+$('z100').onclick = function () { st.zoom = 1; applyZoom(); };
+$('stageBox').addEventListener('wheel', function (e) {
+  if (!e.ctrlKey) return;
+  e.preventDefault();
+  st.zoom = clamp((st.zoom || live.clientWidth / stage.width) * (e.deltaY < 0 ? 1.12 : 0.89), 0.05, 8);
+  applyZoom();
+}, { passive: false });
+window.addEventListener('resize', applyZoom);
+
+document.addEventListener('keydown', function (e) {
+  /* Пока открыто окно выбора заметки, клавиши принадлежат ему: редактор не должен
+     отменять правку или закрывать окно вместо того, чтобы закрыть выбор. */
+  if (PICK.open) {
+    if (e.key === 'Escape') { e.preventDefault(); closeNotePick(); }
+    return;
+  }
+  if (e.target === $('textin')) return;
+  var mod = e.ctrlKey || e.metaKey;
+  /* Alt и Ctrl+Shift заняты оболочкой: Ctrl+Shift+W закрывает окно, F и M
+     сворачивают и разворачивают его (перехват на capture, у страницы шанса нет).
+     Поэтому свои сочетания держим на простом Ctrl. */
+  if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); save(); return; }
+  if (mod && e.key.toLowerCase() === 'c' && !e.shiftKey) { e.preventDefault(); toClipboard(); return; }
+  if (mod && e.key.toLowerCase() === 'm' && !e.shiftKey) { e.preventDefault(); toFileManager(); return; }
+  if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); return; }
+  if (mod && e.key.toLowerCase() === 'r') { e.preventDefault(); rotate(1); return; }
+  if (mod && e.key.toLowerCase() === 'h') { e.preventDefault(); flip(true); return; }
+  if (mod && e.key.toLowerCase() === 'v') { e.preventDefault(); flip(false); return; }
+  if (e.key === 'Enter' && st.crop) { applyCrop(); return; }
+  if (e.key === 'Escape') {
+    if (st.crop) { st.crop = null; hideCrop(); hint(''); return; }
+    if (window.electronAPI && window.electronAPI.close) window.electronAPI.close();
+    return;
+  }
+  if (mod || e.altKey) return;
+  var map = { c: 'crop', p: 'pen', r: 'rect', e: 'ellipse', a: 'arrow', t: 'text', m: 'mosaic' };
+  var t = map[e.key.toLowerCase()];
+  if (t) setTool(t);
+  if (e.key === '0') { st.zoom = 0; applyZoom(); }
+  if (e.key === '1') { st.zoom = 1; applyZoom(); }
+});
+
+/* ---------- вход ---------- */
+var params = new URLSearchParams(location.search);
+var initial = params.get('shot');
+/* Клавиша области приходит как mode=crop: там пользователю нужно сразу тянуть
+   рамку. Обычный снимок открывается с пером — annotировать чаще, чем кропать. */
+setTool(params.get('mode') === 'crop' ? 'crop' : 'pen');
+syncButtons();
+refreshThumbs();
+if (initial) {
+  loadShot(initial).then(function () {
+    if (params.get('mode') === 'crop') hint('Выделите рамку и нажмите Enter.');
+  }).catch(function (e) { toast('' + e.message, true); });
+}
+})();
+</script>
+</body>
+</html>

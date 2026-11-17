@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html class="pg-page_server_settings" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASIO Server Settings</title>
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;--text:#c9d1d9;--text2:#8b949e;--text3:#484f58;--accent:#58a6ff;--purple:#8b5cf6;--green:#238636;--orange:#f97316;--red:#da3633;--gradient:linear-gradient(135deg,#58a6ff,#8b5cf6)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+.topnav{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:12px}
+.topnav .logo{font-size:18px;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topnav .back{padding:6px 12px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:12px;text-decoration:none;display:flex;align-items:center;gap:5px}
+.topnav .back:hover{border-color:var(--accent)}
+
+.main{max-width:1000px;margin:0 auto;padding:20px}
+h1{font-size:24px;margin-bottom:6px;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:flex;align-items:center;gap:10px}
+.subtitle{color:var(--text2);font-size:13px;margin-bottom:24px}
+
+/* Saved Configs */
+.saved-configs{margin-bottom:24px}
+.saved-configs h2{font-size:16px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.configs-list{display:flex;gap:8px;flex-wrap:wrap}
+.config-card{padding:10px 14px;background:var(--bg2);border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;min-width:180px}
+.config-card:hover{border-color:var(--accent)}
+.config-card.active{border-color:var(--green);background:rgba(35,134,54,0.1)}
+.config-card .name{font-size:12px;font-weight:600;margin-bottom:4px}
+.config-card .model{font-size:10px;color:var(--text2)}
+.config-card .provider{font-size:10px;padding:2px 6px;background:var(--bg3);border-radius:4px;display:inline-block;margin-top:4px}
+
+/* Form Sections */
+.section{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.section h2{font-size:16px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.section h2 .icon{font-size:20px}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:11px;font-weight:600;margin-bottom:4px;color:var(--text2)}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group .hint{font-size:10px;color:var(--text3);margin-top:4px}
+
+.provider-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:16px}
+.provider-card{padding:16px;background:var(--bg);border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;text-align:center}
+.provider-card:hover{border-color:var(--accent)}
+.provider-card.selected{border-color:var(--accent);background:rgba(88,166,255,0.1)}
+.provider-card .icon{font-size:32px;margin-bottom:8px}
+.provider-card .name{font-size:14px;font-weight:600;margin-bottom:4px}
+.provider-card .desc{font-size:11px;color:var(--text2)}
+
+.model-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:8px}
+.model-card{padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s}
+.model-card:hover{border-color:var(--accent)}
+.model-card.selected{border-color:var(--green);background:rgba(35,134,54,0.1)}
+.model-card .name{font-size:11px;font-weight:600;margin-bottom:2px}
+.model-card .badge{font-size:9px;padding:1px 4px;background:var(--bg3);border-radius:3px;color:var(--text2)}
+
+.actions{display:flex;gap:8px;margin-top:16px}
+.btn{padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;transition:all .2s}
+.btn:hover{opacity:0.9;transform:translateY(-1px)}
+.btn.primary{background:var(--gradient);color:#fff}
+.btn.success{background:var(--green);color:#fff}
+.btn.secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn.danger{background:var(--red);color:#fff}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+.test-result{padding:12px;background:var(--bg);border-radius:8px;margin-top:12px;font-size:12px}
+.test-result.success{border:1px solid var(--green);color:var(--green)}
+.test-result.error{border:1px solid var(--red);color:var(--red)}
+
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center}
+.modal.open{display:flex}
+.modal-content{background:var(--bg2);border:1px solid var(--border);border-radius:12px;width:90%;max-width:500px;padding:20px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-header h3{font-size:16px}
+.modal-close{background:none;border:none;color:var(--text2);font-size:24px;cursor:pointer}
+
+.status-badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:600}
+.status-badge.online{background:var(--green);color:#fff}
+.status-badge.offline{background:var(--red);color:#fff}
+.status-badge.testing{background:var(--orange);color:#fff}
+
+@media(max-width:768px){
+  .form-row{grid-template-columns:1fr}
+  .provider-cards{grid-template-columns:1fr}
+}
+</style>
+<script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+<nav class="topnav">
+  <a href="/agent" class="back"><i class="fa-solid fa-arrow-left"></i> К агенту</a>
+  <div class="logo"><i class="fa-solid fa-gear"></i> Server Settings</div>
+</nav>
+
+<main class="main">
+  <h1>🖥️ Настройки сервера</h1>
+  <p class="subtitle">Управление провайдерами, моделями и конфигурацией LLM</p>
+
+  <!-- Saved Configs -->
+  <div class="saved-configs">
+    <h2>💾 Сохранённые конфигурации</h2>
+    <div class="configs-list" id="savedConfigs"></div>
+  </div>
+
+  <!-- Provider Selection -->
+  <div class="section">
+    <h2><span class="icon">🔌</span> Тип провайдера</h2>
+    <div class="provider-cards">
+      <div class="provider-card" id="provLocal" onclick="selectProvider('local')">
+        <div class="icon">🏠</div>
+        <div class="name">Локальный</div>
+        <div class="desc">LM Studio на вашем ПК</div>
+      </div>
+      <div class="provider-card" id="provCloud" onclick="selectProvider('openai_compatible')">
+        <div class="icon">☁️</div>
+        <div class="name">Облачный</div>
+        <div class="desc">OpenRouter / OpenAI совместимый</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Local Settings -->
+  <div class="section" id="localSection" style="display:none">
+    <h2><span class="icon">🏠</span> Локальный провайдер</h2>
+    <div class="form-group">
+      <label>URL LM Studio</label>
+      <input type="text" id="localUrl" placeholder="http://localhost:1234">
+      <div class="hint">Адрес вашего LM Studio сервера</div>
+    </div>
+    <div class="form-group">
+      <label>Модель</label>
+      <select id="localModel"></select>
+      <div class="hint">Загружается из LM Studio</div>
+    </div>
+    <div class="form-group">
+      <label>API ключ (опционально)</label>
+      <input type="password" id="localApiKey" placeholder="sk-lm-...">
+    </div>
+    <div class="form-group">
+      <label>Таймаут (секунды)</label>
+      <input type="number" id="localTimeout" value="120" min="10" max="600">
+    </div>
+  </div>
+
+  <!-- Cloud Settings -->
+  <div class="section" id="cloudSection" style="display:none">
+    <h2><span class="icon">☁️</span> Облачный провайдер</h2>
+    <div class="form-group">
+      <label>Base URL</label>
+      <input type="text" id="cloudBaseUrl" placeholder="https://openrouter.ai/api/v1">
+      <div class="hint">URL API провайдера (должен заканчиваться на /v1)</div>
+    </div>
+    <div class="form-group">
+      <label>API ключ</label>
+      <input type="password" id="cloudApiKey" placeholder="sk-or-v1-...">
+      <div class="hint">Ваш секретный ключ API</div>
+    </div>
+    <div class="form-group">
+      <label>Модель</label>
+      <div class="model-cards" id="cloudModels"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Температура</label>
+        <input type="number" id="cloudTemperature" value="0.7" min="0" max="2" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>Макс. токены</label>
+        <input type="number" id="cloudMaxTokens" value="8192" min="256" max="131072">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Таймаут (секунды)</label>
+      <input type="number" id="cloudTimeout" value="300" min="30" max="600">
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="section">
+    <h2><span class="icon">🚀</span> Действия</h2>
+    <div class="actions">
+      <button class="btn primary" onclick="testConnection()" id="testBtn">🔍 Тест подключения</button>
+      <button class="btn success" onclick="saveConfig()" id="saveBtn">💾 Сохранить</button>
+      <button class="btn secondary" onclick="saveAsNewConfig()">📁 Сохранить как...</button>
+      <button class="btn danger" onclick="resetConfig()">🔄 Сбросить</button>
+    </div>
+    <div id="testResult"></div>
+  </div>
+</main>
+
+<!-- Save As Modal -->
+<div class="modal" id="saveModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Сохранить конфигурацию</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="form-group">
+      <label>Название</label>
+      <input type="text" id="configName" placeholder="Например: Cloud Gemma-4">
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+      <button class="btn secondary" onclick="closeModal()">Отмена</button>
+      <button class="btn success" onclick="confirmSaveAs()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentProvider = 'local';
+let currentConfig = null;
+let savedConfigs = [];
+
+// Init
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadCurrentConfig();
+  await loadSavedConfigs();
+  await loadLocalModels();
+  renderCloudModels();
+});
+
+async function loadCurrentConfig() {
+  try {
+    const res = await fetch('/api/agent/provider/config');
+    const cfg = await res.json();
+    currentConfig = cfg;
+    currentProvider = cfg.type || 'local';
+    
+    // Update provider cards
+    document.getElementById('provLocal').classList.toggle('selected', currentProvider === 'local');
+    document.getElementById('provCloud').classList.toggle('selected', currentProvider === 'openai_compatible');
+    
+    // Show/hide sections
+    document.getElementById('localSection').style.display = currentProvider === 'local' ? 'block' : 'none';
+    document.getElementById('cloudSection').style.display = currentProvider === 'openai_compatible' ? 'block' : 'none';
+    
+    // Fill local
+    document.getElementById('localUrl').value = cfg.local?.url || 'http://localhost:1234';
+    document.getElementById('localModel').value = cfg.local?.model || '';
+    document.getElementById('localApiKey').value = cfg.local?.api_key || '';
+    document.getElementById('localTimeout').value = cfg.local?.timeout || 120;
+    
+    // Fill cloud
+    document.getElementById('cloudBaseUrl').value = cfg.openai_compatible?.base_url || 'https://openrouter.ai/api/v1';
+    document.getElementById('cloudApiKey').value = cfg.openai_compatible?.api_key || '';
+    document.getElementById('cloudTemperature').value = cfg.openai_compatible?.temperature || 0.7;
+    document.getElementById('cloudMaxTokens').value = cfg.openai_compatible?.max_tokens || 8192;
+    document.getElementById('cloudTimeout').value = cfg.openai_compatible?.timeout || 300;
+    
+    // Highlight selected cloud model
+    const selectedModel = cfg.openai_compatible?.model || '';
+    document.querySelectorAll('.model-card').forEach(mc => {
+      mc.classList.toggle('selected', mc.dataset.model === selectedModel);
+    });
+  } catch(e) {
+    console.error('Load config error:', e);
+  }
+}
+
+async function loadSavedConfigs() {
+  try {
+    const res = await fetch('/api/agent/provider/configs');
+    const data = await res.json();
+    savedConfigs = data.configs || [];
+    renderSavedConfigs();
+  } catch(e) {
+    // If endpoint doesn't exist, use localStorage
+    try {
+      const local = localStorage.getItem('server_configs');
+      if (local) {
+        savedConfigs = JSON.parse(local);
+        renderSavedConfigs();
+      }
+    } catch(e2) {}
+  }
+}
+
+function renderSavedConfigs() {
+  const container = document.getElementById('savedConfigs');
+  if (savedConfigs.length === 0) {
+    container.innerHTML = '<div style="color:var(--text2);font-size:12px">Нет сохранённых конфигураций</div>';
+    return;
+  }
+  
+  container.innerHTML = savedConfigs.map((cfg, i) => `
+    <div class="config-card ${currentConfig && currentConfig.name === cfg.name ? 'active' : ''}" onclick="loadConfig(${i})">
+      <div class="name">${cfg.name}</div>
+      <div class="model">${cfg.model || '-'}</div>
+      <div class="provider">${cfg.type === 'local' ? '🏠 Локальный' : '☁️ Облако'}</div>
+    </div>
+  `).join('');
+}
+
+function loadConfig(index) {
+  const cfg = savedConfigs[index];
+  if (!cfg) return;
+  
+  // Apply config to form
+  selectProvider(cfg.type);
+  
+  if (cfg.type === 'local') {
+    document.getElementById('localUrl').value = cfg.url || '';
+    document.getElementById('localModel').value = cfg.model || '';
+    document.getElementById('localApiKey').value = cfg.api_key || '';
+    document.getElementById('localTimeout').value = cfg.timeout || 120;
+  } else {
+    document.getElementById('cloudBaseUrl').value = cfg.base_url || '';
+    document.getElementById('cloudApiKey').value = cfg.api_key || '';
+    document.getElementById('cloudTemperature').value = cfg.temperature || 0.7;
+    document.getElementById('cloudMaxTokens').value = cfg.max_tokens || 8192;
+    document.getElementById('cloudTimeout').value = cfg.timeout || 300;
+    
+    // Select model
+    document.querySelectorAll('.model-card').forEach(mc => {
+      mc.classList.toggle('selected', mc.dataset.model === cfg.model);
+    });
+  }
+}
+
+function selectProvider(type) {
+  currentProvider = type;
+  document.getElementById('provLocal').classList.toggle('selected', type === 'local');
+  document.getElementById('provCloud').classList.toggle('selected', type === 'openai_compatible');
+  document.getElementById('localSection').style.display = type === 'local' ? 'block' : 'none';
+  document.getElementById('cloudSection').style.display = type === 'openai_compatible' ? 'block' : 'none';
+}
+
+async function loadLocalModels() {
+  try {
+    const url = document.getElementById('localUrl').value || 'http://localhost:1234';
+    const res = await fetch(`${url}/v1/models`);
+    const data = await res.json();
+    const models = data.data || [];
+    
+    const select = document.getElementById('localModel');
+    select.innerHTML = models.map(m => `<option value="${m.id}">${m.id}</option>`).join('');
+  } catch(e) {
+    document.getElementById('localModel').innerHTML = '<option value="">LM Studio не доступен</option>';
+  }
+}
+
+function renderCloudModels() {
+  const models = [
+    { id: 'google/gemma-4-31b-it:free', badge: 'FREE', speed: '⚡⚡⚡' },
+    { id: 'nvidia/nemotron-3-super-120b-a12b:free', badge: 'FREE', speed: '⚡⚡' },
+    { id: 'minimax/minimax-m2.5:free', badge: 'FREE', speed: '⚡⚡⚡' },
+    { id: 'google/gemma-3-27b-it:free', badge: 'FREE', speed: '⚡⚡⚡⚡' },
+    { id: 'qwen/qwen3-30b-a3b:free', badge: 'FREE', speed: '⚡⚡⚡' },
+    { id: 'meta-llama/llama-3.3-70b-instruct', badge: 'PREMIUM', speed: '⚡⚡⚡⚡' }
+  ];
+  
+  document.getElementById('cloudModels').innerHTML = models.map(m => `
+    <div class="model-card" data-model="${m.id}" onclick="selectCloudModel('${m.id}')">
+      <div class="name">${m.id.split('/').pop()}</div>
+      <div class="badge">${m.badge} ${m.speed}</div>
+    </div>
+  `).join('');
+}
+
+function selectCloudModel(modelId) {
+  document.querySelectorAll('.model-card').forEach(mc => mc.classList.remove('selected'));
+  document.querySelector(`[data-model="${modelId}"]`)?.classList.add('selected');
+}
+
+async function testConnection() {
+  const btn = document.getElementById('testBtn');
+  const result = document.getElementById('testResult');
+  
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Тестирование...';
+  result.innerHTML = '';
+  
+  const isLocal = currentProvider === 'local';
+  
+  try {
+    if (isLocal) {
+      const url = document.getElementById('localUrl').value;
+      const res = await fetch(`${url}/v1/models`);
+      if (res.ok) {
+        const data = await res.json();
+        result.innerHTML = `<div class="test-result success">✅ LM Studio подключён! Моделей: ${data.data?.length || 0}</div>`;
+      } else {
+        result.innerHTML = `<div class="test-result error">❌ Ошибка подключения к LM Studio</div>`;
+      }
+    } else {
+      const baseUrl = document.getElementById('cloudBaseUrl').value;
+      const apiKey = document.getElementById('cloudApiKey').value;
+      
+      const res = await fetch('/api/agent/provider/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          base_url: baseUrl,
+          api_key: apiKey,
+          model: document.querySelector('.model-card.selected')?.dataset.model || ''
+        })
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        result.innerHTML = `<div class="test-result success">✅ Облачный провайдер подключён!<br>Модель: ${data.model}<br>Время: ${data.latency?.toFixed(1) || '-'}s</div>`;
+      } else {
+        result.innerHTML = `<div class="test-result error">❌ ${data.error || 'Ошибка подключения'}</div>`;
+      }
+    }
+  } catch(e) {
+    result.innerHTML = `<div class="test-result error">❌ ${e.message}</div>`;
+  }
+  
+  btn.disabled = false;
+  btn.innerHTML = '🔍 Тест подключения';
+}
+
+async function saveConfig() {
+  const config = buildConfig();
+  
+  try {
+    const res = await fetch('/api/agent/provider/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config)
+    });
+    
+    const result = await res.json();
+    if (result.ok) {
+      alert('✅ Конфигурация сохранена!');
+      loadSavedConfigs();
+      
+      // Reload agent page
+      if (confirm('Перезагрузить страницу агента?')) {
+        window.location.href = '/agent';
+      }
+    } else {
+      alert('❌ Ошибка сохранения: ' + (result.error || 'Неизвестная'));
+    }
+  } catch(e) {
+    alert('❌ Ошибка: ' + e.message);
+  }
+}
+
+function buildConfig() {
+  const isLocal = currentProvider === 'local';
+  const selectedModel = document.querySelector('.model-card.selected')?.dataset.model || '';
+  
+  return {
+    type: currentProvider,
+    local: {
+      url: document.getElementById('localUrl').value,
+      model: document.getElementById('localModel').value,
+      api_key: document.getElementById('localApiKey').value,
+      timeout: parseInt(document.getElementById('localTimeout').value)
+    },
+    openai_compatible: {
+      base_url: document.getElementById('cloudBaseUrl').value,
+      api_key: document.getElementById('cloudApiKey').value,
+      model: isLocal ? '' : selectedModel,
+      temperature: parseFloat(document.getElementById('cloudTemperature').value),
+      max_tokens: parseInt(document.getElementById('cloudMaxTokens').value),
+      timeout: parseInt(document.getElementById('cloudTimeout').value)
+    }
+  };
+}
+
+function saveAsNewConfig() {
+  document.getElementById('saveModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('saveModal').classList.remove('open');
+}
+
+async function confirmSaveAs() {
+  const name = document.getElementById('configName').value;
+  if (!name) {
+    alert('Введите название');
+    return;
+  }
+  
+  const config = buildConfig();
+  config.name = name;
+  
+  // Save to localStorage for now
+  savedConfigs.push(config);
+  localStorage.setItem('server_configs', JSON.stringify(savedConfigs));
+  
+  closeModal();
+  renderSavedConfigs();
+  document.getElementById('configName').value = '';
+}
+
+function resetConfig() {
+  if (confirm('Сбросить все настройки к значениям по умолчанию?')) {
+    document.getElementById('localUrl').value = 'http://localhost:1234';
+    document.getElementById('cloudBaseUrl').value = 'https://openrouter.ai/api/v1';
+    document.getElementById('cloudTemperature').value = 0.7;
+    document.getElementById('cloudMaxTokens').value = 8192;
+    document.getElementById('cloudTimeout').value = 300;
+    document.getElementById('localTimeout').value = 120;
+  }
+}
+</script>
+</body>
+</html>

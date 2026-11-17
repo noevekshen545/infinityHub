@@ -1,0 +1,2941 @@
+<!DOCTYPE html>
+<html class="pg-page_workspace" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Рабочее пространство</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box }
+html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Inter','SF Pro Display',-apple-system,sans-serif }
+
+:root {
+  --bg: #f7f8fa; --bg2: #ffffff; --bg3: #f1f3f6; --bg4: #e7eaef;
+  --border: rgba(0,0,0,0.06); --border2: rgba(0,0,0,0.1);
+  --text: #1a1f26; --text2: #5a6472; --text3: #8b95a3;
+  --accent: #3b6ef5; --accent2: #2d55c9;
+  --accent-light: rgba(59,110,245,0.09);
+  --accent-glow: rgba(59,110,245,0.15);
+  --hover: rgba(15,23,42,0.04);
+  --active: rgba(15,23,42,0.07);
+  --red: #d64545; --green: #1f9254; --amber: #c98a12;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 1px 2px rgba(16,24,40,0.05);
+  --shadow-md: 0 4px 14px rgba(16,24,40,0.07);
+  --shadow-lg: 0 16px 44px rgba(16,24,40,0.13);
+  --glass: rgba(255,255,255,0.9);
+  --panel: #ffffff;
+  --canvas-bg: #eef0f4;
+  --ws-top-h: 52px;   /* высота верхней панели — от неё отступает холст */
+}
+/* Тёмная тема.
+   ВАЖНО: theme.js не добавляет класс "dark" на <body> (dark — базовое
+   состояние :root), а ставит атрибут data-theme на <html> и доливает
+   переменные инлайном на body. Поэтому ориентируемся на [data-theme],
+   а не на body.dark — иначе правила просто не срабатывали бы. */
+[data-theme="dark"] body,
+body.dark, body.midnight {
+  --bg: #0f1319; --bg2: #161b23; --bg3: #1d232d; --bg4: #262d39;
+  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.12);
+  --text: #e6eaf0; --text2: #9aa5b4; --text3: #6b7686;
+  --accent: #5b8cff; --accent2: #3f7ae0;
+  --accent-light: rgba(91,140,255,0.14);
+  --accent-glow: rgba(91,140,255,0.22);
+  --hover: rgba(255,255,255,0.05); --active: rgba(255,255,255,0.08);
+  --red: #ff6b6b; --green: #3ecf8e; --amber: #e5a13a;
+  --shadow: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 14px rgba(0,0,0,0.35);
+  --shadow-lg: 0 16px 44px rgba(0,0,0,0.5);
+  --glass: rgba(22,27,35,0.92);
+  --panel: #161b23;
+  --canvas-bg: #0d1117;
+}
+[data-theme="midnight"] body, body.midnight {
+  --bg: #08090f; --bg2: #0e1018; --bg3: #141824; --bg4: #1c2130;
+  --canvas-bg: #05060a;
+}
+[data-theme="sepia"] body, [data-theme="paper"] body {
+  --bg: #f4ecd8; --bg2: #fbf6ea; --bg3: #ece1ca; --bg4: #e0d3b6;
+  --border: #ded0b2; --border2: #cbb894; --text: #4a3a28;
+  --text2: #6d5b46; --text3: #94806a;
+}
+
+/* Холст живёт под верхней панелью: иначе она перекрывала бы верх рисунка */
+#c {
+  display: block;
+  position: fixed;
+  top: var(--ws-top-h);
+  left: 0; right: 0; bottom: 0;
+}
+
+/* Top bar */
+.top-bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--ws-top-h); z-index: 1000; pointer-events: auto;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px;
+}
+.top-bar .back-link {
+  background: none; border: none; color: var(--text2); padding: 6px 10px;
+  border-radius: var(--radius-sm); cursor: pointer; font-size: 12px;
+  font-weight: 500; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background .15s, color .15s;
+}
+.top-bar .back-link:hover { background: var(--hover); color: var(--text) }
+.top-bar .title {
+  font-weight: 600; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.top-bar .title i { color: var(--accent); font-size: 14px }
+.top-bar .sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px }
+.top-bar .btn {
+  background: transparent; border: 1px solid transparent;
+  color: var(--text2); padding: 6px 10px; border-radius: var(--radius-sm);
+  cursor: pointer; font-size: 12px; font-weight: 500;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: inherit; transition: background .15s, color .15s;
+}
+.top-bar .btn:hover { background: var(--hover); color: var(--text) }
+.top-bar .btn.on { background: var(--accent-light); color: var(--accent) }
+.top-bar .save-ind { color: var(--green); font-size: 11px; opacity: 0; transition: opacity .3s }
+.top-bar .note-count { color: var(--text3); font-size: 11px }
+
+/* Floating drawing toolbar */
+/* Компактная панель инструментов: сетка 2×N вместо длинной ленты.
+   Один столбец тянулся на весь экран — инструменты терялись внизу. */
+.draw-toolbar {
+  position: fixed; left: 12px; top: calc(var(--ws-top-h) + 12px);
+  z-index: 1000;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px;
+  display: grid; grid-template-columns: repeat(2, 30px);
+  gap: 3px; justify-content: center;
+  box-shadow: var(--shadow-md);
+  max-height: calc(100vh - var(--ws-top-h) - 130px);
+  overflow-y: auto; overflow-x: hidden;
+  transition: padding .2s, width .2s;
+}
+/* при сворачивании остаётся только один столбец активных кнопок */
+.draw-toolbar.collapsed { grid-template-columns: 30px; }
+.draw-toolbar.collapsed .dt-secondary,
+.draw-toolbar.collapsed .dt-sep,
+.draw-toolbar.collapsed .dt-head,
+.draw-toolbar.collapsed .draw-toolbar .color-row,
+.draw-toolbar.collapsed .size-row { display: none; }
+.draw-toolbar::-webkit-scrollbar { width: 4px; height: 4px }
+.draw-toolbar::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 4px }
+
+.draw-toolbar button {
+  width: 30px; height: 30px; border: none; background: transparent;
+  border-radius: 6px; cursor: pointer; font-size: 13px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); transition: background .12s, color .12s;
+  font-family: inherit; padding: 0;
+}
+.draw-toolbar button:hover { background: var(--hover); color: var(--text) }
+/* было #e8eaff — хардкод, в тёмной теме подсветка была не видна */
+.draw-toolbar button.active { background: var(--accent); color: #fff }
+.draw-toolbar button:disabled { opacity: .3; cursor: default; background: transparent }
+/* разделитель групп занимает всю ширину сетки */
+.draw-toolbar .dt-sep {
+  grid-column: 1 / -1; height: 1px; background: var(--border);
+  margin: 3px 2px;
+}
+/* кнопка свернуть/развернуть шапки */
+.draw-toolbar .collapse-btn {
+  grid-column: 1 / -1; width: 100%; height: 24px;
+  border: none; background: transparent; border-radius: 6px;
+  cursor: pointer; font-size: 12px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3); transition: background .15s, color .15s;
+  font-family: inherit;
+}
+.draw-toolbar .collapse-btn:hover { background: var(--hover); color: var(--text) }
+
+/* всплывающие настройки фигуры */
+.dt-style {
+  grid-column: 1 / -1;
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 5px 2px 2px;
+}
+.dt-style .color-row { display: flex; gap: 4px; justify-content: center }
+.dt-style .color-row input[type="color"] {
+  width: 26px; height: 22px; border: 1px solid var(--border2);
+  border-radius: 5px; cursor: pointer; padding: 0; background: none;
+}
+.dt-style .size-row {
+  display: flex; align-items: center; gap: 4px; justify-content: center;
+}
+.dt-style .size-row input[type="range"] {
+  width: 44px; height: 3px; accent-color: var(--accent); cursor: pointer;
+}
+.dt-style .size-row span {
+  font-size: 10px; color: var(--text3); min-width: 15px; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Bottom bar */
+.bottom-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 1000; pointer-events: auto;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex; align-items: flex-end; gap: 10px;
+  transition: all .3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.bottom-bar.pos-left {
+  bottom: auto; top: 50%; transform: translateY(-50%);
+  left: 0; right: auto; width: 300px; max-height: 40vh;
+  border-top: none; border-right: 1px solid var(--border);
+  flex-direction: column; align-items: stretch;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px;
+}
+.bottom-bar.pos-right {
+  bottom: auto; top: 50%; transform: translateY(-50%);
+  right: 0; left: auto; width: 300px; max-height: 40vh;
+  border-top: none; border-left: 1px solid var(--border);
+  flex-direction: column; align-items: stretch;
+  border-radius: var(--radius) 0 0 var(--radius);
+  padding: 12px;
+}
+.bottom-bar .pos-toggle {
+  display: flex; gap: 2px; align-items: center;
+}
+.bottom-bar .pos-toggle button {
+  width: 26px; height: 26px; border: none; background: transparent;
+  border-radius: 5px; cursor: pointer; font-size: 11px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3); transition: background .15s, color .15s;
+}
+.bottom-bar .pos-toggle button:hover { background: var(--hover); color: var(--text) }
+.bottom-bar .pos-toggle button.active { background: var(--accent-light); color: var(--accent) }
+.bottom-bar .input-wrap {
+  flex: 1; display: flex; flex-direction: column; gap: 4px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 8px 12px;
+  transition: border-color .2s;
+}
+.bottom-bar .input-wrap:focus-within { border-color: var(--accent) }
+.bottom-bar .input-wrap textarea {
+  border: none; background: none; resize: none;
+  font-size: 14px; color: var(--text); outline: none;
+  font-family: inherit; min-height: 24px; max-height: 120px;
+  line-height: 1.5;
+}
+.bottom-bar .input-wrap textarea::placeholder { color: var(--text3) }
+.bottom-bar .input-actions {
+  display: flex; gap: 8px; align-items: center;
+}
+.bottom-bar .input-actions .mode-hint {
+  font-size: 11px; color: var(--text3);
+  display: flex; align-items: center; gap: 6px;
+}
+.bottom-bar .input-actions .mode-hint i { font-size: 10px; color: var(--accent) }
+.bottom-bar .btn {
+  padding: 8px 16px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg2);
+  color: var(--text); cursor: pointer; font-size: 13px;
+  font-weight: 500; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background .15s, color .15s, border-color .15s; white-space: nowrap;
+}
+.bottom-bar .btn:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent) }
+.bottom-bar .btn.primary {
+  background: var(--accent); border-color: transparent; color: #fff;
+}
+.bottom-bar .btn.primary:hover { background: var(--accent2); color: #fff; border-color: transparent }
+
+/* Chat messages panel */
+.chat-panel {
+  position: fixed; bottom: 96px; right: 16px;
+  width: 400px; max-height: 50vh;
+  z-index: 999; pointer-events: auto;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  display: none; flex-direction: column;
+  overflow: hidden;
+  animation: slideUp .2s cubic-bezier(0.4,0,0.2,1);
+}
+.chat-panel.open { display: flex }
+.chat-panel-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 600; font-size: 13px; color: var(--text);
+}
+.chat-panel-header i { color: var(--accent) }
+.chat-panel-header button {
+  margin-left: auto; background: none; border: none;
+  color: var(--text3); cursor: pointer; font-size: 14px; padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+.chat-panel-header button:hover { background: var(--hover); color: var(--text) }
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 12px 16px;
+  max-height: 300px; font-size: 13px; line-height: 1.6;
+}
+.chat-msg {
+  max-width: 88%; padding: 9px 13px; border-radius: 12px;
+  font-size: 13px; line-height: 1.6; margin-bottom: 8px;
+}
+.chat-msg.user {
+  align-self: flex-end;
+  background: var(--accent); color: #fff;
+  border-bottom-right-radius: 4px; margin-left: auto;
+}
+.chat-msg.ai {
+  align-self: flex-start;
+  background: var(--bg3); color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+.chat-msg.system {
+  align-self: center; color: var(--text3);
+  font-size: 11px; font-style: italic; background: none; padding: 4px;
+}
+.chat-msg .typing { display: flex; gap: 4px; align-items: center }
+.chat-msg .typing span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--text3); animation: typing 1.4s infinite;
+}
+.chat-msg .typing span:nth-child(2) { animation-delay: .2s }
+.chat-msg .typing span:nth-child(3) { animation-delay: .4s }
+@keyframes typing { 0%,60%,100% { opacity: 0.3 } 30% { opacity: 1 } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
+
+/* Chat panel input */
+.chat-panel-input {
+  padding: 8px 12px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px; align-items: flex-end;
+  background: var(--bg2); border-radius: 0 0 var(--radius) var(--radius);
+}
+.chat-panel-input textarea {
+  flex: 1; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 8px 10px; font-size: 13px; font-family: inherit; outline: none;
+  resize: none; background: var(--bg); color: var(--text); min-height: 36px;
+}
+.chat-panel-input textarea:focus { border-color: var(--accent) }
+.chat-panel-input button {
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  border: none; background: var(--accent); color: #fff; cursor: pointer;
+  font-size: 15px; min-height: 36px;
+}
+.chat-panel-input button:hover { background: var(--accent2) }
+
+/* Note detail panel */
+.detail-panel {
+  position: fixed; right: -480px; top: 0; width: 480px; height: 100vh;
+  z-index: 2000; pointer-events: auto;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  transition: right .3s cubic-bezier(0.4,0,0.2,1);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.detail-panel.open { right: 0 }
+.detail-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.detail-header h3 { flex: 1; font-size: 16px; font-weight: 700; color: var(--text) }
+.detail-header h3 i { color: var(--accent); font-size: 16px }
+.detail-header button {
+  background: none; border: none; color: var(--text3);
+  cursor: pointer; font-size: 16px; padding: 6px 10px;
+  border-radius: var(--radius-sm);
+}
+.detail-header button:hover { background: var(--hover); color: var(--text) }
+.detail-body {
+  flex: 1; overflow-y: auto; padding: 20px;
+  font-size: 14px; line-height: 1.7;
+}
+.detail-body .note-title {
+  font-size: 22px; font-weight: 700; margin-bottom: 16px; color: var(--text);
+}
+.detail-body .note-meta {
+  font-size: 12px; color: var(--text3); margin-bottom: 16px;
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.detail-body .note-content { line-height: 1.8; }
+.detail-body .note-content h1 { font-size: 24px; margin: 20px 0 10px }
+.detail-body .note-content h2 { font-size: 20px; margin: 16px 0 8px }
+.detail-body .note-content h3 { font-size: 17px; margin: 12px 0 6px }
+.detail-body .note-content p { margin-bottom: 10px }
+.detail-body .note-content code {
+  background: var(--bg3); padding: 2px 6px; border-radius: 4px; font-size: 13px;
+}
+.detail-body .note-content pre {
+  background: var(--bg); padding: 16px; border-radius: var(--radius-sm);
+  overflow-x: auto; margin: 12px 0; border: 1px solid var(--border);
+}
+.detail-body .note-content pre code { background: none; padding: 0 }
+.detail-body .note-content img { max-width: 100%; border-radius: var(--radius-sm); margin: 10px 0 }
+.detail-body .attachments { margin-top: 20px }
+.detail-body .attachments h4 { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 10px; display: flex; align-items: center; gap: 6px }
+.detail-body .attachments .att-grid { display: flex; gap: 8px; flex-wrap: wrap }
+.detail-body .attachments .att-item {
+  width: 72px; height: 72px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); overflow: hidden; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg3); font-size: 24px; color: var(--accent);
+  transition: all .2s;
+}
+.detail-body .attachments .att-item:hover { border-color: var(--accent); transform: scale(1.05) }
+.detail-body .attachments .att-item img { width: 100%; height: 100%; object-fit: cover }
+.detail-footer {
+  padding: 12px 20px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px;
+}
+.detail-footer button {
+  flex: 1; padding: 10px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--bg2);
+  color: var(--text); cursor: pointer; font-size: 13px;
+  font-weight: 500; font-family: inherit; transition: all .2s;
+}
+.detail-footer button:hover { border-color: var(--accent); color: var(--accent) }
+.detail-footer button.primary {
+  background: var(--accent);
+  border-color: transparent; color: #fff;
+}
+.detail-footer button.primary:hover { background: var(--accent2); color: #fff }
+
+/* Loading */
+.loading {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px; color: var(--text2);
+  background: var(--bg);
+}
+.spinner { width: 40px; height: 40px; border: 3px solid var(--bg4); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite }
+@keyframes spin { to { transform: rotate(360deg) } }
+
+/* Toast */
+.toast {
+  position: fixed; top: 20px; right: 20px; z-index: 9999;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 18px;
+  box-shadow: var(--shadow-lg); min-width: 280px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; animation: slideIn .3s cubic-bezier(0.34,1.56,0.64,1);
+  cursor: pointer;
+}
+.toast.success { border-left: 3px solid var(--green) }
+.toast.error { border-left: 3px solid var(--red) }
+.toast.info { border-left: 3px solid var(--accent) }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
+
+/* Note context menu */
+.note-context-menu {
+  position: fixed; z-index: 7000; min-width: 190px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  padding: 4px; display: none; font-size: 13px;
+}
+.note-context-menu.open { display: block }
+.note-context-menu .ctx-item {
+  padding: 7px 12px; cursor: pointer; border-radius: 6px;
+  display: flex; align-items: center; gap: 8px; color: var(--text);
+  transition: background .1s;
+}
+.note-context-menu .ctx-item:hover { background: var(--bg3) }
+.note-context-menu .ctx-item i { width: 16px; color: var(--text2); font-size: 12px }
+.note-context-menu .ctx-item.danger { color: var(--red) }
+.note-context-menu .ctx-item.danger i { color: var(--red) }
+.note-context-menu .ctx-sep { height: 1px; background: var(--border); margin: 3px 4px }
+
+/* Welcome hint — раньше стили задавались инлайном в React,
+   из-за чего подсказка не подхватывала тёмную тему */
+.welcome-hint {
+  position: fixed; bottom: 118px; left: 50%; transform: translateX(-50%);
+  z-index: 999;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-size: 13px; color: var(--text2);
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: var(--shadow-md);
+  transition: opacity .6s;
+}
+.welcome-hint i { color: var(--accent) }
+.welcome-hint button {
+  background: none; border: none; cursor: pointer;
+  color: var(--text3); font-size: 14px; padding: 2px 4px;
+  border-radius: 4px;
+}
+.welcome-hint button:hover { background: var(--hover); color: var(--text) }
+
+@media (max-width: 768px) {
+  .chat-panel { width: calc(100% - 16px); right: 8px; max-height: 300px }
+  .detail-panel { width: 100% }
+  .bottom-bar { flex-wrap: wrap }
+  .top-bar { font-size: 12px; padding: 6px 10px }
+  .draw-toolbar { left: 8px; padding: 4px }
+  .draw-toolbar button { width: 30px; height: 30px; font-size: 13px }
+}
+/* Inline editor overlay */
+.note-inline-editor {
+  position: fixed; z-index: 5000;
+  background: var(--bg2); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  display: none; flex-direction: column;
+  overflow: hidden; font-family: 'Inter',sans-serif;
+}
+.note-inline-editor.open { display: flex }
+.note-inline-editor .nie-header {
+  padding: 8px 12px; background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 600; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.note-inline-editor .nie-header button {
+  margin-left: auto; background: none; border: none;
+  cursor: pointer; font-size: 14px; color: var(--text3);
+  padding: 2px 6px; border-radius: 4px;
+}
+.note-inline-editor .nie-header button:hover { background: var(--hover); color: var(--text) }
+.note-inline-editor textarea {
+  flex: 1; border: none; outline: none; resize: none;
+  padding: 12px; font-size: 13px; line-height: 1.6;
+  font-family: 'Inter',monospace; color: var(--text);
+  background: var(--bg2); min-height: 150px;
+}
+.note-inline-editor .nie-footer {
+  padding: 6px 12px; border-top: 1px solid var(--border);
+  display: flex; gap: 6px; justify-content: flex-end;
+  background: var(--bg3);
+}
+.note-inline-editor .nie-footer button {
+  padding: 4px 14px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg2); cursor: pointer; font-size: 12px; font-weight: 500;
+  font-family: inherit; color: var(--text);
+}
+.note-inline-editor .nie-footer button:hover { background: var(--hover) }
+.note-inline-editor .nie-footer button.primary {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+.note-inline-editor .nie-footer button.primary:hover { background: var(--accent2) }
+
+/* Mode modal */
+.mode-modal-overlay {
+  position: fixed; inset: 0; z-index: 6000;
+  background: rgba(0,0,0,0.4);
+  display: none; align-items: center; justify-content: center;
+}
+.mode-modal-overlay.open { display: flex }
+.mode-modal {
+  background: var(--bg2); border-radius: 12px;
+  width: 90vw; height: 85vh;
+  box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.mode-modal-header {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 600; font-size: 14px; color: var(--text);
+}
+.mode-modal-header button {
+  margin-left: auto; background: none; border: none;
+  cursor: pointer; font-size: 18px; color: var(--text3);
+  padding: 4px 8px; border-radius: 6px;
+}
+.mode-modal-header button:hover { background: var(--hover); color: var(--text) }
+.mode-modal-body { flex: 1; overflow: hidden; padding: 0 }
+.mode-modal-body iframe { width: 100%; height: 100%; border: none }
+/* Wordmark редактора таблиц: base64-картинка 152×32 внутри vendor-стилей
+   /static/luckysheet/css/luckysheet.css. Сам бандл правим в последнюю
+   очередь — переопределение на странице обратимо и не сломается при
+   обновлении библиотеки. */
+.luckysheet-share-logo { display: none !important }
+</style>
+<script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+<div id="root" style="pointer-events:none"></div>
+
+<!-- Inline note editor -->
+<div class="note-inline-editor" id="inlineEditor">
+  <div class="nie-header">
+    <i class="fa-solid fa-pen-to-square" style="font-size:13px;color:var(--accent)"></i>
+    <span id="inlineEditorTitle">Редактирование</span>
+    <button onclick="closeInlineEditor(false)"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <textarea id="inlineEditorText"></textarea>
+  <div class="nie-footer">
+    <button onclick="closeInlineEditor(false)">Отмена</button>
+    <button class="primary" onclick="closeInlineEditor(true)"><i class="fa-solid fa-floppy-disk"></i> Сохранить</button>
+  </div>
+</div>
+
+<!-- Mode modal (excalidraw / table) -->
+<div class="mode-modal-overlay" id="modeModal">
+  <div class="mode-modal">
+    <div class="mode-modal-header">
+      <i class="fa-solid fa-pen-ruler" style="font-size:14px;color:var(--accent)"></i>
+      <span id="modeModalTitle">Режим</span>
+      <button onclick="closeModeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="mode-modal-body" id="modeModalBody"></div>
+  </div>
+</div>
+
+<!-- Note context menu -->
+<div class="note-context-menu" id="noteContextMenu">
+  <div class="ctx-item" data-action="edit"><i class="fa-solid fa-pen-to-square"></i> Редактировать</div>
+  <div class="ctx-item" data-action="mode-markdown"><i class="fa-solid fa-file-lines"></i> Режим: Markdown</div>
+  <div class="ctx-item" data-action="mode-excalidraw"><i class="fa-solid fa-pen-ruler"></i> Режим: Excalidraw</div>
+  <div class="ctx-item" data-action="mode-table"><i class="fa-solid fa-table"></i> Режим: Таблица</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" data-action="save"><i class="fa-solid fa-floppy-disk"></i> Сохранить</div>
+  <div class="ctx-item" data-action="ai"><i class="fa-solid fa-brain"></i> AI анализ</div>
+  <div class="ctx-item" data-action="export-single"><i class="fa-solid fa-file-export"></i> Экспорт в ZIP</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item danger" data-action="delete"><i class="fa-solid fa-trash-can"></i> Удалить с холста</div>
+</div>
+
+<div class="loading" id="loadingScreen">
+  <div class="spinner"></div>
+  <div>Загрузка рабочего пространства...</div>
+</div>
+
+<!-- Drawing toolbar: компактная сетка 2 колонки с группами -->
+<div class="draw-toolbar" id="drawToolbar">
+  <button class="collapse-btn" id="toolbarCollapseBtn" title="Свернуть / развернуть панель">
+    <i class="fa-solid fa-angles-left"></i>
+  </button>
+
+  <!-- Навигация -->
+  <button data-tool="select" class="active" title="Выделить (V)"><i class="fa-solid fa-arrow-pointer"></i></button>
+  <button data-tool="pan" title="Рука — двигать холст (H)"><i class="fa-solid fa-hand"></i></button>
+
+  <div class="dt-sep"></div>
+
+  <!-- Фигуры -->
+  <button data-tool="line" title="Линия (L)"><i class="fa-solid fa-minus"></i></button>
+  <button data-tool="arrow" title="Стрелка (A)"><i class="fa-solid fa-arrow-right-long"></i></button>
+  <button data-tool="rect" title="Прямоугольник (R)"><i class="fa-regular fa-square"></i></button>
+  <button data-tool="roundrect" title="Скруглённый прямоугольник"><i class="fa-regular fa-square" style="border-radius:4px;font-size:11px"></i></button>
+  <button data-tool="ellipse" title="Эллипс (O)"><i class="fa-regular fa-circle"></i></button>
+  <button data-tool="triangle" title="Треугольник (Shift+T)"><i class="fa-solid fa-play" style="transform:rotate(90deg);font-size:11px"></i></button>
+  <button data-tool="diamond" title="Ромб"><i class="fa-solid fa-diamond"></i></button>
+  <button data-tool="star" title="Звезда"><i class="fa-regular fa-star"></i></button>
+  <button data-tool="polygon" title="Многоугольник — клик по точкам, Enter для завершения"><i class="fa-solid fa-draw-polygon"></i></button>
+  <button data-tool="heart" title="Сердце"><i class="fa-regular fa-heart"></i></button>
+
+  <div class="dt-sep"></div>
+
+  <!-- Рисование и содержимое -->
+  <button data-tool="draw" title="Карандаш (D)"><i class="fa-solid fa-pencil"></i></button>
+  <button data-tool="eraser" title="Ластик (E)"><i class="fa-solid fa-eraser"></i></button>
+  <button data-tool="text" title="Текст (T)"><i class="fa-solid fa-font"></i></button>
+  <button data-tool="sticky" title="Стикер-заметка (S)"><i class="fa-regular fa-note-sticky"></i></button>
+  <button data-tool="image" title="Изображение (I)"><i class="fa-solid fa-image"></i></button>
+  <button data-tool="frame" title="Рамка для группировки"><i class="fa-solid fa-frame-rat"></i></button>
+
+  <div class="dt-sep"></div>
+
+  <!-- Стиль фигуры -->
+  <div class="dt-style">
+    <div class="color-row">
+      <input type="color" id="strokeColor" value="#3b6ef5" title="Цвет обводки">
+      <input type="color" id="fillColor" value="#e8eaff" title="Цвет заливки">
+    </div>
+    <div class="size-row">
+      <input type="range" id="strokeWidth" min="1" max="20" value="2" title="Толщина">
+      <span id="sizeDisplay">2</span>
+    </div>
+  </div>
+
+  <div class="dt-sep"></div>
+
+  <!-- Действия над объектом -->
+  <button id="dupBtn" title="Дублировать (Ctrl+D)"><i class="fa-regular fa-clone"></i></button>
+  <button id="delBtn" title="Удалить выделенное (Delete)"><i class="fa-solid fa-trash-can"></i></button>
+  <button id="frontBtn" title="На передний план"><i class="fa-solid fa-layer-group"></i></button>
+  <button id="backBtn" title="На задний план"><i class="fa-solid fa-layer-group" style="transform:scaleY(-1)"></i></button>
+  <button id="groupBtn" title="Сгруппировать (Ctrl+G)"><i class="fa-solid fa-object-group"></i></button>
+  <button id="ungroupBtn" title="Разгруппировать (Ctrl+Shift+G)"><i class="fa-solid fa-object-ungroup"></i></button>
+
+  <div class="dt-sep"></div>
+
+  <!-- История -->
+  <button id="undoBtn" title="Отменить (Ctrl+Z)"><i class="fa-solid fa-rotate-left"></i></button>
+  <button id="redoBtn" title="Повторить (Ctrl+Y)"><i class="fa-solid fa-rotate-right"></i></button>
+
+  <div class="dt-sep"></div>
+
+  <!-- Вид -->
+  <button id="zoomFitBtn" title="Вместить всё (F)"><i class="fa-solid fa-expand"></i></button>
+  <button id="zoomOutBtn" title="Отдалить (−)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+  <button id="zoomInBtn" title="Приблизить (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+  <button id="zoomResetBtn" title="Масштаб 100%"><span style="font-size:10px;font-weight:700">1:1</span></button>
+  <button id="gridBtn" title="Сетка (Shift+G)"><i class="fa-solid fa-border-all"></i></button>
+
+  <div class="dt-sep"></div>
+
+  <!-- Выравнивание -->
+  <button id="alignLeftBtn" title="Влево"><i class="fa-solid fa-align-left"></i></button>
+  <button id="alignCenterBtn" title="По центру"><i class="fa-solid fa-align-center"></i></button>
+  <button id="alignRightBtn" title="Вправо"><i class="fa-solid fa-align-right"></i></button>
+  <button id="alignTopBtn" title="Вверх"><i class="fa-solid fa-arrow-up"></i></button>
+  <button id="alignMiddleBtn" title="По середине"><i class="fa-solid fa-arrows-up-down"></i></button>
+  <button id="alignBottomBtn" title="Вниз"><i class="fa-solid fa-arrow-down"></i></button>
+
+  <div class="dt-sep"></div>
+
+  <button id="exportZipBtn" title="Экспорт всех заметок в ZIP" class="dt-secondary"><i class="fa-solid fa-file-zipper"></i></button>
+  <button id="clearCanvasBtn" title="Очистить холст" class="dt-secondary"><i class="fa-solid fa-eraser"></i></button>
+</div>
+<input type="file" id="imageUpload" accept="image/png,image/jpeg,image/gif,image/webp" multiple style="display:none">
+
+<script src="/static/libs/react.production.min.js"></script>
+<script src="/static/libs/react-dom.production.min.js"></script>
+<script src="/static/libs/fabric.min.js"></script>
+<script src="/static/libs/jszip.min.js"></script>
+<script>window.process = window.process || { env: { NODE_ENV: 'production' } };</script>
+
+<script>
+// === Canvas setup (Fabric.js) ===
+const UNDO_LIMIT = 50;
+
+let canvas, currentTool = 'select', isPanning = false, lastPan = null;
+let isDrawing = false, startPoint = null, shape = null, isSpace = false;
+let undoStack = [], redoStack = [], isRestoring = false;
+let saveTimer = null;
+let canvasReady = false, notesReady = false, _notesRendered = false;
+let isGridVisible = false, gridLines = [];
+let polygonPoints = [], polygonLines = [];
+let _drawingLine = null;
+
+function wsCanvasArea() {
+  const top = parseInt(getComputedStyle(document.documentElement)
+    .getPropertyValue('--ws-top-h')) || 52;
+  return {
+    top: top,
+    width: window.innerWidth,
+    height: Math.max(200, window.innerHeight - top)
+  };
+}
+
+/* Цвета для фигур на холсте. Раньше карточки заметок рисовались
+   жёстко белыми с тёмным текстом — в тёмной теме они выглядели
+   как яркие пятна, а текст сливался с фоном. */
+function wsThemeColors() {
+  // theme.js не вешает класс dark на body — ориентируемся на data-theme
+  const t = document.documentElement.getAttribute('data-theme') || 'light';
+  const dark = (t === 'dark' || t === 'midnight');
+  return dark ? {
+    card: '#1d232d', border: '#39414f', text: '#e6eaf0', dim: '#6b7686',
+    shadow: 'rgba(0,0,0,0.45)',
+    accent: '#5b8cff', accentSoft: 'rgba(91,140,255,0.18)',
+    green: '#3ecf8e', greenSoft: 'rgba(62,207,142,0.16)',
+    purple: '#a78bfa', purpleSoft: 'rgba(167,139,250,0.18)',
+  } : {
+    card: '#ffffff', border: '#e3e7ec', text: '#1a1f26', dim: '#8b95a3',
+    shadow: 'rgba(16,24,40,0.10)',
+    accent: '#3b6ef5', accentSoft: 'rgba(59,110,245,0.12)',
+    green: '#1f9254', greenSoft: 'rgba(31,146,84,0.12)',
+    purple: '#7c3aed', purpleSoft: 'rgba(124,58,237,0.12)',
+  };
+}
+
+/* Инструменты, которые рисуются перетаскиванием мыши */
+const SHAPE_TOOLS = ['rect','roundrect','frame','diamond','heart','ellipse','triangle','arrow','line'];
+
+/* Контур сердца для fabric.Path (у Fabric нет встроенной фигуры) */
+function heartPath() {
+  return 'M 0 28 C -18 12 -34 2 -34 -10 C -34 -20 -26 -26 -18 -26 ' +
+         'C -10 -26 -4 -21 0 -14 C 4 -21 10 -26 18 -26 ' +
+         'C 26 -26 34 -20 34 -10 C 34 2 18 12 0 28 z';
+}
+
+function initFabricCanvas() {
+  const el = document.getElementById('c');
+  const area = wsCanvasArea();
+  el.width = area.width;
+  el.height = area.height;
+
+  canvas = new fabric.Canvas(el, {
+    width: area.width, height: area.height,
+    left: 0, top: area.top,
+    backgroundColor: getComputedStyle(document.body)
+      .getPropertyValue('--canvas-bg').trim() || '#eef0f4',
+    preserveObjectStacking: true,
+    stopContextMenu: true, fireRightClick: true,
+    selection: true,
+  });
+
+  // Zoom
+  canvas.on('mouse:wheel', opt => {
+    const d = opt.e.deltaY, z = canvas.getZoom();
+    const zoom = Math.min(Math.max(z * (0.999 ** d), 0.05), 50);
+    canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+    opt.e.preventDefault(); opt.e.stopPropagation();
+  });
+
+  // Mouse down
+  canvas.on('mouse:down', opt => {
+      const e = opt.e, p = canvas.getScenePoint(e);
+
+    if (e.button === 1 || (e.button === 0 && (e.altKey || isSpace))) {
+      isPanning = true; lastPan = { x: e.clientX, y: e.clientY };
+      canvas.selection = false; e.preventDefault(); return;
+    }
+
+    if (SHAPE_TOOLS.includes(currentTool) && e.button === 0) {
+      isDrawing = true; startPoint = p; canvas.selection = false;
+      const c = strokeColor(), w = strokeW(), f = fillColor();
+      if (currentTool === 'rect') {
+        shape = new fabric.Rect({ left: p.x, top: p.y, width: 0, height: 0,
+          fill: f, stroke: c, strokeWidth: w, strokeUniform: true });
+      } else if (currentTool === 'roundrect') {
+        shape = new fabric.Rect({ left: p.x, top: p.y, width: 0, height: 0,
+          rx: 18, ry: 18, fill: f, stroke: c, strokeWidth: w, strokeUniform: true });
+      } else if (currentTool === 'frame') {
+        // рамка-контейнер: без заливки, только пунктирный контур
+        shape = new fabric.Rect({ left: p.x, top: p.y, width: 0, height: 0,
+          fill: 'transparent', stroke: c, strokeWidth: 1,
+          strokeDashArray: [6, 4], strokeUniform: true, rx: 4, ry: 4 });
+      } else if (currentTool === 'diamond') {
+        // ромб строим многоугольником, иначе он не тянется за мышью
+        shape = new fabric.Polygon([{x:0,y:0},{x:0,y:0},{x:0,y:0},{x:0,y:0}],
+          { fill: f, stroke: c, strokeWidth: w, strokeUniform: true });
+      } else if (currentTool === 'heart') {
+        shape = new fabric.Path(heartPath(), {
+          fill: f, stroke: c, strokeWidth: w, strokeUniform: true });
+      } else if (currentTool === 'ellipse') {
+        shape = new fabric.Ellipse({ left: p.x, top: p.y, rx: 0, ry: 0,
+          fill: f, stroke: c, strokeWidth: w, strokeUniform: true });
+      } else if (currentTool === 'triangle') {
+        shape = new fabric.Triangle({ left: p.x, top: p.y, width: 0, height: 0,
+          fill: f, stroke: c, strokeWidth: w, strokeUniform: true });
+      } else {
+        shape = new fabric.Line([p.x, p.y, p.x, p.y],
+          { stroke: c, strokeWidth: w, strokeUniform: true });
+      }
+      canvas.add(shape); canvas.setActiveObject(shape);
+      return;
+    }
+
+    if (currentTool === 'draw' && e.button === 0) {
+      canvas.isDrawingMode = true;
+      const brush = new fabric.PencilBrush(canvas);
+      brush.color = strokeColor(); brush.width = strokeW();
+      canvas.freeDrawingBrush = brush;
+      return;
+    }
+
+    if (currentTool === 'text' && e.button === 0) {
+      const t = new fabric.IText('Текст', {
+        left: p.x, top: p.y, fontSize: Math.max(16, strokeW() * 8),
+        fill: strokeColor(), fontFamily: 'Inter, Arial, sans-serif',
+      });
+      canvas.add(t); canvas.setActiveObject(t); t.enterEditing();
+      snapCanvas();
+      return;
+    }
+
+    if (currentTool === 'sticky' && e.button === 0) {
+      const w = 220, h = 100;
+      const r = new fabric.Rect({ left: 0, top: 0, width: w, height: h,
+        fill: '#fff9c4', rx: 6, ry: 6, stroke: '#e0d8a8', strokeWidth: 1 });
+      const txt = new fabric.IText('Заметка', {
+        left: 12, top: 12, fontSize: 14,
+        fill: '#333', fontFamily: 'Inter, Arial, sans-serif',
+      });
+      const g = new fabric.Group([r, txt], { left: p.x, top: p.y });
+      canvas.add(g); canvas.setActiveObject(g);
+      snapCanvas();
+      return;
+    }
+
+    if (currentTool === 'eraser' && e.button === 0) {
+      const found = canvas.findTarget(opt.e);
+      const target = found && found.target;
+      if (target && !target.noteId) {
+        canvas.remove(target); canvas.requestRenderAll(); snapCanvas();
+      }
+      return;
+    }
+
+    if (currentTool === 'star' && e.button === 0) {
+      const sz = 60;
+      const pts = [];
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 === 0 ? sz : sz * 0.4;
+        const a = (Math.PI * i / 5) - Math.PI / 2;
+        pts.push({ x: r * Math.cos(a), y: r * Math.sin(a) });
+      }
+      const star = new fabric.Polygon(pts, {
+        left: p.x - sz, top: p.y - sz,
+        fill: fillColor(), stroke: strokeColor(), strokeWidth: strokeW(), strokeUniform: true,
+      });
+      canvas.add(star); canvas.setActiveObject(star); snapCanvas();
+      return;
+    }
+
+    if (currentTool === 'polygon' && e.button === 0) {
+      polygonPoints.push({ x: p.x, y: p.y });
+      const dot = new fabric.Circle({ left: p.x - 4, top: p.y - 4, radius: 4,
+        fill: strokeColor(), selectable: false, evented: false, _polygonDot: true });
+      canvas.add(dot); polygonLines.push(dot);
+      if (polygonPoints.length > 1) {
+        const prev = polygonPoints[polygonPoints.length - 2];
+        const ln = new fabric.Line([prev.x, prev.y, p.x, p.y], {
+          stroke: strokeColor(), strokeWidth: 2, selectable: false, evented: false, _polygonLine: true });
+        canvas.add(ln); polygonLines.push(ln);
+      }
+      canvas.requestRenderAll();
+      return;
+    }
+
+    if (currentTool === 'image' && e.button === 0) {
+      document.getElementById('imageUpload').click();
+      return;
+    }
+
+    // Note card click: store target for mouse:up (drag threshold)
+    if (currentTool === 'select' && e.button === 0) {
+      const found = canvas.findTarget(opt.e);
+      const target = found && found.target;
+      if (target && target.noteId) {
+        canvas._noteClickTarget = target;
+        canvas._noteClickPos = { x: e.clientX, y: e.clientY };
+      }
+    }
+
+    // Right-click context menu on note cards
+    if (e.button === 2 && currentTool === 'select') {
+      const found = canvas.findTarget(opt.e);
+      const target = found && found.target;
+      if (target && target.noteId) { showNoteContextMenu(e, target.noteId); e.preventDefault(); }
+      else { hideNoteContextMenu(); }
+    }
+  });
+
+  // Mouse move
+  canvas.on('mouse:move', opt => {
+    if (isPanning && lastPan) {
+      const v = canvas.viewportTransform;
+      v[4] += opt.e.clientX - lastPan.x;
+      v[5] += opt.e.clientY - lastPan.y;
+      canvas.requestRenderAll();
+      lastPan = { x: opt.e.clientX, y: opt.e.clientY };
+      opt.e.preventDefault(); return;
+    }
+    if (isDrawing && shape && startPoint) {
+        const p = canvas.getScenePoint(opt.e), sx = startPoint.x, sy = startPoint.y;
+
+      if (currentTool === 'rect' || currentTool === 'triangle'
+          || currentTool === 'roundrect' || currentTool === 'frame') {
+        shape.set({ left: Math.min(sx, p.x), top: Math.min(sy, p.y),
+          width: Math.abs(p.x - sx), height: Math.abs(p.y - sy) });
+      } else if (currentTool === 'diamond') {
+        // ромб: вершины пересчитываем от нарисованного прямоугольника
+        const cx = (sx + p.x) / 2, cy = (sy + p.y) / 2;
+        const hw = Math.abs(p.x - sx) / 2, hh = Math.abs(p.y - sy) / 2;
+        shape.set({ points: [
+          { x: 0, y: -hh }, { x: hw, y: 0 }, { x: 0, y: hh }, { x: -hw, y: 0 }
+        ], left: cx, top: cy });
+      } else if (currentTool === 'heart') {
+        // сердце масштабируем пропорционально — иначе контур едет за мышью
+        const w = Math.max(4, Math.abs(p.x - sx));
+        const h = Math.max(4, Math.abs(p.y - sy));
+        const s = Math.min(w / 68, h / 54);
+        shape.set({ left: Math.min(sx, p.x), top: Math.min(sy, p.y),
+          scaleX: s, scaleY: s });
+      } else if (currentTool === 'ellipse') {
+        shape.set({ left: Math.min(sx, p.x), top: Math.min(sy, p.y),
+          rx: Math.abs(p.x - sx) / 2, ry: Math.abs(p.y - sy) / 2 });
+      } else {
+        shape.set({ x2: p.x, y2: p.y });
+      }
+      shape.setCoords(); canvas.requestRenderAll();
+    }
+  });
+
+  // Mouse up
+  canvas.on('mouse:up', opt => {
+    // Handle note card click with drag threshold
+    if (canvas._noteClickTarget && canvas._noteClickPos) {
+      const dist = Math.hypot(opt.e.clientX - canvas._noteClickPos.x, opt.e.clientY - canvas._noteClickPos.y);
+      if (dist < 5) {
+        const target = canvas._noteClickTarget;
+        if (target && target.noteId) {
+          const note = notesCache.find(n => n.id === target.noteId) || {};
+          const mode = target.noteMode || detectNoteMode(note);
+          if (mode === 'excalidraw' || mode === 'luckysheet') { openNoteModeModal(target.noteId, mode); }
+          else { openInlineEditor(target.noteId); }
+        }
+      }
+      canvas._noteClickTarget = null;
+      canvas._noteClickPos = null;
+    }
+    if (isPanning) {
+      isPanning = false; lastPan = null;
+      canvas.selection = currentTool === 'select'; return;
+    }
+    if (isDrawing && shape) {
+      isDrawing = false;
+      // У Path/Polygon нет width/height — проверка по ним удаляла бы
+      // сердце и ромб сразу после рисования. Считаем по габаритам.
+      const bb = shape.getBoundingRect ? shape.getBoundingRect() : { width: shape.width || 0, height: shape.height || 0 };
+      const tooSmall = (bb.width < 3 && bb.height < 3 && !(shape instanceof fabric.Line));
+      if (tooSmall) {
+        canvas.remove(shape);
+      } else if (currentTool === 'line' || (currentTool === 'arrow' && shape instanceof fabric.Line)) {
+        if (currentTool === 'arrow') {
+          const x1 = shape.x1, y1 = shape.y1, x2 = shape.x2, y2 = shape.y2;
+          const dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy);
+          if (len < 5) { canvas.remove(shape); }
+          else {
+            const ang = Math.atan2(dy, dx) * 180 / Math.PI;
+            const hl = Math.max(10, strokeW() * 5);
+            const line = new fabric.Line([0, 0, len, 0],
+              { stroke: shape.stroke, strokeWidth: shape.strokeWidth, strokeUniform: true });
+            const head = new fabric.Triangle({
+              left: len, top: 0, width: hl, height: hl, angle: 90, fill: shape.stroke,
+              originX: 'center', originY: 'center',
+            });
+            const g = new fabric.Group([line, head], { left: x1, top: y1, angle: ang });
+            canvas.remove(shape); canvas.add(g);
+          }
+        }
+      } else if (currentTool === 'triangle') {
+        if (shape.width < 3 && shape.height < 3) canvas.remove(shape);
+      }
+      shape = null; canvas.selection = true; snapCanvas();
+    }
+  });
+
+  canvas.on('path:created', () => {
+    canvas.isDrawingMode = false;
+    currentTool = 'select'; updateDrawToolbar(); snapCanvas();
+  });
+  canvas.on('object:modified', () => { collectNotePositions(); snapCanvas(); });
+  canvas.on('selection:created', () => updateProps());
+  canvas.on('selection:updated', () => updateProps());
+  canvas.on('selection:cleared', () => updateProps());
+
+  // Double-click note card opens detail panel / closes polygon
+  canvas.on('mouse:dblclick', opt => {
+    // Close polygon on double-click
+    if (currentTool === 'polygon' && polygonPoints.length >= 3) {
+      const pts = polygonPoints;
+      const minX = Math.min(...pts.map(p => p.x));
+      const minY = Math.min(...pts.map(p => p.y));
+      const localPts = pts.map(p => ({ x: p.x - minX, y: p.y - minY }));
+      const poly = new fabric.Polygon(localPts, {
+        left: minX, top: minY,
+        fill: fillColor(), stroke: strokeColor(), strokeWidth: strokeW(), strokeUniform: true,
+      });
+      canvas.add(poly); canvas.setActiveObject(poly);
+      polygonLines.forEach(l => canvas.remove(l));
+      polygonPoints = []; polygonLines = [];
+      canvas.requestRenderAll(); snapCanvas();
+      return;
+    }
+    const found = canvas.findTarget(opt.e);
+    const target = found && found.target;
+    if (target && target.noteId) {
+      window.openNoteDetail(target.noteId);
+      opt.e.preventDefault();
+    }
+  });
+
+  // Load saved canvas data
+  loadCanvasData(() => { canvasReady = true; checkRenderNotes(); });
+
+  window.addEventListener('resize', () => {
+    const a = wsCanvasArea();
+    canvas.setDimensions({ width: a.width, height: a.height });
+    canvas.setPosition(0, a.top);
+    canvas.requestRenderAll();
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    if (e.key === ' ') { isSpace = true; e.preventDefault(); }
+    const ctrl = e.ctrlKey || e.metaKey;
+    if (ctrl && e.key === 'z' && !e.shiftKey) { e.preventDefault(); canvasUndo(); }
+    if (ctrl && e.key === 'z' && e.shiftKey) { e.preventDefault(); canvasRedo(); }
+    if (ctrl && e.key === 'y') { e.preventDefault(); canvasRedo(); }
+    // Новые действия над объектом
+    if (ctrl && (e.key === 'd' || e.key === 'в' || e.key === 'В')) { e.preventDefault(); wsDuplicate(); }
+    if (ctrl && !e.shiftKey && (e.key === 'g' || e.key === 'п' || e.key === 'П')) { e.preventDefault(); wsGroup(); }
+    if (ctrl && e.shiftKey && (e.key === 'g' || e.key === 'п' || e.key === 'П')) { e.preventDefault(); wsUngroup(); }
+    if (ctrl && e.key === '0') { e.preventDefault(); wsZoomReset(); }
+    if (!ctrl && !e.altKey && !e.shiftKey && !e.target.closest('input,textarea')) {
+      const map = { v:'select', h:'pan', r:'rect', o:'ellipse', a:'arrow', d:'draw', t:'text', s:'sticky', l:'line', e:'eraser', i:'image', f:'zoomfit' };
+      if (map[e.key.toLowerCase()]) setCanvasTool(map[e.key.toLowerCase()]);
+      // Приблизить/отдалить
+      if (e.key === '+' || e.key === '=') { wsZoomBy(1.2); e.preventDefault(); }
+      if (e.key === '-' || e.key === '_') { wsZoomBy(1 / 1.2); e.preventDefault(); }
+    }
+    if (e.shiftKey && !ctrl && !e.altKey && !e.target.closest('input,textarea')) {
+      if (e.key.toLowerCase() === 'g') { toggleGrid(); e.preventDefault(); }
+      if (e.key.toLowerCase() === 't') { setCanvasTool('triangle'); e.preventDefault(); }
+    }
+    if ((e.key === 'Delete' || e.key === 'Backspace') && !e.target.closest('input,textarea')) {
+      e.preventDefault();
+      wsDeleteSelected();
+    }
+    if (e.key === 'Escape') {
+      if (currentTool === 'polygon' && polygonPoints.length) {
+        polygonLines.forEach(l => canvas.remove(l));
+        polygonPoints = []; polygonLines = [];
+        canvas.requestRenderAll();
+      }
+      window.closeDetailPanel && window.closeDetailPanel();
+      window.closeInlineEditor && window.closeInlineEditor(false);
+      window.closeModeModal && window.closeModeModal();
+      document.getElementById('chatPanel') && document.getElementById('chatPanel').classList.remove('open');
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { sendChatMessage(); }
+  });
+  document.addEventListener('keyup', e => { if (e.key === ' ') isSpace = false; });
+
+  // Drawing toolbar
+  setupDrawToolbar();
+
+  // Save textarea height on resize
+  const ta = document.getElementById('newNoteInput');
+  if (ta) {
+    const savedH = localStorage.getItem('ws_note_input_h');
+    if (savedH) ta.style.height = savedH + 'px';
+    new ResizeObserver(() => { localStorage.setItem('ws_note_input_h', ta.offsetHeight); }).observe(ta);
+  }
+}
+
+function strokeColor() { return document.getElementById('strokeColor').value; }
+function fillColor() { return document.getElementById('fillColor').value; }
+function strokeW() { return parseInt(document.getElementById('strokeWidth').value); }
+
+/* ---------- ДЕЙСТВИЯ НАД ОБЪЕКТАМИ ---------- */
+function wsActiveObjects() {
+  if (!canvas) return [];
+  const a = canvas.getActiveObject();
+  if (!a) return [];
+  return a.type === 'activeSelection' ? a.getObjects() : [a];
+}
+
+function wsDuplicate() {
+  const objs = wsActiveObjects();
+  if (!objs.length) return;
+  canvas.discardActiveObject();
+  const clones = [];
+  objs.forEach(o => {
+    o.clone(cl => {
+      cl.set({ left: (o.left || 0) + 24, top: (o.top || 0) + 24 });
+      cl.setCoords();
+      canvas.add(cl);
+      clones.push(cl);
+      canvas.requestRenderAll();
+    });
+  });
+  // после клонирования выделяем копии
+  setTimeout(() => {
+    if (clones.length === 1) canvas.setActiveObject(clones[0]);
+    else if (clones.length > 1) {
+      const sel = new fabric.ActiveSelection(clones, { canvas: canvas });
+      canvas.setActiveObject(sel);
+    }
+    canvas.requestRenderAll();
+  }, 60);
+  toast('Дублировано', 'success');
+}
+
+function wsDeleteSelected() {
+  const objs = wsActiveObjects();
+  if (!objs.length) return;
+  objs.forEach(o => canvas.remove(o));
+  canvas.discardActiveObject();
+  canvas.requestRenderAll();
+  snapCanvas();
+}
+
+function wsBring(front) {
+  const objs = wsActiveObjects();
+  if (!objs.length) return;
+  if (front) objs.forEach(o => canvas.bringToFront(o));
+  else objs.forEach(o => canvas.sendToBack(o));
+  canvas.requestRenderAll();
+  snapCanvas();
+}
+
+function wsGroup() {
+  const objs = wsActiveObjects();
+  if (objs.length < 2) { toast('Выделите два и более объекта'); return; }
+  const g = new fabric.Group(objs);
+  canvas.add(g);
+  canvas.setActiveObject(g);
+  canvas.requestRenderAll();
+  snapCanvas();
+}
+
+function wsUngroup() {
+  const a = canvas && canvas.getActiveObject();
+  if (!a || a.type !== 'group') { toast('Выберите группу'); return; }
+  const objs = a.removeAll();
+  delete notePositions[a.noteId];
+  canvas.add(...objs);
+  canvas.discardActiveObject();
+  objs.forEach(o => { o.setCoords(); canvas.setActiveObject(o); });
+  canvas.requestRenderAll();
+  snapCanvas();
+}
+
+function wsClearCanvas() {
+  if (!canvas) return;
+  const removable = canvas.getObjects().filter(o => !o._gridLine);
+  if (!removable.length) return;
+  removable.forEach(o => { delete notePositions[o.noteId]; canvas.remove(o); });
+  notePositions = {};
+  saveNotePositions();
+  canvas.requestRenderAll();
+  toast('Холст очищен', 'success');
+}
+
+/* ---------- ЗУМ ---------- */
+function wsZoomBy(factor) {
+  if (!canvas) return;
+  const z = Math.min(Math.max(canvas.getZoom() * factor, 0.05), 50);
+  canvas.zoomToPoint({ x: canvas.getWidth() / 2, y: canvas.getHeight() / 2 }, z);
+  canvas.requestRenderAll();
+}
+function wsZoomReset() {
+  if (!canvas) return;
+  canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+  canvas.requestRenderAll();
+  toast('Масштаб 100%');
+}
+
+function setupDrawToolbar() {
+  document.querySelectorAll('#drawToolbar [data-tool]').forEach(b => {
+    b.addEventListener('click', () => setCanvasTool(b.dataset.tool));
+  });
+  document.getElementById('strokeColor').addEventListener('input', applyProps);
+  document.getElementById('fillColor').addEventListener('input', applyProps);
+  document.getElementById('strokeWidth').addEventListener('input', e => {
+    document.getElementById('sizeDisplay').textContent = e.target.value;
+    applyProps();
+  });
+  document.getElementById('undoBtn').addEventListener('click', canvasUndo);
+  document.getElementById('redoBtn').addEventListener('click', canvasRedo);
+  document.getElementById('zoomFitBtn').addEventListener('click', () => { zoomToFit(); setCanvasTool('select'); });
+  document.getElementById('gridBtn').addEventListener('click', toggleGrid);
+  document.getElementById('exportZipBtn').addEventListener('click', () => exportNotesZip());
+  document.getElementById('toolbarCollapseBtn').addEventListener('click', () => {
+    const tb = document.getElementById('drawToolbar');
+    const on = tb.classList.toggle('collapsed');
+    localStorage.setItem('ws_toolbar_collapsed', on ? '1' : '0');
+    const ic = document.querySelector('#toolbarCollapseBtn i');
+    if (ic) ic.className = on ? 'fa-solid fa-angles-right' : 'fa-solid fa-angles-left';
+  });
+  document.getElementById('alignLeftBtn').addEventListener('click', () => alignObjects('left'));
+  document.getElementById('alignCenterBtn').addEventListener('click', () => alignObjects('centerH'));
+  document.getElementById('alignRightBtn').addEventListener('click', () => alignObjects('right'));
+  document.getElementById('alignTopBtn').addEventListener('click', () => alignObjects('top'));
+  document.getElementById('alignMiddleBtn').addEventListener('click', () => alignObjects('centerV'));
+  document.getElementById('alignBottomBtn').addEventListener('click', () => alignObjects('bottom'));
+  document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
+
+  // Действия над объектом
+  const bind = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
+  bind('dupBtn', wsDuplicate);
+  bind('delBtn', wsDeleteSelected);
+  bind('frontBtn', () => wsBring(true));
+  bind('backBtn', () => wsBring(false));
+  bind('groupBtn', wsGroup);
+  bind('ungroupBtn', wsUngroup);
+  bind('zoomOutBtn', () => wsZoomBy(1 / 1.2));
+  bind('zoomInBtn', () => wsZoomBy(1.2));
+  bind('zoomResetBtn', wsZoomReset);
+  bind('clearCanvasBtn', wsClearCanvas);
+
+  // Состояние панели запоминаем — каждый раз заново настраивать не нужно
+  if (localStorage.getItem('ws_toolbar_collapsed') === '1') {
+    document.getElementById('drawToolbar').classList.add('collapsed');
+    const ic = document.querySelector('#toolbarCollapseBtn i');
+    if (ic) ic.className = 'fa-solid fa-angles-right';
+  }
+}
+
+function zoomToFit() {
+  if (!canvas) return;
+  const objs = canvas.getObjects().filter(o => !o._polygonDot && !o._polygonLine);
+  if (!objs.length) return;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  objs.forEach(o => {
+    const r = o.getBoundingRect();
+    if (r.left < minX) minX = r.left;
+    if (r.top < minY) minY = r.top;
+    if (r.left + r.width > maxX) maxX = r.left + r.width;
+    if (r.top + r.height > maxY) maxY = r.top + r.height;
+  });
+  const padding = 80;
+  const bw = maxX - minX + padding * 2;
+  const bh = maxY - minY + padding * 2;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const zoom = Math.min(vw / bw, vh / bh, 3);
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  canvas.setViewportTransform([zoom, 0, 0, zoom, vw / 2 - cx * zoom, vh / 2 - cy * zoom]);
+  canvas.requestRenderAll();
+}
+
+function toggleGrid() {
+  isGridVisible = !isGridVisible;
+  const btn = document.getElementById('gridBtn');
+  if (isGridVisible) {
+    btn.classList.add('active');
+    const step = 40;
+    const vw = window.innerWidth * 3, vh = window.innerHeight * 3;
+    // сетка тоже брала фиксированный светлый цвет — в тёмной теме
+    // линии были почти не видны
+    const gs = wsThemeColors().border;
+    for (let x = -vw; x < vw; x += step) {
+      const ln = new fabric.Line([x, -vh, x, vh], { stroke: gs, strokeWidth: 0.5, selectable: false, evented: false, _gridLine: true });
+      canvas.add(ln); canvas.sendObjectToBack(ln); gridLines.push(ln);
+    }
+    for (let y = -vh; y < vh; y += step) {
+      const ln = new fabric.Line([-vw, y, vw, y], { stroke: gs, strokeWidth: 0.5, selectable: false, evented: false, _gridLine: true });
+      canvas.add(ln); canvas.sendObjectToBack(ln); gridLines.push(ln);
+    }
+  } else {
+    btn.classList.remove('active');
+    gridLines.forEach(l => canvas.remove(l));
+    gridLines = [];
+  }
+  canvas.requestRenderAll();
+}
+
+function alignObjects(dir) {
+  const sel = canvas.getActiveObject();
+  if (!sel) return;
+  const objs = sel.type === 'activeSelection' ? sel.getObjects() : [sel];
+  if (objs.length < 2 && dir !== 'centerH' && dir !== 'centerV') return;
+  const bounds = sel.type === 'activeSelection' ? sel.getBoundingRect() : canvas.getWidth();
+  objs.forEach(o => {
+    const or = o.getBoundingRect();
+    if (dir === 'left') o.set('left', o.left - or.left + (sel.type === 'activeSelection' ? sel.left : 0));
+    else if (dir === 'right') o.set('left', o.left + (bounds.width || bounds) - or.left - or.width + (sel.type === 'activeSelection' ? sel.left : 0));
+    else if (dir === 'centerH') o.set('left', o.left + ((bounds.width || bounds) / 2) - or.left - or.width / 2 + (sel.type === 'activeSelection' ? sel.left : 0));
+    else if (dir === 'top') o.set('top', o.top - or.top + (sel.type === 'activeSelection' ? sel.top : 0));
+    else if (dir === 'bottom') o.set('top', o.top + (bounds.height || bounds) - or.top - or.height + (sel.type === 'activeSelection' ? sel.top : 0));
+    else if (dir === 'centerV') o.set('top', o.top + ((bounds.height || bounds) / 2) - or.top - or.height / 2 + (sel.type === 'activeSelection' ? sel.top : 0));
+    o.setCoords();
+  });
+  canvas.requestRenderAll(); snapCanvas();
+}
+
+function handleImageUpload(e) {
+  const files = e.target.files;
+  if (!files || !files.length) return;
+  Array.from(files).forEach(file => {
+    if (!file.type.match(/^image\/(png|jpeg|gif|webp)$/)) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      fabric.Image.fromURL(ev.target.result).then(img => {
+        const maxDim = 400;
+        const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+        img.set({ left: window.innerWidth / 2 - (img.width * scale) / 2, top: window.innerHeight / 2 - (img.height * scale) / 2, scaleX: scale, scaleY: scale });
+        canvas.add(img); canvas.setActiveObject(img); canvas.requestRenderAll(); snapCanvas();
+      }).catch(err => console.error('Image load error:', err));
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+function setCanvasTool(t) {
+  if (t === 'zoomfit') { zoomToFit(); setCanvasTool('select'); return; }
+  if (t === 'image') { document.getElementById('imageUpload').click(); setCanvasTool('select'); return; }
+  if (t === 'polygon' && currentTool === 'polygon' && polygonPoints.length >= 3) {
+    const pts = polygonPoints;
+    const minX = Math.min(...pts.map(p => p.x));
+    const minY = Math.min(...pts.map(p => p.y));
+    const localPts = pts.map(p => ({ x: p.x - minX, y: p.y - minY }));
+    const poly = new fabric.Polygon(localPts, {
+      left: minX, top: minY,
+      fill: fillColor(), stroke: strokeColor(), strokeWidth: strokeW(), strokeUniform: true,
+    });
+    canvas.add(poly); canvas.setActiveObject(poly);
+    polygonLines.forEach(l => canvas.remove(l));
+    polygonPoints = []; polygonLines = [];
+    canvas.requestRenderAll(); snapCanvas();
+  }
+  currentTool = t;
+  canvas.isDrawingMode = t === 'draw';
+  if (t === 'draw') {
+    const brush = new fabric.PencilBrush(canvas);
+    brush.color = strokeColor(); brush.width = strokeW();
+    canvas.freeDrawingBrush = brush;
+  }
+  canvas.selection = t === 'select';
+  if (t !== 'polygon') {
+    if (polygonPoints.length) { polygonLines.forEach(l => canvas.remove(l)); polygonPoints = []; polygonLines = []; canvas.requestRenderAll(); }
+  }
+  document.querySelectorAll('#drawToolbar [data-tool]').forEach(b => {
+    b.classList.toggle('active', b.dataset.tool === currentTool);
+  });
+}
+
+function updateDrawToolbar() {
+  document.querySelectorAll('#drawToolbar [data-tool]').forEach(b => {
+    b.classList.toggle('active', b.dataset.tool === currentTool);
+  });
+}
+
+function updateProps() {
+  const obj = canvas.getActiveObject();
+  if (obj && obj.type !== 'activeSelection') {
+    if (obj.stroke) document.getElementById('strokeColor').value = toHexColor(obj.stroke);
+    if (obj.fill && obj.fill !== '#ffffff') document.getElementById('fillColor').value = toHexColor(obj.fill);
+    document.getElementById('strokeWidth').value = obj.strokeWidth || 1;
+    document.getElementById('sizeDisplay').textContent = obj.strokeWidth || 1;
+  }
+}
+
+function toHexColor(c) {
+  if (!c || typeof c !== 'string') return '#000000';
+  if (c.startsWith('#')) return c;
+  // Convert rgb(r,g,b) to hex
+  const m = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (m) {
+    const r = Math.min(255, Math.max(0, parseInt(m[1]))).toString(16).padStart(2, '0');
+    const g = Math.min(255, Math.max(0, parseInt(m[2]))).toString(16).padStart(2, '0');
+    const b = Math.min(255, Math.max(0, parseInt(m[3]))).toString(16).padStart(2, '0');
+    return '#' + r + g + b;
+  }
+  return '#000000';
+}
+
+function applyProps() {
+  const obj = canvas.getActiveObject();
+  if (!obj) return;
+  const c = strokeColor(), f = fillColor(), w = strokeW();
+  if (obj.type === 'activeSelection') {
+    obj.forEachObject(o => { o.set({ stroke: c, fill: f, strokeWidth: w }); o.setCoords(); });
+  } else {
+    obj.set({ stroke: c, fill: f, strokeWidth: w }); obj.setCoords();
+  }
+  canvas.requestRenderAll();
+}
+
+function snapCanvas() {
+  if (isRestoring) return;
+  collectNotePositions();
+  const s = JSON.stringify(canvas.toJSON(['id', 'noteId', 'noteMode']));
+  undoStack.push(s);
+  if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+  redoStack = [];
+  updateUndoButtons();
+  saveCanvas();
+}
+
+function canvasUndo() {
+  if (undoStack.length < 2) return;
+  redoStack.push(undoStack.pop());
+  restoreCanvas(undoStack[undoStack.length - 1]);
+}
+
+function canvasRedo() {
+  if (!redoStack.length) return;
+  undoStack.push(redoStack.pop());
+  restoreCanvas(undoStack[undoStack.length - 1]);
+}
+
+function restoreCanvas(s) {
+  isRestoring = true;
+  canvas.loadFromJSON(JSON.parse(s)).then(() => {
+    canvas.requestRenderAll();
+    isRestoring = false;
+    updateUndoButtons();
+  });
+}
+
+function updateUndoButtons() {
+  document.getElementById('undoBtn').style.opacity = undoStack.length > 1 ? 1 : 0.3;
+  document.getElementById('redoBtn').style.opacity = redoStack.length > 0 ? 1 : 0.3;
+}
+
+function saveCanvas() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(CANVAS_KEY, JSON.stringify(canvas.toJSON(['id', 'noteId', 'noteMode'])));
+    } catch (e) { /* ignore */ }
+  }, 500);
+}
+
+async function refreshNotesCanvas() {
+  _notesRendered = false;
+  await loadNotes();
+  renderNotesOnCanvas();
+  const el = document.getElementById('noteCountDisplay');
+  if (el) el.textContent = notesCache.length + ' зам.';
+  toast('Заметки обновлены', 'success');
+}
+
+function checkRenderNotes() {
+  console.log('[WS] checkRenderNotes:', { canvasReady, notesReady, notesLen: notesCache.length });
+  if (canvasReady && notesReady) renderNotesOnCanvas();
+}
+
+function loadCanvasData(callback) {
+  try {
+    const d = localStorage.getItem(CANVAS_KEY);
+    console.log('[WS] loadCanvasData: key=', CANVAS_KEY, 'hasData=', !!d);
+    if (d) {
+      canvas.loadFromJSON(JSON.parse(d)).then(() => {
+        canvas.requestRenderAll();
+        // DEBUG: check if noteId survived restore
+        const objs = canvas.getObjects();
+        console.log('[WS] loadCanvasData: objects after restore =', objs.length);
+        objs.forEach((o,i) => {
+          if (o.type === 'group') console.log('[WS]   ['+i+'] group noteId='+o.noteId, 'id='+o.id, 'objects='+(o._objects||[]).length);
+        });
+        // FIX: restore missing noteId by matching card structure to notesCache
+        if (typeof notesCache !== 'undefined' && notesCache.length) {
+          objs.forEach(o => {
+            if (o.type === 'group' && o._objects && o._objects.length >= 5 && o._objects[0] && o._objects[0].width === 320 && !o.noteId) {
+              const titleText = o._objects[2] && o._objects[2].text;
+              // try match by title, then by id
+              let matched = notesCache.find(n => n.title === titleText);
+              if (!matched) matched = notesCache.find(n => n.id === o.id);
+              if (matched) { o.noteId = matched.id; console.log('[WS]   FIXED missing noteId for:', titleText, '->', matched.id); }
+              else { /* still no match — remove orphan card */
+                console.log('[WS]   REMOVING orphan card (no noteId match):', titleText);
+                canvas.remove(o);
+              }
+            }
+          });
+        }
+        // also remove any remaining note-card groups that have no noteId after fix pass
+        canvas.getObjects().filter(o => o.type === 'group' && o._objects && o._objects.length >= 5 && o._objects[0] && o._objects[0].width === 320 && !o.noteId).forEach(o => canvas.remove(o));
+        undoStack = [d]; updateUndoButtons();
+        if (callback) callback();
+      }).catch(err => {
+        console.warn('Canvas load error:', err);
+        undoStack = [JSON.stringify(canvas.toJSON(['id', 'noteId', 'noteMode']))];
+        updateUndoButtons();
+        if (callback) callback();
+      });
+      return;
+    }
+  } catch (e) { console.warn('Canvas load error:', e); }
+  undoStack = [JSON.stringify(canvas.toJSON(['id', 'noteId', 'noteMode']))];
+  updateUndoButtons();
+  if (callback) callback();
+}
+
+function detectNoteMode(note) {
+  /* Рисунок живёт в отдельном поле заметки, а не в тексте: его байты весят
+     мегабайты, поэтому список приносит только признак сцены. */
+  if (note && note.scene_present) return 'excalidraw';
+  const c = (note.content || '').trim();
+  if (c.startsWith('{"type":"luckysheet"')) return 'luckysheet';
+  if (c.startsWith('{"type":"excalidraw"')) return 'excalidraw';
+  return 'markdown';
+}
+
+function renderNotesOnCanvas() {
+  console.log('[WS] renderNotesOnCanvas called:', { canvas: !!canvas, notesLen: notesCache.length, _notesRendered, isRestoring });
+  if (!canvas || !notesCache.length || _notesRendered || isRestoring) { console.log('[WS] renderNotesOnCanvas SKIPPED'); return; }
+  _notesRendered = true;
+  const toRemove = [];
+  const allObjs = canvas.getObjects();
+  console.log('[WS] renderNotesOnCanvas: total canvas objects =', allObjs.length);
+  canvas.forEachObject(obj => {
+    // remove by noteId OR by matching card structure (for orphan cards that lost noteId)
+    const isCard = obj.type === 'group' && obj._objects && obj._objects.length >= 5 && obj._objects[0] && obj._objects[0].width === 320;
+    if (obj.noteId || isCard) {
+      toRemove.push(obj);
+    }
+  });
+  toRemove.forEach(obj => canvas.remove(obj));
+  const COL = 5, CW = 320, CH = 200, MG = 20, PAD = 14;
+  const T = wsThemeColors();
+  notesCache.forEach((note, i) => {
+    const mode = detectNoteMode(note);
+    // Use explicitly persisted positions (decoupled from Fabric group serialization)
+    const p = notePositions[note.id];
+    const cx = p ? p.left : 60 + (i % COL) * (CW + MG);
+    const cy = p ? p.top : 60 + Math.floor(i / COL) * (CH + MG);
+    const gx = p ? p.left : cx + CW / 2;
+    const gy = p ? p.top : cy + CH / 2;
+    const bg = new fabric.Rect({
+      left: gx + CW/2, top: gy + CH/2, width: CW, height: CH,
+      fill: T.card, rx: 10, ry: 10,
+      stroke: T.border, strokeWidth: 1,
+      shadow: new fabric.Shadow({ color: T.shadow, blur: 16, offsetX: 0, offsetY: 4 }),
+    });
+    const hdrColor = mode === 'excalidraw' ? T.purple : mode === 'luckysheet' ? T.green : T.accent;
+    const hdr = new fabric.Rect({
+      left: gx + CW/2, top: gy + 2, width: CW, height: 4,
+      fill: hdrColor, rx: 2, ry: 2,
+    });
+    const titleW = CW - PAD * 2 - 44;
+    const title = new fabric.Textbox(truncate(note.title, 40), {
+      left: gx + PAD + titleW/2, top: gy + 18 + 13*1.2/2, fontSize: 13, fontWeight: 700,
+      fontFamily: "'Inter', sans-serif", fill: T.text,
+      width: titleW, splitByGrapheme: false,
+      lineHeight: 1.2, overflow: 'hidden',
+    });
+    const modeAbbr = mode === 'excalidraw' ? 'EX' : mode === 'luckysheet' ? 'TB' : 'MD';
+    const badgeFills = { EX: T.purpleSoft, TB: T.greenSoft, MD: T.accentSoft };
+    const badgeTextColors = { EX: T.purple, TB: T.green, MD: T.accent };
+    const badgeBg = new fabric.Rect({
+      left: gx + CW - PAD - 17, top: gy + 18 + 10, width: 34, height: 20,
+      rx: 10, ry: 10, fill: badgeFills[modeAbbr] || T.card,
+    });
+    const badgeTxt = new fabric.Text(modeAbbr, {
+      left: gx + CW - PAD - 17, top: gy + 18 + 10, fontSize: 9, fontWeight: 700,
+      fontFamily: "'Inter', sans-serif", fill: badgeTextColors[modeAbbr] || T.dim,
+      originX: 'center',
+    });
+    const dispTop = 44;
+    const dispHeight = CH - dispTop - PAD;
+    const dispWidth = CW - PAD * 2;
+    let dispStr = '';
+    if (mode === 'excalidraw') dispStr = '[Excalidraw]';
+    else if (mode === 'luckysheet') dispStr = '[Таблица]';
+    else dispStr = (note.content || '').replace(/<[^>]+>/g, '').replace(/\n/g, ' ').substring(0, 300);
+    const disp = new fabric.Textbox(dispStr, {
+      left: gx + PAD + dispWidth/2, top: gy + dispTop + dispHeight/2, fontSize: 11, lineHeight: 1.6,
+      fontFamily: "'Inter', sans-serif", fill: T.dim,
+      width: dispWidth, height: dispHeight,
+      splitByGrapheme: false, selectable: false,
+      overflow: 'hidden',
+    });
+    const g = new fabric.Group([bg, hdr, title, badgeBg, badgeTxt, disp], {
+      left: gx, top: gy,
+      scaleX: p ? p.scaleX : 1, scaleY: p ? p.scaleY : 1,
+      noteId: note.id, noteMode: (p && p.noteMode) ? p.noteMode : mode,
+      selectable: true, hasControls: true,
+    });
+    // Apply persisted position explicitly (Fabric recenters groups from children,
+    // so we override left/top with the value Fabric reported after the last drag)
+    if (p) {
+      g.set({ left: p.left, top: p.top });
+      if (p.scaleX != null) g.set({ scaleX: p.scaleX, scaleY: p.scaleY });
+      g.setCoords();
+    }
+    canvas.add(g);
+    console.log('[WS] card', i, 'added at', g.left, g.top, 'objCount:', canvas.getObjects().length, 'visible:', g.visible);
+  });
+  console.log('[WS] renderNotesOnCanvas done. Total objects:', canvas.getObjects().length);
+  canvas.requestRenderAll(); snapCanvas();
+}
+
+// ─── Note card helpers ──────────────────────────────
+function getNoteGroup(noteId) {
+  let found = null;
+  canvas.forEachObject(obj => { if (obj.noteId === noteId) found = obj; });
+  return found;
+}
+
+function getNoteFromCache(noteId) {
+  return notesCache.find(n => n.id === noteId) || null;
+}
+
+function updateCardDisplay(g) {
+  if (!g || !g.noteId || !g._objects) return;
+  const note = getNoteFromCache(g.noteId);
+  if (!note) return;
+  const mode = g.noteMode || 'markdown';
+  if (g._objects[2]) g._objects[2].set('text', truncate(note.title, 40));
+  const modeAbbr = mode === 'excalidraw' ? 'EX' : mode === 'luckysheet' ? 'TB' : 'MD';
+  const CT = wsThemeColors();
+  const hdrColors = { EX: CT.purple, TB: CT.green, MD: CT.accent };
+  const badgeFills = { EX: CT.purpleSoft, TB: CT.greenSoft, MD: CT.accentSoft };
+  const badgeTextColors = { EX: CT.purple, TB: CT.green, MD: CT.accent };
+  if (g._objects[1]) g._objects[1].set('fill', hdrColors[modeAbbr] || CT.accent);
+  if (g._objects[3]) g._objects[3].set('fill', badgeFills[modeAbbr] || CT.card);
+  if (g._objects[4]) { g._objects[4].set('text', modeAbbr); g._objects[4].set('fill', badgeTextColors[modeAbbr] || CT.dim); }
+  let dispStr = '';
+  if (mode === 'excalidraw') dispStr = '[Excalidraw]';
+  else if (mode === 'luckysheet') dispStr = '[Таблица]';
+  else dispStr = (note.content || '').replace(/<[^>]+>/g, '').replace(/\n/g, ' ').substring(0, 300);
+  if (g._objects[5]) g._objects[5].set('text', dispStr);
+  canvas.requestRenderAll();
+}
+
+// ─── Export notes as ZIP ──
+async function exportNotesZip(specificIds) {
+  if (typeof JSZip === 'undefined') { toast('Библиотека JSZip не загружена', 'error'); return; }
+  const ids = specificIds || notesCache.map(n => n.id);
+  if (!ids.length) { toast('Нет заметок для экспорта', 'warning'); return; }
+  toast('Подготовка экспорта...', 'info');
+  try {
+    const zip = new JSZip();
+    const folder = zip.folder('notes');
+    for (const id of ids) {
+      const note = notesCache.find(n => n.id === id);
+      if (!note) continue;
+      const content = note.content || '';
+      const title = (note.title || 'Без названия').replace(/[<>:"/\\|?*]/g, '_');
+      folder.file(title + '.md', '# ' + (note.title || '') + '\n\n' + content);
+    }
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'notes_export.zip';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('ZIP скачан (' + ids.length + ' заметок)', 'success');
+  } catch (e) { console.error('Export error:', e); toast('Ошибка экспорта: ' + e.message, 'error'); }
+}
+
+// ─── Context menu ──
+let contextMenuNoteId = null;
+
+function showNoteContextMenu(e, noteId) {
+  contextMenuNoteId = noteId;
+  const menu = document.getElementById('noteContextMenu');
+  menu.style.left = e.clientX + 'px';
+  menu.style.top = e.clientY + 'px';
+  menu.classList.add('open');
+}
+
+function hideNoteContextMenu() {
+  const menu = document.getElementById('noteContextMenu');
+  menu.classList.remove('open');
+  contextMenuNoteId = null;
+}
+
+// Handle context menu item clicks
+document.addEventListener('click', e => {
+  const item = e.target.closest('.ctx-item');
+  if (!item) { hideNoteContextMenu(); return; }
+  const action = item.dataset.action;
+  const noteId = contextMenuNoteId;
+  hideNoteContextMenu();
+  if (!noteId) return;
+  if (action === 'edit') {
+    const note = getNoteFromCache(noteId);
+    if (note) openInlineEditor(noteId);
+  } else if (action === 'save') {
+    saveNoteCard(noteId);
+  } else if (action === 'ai') {
+    aiNoteCard(noteId);
+  } else if (action === 'export-single') {
+    exportNotesZip([noteId]);
+  } else if (action === 'delete') {
+    const g = getNoteGroup(noteId);
+    if (g) { canvas.remove(g); canvas.requestRenderAll(); snapCanvas(); toast('Заметка удалена с холста', 'info'); }
+  } else if (action.startsWith('mode-')) {
+    const modeMap = { 'mode-markdown': 'markdown', 'mode-excalidraw': 'excalidraw', 'mode-table': 'luckysheet' };
+    const newMode = modeMap[action];
+    if (newMode) {
+      const g = getNoteGroup(noteId);
+      if (g) { g.noteMode = newMode; }
+      updateCardDisplay(g);
+      saveNoteCard(noteId, true);
+      toast('Режим: ' + newMode, 'info');
+    }
+  }
+});
+
+function cycleNoteMode(noteId) {
+  const g = getNoteGroup(noteId);
+  if (!g) return;
+  const order = ['markdown', 'excalidraw', 'luckysheet'];
+  const cur = g.noteMode || 'markdown';
+  const next = order[(order.indexOf(cur) + 1) % order.length];
+  g.noteMode = next;
+  const note = getNoteFromCache(noteId);
+  if (!note) return;
+  // If switching TO markdown and content is mode JSON, clear it
+  if (next === 'markdown') {
+    const c = (note.content || '').trim();
+    if (c.startsWith('{"type":"')) note.content = '';
+  }
+  updateCardDisplay(g);
+  saveNoteCard(noteId, true);
+  toast('Режим: ' + next, 'info');
+}
+
+function openInlineEditor(noteId) {
+  const note = getNoteFromCache(noteId);
+  if (!note) { toast('Заметка не найдена', 'error'); return; }
+  const g = getNoteGroup(noteId);
+  if (!g) return;
+  const el = document.getElementById('inlineEditor');
+  const titleEl = document.getElementById('inlineEditorTitle');
+  const textEl = document.getElementById('inlineEditorText');
+  titleEl.textContent = note.title || 'Без названия';
+  textEl.value = note.content || '';
+  el._noteId = noteId;
+  // Position near the card
+  const rect = g.getBoundingRect();
+  const vpt = canvas.viewportTransform;
+  const zoom = canvas.getZoom();
+  const px = rect.left * zoom + vpt[4];
+  const py = rect.top * zoom + vpt[5];
+  const pw = rect.width * zoom;
+  el.style.left = Math.min(px + pw + 10, window.innerWidth - 360) + 'px';
+  el.style.top = Math.max(10, py) + 'px';
+  el.style.width = '340px';
+  el.classList.add('open');
+  textEl.focus();
+}
+
+window.closeInlineEditor = function(save) {
+  const el = document.getElementById('inlineEditor');
+  if (!el || !el._noteId) return;
+  if (save) {
+    const content = document.getElementById('inlineEditorText').value;
+    saveNoteCard(el._noteId, false, content);
+  }
+  el.classList.remove('open');
+  el._noteId = null;
+};
+
+async function saveNoteCard(noteId, silent, content, noteFallback) {
+  const note = getNoteFromCache(noteId) || (noteFallback && noteFallback.id === noteId ? noteFallback : null);
+  if (!note) return false;
+  const body = {
+    id: noteId,
+    title: note.title,
+    content: content !== undefined ? content : note.content,
+    folder: note.folder || FOLDER,
+    tags: note.tags || [],
+    created: note.created,
+  };
+  // Get mode from canvas object
+  const g = getNoteGroup(noteId);
+  if (g && g.noteMode) {
+    const m = g.noteMode;
+    /* Для Excalidraw сюда больше не пишем пустую сцену: раньше перевод
+       заметки в режим рисования заменял content кодом, то есть стирал текст
+       заметки. Рисунок теперь уходит в поле scene (exPersist), текст целой. */
+    if (m === 'luckysheet' && typeof body.content === 'string' && !body.content.startsWith('{"type":"luckysheet"')) body.content = '{"type":"luckysheet","version":1,"sheets":[{"name":"Sheet1","celldata":[],"status":1,"order":0,"config":{}}]}';
+  }
+  try {
+    const r = await fetch('/api/notes/save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (d.ok) {
+      // Update cache
+      const nc = notesCache.find(n => n.id === noteId);
+      if (nc) nc.content = body.content;
+      if (!silent) toast('Сохранено', 'success');
+      updateCardDisplay(g);
+      return true;
+    }
+    if (!silent) toast('Ошибка: ' + (d.error || 'Unknown'), 'error');
+    return false;
+  } catch (e) {
+    if (!silent) toast('Ошибка: ' + e.message, 'error');
+    return false;
+  }
+}
+
+async function aiNoteCard(noteId) {
+  const note = getNoteFromCache(noteId);
+  if (!note) return;
+  const text = (note.title || '') + '\n' + (note.content || '');
+  if (!text.trim()) { toast('Заметка пуста', 'warning'); return; }
+  toast('AI думает...', 'info');
+  try {
+    const r = await fetch('/api/workspace/ai-query', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder: FOLDER, query: 'Проанализируй эту заметку и дай краткое резюме:\n\n' + text.substring(0, 3000) })
+    });
+    const d = await r.json();
+    if (chatMessages.length === 0) addChatMessage('system', 'AI анализирует заметки этой рабочей области.');
+    addChatMessage('ai', 'Анализ заметки "' + note.title + '":\n' + (d.response || d.error || 'Нет ответа'));
+    document.getElementById('chatPanel').classList.add('open');
+  } catch (e) {
+    toast('Ошибка AI: ' + e.message, 'error');
+  }
+}
+
+function polyfillMousewheel() {
+  if (window.jQuery && window.jQuery.fn && !window.jQuery.fn.mousewheel) {
+    window.jQuery.fn.mousewheel = function(fn) { return this.on('wheel', fn); };
+  }
+}
+
+const LS_EMPTY_TABLE = '{"type":"luckysheet","version":1,"sheets":[{"name":"Sheet1","celldata":[],"status":1,"order":0,"config":{}}]}';
+const LS_DRAFT_PREFIX = 'ws_table_draft_';
+/* Снимок в localStorage — страховка на случай, если POST не доживёт до сервера
+   (закрытие окна или перезагрузка ровно в момент отправки). Больше 2 МБ не
+   храним: иначе одна таблица выедет всю пятимегабайтную квоту. */
+const LS_DRAFT_MAX = 2 * 1024 * 1024;
+const LS_AUTOSAVE_MS = 1500;
+
+/* Жизнь редактора таблиц. _ls.gen — счётчик открытий: любой отложенный
+   create/-save сверяется с ним и молча отменяется, если модалку уже закрыли
+   или открыли другую заметку. Без этого luckysheet.create() из setTimeout
+   успевал встать уже в удалённый контейнер, а getAllSheets() после этого
+   отдавал чужой workbook — таблицы переписывали друг друга. */
+const _ls = { gen: 0, timer: 0, saveTimer: 0, live: false, note: null, dirty: false };
+
+function lsDraftKey(noteId) { return LS_DRAFT_PREFIX + noteId; }
+
+function lsSaveDraft(noteId, content) {
+  if (!noteId || content.length > LS_DRAFT_MAX) return false;
+  try {
+    localStorage.setItem(lsDraftKey(noteId), JSON.stringify({ ts: Date.now(), content }));
+    return true;
+  } catch (e) { console.warn('table draft save:', e); return false; }
+}
+
+function lsLoadDraft(noteId) {
+  try {
+    const raw = localStorage.getItem(lsDraftKey(noteId));
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    return (d && typeof d.content === 'string') ? d : null;
+  } catch (e) { return null; }
+}
+
+function lsClearDraft(noteId) {
+  try { localStorage.removeItem(lsDraftKey(noteId)); } catch (e) { /* нет страховки — не беда */ }
+}
+
+function lsReset() {
+  _ls.gen++;
+  if (_ls.timer) { clearTimeout(_ls.timer); _ls.timer = 0; }
+  if (_ls.saveTimer) { clearTimeout(_ls.saveTimer); _ls.saveTimer = 0; }
+}
+
+function lsDestroy() {
+  if (!_ls.live) return;
+  _ls.live = false;
+  try { if (typeof luckysheet !== 'undefined' && typeof luckysheet.destroy === 'function') luckysheet.destroy(); }
+  catch (e) { console.warn('luckysheet destroy:', e); }
+}
+
+function lsCollect() {
+  if (typeof luckysheet === 'undefined' || !luckysheet.getAllSheets) return null;
+  try {
+    const sheets = luckysheet.getAllSheets();
+    if (!sheets || !sheets.length) return null;
+    return JSON.stringify({ type: 'luckysheet', version: 1, sheets });
+  } catch (e) { console.warn('luckysheet snapshot:', e); return null; }
+}
+
+function lsPersist(content, silent) {
+  if (!_ls.note || typeof content !== 'string') return Promise.resolve(false);
+  const noteId = _ls.note.id;
+  _ls.dirty = false;
+  const note = getNoteFromCache(noteId);
+  if (note) note.content = content;
+  lsSaveDraft(noteId, content);
+  return saveNoteCard(noteId, silent, content, _ls.note).then(ok => {
+    if (ok) lsClearDraft(noteId);
+    return ok;
+  });
+}
+
+function lsScheduleSave() {
+  // create() вызывает hook.updated и на собственной инициализации: до того,
+  // как _ls.live стал true, это не правка пользователя, а шум загрузки.
+  if (!_ls.live || !_ls.note) return;
+  _ls.dirty = true;
+  if (_ls.saveTimer) clearTimeout(_ls.saveTimer);
+  const gen = _ls.gen;
+  _ls.saveTimer = setTimeout(() => {
+    _ls.saveTimer = 0;
+    if (gen !== _ls.gen || !_ls.live || !_ls.dirty) return;
+    const content = lsCollect();
+    if (content != null) lsPersist(content, true);
+  }, LS_AUTOSAVE_MS);
+}
+
+/* Страницу закрывают не только по «×»: sendBeacon (а если он недоступен —
+   fetch с keepalive) донесёт последний снимок, а draft в localStorage
+   подстрахует, если запрос всё-таки оборвётся. */
+function lsFlushOnLeave() {
+  // _ls.dirty=false означает «на сервере уже последний снимок»: сериализовать
+  // workbook на каждое переключение вкладки незачем.
+  if (!_ls.live || !_ls.note || !_ls.dirty) return;
+  const content = lsCollect();
+  if (content == null) return;
+  const note = _ls.note;
+  if (note) note.content = content;
+  lsSaveDraft(note.id, content);
+  const body = JSON.stringify({
+    id: note.id, title: note.title, content: content,
+    folder: note.folder || FOLDER, tags: note.tags || [], created: note.created,
+  });
+  try {
+    const blob = new Blob([body], { type: 'application/json' });
+    if (navigator.sendBeacon && navigator.sendBeacon('/api/notes/save', blob)) return;
+  } catch (e) { /* фолбэк ниже */ }
+  try {
+    fetch('/api/notes/save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: body, keepalive: true,
+    }).catch(() => {});
+  } catch (e) { /* страница уходит — draft уже записан */ }
+}
+
+function initLuckysheet(note) {
+  const bodyEl = document.getElementById('modeModalBody');
+  if (!bodyEl) return;
+  const loading = document.getElementById('luckysheetLoading');
+  if (loading) loading.textContent = 'Инициализация...';
+  lsReset();
+  lsDestroy();
+  _ls.note = note;
+  try {
+    bodyEl.innerHTML = '<div id="luckysheetContainer" style="width:100%;height:100%"></div>';
+    let c = note.content || LS_EMPTY_TABLE;
+    const draft = lsLoadDraft(note.id);
+    // updated сервера — в секундах, draft — в миллисекундах.
+    if (draft && draft.content !== c && (draft.ts / 1000) > (note.updated || 0)) {
+      c = draft.content;
+      note.content = c;
+      _ls.dirty = true;
+      toast('Восстановлена несохранённая версия таблицы', 'info');
+    }
+    const data = JSON.parse(c);
+    let sheets = data.sheets || [];
+    if (!sheets.length) {
+      sheets = [{ name: 'Sheet1', celldata: [], status: 1, order: 0, config: {} }];
+    }
+    if (typeof luckysheet !== 'undefined' && luckysheet.create) {
+      const gen = _ls.gen;
+      _ls.timer = setTimeout(() => {
+        _ls.timer = 0;
+        if (gen !== _ls.gen) return;
+        if (!document.getElementById('luckysheetContainer')) { lsDestroy(); return; }
+        try {
+          luckysheet.create({
+            container: 'luckysheetContainer', data: sheets, lang: 'en',
+            hook: { updated: lsScheduleSave },
+          });
+          _ls.live = true;
+          if (_ls.dirty) lsScheduleSave();
+        } catch (e2) {
+          bodyEl.innerHTML = '<div style="padding:40px;text-align:center;color:#dc2626;font-size:14px">Ошибка: ' + e2.message + '</div>';
+        }
+      }, 100);
+    } else {
+      bodyEl.innerHTML = '<div style="padding:40px;text-align:center;color:#dc2626;font-size:14px">Библиотека luckysheet не загружена</div>';
+    }
+  } catch(e) {
+    bodyEl.innerHTML = '<div style="padding:40px;text-align:center;color:#dc2626;font-size:14px">Ошибка загрузки таблицы: ' + e.message + '</div>';
+  }
+}
+
+/* ── EXCALIDRAW В МОДАЛКЕ ─────────────────────────────────────────
+   Бандл /excalidraw держит один ключ localStorage на всё приложение и id
+   заметки во втором ключе, а его собственная кнопка «Сохранить в заметку»
+   постит {id, content: JSON} — то есть затирает текст. Без связки модалка
+   вставляла ифрейм как есть: рисунок этой заметки никуда не попадал, а
+   сохранение уходило в заметку из прошлого открытия. Здесь: перед показом
+   кладём в localStorage сцену ИМЕННО этой заметки и её id, после mount
+   повторяем досылку (initialData применяется только при монтировании),
+   снимок забираем сами и пишем в поле scene — текст заметки не трогается. */
+const EX_AUTOSAVE_MS = 5000;
+const EX_DATA_KEY = 'excalidraw_infinity_data';
+const EX_NOTE_KEY = 'excalidraw_note_id';
+
+/* Тот же приём, что у таблиц: gen отменяет всё отложенное, если модалку
+   закрыли или в ней открыли другую заметку. */
+const _ex = { gen: 0, timers: [], saveTimer: 0, live: false, note: null,
+              pending: null, sig: '', hadScene: false, chain: Promise.resolve() };
+
+function exTimer(fn, ms) {
+  const gen = _ex.gen;
+  const id = setTimeout(function () {
+    const i = _ex.timers.indexOf(id);
+    if (i >= 0) _ex.timers.splice(i, 1);
+    if (gen !== _ex.gen) return;
+    fn();
+  }, ms);
+  _ex.timers.push(id);
+  return id;
+}
+
+function exReset() {
+  _ex.gen++;
+  _ex.timers.forEach(clearTimeout);
+  _ex.timers = [];
+  if (_ex.saveTimer) { clearInterval(_ex.saveTimer); _ex.saveTimer = 0; }
+  _ex.live = false; _ex.note = null; _ex.pending = null;
+  _ex.sig = ''; _ex.hadScene = false;
+}
+
+/* Ключи бандла общие на всю программу: оставляем их пустыми, иначе
+   следующая заметка в другой модалке смонтируется с этим рисунком. */
+function exLeaveCleanup() {
+  exReset();
+  try {
+    localStorage.removeItem(EX_DATA_KEY);
+    localStorage.setItem(EX_NOTE_KEY, '');
+  } catch (e) { /* localStorage уже переполнен — связка всё равно не нужна */ }
+}
+
+function exSceneOf(value) {
+  if (!value || typeof value !== 'object' || !Array.isArray(value.elements)) return null;
+  const scene = {
+    type: 'excalidraw', version: 1, elements: value.elements,
+    appState: (value.appState && typeof value.appState === 'object') ? value.appState : {}
+  };
+  if (value.files && typeof value.files === 'object') scene.files = value.files;
+  return scene;
+}
+
+/* Рисунок, записанный в текст заметки по-старому (WORKSPACE-модалка и
+   кнопка самого бандла). */
+function exSceneInText(text) {
+  if (!text || typeof text !== 'string') return null;
+  const t = text.trim();
+  if (t.charAt(0) !== '{' || t.indexOf('"excalidraw"') < 0) return null;
+  try {
+    const d = JSON.parse(t);
+    return (d && d.type === 'excalidraw' && Array.isArray(d.elements)) ? d : null;
+  } catch (e) { return null; }
+}
+
+/* Подпись снятого снимка: элементы и файлы считаются отдельно, ключи
+   файлов сортируются. dataURL в подпись не кладём — иначе автосейв каждые
+   5 с перебирал бы мегабайты base64. При вставке другой картинки Excalidraw
+   всегда выдаёт новый file-id, его достаточно. */
+function exFilesSig(files) {
+  if (!files || typeof files !== 'object') return '0';
+  const keys = Object.keys(files).sort();
+  return keys.length + '|' + keys.map(function (k) {
+    const f = files[k] || {};
+    return k + ':' + (f.mimeType || '') + ':' + String(f.dataURL || '').length;
+  }).join(',');
+}
+
+function exIframe() {
+  const f = document.getElementById('excalidrawIframe');
+  return (f && f.contentWindow) ? f : null;
+}
+
+/* Идентификатор нужен кнопке самого бандла: с ней он постит {id, content}.
+   Сообщением ставим ИМЕННО эту заметку, чтобы даже его собственный путь
+   сохранения не ушёл в чужую. */
+function exSendId() {
+  const f = exIframe();
+  if (!f || !_ex.note) return;
+  try { f.contentWindow.postMessage({ type: 'excalidraw_note_id', noteId: _ex.note.id }, '*'); }
+  catch (e) { /* ифрейм ещё не готов */ }
+}
+
+/* initialData бандл применяет только при mount, поэтому непустую сцену
+   досылаем отдельным сообщением и повторяем, пока он не ответит ею же. */
+function exPushScene() {
+  const f = exIframe();
+  if (!f || !_ex.pending) return;
+  try {
+    f.contentWindow.postMessage({
+      type: 'excalidraw_load_request',
+      data: {
+        elements: _ex.pending.elements,
+        appState: _ex.pending.appState || {},
+        files: _ex.pending.files || {}
+      }
+    }, '*');
+  } catch (e) { /* ифрейм ещё не готов */ }
+}
+
+/* Синяя кнопка «💾 Сохранить в заметку» и плашка статуса — своя панель
+   бандла поверх холста. Она дублирует наше сохранение и пишет {id, content},
+   то есть затирает текст. Прячем со стороны страницы: вендорский бандл не
+   правим, правило живёт столько же, сколько iframe. */
+function exHideChrome() {
+  let doc = null;
+  const f = document.getElementById('excalidrawIframe');
+  try { doc = f && f.contentDocument; }
+  catch (e) { return false; }              // iframe с другого источника
+  if (!doc || !doc.body) return false;
+  try {
+    if (!doc.getElementById('infinity-excalidraw-chrome')) {
+      const st = doc.createElement('style');
+      st.id = 'infinity-excalidraw-chrome';
+      st.textContent = '#root div[style*="z-index: 10000"],#root div[style*="z-index:10000"]{display:none!important}';
+      (doc.head || doc.body).appendChild(st);
+    }
+  } catch (e) { /* документ ифрейма ещё не принимает вставки */ }
+  try {
+    const btns = doc.querySelectorAll('button');
+    for (let i = 0; i < btns.length; i++) {
+      const b = btns[i];
+      if ((b.textContent || '').indexOf('Сохранить в заметку') === -1) continue;
+      b.style.display = 'none';
+      if (b.parentElement) b.parentElement.style.display = 'none';
+    }
+  } catch (e) { /* разметка бандла изменилась — оставим кнопку как есть */ }
+  return true;
+}
+
+function exSync() { exSendId(); exPushScene(); exHideChrome(); }
+
+function exRequestData(timeoutMs) {
+  return new Promise(function (resolve, reject) {
+    const f = exIframe();
+    if (!f) { reject(new Error('Excalidraw iframe не найден')); return; }
+    const gen = _ex.gen;
+    const t = setTimeout(function () {
+      window.removeEventListener('message', onMsg);
+      reject(new Error('Таймаут'));
+    }, Math.max(500, Number(timeoutMs) || 8000));
+    function onMsg(event) {
+      if (gen !== _ex.gen) return;         // снимок уже не нужен: модалка закрыта
+      const d = event.data;
+      if (d && d.type === 'excalidraw_save_response') {
+        clearTimeout(t);
+        window.removeEventListener('message', onMsg);
+        resolve(d);
+      }
+    }
+    window.addEventListener('message', onMsg);
+    try { f.contentWindow.postMessage({ type: 'excalidraw_save_request' }, '*'); }
+    catch (e) { clearTimeout(t); window.removeEventListener('message', onMsg); reject(e); }
+  });
+}
+
+/* Картинка в рисунке — dataURL на несколько мегабайт: ифрейм собирает снимок
+   не мгновенно. Правки ставятся в очередь, иначе два сохранения подряд ждут
+   один и тот же ответ бандла. */
+function exPersist(opts) {
+  const o = opts || {};
+  const run = _ex.chain.then(function () { return exPersistInner(o); },
+                             function () { return exPersistInner(o); });
+  _ex.chain = run.then(function () { return true; }, function () { return false; });
+  return run;
+}
+
+async function exPersistInner(o) {
+  if (!_ex.live || !_ex.note) return false;
+  const budget = Number(o.timeout) || 2500;
+  let data;
+  try {
+    data = await exRequestData(budget);
+  } catch (e) {
+    if (!e || e.message !== 'Таймаут') return false;
+    try { data = await exRequestData(Math.max(6000, budget * 2)); }
+    catch (e2) { return false; }
+  }
+  if (!data || !Array.isArray(data.elements)) return false;
+  const files = (data.files && typeof data.files === 'object') ? data.files : null;
+  /* Заметка была рисунком, а ифрейм ответил пустым холстом — сцена до него
+     ещё не дошла: досылаем и выходим, иначе автосейв стёр бы рисунок. */
+  if (_ex.pending && !data.elements.length) { exPushScene(); return false; }
+  if (data.elements.length) _ex.pending = null;
+  /* Пустой холст — это не «стёрли рисунок», а просто открыли режим. */
+  if (!data.elements.length && !_ex.hadScene) return false;
+  const sig = JSON.stringify(data.elements).length + ':' + data.elements.length +
+              ':' + exFilesSig(files);
+  if (sig === _ex.sig) return true;
+  const scene = { type: 'excalidraw', version: 1, elements: data.elements, appState: data.appState || {} };
+  if (files && Object.keys(files).length) scene.files = files;
+  const note = _ex.note;
+  const body = { id: note.id, scene };
+  /* JSON прежнего рисунка, лежавший в тексте, убираем той же записью: две
+     копии сцены — это две версии одного рисунка. */
+  const legacy = exSceneInText(note.content || '');
+  if (legacy) body.content = '';
+  try {
+    const r = await fetch('/api/notes/save', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      keepalive: !!o.keepalive, body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (!d || !d.ok) return false;
+  } catch (e) { return false; }
+  _ex.sig = sig;
+  _ex.hadScene = true;
+  if (legacy) note.content = '';
+  note.scene_present = true;
+  const g = getNoteGroup(note.id);
+  if (g) { g.noteMode = 'excalidraw'; updateCardDisplay(g); }
+  if (!o.silent) toast('Рисунок сохранён', 'success');
+  return true;
+}
+
+/* Монтируем ифрейм сами: сначала читаем сцену этой заметки и кладём её в
+   localStorage бандла, и только потом вставляем iframe — иначе он смонтируется
+   с чужим рисунком из последнего открытия. */
+async function exMount(note) {
+  const bodyEl = document.getElementById('modeModalBody');
+  if (!bodyEl) return;
+  exReset();
+  const gen = _ex.gen;
+  _ex.note = note;
+  bodyEl.innerHTML = '<div style="padding:40px;text-align:center;color:#6b7280;font-size:14px">Загрузка рисунка...</div>';
+  /* Список заметок сцену не приносит (в ней мегабайты картинок) — поле scene
+     читается отдельным запросом ровно для открытой заметки. */
+  let scene = null;
+  try {
+    const r = await fetch('/api/notes/get?id=' + encodeURIComponent(note.id));
+    const d = await r.json();
+    if (gen !== _ex.gen) return;
+    scene = exSceneOf(d && d.scene) || exSceneOf(exSceneInText((d && d.content) || ''));
+  } catch (e) { if (gen !== _ex.gen) return; scene = null; }
+  const hasScene = !!(scene && scene.elements.length);
+  _ex.hadScene = hasScene;
+  _ex.pending = hasScene ? scene : null;
+  try {
+    if (scene) {
+      localStorage.setItem(EX_DATA_KEY, JSON.stringify({
+        elements: scene.elements, appState: scene.appState || {}, files: scene.files || {}
+      }));
+    } else {
+      localStorage.removeItem(EX_DATA_KEY);
+    }
+    localStorage.setItem(EX_NOTE_KEY, note.id);
+  } catch (e) {
+    /* Квота: локальная копия не критична — сцена досылается сообщением, а
+       сохранение идёт нашим путём, минуя localStorage. */
+    try { localStorage.removeItem(EX_DATA_KEY); } catch (_) { }
+  }
+  bodyEl.innerHTML = '<iframe id="excalidrawIframe" src="/excalidraw" style="width:100%;height:100%;border:none"></iframe>';
+  const f = document.getElementById('excalidrawIframe');
+  /* Повторы, а не одна отправка: до готовности React сообщение терялось. */
+  if (f) f.addEventListener('load', function () { exSync(); exTimer(exSync, 600); exTimer(exSync, 2000); });
+  exTimer(exSync, 3000);
+  exTimer(exSync, 6000);
+  _ex.live = true;
+  if (!_ex.saveTimer) {
+    _ex.saveTimer = setInterval(function () {
+      if (!_ex.live || document.hidden) return;
+      exPersist({ silent: true });
+    }, EX_AUTOSAVE_MS);
+  }
+}
+
+function exFlushOnLeave() {
+  if (!_ex.live || !_ex.note) return;
+  exPersist({ silent: true, keepalive: true, timeout: 1500 }).catch(function () { });
+}
+
+function openNoteModeModal(noteId, mode) {
+  const note = getNoteFromCache(noteId);
+  if (!note) return;
+  const overlay = document.getElementById('modeModal');
+  // Close previous modal first (clean up luckysheet state)
+  if (overlay.classList.contains('open')) {
+    /* Ждём, пока закрытие донесёт последний снимок рисунка: exReset() внутри
+       монтирования новой заметки отменил бы ещё не отправленный POST, и
+       секунды рисования предыдущей заметки пропали бы. */
+    Promise.resolve(window.closeModeModal())
+      .then(function () { setTimeout(() => _openNoteModeModal(note, noteId, mode), 50); });
+    return;
+  }
+  _openNoteModeModal(note, noteId, mode);
+}
+
+function _openNoteModeModal(note, noteId, mode) {
+  const overlay = document.getElementById('modeModal');
+  const titleEl = document.getElementById('modeModalTitle');
+  const bodyEl = document.getElementById('modeModalBody');
+  overlay._noteId = noteId;
+  overlay._mode = mode;
+  if (mode === 'excalidraw') {
+    titleEl.textContent = 'Excalidraw — ' + (note.title || 'Без названия');
+    exMount(note);
+  } else if (mode === 'luckysheet') {
+    titleEl.textContent = 'Таблица — ' + (note.title || 'Без названия');
+    bodyEl.innerHTML = '<div style="padding:40px;text-align:center;color:#6b7280;font-size:14px" id="luckysheetLoading">Загрузка редактора таблиц...</div>';
+    // Load luckysheet dynamically if not present
+    if (typeof luckysheet === 'undefined') {
+      if (typeof jQuery === 'undefined') {
+        const jq = document.createElement('script');
+        jq.src = '/static/libs/jquery.min.js';
+        jq.onload = function() {
+          polyfillMousewheel();
+          loadLuckysheetScripts();
+        };
+        document.head.appendChild(jq);
+      } else {
+        polyfillMousewheel();
+        loadLuckysheetScripts();
+      }
+      function loadLuckysheetScripts() {
+        const sc2 = document.createElement('script');
+        sc2.src = '/static/luckysheet/luckysheet.umd.js';
+        sc2.onload = () => initLuckysheet(note);
+        document.head.appendChild(sc2);
+        const lnk = document.createElement('link');
+        lnk.rel = 'stylesheet'; lnk.href = '/static/luckysheet/css/luckysheet.css';
+        document.head.appendChild(lnk);
+      }
+    } else {
+      polyfillMousewheel();
+      initLuckysheet(note);
+    }
+  }
+  overlay.classList.add('open');
+}
+
+window.closeModeModal = function() {
+  const overlay = document.getElementById('modeModal');
+  const bodyEl = document.getElementById('modeModalBody');
+  const mode = overlay._mode;
+  const finish = function () {
+    bodyEl.innerHTML = '';
+    overlay._noteId = null;
+    overlay._mode = null;
+  };
+  if (mode === 'luckysheet') {
+    const noteId = overlay._noteId;
+    // Отменяем и не начавшийся create, и отложенный автосейв: снимок ниже —
+    // финальный, повторять его не нужно.
+    lsReset();
+    if (_ls.live && noteId) {
+      const content = lsCollect();
+      if (content != null) lsPersist(content, true);
+    }
+    lsDestroy();
+    _ls.note = null;
+    _ls.dirty = false;
+    overlay.classList.remove('open');
+    finish();
+    return Promise.resolve();
+  }
+  if (mode === 'excalidraw') {
+    overlay.classList.remove('open');
+    /* Ифрейм живёт до ответа бандла: очистить body сразу — значит оставить
+       последний снимок несобранным и потерять секунды рисования. */
+    const settled = exPersist({ silent: true, timeout: 4000 }).catch(function () { return false; });
+    settled.then(function () { exLeaveCleanup(); finish(); });
+    /* Страховка на случай, если бандл не ответит совсем: держать iframe в DOM
+       бесконечно нельзя. gen вырастет в exLeaveCleanup, и гонка с ответом
+       закончится одна из двух. */
+    exTimer(function () { exLeaveCleanup(); finish(); }, 9000);
+    return settled;
+  }
+  overlay.classList.remove('open');
+  finish();
+  return Promise.resolve();
+};
+
+window.addEventListener('pagehide', lsFlushOnLeave);
+window.addEventListener('pagehide', exFlushOnLeave);
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState !== 'hidden') return;
+  lsFlushOnLeave();
+  /* Рисунок просит снимок у бандла, а он отвечает сообщением: на уходе
+   страницы успевает только быстрый заход, keepalive донесёт сам POST. */
+  exFlushOnLeave();
+});
+/* Мерки canvas берутся в момент create: после перетягивания окна таблица
+   оставалась со старыми размерами и рисовала пустые поля справа и снизу. */
+window.addEventListener('resize', function () {
+  if (!_ls.live) return;
+  try { if (typeof luckysheet !== 'undefined' && typeof luckysheet.resize === 'function') luckysheet.resize(); } catch (e) { /* пересчёт не критичен */ }
+});
+
+// === Data state ===
+const params = new URLSearchParams(location.search);
+const FOLDER = params.get('folder') || 'inbox';
+const CANVAS_KEY = 'ws_canvas_' + FOLDER;
+const POS_KEY = 'ws_positions_' + FOLDER;
+const STORAGE_KEY = 'ws_state_' + FOLDER;
+
+// Explicit per-note window positions (decoupled from Fabric group serialization)
+let notePositions = {};
+try { notePositions = JSON.parse(localStorage.getItem(POS_KEY) || '{}') || {}; } catch (e) { notePositions = {}; }
+function saveNotePositions() {
+  try { localStorage.setItem(POS_KEY, JSON.stringify(notePositions)); } catch (e) { /* ignore */ }
+}
+function collectNotePositions() {
+  if (!canvas) return;
+  canvas.forEachObject(obj => {
+    if (obj && obj.noteId) {
+      notePositions[obj.noteId] = { left: obj.left, top: obj.top, scaleX: obj.scaleX, scaleY: obj.scaleY, noteMode: obj.noteMode };
+    }
+  });
+  saveNotePositions();
+}
+
+let notesCache = [];
+let isLoading = true;
+
+// === Helpers ===
+function escHtml(t) {
+  if (!t) return '';
+  const d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
+}
+
+function truncate(str, maxLen) {
+  if (!str) return 'Без названия';
+  if (str.length <= maxLen) return str;
+  return str.substring(0, maxLen - 1) + '\u2026';
+}
+
+function toast(msg, type) {
+  type = type || 'info';
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+  el.innerHTML = '<i class="fa-solid ' + (icons[type] || icons.info) + '"></i><span>' + escHtml(msg) + '</span>';
+  el.onclick = () => el.remove();
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(100%)'; setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+function showLoading(show) {
+  const ls = document.getElementById('loadingScreen');
+  if (ls) ls.style.display = show ? 'flex' : 'none';
+  isLoading = show;
+}
+
+// === API ===
+async function loadNotes() {
+  try {
+    console.log('[WS] loadNotes: folder=', FOLDER);
+    const r = await fetch('/api/workspace/notes?folder=' + encodeURIComponent(FOLDER));
+    const d = await r.json();
+    console.log('[WS] loadNotes: response articles=', d.articles ? d.articles.length : 0);
+    notesCache = d.articles || [];
+    return notesCache;
+  } catch (e) {
+    console.error('Load notes error:', e);
+    return [];
+  }
+}
+
+async function loadWorkspaceState() {
+  try {
+    const r = await fetch('/api/workspace/state?folder=' + encodeURIComponent(FOLDER));
+    return await r.json();
+  } catch (e) {
+    return { folder: FOLDER, updated: 0, note_windows: {} };
+  }
+}
+
+async function saveWorkspaceState(data) {
+  try {
+    await fetch('/api/workspace/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch (e) {
+    console.error('Save workspace error:', e);
+  }
+}
+
+async function queryAI(query) {
+  try {
+    const r = await fetch('/api/workspace/ai-query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder: FOLDER, query })
+    });
+    return await r.json();
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+// === Detail Panel ===
+window.openNoteDetail = async function(noteId) {
+  const panel = document.getElementById('detailPanel');
+  if (!panel) return;
+
+  const note = notesCache.find(n => n.id === noteId);
+  if (!note) return;
+
+  panel.querySelector('.detail-header h3').innerHTML = '<i class="fa-solid fa-note-sticky"></i> ' + escHtml(note.title);
+  const body = panel.querySelector('.detail-body');
+
+  const tags = (note.tags || []).map(t => '<span style="background:var(--bg3);padding:2px 10px;border-radius:12px;font-size:11px">#' + escHtml(t) + '</span>').join('');
+
+  let attHtml = '';
+  if (note.attachments && note.attachments.length) {
+    attHtml = '<div class="attachments"><h4><i class="fa-solid fa-paperclip"></i> Вложения (' + note.attachments.length + ')</h4><div class="att-grid">';
+    note.attachments.forEach(a => {
+      if (a.is_image) {
+        attHtml += '<div class="att-item"><img src="' + a.url + '" alt="' + escHtml(a.filename) + '" onclick="window.open(\'' + a.url + '\',\'_blank\')"></div>';
+      } else {
+        attHtml += '<div class="att-item" onclick="window.open(\'' + a.url + '\',\'_blank\')"><i class="fa-solid ' + (a.ext === '.pdf' ? 'fa-file-pdf' : a.ext === '.zip'||a.ext === '.rar' ? 'fa-file-zipper' : 'fa-file') + '"></i></div>';
+      }
+    });
+    attHtml += '</div></div>';
+  }
+
+  const content = (note.content || '').replace(/</g, '<').replace(/>/g, '>').replace(/\n/g, '<br>');
+  body.innerHTML = '\
+    <div class="note-title">' + escHtml(note.title) + '</div>\
+    <div class="note-meta">\
+      <span><i class="fa-solid fa-folder"></i> ' + escHtml(note.folder) + '</span>\
+      <span><i class="fa-regular fa-clock"></i> ' + fmtDate(note.updated) + '</span>\
+      ' + tags + '\
+      <span><i class="fa-solid fa-code"></i> ' + note.mode + '</span>\
+    </div>\
+    <div class="note-content">' + content + '</div>\
+    ' + attHtml + '\
+  ';
+
+  panel.querySelector('.detail-footer .primary').onclick = () => { window.location.href = '/notes/edit?id=' + note.id; };
+  panel.classList.add('open');
+};
+
+window.closeDetailPanel = function() {
+  const panel = document.getElementById('detailPanel');
+  if (panel) panel.classList.remove('open');
+};
+
+function fmtDate(ts) {
+  if (!ts) return '';
+  const d = new Date(ts * 1000);
+  return d.toLocaleDateString('ru', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// === Chat ===
+let chatMessages = [];
+
+function addChatMessage(role, text) {
+  chatMessages.push({ role, text });
+  renderChat();
+}
+
+function renderChat() {
+  const container = document.getElementById('chatMessages');
+  if (!container) return;
+  container.innerHTML = chatMessages.map(m => {
+    if (m.role === 'system') {
+      return '<div class="chat-msg system">' + escHtml(m.text) + '</div>';
+    }
+    const aiClass = m.role === 'user' ? 'user' : 'ai';
+    const icon = m.role === 'user' ? 'fa-user' : 'fa-brain';
+    if (m.loading) {
+      return '<div class="chat-msg ai"><div class="typing"><span></span><span></span><span></span></div></div>';
+    }
+    return '<div class="chat-msg ' + aiClass + '"><i class="fa-solid ' + icon + '" style="margin-right:6px;font-size:11px"></i>' + escHtml(m.text).replace(/\n/g, '<br>') + '</div>';
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendChatMessage(text) {
+  if (!text) {
+    const input = document.getElementById('chatPanelInput');
+    text = input ? input.value.trim() : '';
+    if (!text) return;
+    if (input) input.value = '';
+  }
+  addChatMessage('user', text);
+
+  const loadingIdx = chatMessages.push({ role: 'ai', text: '', loading: true }) - 1;
+  renderChat();
+
+  const result = await queryAI(text);
+  chatMessages[loadingIdx] = { role: 'ai', text: result.response || result.error || 'Ошибка запроса', loading: false };
+  renderChat();
+
+  document.getElementById('chatPanel').classList.add('open');
+}
+
+function toggleChat() {
+  const panel = document.getElementById('chatPanel');
+  if (!panel.classList.contains('open') && chatMessages.length === 0) {
+    addChatMessage('system', 'Задайте вопрос по всем заметкам в этой рабочей области. AI проанализирует их содержимое и даст ответ.');
+  }
+  panel.classList.toggle('open');
+}
+
+function toggleChatPanel() {
+  document.getElementById('chatPanel').classList.remove('open');
+}
+
+function sendChatMessagePanel() {
+  const input = document.getElementById('chatPanelInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  document.getElementById('chatInput').value = '';
+  sendChatMessage(text);
+}
+
+// === Create Note ===
+async function createNoteInWorkspace() {
+  const input = document.getElementById('newNoteInput');
+  const title = input.value.trim();
+  if (!title) {
+    toast('Введите название заметки', 'warning');
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/notes/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, content: '', folder: FOLDER })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      input.value = '';
+      toast('Заметка создана', 'success');
+      const notes = await loadNotes();
+      const el = document.getElementById('noteCountDisplay');
+      if (el) el.textContent = notes.length + ' зам.';
+      // Add white note card to canvas
+      if (canvas && d.id) {
+        const note = notesCache.find(n => n.id === d.id) || { id: d.id, title: title };
+        const existingIds = new Set();
+        canvas.forEachObject(obj => { if (obj.noteId) existingIds.add(obj.noteId); });
+        if (!existingIds.has(note.id)) {
+          const CW = 320, CH = 200, PAD = 14;
+          const NT = wsThemeColors();
+          const cx = 80, cy = 80, gx = cx + CW/2, gy = cy + CH/2, titleW = CW - PAD * 2 - 44;
+          const bg = new fabric.Rect({ left: gx + CW/2, top: gy + CH/2, width: CW, height: CH,
+            fill: NT.card, rx: 10, ry: 10, stroke: NT.border, strokeWidth: 1,
+            shadow: new fabric.Shadow({ color: NT.shadow, blur: 16, offsetX: 0, offsetY: 4 })});
+          const hdr = new fabric.Rect({ left: gx + CW/2, top: gy + 2, width: CW, height: 4, fill: NT.accent, rx: 2, ry: 2 });
+          const ttl = new fabric.Textbox(truncate(note.title, 40), {
+            left: gx + PAD + titleW/2, top: gy + 18 + 13*1.2/2, fontSize: 13, fontWeight: 700,
+            fontFamily: "'Inter', sans-serif", fill: NT.text,
+            width: titleW, splitByGrapheme: false,
+            lineHeight: 1.2, overflow: 'hidden' });
+          const badgeBg = new fabric.Rect({ left: gx + CW - PAD - 17, top: gy + 18 + 10, width: 34, height: 20, rx: 10, ry: 10, fill: NT.accentSoft });
+          const badgeTxt = new fabric.Text('MD', { left: gx + CW - PAD - 17, top: gy + 18 + 10, fontSize: 9, fontWeight: 700, fontFamily: "'Inter', sans-serif", fill: NT.accent, originX: 'center' });
+          const dispTop = 44;
+          const dispW = CW - PAD * 2, dispH = CH - dispTop - PAD;
+          const disp = new fabric.Textbox('', {
+            left: gx + PAD + dispW/2, top: gy + dispTop + dispH/2, fontSize: 11, lineHeight: 1.6,
+            fontFamily: "'Inter', sans-serif", fill: NT.dim, width: dispW, height: dispH, splitByGrapheme: false, selectable: false, overflow: 'hidden' });
+          const g = new fabric.Group([bg, hdr, ttl, badgeBg, badgeTxt, disp], {
+            left: gx, top: gy, noteId: note.id, noteMode: 'markdown',
+            selectable: true, hasControls: true });
+          canvas.add(g);
+          notePositions[note.id] = { left: g.left, top: g.top, scaleX: g.scaleX, scaleY: g.scaleY, noteMode: 'markdown' };
+          saveNotePositions();
+          canvas.requestRenderAll(); snapCanvas();
+        }
+      }
+    } else {
+      toast('Ошибка: ' + (d.error || 'Unknown'), 'error');
+    }
+  } catch (e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+// === Main App ===
+function App() {
+  const [folderName, setFolderName] = React.useState(FOLDER);
+  const [noteCount, setNoteCount] = React.useState(0);
+  const [bottomBarPos, setBottomBarPos] = React.useState(
+    localStorage.getItem('ws_bottom_pos') || 'bottom'
+  );
+
+  React.useEffect(() => {
+    async function init() {
+      try {
+        const [notes, state] = await Promise.all([loadNotes(), loadWorkspaceState()]);
+        // Server-side positions are a fallback when localStorage has no entry for a note
+        if (state && state.note_windows) {
+          for (const id in state.note_windows) {
+            if (!notePositions[id]) notePositions[id] = state.note_windows[id];
+          }
+          saveNotePositions();
+        }
+        console.log('[WS] init: notes loaded, count=', notes.length);
+        setNoteCount(notes.length);
+        try {
+          const r = await fetch('/api/notes/tree');
+          const d = await r.json();
+          if (d.tree) {
+            function findFolder(nodes, id) {
+              for (const n of nodes) {
+                if (n.id === id) return n.name || n.id;
+                if (n.children) { const r = findFolder(n.children, id); if (r) return r; }
+              }
+              return null;
+            }
+            const name = findFolder(d.tree, FOLDER) || FOLDER;
+            setFolderName(name);
+          }
+        } catch(e) {}
+        notesReady = true; checkRenderNotes();
+      } catch(e) {
+        notesReady = true; checkRenderNotes();
+      }
+    }
+    init();
+  }, []);
+
+  React.useEffect(() => {
+    console.log('[WS] initFabricCanvas effect fired');
+    initFabricCanvas();
+    showLoading(false);
+  }, []);
+
+  // Auto-save workspace state periodically
+  React.useEffect(() => {
+    const timer = setInterval(async () => {
+      try {
+        collectNotePositions();
+        const canvasData = localStorage.getItem(CANVAS_KEY);
+        const data = {
+          folder: FOLDER,
+          canvas_data: canvasData,
+          updated: Date.now() / 1000,
+          note_windows: notePositions,
+        };
+        await saveWorkspaceState(data);
+        const ind = document.getElementById('saveIndicator');
+        if (ind) { ind.textContent = 'Сохранено'; ind.style.opacity = '1'; setTimeout(() => ind.style.opacity = '0', 2000); }
+      } catch(e) {}
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return React.createElement(React.Fragment, null,
+    // Top bar
+    React.createElement('div', { className: 'top-bar', style: { position: 'fixed' } },
+      React.createElement('a', { className: 'back-link', href: '/notes' },
+        React.createElement('i', { className: 'fa-solid fa-arrow-left' }),
+        'Назад'
+      ),
+      React.createElement('div', { className: 'sep' }),
+      React.createElement('div', { className: 'title' },
+        React.createElement('i', { className: 'fa-solid fa-border-all' }),
+        folderName,
+        React.createElement('span', { id: 'noteCountDisplay', className: 'note-count' }, noteCount + ' зам.')
+      ),
+      React.createElement('div', { className: 'sep' }),
+      React.createElement('span', { id: 'saveIndicator', className: 'save-ind' }, ''),
+      React.createElement('div', { className: 'sep' }),
+      React.createElement('button', { className: 'btn', onClick: () => toggleChat(), title: 'AI чат' },
+        React.createElement('i', { className: 'fa-solid fa-brain' }),
+        'AI чат'
+      ),
+      React.createElement('button', { className: 'btn', onClick: () => refreshNotesCanvas(), title: 'Обновить заметки' },
+        React.createElement('i', { className: 'fa-solid fa-rotate' })
+      )
+    ),
+
+    // Bottom bar
+    React.createElement('div', { className: 'bottom-bar' + (bottomBarPos !== 'bottom' ? ' pos-' + bottomBarPos : '') },
+      React.createElement('div', { className: 'input-wrap', style: { flex: 1 } },
+        React.createElement('textarea', {
+          id: 'newNoteInput',
+          placeholder: 'Новая заметка...',
+          rows: '2',
+          style: { border: 'none', background: 'none', outline: 'none', fontSize: '13px', color: 'var(--text)', fontFamily: 'inherit', width: '100%', resize: 'vertical', minHeight: '40px', maxHeight: '200px', lineHeight: '1.5' },
+          onKeyDown: (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createNoteInWorkspace(); } }
+        }),
+        React.createElement('div', { className: 'input-actions' },
+          React.createElement('div', { className: 'pos-toggle' },
+            React.createElement('button', {
+              onClick: () => { setBottomBarPos('bottom'); localStorage.setItem('ws_bottom_pos', 'bottom'); },
+              className: bottomBarPos === 'bottom' ? 'active' : '',
+              title: 'Снизу'
+            }, React.createElement('i', { className: 'fa-solid fa-arrow-down' })),
+            React.createElement('button', {
+              onClick: () => { setBottomBarPos('left'); localStorage.setItem('ws_bottom_pos', 'left'); },
+              className: bottomBarPos === 'left' ? 'active' : '',
+              title: 'Слева'
+            }, React.createElement('i', { className: 'fa-solid fa-arrow-left' })),
+            React.createElement('button', {
+              onClick: () => { setBottomBarPos('right'); localStorage.setItem('ws_bottom_pos', 'right'); },
+              className: bottomBarPos === 'right' ? 'active' : '',
+              title: 'Справа'
+            }, React.createElement('i', { className: 'fa-solid fa-arrow-right' }))
+          ),
+          React.createElement('button', {
+            className: 'btn primary',
+            style: { padding: '4px 12px', fontSize: '12px' },
+            onClick: createNoteInWorkspace
+          },
+            React.createElement('i', { className: 'fa-solid fa-plus' }),
+            'Создать'
+          )
+        )
+      )
+    ),
+
+    // Chat panel (static HTML, not in React — prevents DOM conflicts with renderChat)
+    React.createElement('div', { id: 'chatPanel', className: 'chat-panel' },
+      React.createElement('div', { className: 'chat-panel-header' },
+        React.createElement('i', { className: 'fa-solid fa-brain' }),
+        'AI чат — ' + folderName,
+        React.createElement('button', { onClick: () => toggleChatPanel() },
+          React.createElement('i', { className: 'fa-solid fa-xmark' })
+        )
+      ),
+      React.createElement('div', { id: 'chatMessages', className: 'chat-messages' }),
+      React.createElement('div', { className: 'chat-panel-input' },
+        React.createElement('textarea', {
+          id: 'chatPanelInput',
+          placeholder: 'Спросить AI... (Enter для отправки)',
+          rows: 2,
+          onKeyDown: (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessagePanel(); }
+          }
+        }),
+        React.createElement('button', { className: 'btn primary', onClick: sendChatMessagePanel },
+          React.createElement('i', { className: 'fa-solid fa-paper-plane' })
+        )
+      )
+    ),
+
+    // Detail panel
+    React.createElement('div', { id: 'detailPanel', className: 'detail-panel' },
+      React.createElement('div', { className: 'detail-header' },
+        React.createElement('h3', null, React.createElement('i', { className: 'fa-solid fa-note-sticky' }), 'Заметка'),
+        React.createElement('button', { onClick: () => window.closeDetailPanel() },
+          React.createElement('i', { className: 'fa-solid fa-xmark' })
+        )
+      ),
+      React.createElement('div', { className: 'detail-body' },
+        React.createElement('div', { style: { textAlign: 'center', padding: '40px', color: 'var(--text3)' } },
+          React.createElement('i', { className: 'fa-solid fa-note-sticky', style: { fontSize: '32px', opacity: 0.5, marginBottom: '12px', display: 'block' } }),
+          'Выберите заметку на холсте чтобы просмотреть'
+        )
+      ),
+      React.createElement('div', { className: 'detail-footer' },
+        React.createElement('button', { className: 'primary', onClick: () => {} },
+          React.createElement('i', { className: 'fa-solid fa-external-link-alt' }),
+          'Открыть в редакторе'
+        )
+      )
+    ),
+
+    // Welcome hint
+    React.createElement('div', { id: 'welcomeHint', className: 'welcome-hint' },
+      React.createElement('i', { className: 'fa-solid fa-lightbulb' }),
+      'Инструменты слева, AI чат внизу, правая кнопка — меню заметки',
+      React.createElement('button', {
+        title: 'Скрыть подсказку',
+        onClick: (e) => {
+          const box = e.target.closest('div');
+          box.style.opacity = '0';
+          setTimeout(() => box.remove(), 600);
+        }
+      }, React.createElement('i', { className: 'fa-solid fa-xmark' }))
+    )
+  );
+}
+
+// === Mount ===
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(App));
+</script>
+</body>
+</html>

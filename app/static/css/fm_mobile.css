@@ -1,0 +1,164 @@
+/* =====================================================================
+   Infinity Search — мобильный файлового менеджер: поверх mobile_shell.css
+   ---------------------------------------------------------------------
+   file_manager.css в мобильном шаблоне подключён ТОЛЬКО ради классов
+   модалок (fm-modal/fm-input/fm-btn ...). Здесь обнуляется desktop-
+   раскладка, которую тот задаёт на уровне body/html/контейнеров, и
+   добавляются мобильные детали (плитки, drawer, viewer).
+   Правила не в @media: файл грузится только мобильным шаблоном.
+   ===================================================================== */
+
+/* desktop-скелет не должен тянуть за собой ниши: body управляется shell */
+body.fm-mobile {
+  overflow: hidden;
+}
+.fm-container, .fm-titlebar, .fm-address-row, .fm-ribbon,
+.fm-main-desktop { display: none !important; }
+
+/* fm-file-list в file_manager.css — flex-панель desktop-грида */
+.fm-file-list {
+  flex: none;
+  width: auto;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+  padding: 0;
+  background: transparent;
+}
+.mh-main { position: relative; }
+
+/* индикаторы буфера (классы ставит renderClipboardIndicators) */
+.fm-file-list .mh-row.in-clipboard .mh-row-name,
+.fm-file-list .mh-cell.in-clipboard .mh-cell-name {
+  opacity: .55;
+}
+.fm-file-list .mh-row.clipboard-cut .mh-row-ico,
+.fm-file-list .mh-cell.clipboard-cut .mh-cell-ico {
+  outline: 1.5px dashed var(--m-accent);
+  outline-offset: -1px;
+}
+
+/* скрытый desktop-каркас не участвует в раскладке */
+#fmTree, #previewPanel { display: none !important; }
+
+/* прогресс-полоса (shell) */
+.mh-progress { order: -1; }
+
+/* ================= плитки действий в листах ================= */
+.mh-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
+  gap: 6px;
+  padding: 4px 2px 10px;
+}
+.mh-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 4px;
+  border: 1px solid var(--m-border);
+  border-radius: var(--m-radius-sm);
+  background: var(--m-bg3);
+  color: var(--m-text);
+  font-size: 10px;
+  cursor: pointer;
+}
+.mh-tile i { font-size: 15px; color: var(--m-accent); }
+.mh-tile:active { transform: scale(.96); }
+
+/* ================= drawer-дерево внутри sheet ================= */
+.mh-tree-clone { background: transparent; }
+.mh-tree-clone .fm-drive-item { padding: 10px 8px; }
+.mh-tree-clone .fm-tree-item { padding: 10px 8px; min-height: 40px; }
+
+/* ================= модалки FM на мобильном ================= */
+/* FM showModal строит .fm-modal-overlay c inline display:flex — делаем
+   их полноэкранными bottom-листами: ширину/высоту desktop-классов
+   (.fm-modal/.fm-modal-*) перебиваем здесь. */
+body.fm-mobile .fm-modal-overlay {
+  align-items: flex-end;
+  padding: 0;
+  background: rgba(0, 0, 0, .55);
+}
+body.fm-mobile .fm-modal,
+body.fm-mobile .fm-modal.sm,
+body.fm-mobile .fm-modal.md,
+body.fm-mobile .fm-modal.lg,
+body.fm-mobile .fm-modal-xl,
+body.fm-mobile .fm-modal-full {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 88dvh !important;
+  margin: 0 !important;
+  border-radius: 16px 16px 0 0;
+  border-left: 1px solid var(--m-border);
+  border-right: 1px solid var(--m-border);
+  border-top: 1px solid var(--m-border);
+  display: flex;
+  flex-direction: column;
+}
+body.fm-mobile .fm-modal-header {
+  flex: 0 0 auto;
+  padding: 12px 14px 8px;
+}
+body.fm-mobile .fm-modal-header h3 { font-size: 15px; margin: 0; }
+body.fm-mobile .fm-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 12px 16px;
+}
+body.fm-mobile .fm-modal-body input[type="text"],
+body.fm-mobile .fm-modal-body input[type="number"],
+body.fm-mobile .fm-modal-body input[type="search"],
+body.fm-mobile .fm-modal-body select,
+body.fm-mobile .fm-modal-body textarea {
+  font-size: 16px; /* против авто-zoom на iOS */
+}
+body.fm-mobile .fm-btn { min-height: 40px; padding: 9px 14px; }
+
+/* полноэкранный просмотрщик/редактор — во всю высоту */
+body.fm-mobile #fullscreenModal { align-items: stretch; }
+body.fm-mobile #fullscreenModal .fm-modal,
+body.fm-mobile #fullscreenModal .fm-modal-full {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  border-radius: 0;
+  border: none;
+}
+body.fm-mobile #fullscreenBody {
+  padding: 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+body.fm-mobile #fullscreenBody img,
+body.fm-mobile #fullscreenBody video { max-width: 100%; }
+body.fm-mobile #fullscreenBody iframe { width: 100%; }
+
+/* уведомления desktop-версии на мобильном не нужны (есть тосты) */
+body.fm-mobile .fm-notification { display: none !important; }
+
+/* контекстное меню desktop-разметки на мобильном не показываем */
+body.fm-mobile .fm-context-menu { display: none !important; }
+
+/* WinBox (если вдруг откроется из перенесённого кода) — во весь экран */
+body.fm-mobile .winbox { width: 100dvw !important; height: 100dvh !important;
+  left: 0 !important; top: 0 !important; border-radius: 0 !important; }
+
+/* ================= терминал FM ================= */
+body.fm-mobile #fmTerminal { max-height: 44dvh; font-size: 12px; }
+body.fm-mobile #fmTerminalInput { font-size: 15px; }
+
+/* ================= safe-области ================= */
+.mh-fab { bottom: calc(var(--m-bar-h) + 14px + var(--m-safe-bottom)); }
+.mh-toast-host { bottom: calc(var(--m-bar-h) + 12px); }
+
+/* узкие экраны: плитки в 3 колонки */
+@media (max-width: 360px) {
+  .mh-tiles { grid-template-columns: repeat(3, 1fr); }
+}

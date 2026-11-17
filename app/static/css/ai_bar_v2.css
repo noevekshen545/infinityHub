@@ -1,0 +1,318 @@
+/* ============================================================================
+   Мини-приложение Shift+Space — оформление v2.
+   ----------------------------------------------------------------------------
+   Подключается последним, поэтому перекрывает ai_bar.css. Меняются только
+   внешние свойства (фон, радиусы, тени, отступы, состояния) — разметка и
+   логика ai_bar.js остаются прежними. Скоуп — html.aibar-solo, чтобы не
+   затронуть встроенный чат админки и оверлей рабочего стола.
+   ========================================================================== */
+
+html.aibar-solo {
+  --ab-accent: var(--accent, #6366f1);
+  --ab-accent-2: #a855f7;
+  --ab-accent-3: #22d3ee;
+  --ab-radius: 22px;
+  --ab-radius-sm: 12px;
+  --ab-text: #141821;
+  --ab-muted: #687080;
+  --ab-bg: linear-gradient(155deg, rgba(255, 255, 255, .97) 0%, rgba(246, 248, 253, .95) 55%, rgba(241, 244, 252, .96) 100%);
+  --ab-card: rgba(255, 255, 255, .82);
+  --ab-field: rgba(241, 243, 249, .9);
+  --ab-border: rgba(255, 255, 255, .72);
+  --ab-line: rgba(19, 25, 38, .09);
+  --ab-line-strong: rgba(19, 25, 38, .14);
+  --ab-shadow: 0 30px 90px rgba(9, 14, 28, .38), 0 8px 24px rgba(9, 14, 28, .16);
+  --ab-inset: inset 0 1px 0 rgba(255, 255, 255, .95);
+}
+
+html.aibar-solo[data-theme="dark"],
+html.aibar-solo.dark,
+html.aibar-solo[data-theme="midnight"] {
+  --ab-text: #e9edf5;
+  --ab-muted: #98a1b3;
+  --ab-bg: linear-gradient(155deg, rgba(27, 31, 42, .97) 0%, rgba(19, 22, 31, .96) 60%, rgba(16, 18, 26, .97) 100%);
+  --ab-card: rgba(38, 43, 58, .72);
+  --ab-field: rgba(13, 16, 24, .62);
+  --ab-border: rgba(255, 255, 255, .10);
+  --ab-line: rgba(255, 255, 255, .08);
+  --ab-line-strong: rgba(255, 255, 255, .16);
+  --ab-shadow: 0 30px 100px rgba(0, 0, 0, .62), 0 8px 26px rgba(0, 0, 0, .38);
+  --ab-inset: inset 0 1px 0 rgba(255, 255, 255, .08);
+}
+
+/* ---------- Панель ввода ---------- */
+html.aibar-solo .aibar-panel {
+  width: 660px;
+  max-width: calc(100vw - 28px);
+  background: var(--ab-bg);
+  border: 1px solid var(--ab-border);
+  border-radius: var(--ab-radius);
+  box-shadow: var(--ab-shadow), var(--ab-inset);
+  backdrop-filter: blur(26px) saturate(165%);
+  -webkit-backdrop-filter: blur(26px) saturate(165%);
+  overflow: hidden;
+}
+html.aibar-solo .aibar-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--ab-accent), var(--ab-accent-2) 55%, var(--ab-accent-3));
+  opacity: .9;
+}
+html.aibar-solo .aibar-panel .aibar-input-row {
+  gap: 14px;
+  padding: 18px 20px 14px;
+}
+html.aibar-solo .aibar-panel .aibar-input-row > i {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  font-size: 16px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--ab-accent), var(--ab-accent-2));
+  box-shadow: 0 8px 22px rgba(99, 102, 241, .38);
+}
+html.aibar-solo .aibar-panel .aibar-input {
+  font-size: 16.5px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+  color: var(--ab-text);
+  padding: 2px 0;
+}
+html.aibar-solo .aibar-panel .aibar-input::placeholder { color: var(--ab-muted); }
+html.aibar-solo .aibar-panel .aibar-hint {
+  padding: 12px 20px 14px;
+  border-top: 1px solid var(--ab-line);
+  color: var(--ab-muted);
+}
+html.aibar-solo .aibar-hint kbd {
+  background: var(--ab-field);
+  border: 1px solid var(--ab-line-strong);
+  border-radius: 6px;
+  padding: 2px 6px;
+  color: var(--ab-text);
+  box-shadow: 0 1px 0 var(--ab-line);
+}
+html.aibar-solo .aibar-tool {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  color: var(--ab-muted);
+}
+html.aibar-solo .aibar-tool:hover {
+  background: var(--ab-field);
+  color: var(--ab-text);
+}
+
+/* ---------- Тред: окно целиком, без «плавающей карточки» ---------- */
+html.aibar-solo .aibar-thread {
+  top: 8px;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  transform: none;
+  background: var(--ab-bg);
+  border: 1px solid var(--ab-border);
+  border-radius: var(--ab-radius);
+  box-shadow: var(--ab-shadow), var(--ab-inset);
+  backdrop-filter: blur(26px) saturate(165%);
+  -webkit-backdrop-filter: blur(26px) saturate(165%);
+}
+html.aibar-solo .aibar-thread::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  z-index: 3;
+  background: linear-gradient(90deg, var(--ab-accent), var(--ab-accent-2) 55%, var(--ab-accent-3));
+  opacity: .9;
+  pointer-events: none;
+}
+
+/* ---------- Шапка: единый сегмент кнопок ---------- */
+html.aibar-solo .aibar-thread-head {
+  position: relative;
+  gap: 4px;
+  padding: 11px 12px 10px;
+  background: transparent;
+  border-bottom: 1px solid var(--ab-line);
+  color: var(--ab-muted);
+}
+html.aibar-solo .aibar-thread-head .spacer {
+  flex: 1;
+  min-width: 8px;
+}
+html.aibar-solo .aibar-iconbtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  color: var(--ab-muted);
+  font-size: 14px;
+  transition: background .16s ease, color .16s ease, transform .16s ease;
+}
+html.aibar-solo .aibar-iconbtn:hover {
+  background: var(--ab-field);
+  color: var(--ab-text);
+  transform: translateY(-1px);
+}
+html.aibar-solo .aibar-iconbtn.active,
+html.aibar-solo .aibar-iconbtn.on {
+  color: #fff;
+  background: linear-gradient(135deg, var(--ab-accent), var(--ab-accent-2));
+  box-shadow: 0 6px 16px rgba(99, 102, 241, .34);
+}
+html.aibar-solo .aibar-iconbtn:active { transform: scale(.94); }
+/* Последние кнопки (очистить/закрыть) — спокойнее остальных */
+html.aibar-solo .aibar-thread-head #aibarClose:hover {
+  background: rgba(214, 69, 69, .14);
+  color: #d64545;
+}
+
+/* ---------- Полоса диалогов ---------- */
+html.aibar-solo .aibar-sessions {
+  background: transparent;
+  border-bottom: 1px solid var(--ab-line);
+  padding: 7px 12px;
+  gap: 6px;
+}
+html.aibar-solo .aibar-session-chip {
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--ab-line-strong);
+  background: transparent;
+  color: var(--ab-muted);
+  font-size: 11.5px;
+  transition: background .15s, color .15s, border-color .15s;
+}
+html.aibar-solo .aibar-session-chip:hover {
+  background: var(--ab-field);
+  color: var(--ab-text);
+}
+html.aibar-solo .aibar-session-chip.on {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--ab-accent), var(--ab-accent-2));
+  box-shadow: 0 4px 12px rgba(99, 102, 241, .3);
+}
+html.aibar-solo .aibar-session-x:hover {
+  background: rgba(214, 69, 69, .14);
+  color: #d64545;
+}
+
+/* ---------- Лента сообщений ---------- */
+html.aibar-solo .aibar-log {
+  padding: 18px 18px 10px;
+  gap: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ab-line-strong) transparent;
+}
+html.aibar-solo .aibar-msg {
+  font-size: 13.8px;
+  line-height: 1.62;
+  letter-spacing: -.005em;
+}
+html.aibar-solo .aibar-msg.user {
+  max-width: 84%;
+  padding: 10px 14px;
+  border-radius: 18px 18px 6px 18px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--ab-accent), var(--ab-accent-2));
+  box-shadow: 0 8px 22px rgba(99, 102, 241, .28);
+}
+html.aibar-solo .aibar-msg.agent {
+  max-width: 94%;
+  padding: 12px 15px;
+  border-radius: 18px 18px 18px 6px;
+  color: var(--ab-text);
+  background: var(--ab-card);
+  border: 1px solid var(--ab-line);
+  box-shadow: 0 6px 18px rgba(9, 14, 28, .08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+html.aibar-solo .aibar-msg.agent code {
+  background: var(--ab-field);
+  border: 1px solid var(--ab-line);
+  border-radius: 6px;
+  padding: 1px 5px;
+}
+html.aibar-solo .aibar-msg.agent pre {
+  background: var(--ab-field);
+  border: 1px solid var(--ab-line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  overflow-x: auto;
+}
+html.aibar-solo .aibar-empty {
+  color: var(--ab-muted);
+  font-size: 13.5px;
+  max-width: 320px;
+  line-height: 1.65;
+}
+html.aibar-solo .aibar-log::-webkit-scrollbar { width: 8px; }
+html.aibar-solo .aibar-log::-webkit-scrollbar-thumb {
+  background: var(--ab-line-strong);
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* ---------- Поле ответа ---------- */
+html.aibar-solo .aibar-thread-foot {
+  background: transparent;
+  border-top: 1px solid var(--ab-line);
+  padding-bottom: 2px;
+}
+html.aibar-solo .aibar-thread-foot .aibar-input-row {
+  gap: 10px;
+  padding: 12px 14px 10px;
+}
+html.aibar-solo .aibar-thread-foot .aibar-input-row > i { color: var(--ab-accent); }
+html.aibar-solo .aibar-thread-foot .aibar-input {
+  background: var(--ab-field);
+  border: 1px solid var(--ab-line);
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--ab-text);
+  transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+html.aibar-solo .aibar-thread-foot .aibar-input:focus {
+  background: var(--ab-card);
+  border-color: var(--ab-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, .16);
+}
+html.aibar-solo .aibar-thread-foot .aibar-hint {
+  padding: 0 16px 10px;
+  border-top: 0;
+  color: var(--ab-muted);
+  font-size: 11px;
+}
+html.aibar-solo .aibar-thread-foot .aibar-hint kbd {
+  background: transparent;
+  border-color: var(--ab-line);
+  color: var(--ab-muted);
+}
+
+/* ---------- Вложения ---------- */
+html.aibar-solo .aibar-chip {
+  border-color: var(--ab-line-strong);
+  border-radius: 12px;
+  background: var(--ab-field);
+}
+
+/* ---------- Узкое окно ---------- */
+@media (max-width: 620px) {
+  html.aibar-solo .aibar-thread { top: 4px; right: 4px; bottom: 4px; left: 4px; border-radius: 16px; }
+  html.aibar-solo .aibar-log { padding: 14px 12px 8px; }
+  html.aibar-solo .aibar-msg.user { max-width: 90%; }
+  html.aibar-solo .aibar-panel .aibar-input-row { padding: 14px 14px 10px; }
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Чек-лист</title>
+<style>
+:root{--bg:#fff;--fg:#1f2937;--muted:#6b7280;--line:#e5e7eb;--acc:#4f46e5;--card:#fff;--r:14px;--sh:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.06)}
+@media (prefers-color-scheme:dark){:root{--bg:#15171c;--fg:#e8eaed;--muted:#9aa3af;--line:#2b2f37;--acc:#818cf8;--card:#1b1e24;--sh:0 1px 3px rgba(0,0,0,.4)}}
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+h1{font-size:18px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+input,select{font:inherit;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg)}
+input{flex:1;min-width:180px}
+input:focus,select:focus{outline:2px solid var(--acc);outline-offset:-1px}
+button{font:inherit;padding:8px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);cursor:pointer}
+button:hover{border-color:var(--acc);color:var(--acc)}
+.count{color:var(--muted);font-size:13px;margin-left:auto;white-space:nowrap}
+.prog{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin-bottom:14px}
+.prog i{display:block;height:100%;width:0;background:var(--acc);border-radius:999px;transition:width .25s ease}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:12px 16px;cursor:pointer;transition:border-color .18s ease,opacity .18s ease}
+.item:hover{border-color:var(--acc)}
+.item.done{opacity:.55}
+.item.done h3{text-decoration:line-through}
+.item input{width:18px;height:18px;margin-top:2px;accent-color:var(--acc);flex:none}
+.item h3{margin:0 0 2px;font-size:15px}
+.item p{margin:0;color:var(--muted);font-size:13px}
+.empty{padding:32px;text-align:center;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<h1 id="title">Чек-лист</h1>
+<div class="sub">Клик по пункту отмечает его выполненным</div>
+<div class="bar">
+  <input id="q" placeholder="Поиск по пунктам…" aria-label="Поиск">
+  <select id="f" aria-label="Фильтр">
+    <option value="all">Все</option>
+    <option value="todo">Активные</option>
+    <option value="done">Выполненные</option>
+  </select>
+  <button id="reset" type="button">Сбросить всё</button>
+  <span class="count" id="c"></span>
+</div>
+<div class="prog"><i id="bar"></i></div>
+<div class="list" id="list"></div>
+<div class="empty" id="empty" style="display:none">Ничего не найдено</div>
+<script>
+/* ДАННЫЕ: ИИ вписывает сюда содержимое заметки.
+   ITEMS — пункты вида [заголовок, описание]. Состояние отметок живёт
+   только в рамках открытой страницы. */
+const ITEMS=[["Пункт 1","Подробности пункта"],["Пункт 2","Подробности пункта"]];
+
+const list=document.getElementById("list"),
+      q=document.getElementById("q"),
+      f=document.getElementById("f"),
+      reset=document.getElementById("reset"),
+      cnt=document.getElementById("c"),
+      bar=document.getElementById("bar"),
+      empty=document.getElementById("empty");
+
+const done=new Set();
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]));}
+function hi(s){
+  const t=q.value.trim();
+  if(!t)return esc(s);
+  const out=esc(s);
+  return out.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"),m=>"<mark>"+m+"</mark>");
+}
+function draw(){
+  const t=q.value.trim().toLowerCase();
+  const mode=f.value;
+  const rows=ITEMS.map((r,i)=>({r,i})).filter(({r,i})=>{
+    if(mode==="todo"&&done.has(i))return false;
+    if(mode==="done"&&!done.has(i))return false;
+    return r.join(" ").toLowerCase().includes(t);
+  });
+  list.innerHTML=rows.map(({r,i})=>'<label class="item'+(done.has(i)?" done":"")+'">'
+    +'<input type="checkbox" data-i="'+i+'"'+(done.has(i)?" checked":"")+'>'
+    +'<span><h3>'+hi(r[0])+'</h3><p>'+hi(r[1])+'</p></span></label>').join("");
+  const d=done.size;
+  cnt.textContent=d+" из "+ITEMS.length+" выполнено";
+  bar.style.width=(ITEMS.length?Math.round(d/ITEMS.length*100):0)+"%";
+  empty.style.display=rows.length?"none":"";
+}
+list.addEventListener("change",e=>{
+  const i=+e.target.dataset.i;
+  if(e.target.checked)done.add(i);else done.delete(i);
+  draw();
+});
+reset.onclick=()=>{done.clear();draw();};
+q.oninput=draw;
+f.onchange=draw;
+draw();
+</script>
+</body>
+</html>

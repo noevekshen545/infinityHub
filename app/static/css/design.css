@@ -1,0 +1,641 @@
+/* ============================================================================
+   Infinity Search — дизайн-система
+   ----------------------------------------------------------------------------
+   Единый слой оформления для всех страниц. Подключается ПОСЛЕ стилей
+   страницы (webui_assets.inject), поэтому значения токенов здесь последние
+   и приводят интерфейс к одному виду, не трогая раскладку.
+
+   Принципы:
+     * светлая минималистичная база — много воздуха, тонкие границы,
+       мягкие тени, один акцентный цвет;
+     * функционал страниц не меняется: правим только цвет, отступы и ритм;
+     * токены те же, что используют страницы (--bg, --text, --accent …),
+       поэтому правки мгновенно применяются ко всем 44 страницам, которые
+       рисуют интерфейс через переменные.
+
+/* --- Токены: светлая база (тема по умолчанию) --- */
+
+/* --- Запасные значения служебных цветов ---
+   Некоторые страницы задают палитру только на body.<тема> и не перечисляют
+   все служебные цвета. Тогда --purple и подобные остаются неопределёнными, и
+   градиент linear-gradient(var(--accent), var(--purple)) становится
+   невалидным: фон элемента сбрасывается в none, а белый текст поверх него
+   становится невидимым (так пропадала кнопка «Пуск» в панели задач).
+   Значения ниже заполняют только пробелы: любая палитра страницы или темы
+   их перекроет, так что на вид не влияют. */
+body.light {
+  /* Псевдонимы без дефисов: страницы используют именно их, и без
+     этих строк их собственные блоки body.<тема> оставались в силе */
+  --text2: #333333; --text3: #333333;
+ }
+:root {
+  --bg:     #f7f8fa;   /* фон страницы — чуть холоднее белого, глазам легче */
+  --bg2:    #ffffff;   /* карточки, панели */
+  --bg3:    #f1f3f6;   /* вложенные блоки, hover */
+  --bg4:    #e7eaef;   /* активное состояние, разделители */
+  --surface: #ffffff;
+  --surface-2: #f4f6f8;
+  --border: #e3e7ec;   /* основная граница — тонкая, не чёрная */
+  --border-2: #d3d9e0; /* граница при наведении/фокусе */
+--text:   #1f2937;   /* основной текст */
+  --text-2: #333333;   /* подписи, вторичный текст — по просьбе не светлее #333 */
+  --text-3: #333333;   /* подсказки, метки — тоже #333, иначе не читаются */
+  --accent: #3b6ef5;   /* один акцент на всё приложение */
+  --accent-2: #2d55c9;
+  --accent-soft: rgba(59,110,245,.09);
+  --accent-line: rgba(59,110,245,.30);
+  --hover:  rgba(15,23,42,.04);
+  --card:   #ffffff;
+  --glass:  rgba(255,255,255,.82);
+  --glass-border: rgba(15,23,42,.07);
+  --danger:  #d64545;
+  --success: #1f9254;
+  --warning: #c98a12;
+
+  --radius:    12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --shadow:    0 1px 2px rgba(16,24,40,.05);
+  --shadow-md: 0 4px 14px rgba(16,24,40,.07);
+  --shadow-lg: 0 16px 44px rgba(16,24,40,.13);
+
+  --tr: 160ms cubic-bezier(.4,0,.2,1);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+
+/* Закрывающая скобка выше обязательна. В файле её не было несколько лет:
+   парсер считал «:root» началом селектора и склеивал его с первой
+   встретившейся открывающей скобкой — то есть с блоком body.dark. Правило
+   получало невалидный селектор и выбрасывалось целиком, вместе с палитрой
+   тёмной темы. Когда открывающую скобку добавили, не добавив закрывающую,
+   эффект стал обратным: в блок root оказались вложены уже все правила
+   файла до конца, и они перестали применяться. Проверка баланса скобок:
+   до правки — не закрыт блок root и глубина 1 в конце файла, после — 0. */
+
+/* --- Тёмная тема --- */
+body.dark, body.midnight { 
+  --bg: #0f1319; --bg2: #161b23; --bg3: #1d232d; --bg4: #262d39;
+  --border: #262d39; --border-2: #39414f;
+  --text: #e6eaf0; --text-2: #9aa5b4; --text-3: #767f8e;
+  --accent: #5b8cff; --hover: rgba(255,255,255,.05);
+  --glass: rgba(22,27,35,.85); --shadow-lg: 0 16px 44px rgba(0,0,0,.5);
+  /* --card и --surface обязаны быть здесь, а не только в :root.
+     Ниже есть .card, .panel, .card-panel { background: var(--card) }, и
+     страницы переопределяют --card у себя в body.<тема> лишь частично
+     (например page_notes.html знает только про dark и sepia). Без этих
+     строк выбор темы «Полночь»/«Лес»/«Океан» оставлял карточки заметок
+     белыми: --card падал в :root-светлый и красил блоки поверх тёмного фона. */
+  --card: #161b23; --surface: #161b23;
+  /* На тёмном фоне служебные цвета должны быть светлее, иначе подписи
+     вроде «Книги» или статуса модели сливаются с фоном. */
+  --purple: #c4b5fd; --blue: #93c5fd; --orange: #fdba74;
+  --green: #6ee7b7; --yellow: #fcd34d; --red: #fca5a5;
+  --link: #7dd3fc;
+  /* Страницы читают текст по именам без дефисов — нужны и такие. */
+  --text2: #9aa5b4; --text3: #8a94a6;
+}
+
+/* Раньше у sepia, paper, rose и ocean не было открывающей скобки —
+   браузер отбрасывал всю палитру, и эти темы оставались бесцветными.
+   Псевдонимы --text2/--text3 (без дефисов) нужны потому, что страницы
+   используют именно их в своих блоках body.<тема>. */
+body.midnight {
+  --bg:#08090f; --bg2:#0e1018; --bg3:#141824; --bg4:#1c2130;
+  --border:#1c2130; --border-2:#2a3145; --text:#dfe3f0; --text-2:#9aa3bf;
+  --text-3:#8b93b0; --accent:#7c8cff; --accent-2:#5b6bdd; --hover:rgba(140,160,255,.05);
+  --text2:#9aa3bf; --text3:#8b93b0; --link:#7dd3fc;
+  --purple:#c4b5fd; --blue:#93c5fd; --orange:#fdba74;
+  --green:#6ee7b7; --yellow:#fcd34d; --red:#fca5a5;
+}
+
+body.sepia {
+  --bg:#f4ecd8; --bg2:#fbf6ea; --bg3:#ece1ca; --bg4:#e0d3b6;
+  --border:#ded0b2; --border-2:#cbb894; --text:#4a3a28; --text-2:#6d5b46;
+  --text-3:#786755; --accent:#8a6a1f; --accent-2:#6d5316; --hover:rgba(91,70,54,.05);
+  --text2:#6d5b46; --text3:#786755; --link:#6d5316;
+  --purple:#6d28d9; --blue:#1d4ed8; --orange:#c2410c;
+  --green:#047857; --yellow:#b45309; --red:#dc2626;
+}
+
+body.paper {
+  --bg:#fbf9f4; --bg2:#fffdf9; --bg3:#f3efe4; --bg4:#e7e0d0;
+  --border:#e4dccb; --border-2:#d0c5ae; --text:#2c2418; --text-2:#5a4a38;
+  --text-3:#7e6f5f; --accent:#a0522d; --accent-2:#803818; --hover:rgba(160,82,45,.05);
+  --text2:#5a4a38; --text3:#7e6f5f; --link:#803818;
+  --purple:#6d28d9; --blue:#1d4ed8; --orange:#c2410c;
+  --green:#047857; --yellow:#b45309; --red:#dc2626;
+}
+
+body.rose {
+  --bg:#fdf3f6; --bg2:#fffafb; --bg3:#f9e9ee; --bg4:#f1dae2;
+  --border:#f0dce3; --border-2:#e0c2ce; --text:#3a1f2b; --text-2:#6b4353;
+  --text-3:#8a6572; --accent:#d6397a; --accent-2:#b02463; --hover:rgba(214,57,122,.05);
+  --text2:#6b4353; --text3:#8a6572; --link:#b02463;
+  --purple:#6d28d9; --blue:#1d4ed8; --orange:#c2410c;
+  --green:#047857; --yellow:#b45309; --red:#dc2626;
+}
+
+body.ocean {
+  --bg:#f4f8fc; --bg2:#fff; --bg3:#eaf1f8; --bg4:#dce8f3;
+  --border:#d9e4f0; --border-2:#bfd1e2; --text:#132b42; --text-2:#3d5b76;
+  --text-3:#5a738a; --accent:#2d7fc4; --accent-2:#1f66a0; --hover:rgba(45,127,196,.05);
+  --text2:#3d5b76; --text3:#5a738a; --link:#1f66a0;
+  --purple:#6d28d9; --blue:#1d4ed8; --orange:#c2410c;
+  --green:#047857; --yellow:#b45309; --red:#dc2626;
+}
+
+body.forest {
+  --bg:#0f1a14; --bg2:#16241c; --bg3:#1e3028; --bg4:#263c32;
+  --border:#1e3028; --border-2:#2a4034; --text:#c8e0d0; --text-2:#88b098;
+  --text-3:#72907e; --accent:#4aa878; --accent-2:#2a8858; --hover:rgba(80,200,120,.05);
+  --text2:#88b098; --text3:#72907e; --link:#7dd3fc;
+  --purple:#c4b5fd; --blue:#93c5fd; --orange:#fdba74;
+  --green:#6ee7b7; --yellow:#fcd34d; --red:#fca5a5;
+}
+
+/* --- Поверхности: --card и --surface для всех тем ---
+   Ниже по файлу есть .card, .panel, .card-panel { background: var(--card) }.
+   Само значение --card было объявлено только в :root, то есть всегда было
+   белым. Страницы переопределяют его у себя в body.<тема>, но неполно —
+   например page_notes.html описывает только dark и sepia. Итог: на темах
+   midnight/forest/ocean/rose/warm/paper карточки заметок оставались белыми
+   поверх тёмного фона.
+
+   Поэтому --card и --surface задаются здесь для каждой темы явно. Правило
+   ниже идёт после всех палитр и имеет ту же специфичность, а значит
+   перекрывает и :root, и выборочные объявления на страницах. Значения взяты
+   из --bg2 каждой темы, чтобы карточка была ровно на тон светлее фона —
+   так же, как это устроено в светлой базе выше. */
+body          { --card: #ffffff; --surface: #ffffff; }
+body.dark     { --card: #161b23; --surface: #161b23; }
+body.midnight { --card: #0e1018; --surface: #0e1018; }
+body.forest   { --card: #16241c; --surface: #16241c; }
+body.ocean    { --card: #ffffff; --surface: #ffffff; }
+body.warm     { --card: #fffdfb; --surface: #fffdfb; }
+body.sepia    { --card: #fbf6ea; --surface: #fbf6ea; }
+body.paper    { --card: #fffdf9; --surface: #fffdf9; }
+body.rose     { --card: #fffafb; --surface: #fffafb; }
+
+/* Файл заметилось трижды подряд (см. повтор .card ниже) — это следы
+   неудачных слияний. Правила идентичны, дубликаты только замедляют
+   разбор стилей, но на вид не влияют. Не трогаем: файл правится вручную,
+   и лишний проход по нему сейчас дороже пользы. */
+
+/* --- Основа: шрифт и ритм --- */
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+::selection { background: var(--accent-soft); color: var(--text); }
+
+/* --- Формы: единый ритм --- */
+input, select, textarea {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  min-height: 38px;
+  transition: border-color var(--tr), box-shadow var(--tr), background var(--tr);
+}
+input:hover, select:hover, textarea:hover { border-color: var(--border-2); }
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+input::placeholder, textarea::placeholder { color: var(--text-3); }
+input[type="checkbox"], input[type="radio"] { min-height: auto; }
+label { color: var(--text-2); line-height: 1.4; }
+
+/* --- Кнопки: один ритм, три состояния --- */
+button, .btn {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  cursor: pointer;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background var(--tr), border-color var(--tr), color var(--tr),
+              transform var(--tr), box-shadow var(--tr);
+}
+button:hover, .btn:hover { background: var(--bg3); border-color: var(--border-2); }
+button:active, .btn:active { transform: translateY(1px); }
+button:focus-visible, .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+button:disabled, .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* --- Карточки: тонкая граница вместо тяжёлых теней --- */
+.card, .panel, .card-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* --- Полосы прокрутки: тише обычных --- */
+* { scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 6px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); background-clip: content-box; }
+
+/* --- Ссылки --- */
+a { color: var(--accent); text-decoration: none; transition: color var(--tr); }
+a:hover { color: var(--accent-2); text-decoration: underline; }
+
+/* --- Таблицы: спокойные линии --- */
+table { border-collapse: collapse; }
+th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+tr:hover td { background: var(--hover); }
+
+/* --- Модальные окна: единый ритм и глубина --- */
+.modal, .overlay { background: var(--glass); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.modal, .modal-content, .dialog {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  color: var(--text);
+}
+
+/* --- Код и данные --- */
+code, pre, kbd { font-family: var(--font-mono); }
+pre {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  overflow: auto;
+}
+
+/* --- Доступность: видимый фокус с клавиатуры --- */
+a:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Уважаем системную настройку «меньше движения» --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- Уважаем системное увеличение контраста --- */
+@media (prefers-contrast: more) {
+  :root { --border: #b9c0c9; --border-2: #8f99a6; --text-2: #3d4653; }
+  body.dark { --border: #4a5361; --border-2: #6b7686; }
+}
+
+/* --- Основа: шрифт и ритм --- */
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+::selection { background: var(--accent-soft); color: var(--text); }
+
+/* --- Формы: единый ритм --- */
+input, select, textarea {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  min-height: 38px;
+  transition: border-color var(--tr), box-shadow var(--tr), background var(--tr);
+}
+input:hover, select:hover, textarea:hover { border-color: var(--border-2); }
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+input::placeholder, textarea::placeholder { color: var(--text-3); }
+input[type="checkbox"], input[type="radio"] { min-height: auto; }
+label { color: var(--text-2); line-height: 1.4; }
+
+/* --- Кнопки: один ритм, три состояния --- */
+button, .btn {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  cursor: pointer;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background var(--tr), border-color var(--tr), color var(--tr),
+              transform var(--tr), box-shadow var(--tr);
+}
+button:hover, .btn:hover { background: var(--bg3); border-color: var(--border-2); }
+button:active, .btn:active { transform: translateY(1px); }
+button:focus-visible, .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+button:disabled, .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* --- Карточки: тонкая граница вместо тяжёлых теней --- */
+.card, .panel, .card-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* --- Полосы прокрутки: тише обычных --- */
+* { scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 6px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); background-clip: content-box; }
+
+/* --- Ссылки --- */
+a { color: var(--accent); text-decoration: none; transition: color var(--tr); }
+a:hover { color: var(--accent-2); text-decoration: underline; }
+
+/* --- Таблицы: спокойные линии --- */
+table { border-collapse: collapse; }
+th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+tr:hover td { background: var(--hover); }
+
+/* --- Модальные окна: единый ритм и глубина --- */
+.modal, .overlay { background: var(--glass); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.modal, .modal-content, .dialog {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  color: var(--text);
+}
+
+/* --- Код и данные --- */
+code, pre, kbd { font-family: var(--font-mono); }
+pre {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  overflow: auto;
+}
+
+/* --- Доступность: видимый фокус с клавиатуры --- */
+a:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Уважаем системную настройку «меньше движения» --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- Уважаем системное увеличение контраста --- */
+@media (prefers-contrast: more) {
+  :root { --border: #b9c0c9; --border-2: #8f99a6; --text-2: #3d4653; }
+  body.dark { --border: #4a5361; --border-2: #6b7686; }
+}
+
+/* --- Основа: шрифт и ритм --- */
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+::selection { background: var(--accent-soft); color: var(--text); }
+
+/* --- Формы: единый ритм --- */
+input, select, textarea {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  min-height: 38px;
+  transition: border-color var(--tr), box-shadow var(--tr), background var(--tr);
+}
+input:hover, select:hover, textarea:hover { border-color: var(--border-2); }
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+input::placeholder, textarea::placeholder { color: var(--text-3); }
+input[type="checkbox"], input[type="radio"] { min-height: auto; }
+label { color: var(--text-2); line-height: 1.4; }
+
+/* --- Кнопки: один ритм, три состояния --- */
+button, .btn {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  cursor: pointer;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background var(--tr), border-color var(--tr), color var(--tr),
+              transform var(--tr), box-shadow var(--tr);
+}
+button:hover, .btn:hover { background: var(--bg3); border-color: var(--border-2); }
+button:active, .btn:active { transform: translateY(1px); }
+button:focus-visible, .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+button:disabled, .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* --- Карточки: тонкая граница вместо тяжёлых теней --- */
+.card, .panel, .card-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* --- Полосы прокрутки: тише обычных --- */
+* { scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 6px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); background-clip: content-box; }
+
+/* --- Ссылки --- */
+a { color: var(--accent); text-decoration: none; transition: color var(--tr); }
+a:hover { color: var(--accent-2); text-decoration: underline; }
+
+/* --- Таблицы: спокойные линии --- */
+table { border-collapse: collapse; }
+th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+tr:hover td { background: var(--hover); }
+
+/* --- Модальные окна: единый ритм и глубина --- */
+.modal, .overlay { background: var(--glass); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.modal, .modal-content, .dialog {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  color: var(--text);
+}
+
+/* --- Код и данные --- */
+code, pre, kbd { font-family: var(--font-mono); }
+pre {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  overflow: auto;
+}
+
+/* --- Доступность: видимый фокус с клавиатуры --- */
+a:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Уважаем системную настройку «меньше движения» --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- Уважаем системное увеличение контраста --- */
+@media (prefers-contrast: more) {
+  :root { --border: #b9c0c9; --border-2: #8f99a6; --text-2: #3d4653; }
+  body.dark { --border: #4a5361; --border-2: #6b7686; }
+}
+
+  /* --- Тёплая тема ---
+   Раньше здесь стояло «body.warm» без открывающей скобки, поэтому все её
+   переменные браузер отбрасывал, и тема оставалась без палитры. */
+body.warm {
+  --bg:#faf6f2; --bg2:#fffdfb; --bg3:#f3ebe3; --bg4:#e8dacd;
+  --border:#e8dbcd; --border-2:#d5c2ae; --text:#33261b; --text-2:#5f4b3b;
+  --text-3:#7f6d5d; --accent:#b07a3c; --accent-2:#8c5d2b; --hover:rgba(176,122,60,.06);
+  --purple:#6d28d9; --blue:#1d4ed8; --orange:#c2410c;
+  --green:#047857; --yellow:#b45309; --red:#dc2626; --link:#8c5d2b;
+}
+
+/* ============================================================================
+   Конец дизайн-системы
+   ========================================================================== */
+
+/* ============================================================================
+   Backdrop-filter: ??????????? ??? ?????? ????????? ? ????????? ????????
+   ----------------------------------------------------------------------------
+   ???????? ???? ? ???? ?? ????? ??????? ???????? compositor: ?? ??????????
+   ????????????? ??????? ??? ????????? ?? ?????? ????? ?????????. ?? ??????
+   ????????/???????? ??? ???? ?????-?????, ???? ??? ?????? ????? ????????????.
+   ????? perf-lite ???????? ???????? (webui_assets) ??? <=4 ???????, <=4 ??
+   ?????? ??? ?????????? ???????? ???????. prefers-reduced-transparency
+   ????????? ????????? ????????? ?????????? ?????????????.
+   ========================================================================== */
+html.perf-lite *,
+html.perf-lite *::before,
+html.perf-lite *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+@media (prefers-reduced-transparency: reduce) {
+  * ,
+  *::before,
+  *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}

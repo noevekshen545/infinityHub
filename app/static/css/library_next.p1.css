@@ -1,0 +1,418 @@
+/* ============================================================================
+   Library Next — слой оформления для /books/next и /bookgen/next.
+
+   Плоский минимализм на токенах приложения: единственный источник цвета —
+   design.css + theme.js (--bg…--bg4, --text/--text2/--text3, --accent,
+   --border/--border2, --radius*, --shadow*, семантические --red/--green/
+   --yellow/--purple/--blue/--orange). Никаких собственных палитр, градиентов и
+   стеклянных размытий: акцент используется только для активного состояния и
+   главного действия.
+
+   Файл подключается последним (в конце <body>), поэтому слой перекрывает
+   собственные стили страниц. Оригинальные /books и /bookgen не изменяются.
+
+   Структура:
+     1) глобаль: фон, производные токенов, selection, фокус, скроллбар
+     2) тулбар и кнопки
+     3) формы
+     4) контент и заголовки
+     5) библиотека: сетка, карточки, обложки
+     6) чипы и бейджи
+     7) полки, коллекции, папки
+     8) читалка и её панели
+     9) виджеты и статистика
+    10) модалки
+    11) достижения
+    12) ИИ-панель
+    13) Calibre и вложенные просмотрщики
+    14) BookGen
+    15) плавающая панель «Оформление»
+    16) адаптив
+   ========================================================================== */
+
+/* ── 1. Глобаль ─────────────────────────────────────────────────────────── */
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font, var(--font-sans, "Inter", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif));
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 160ms ease, color 160ms ease;
+  /* Производные акцента: страницы объявляют их в своём :root под светлую
+     палитру, из-за чего в тёмных схемах подсветки уезжают в чужой оттенок. */
+  --accent-light: color-mix(in srgb, var(--accent) 12%, transparent);
+  --accent-glow: color-mix(in srgb, var(--accent) 22%, transparent);
+  --glass: var(--bg2);
+  --glass-border: var(--border);
+  --glass-hover: var(--bg3);
+  --shadow-sm: var(--shadow, 0 1px 2px rgba(16, 24, 40, 0.05));
+}
+
+/* Декоративное свечение страницы в плоском стиле не нужно. */
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) body::before {
+  display: none !important;
+  background: none !important;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) ::selection {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--text);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg4) transparent;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) *::-webkit-scrollbar-thumb {
+  background: var(--bg4);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) *::-webkit-scrollbar-thumb:hover {
+  background: var(--border2);
+  background-clip: content-box;
+}
+
+/* Плоские поверхности: убираем принудительное стекло страниц. */
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .sidebar,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .collection-sidebar,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .glass-panel,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) #readingModeBar,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .ai-float,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .more-pop {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ── 2. Тулбар и кнопки ─────────────────────────────────────────────────── */
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar {
+  top: 10px;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 16px);
+  background: var(--bg2);
+  box-shadow: var(--shadow-md, 0 4px 14px rgba(16, 24, 40, 0.07));
+  transition: border-color var(--tr, 160ms ease);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar:hover {
+  border-color: var(--border2);
+  box-shadow: var(--shadow-md, 0 4px 14px rgba(16, 24, 40, 0.07));
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .sep,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .divider,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .more-sep {
+  background: var(--border);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .search-box {
+  background: var(--bg3);
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius, 12px) - 2px);
+  transition: border-color var(--tr, 160ms ease),
+              box-shadow var(--tr, 160ms ease);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .search-box:focus-within {
+  background: var(--bg2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .more-pop {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg, 0 16px 44px rgba(16, 24, 40, 0.13));
+}
+
+/* Базовые кнопки — нейтральные. Акцент только у главного действия. */
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 8px);
+  background: var(--bg2);
+  color: var(--text2);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  box-shadow: none;
+  transform: none;
+  transition: background-color var(--tr, 160ms ease),
+              border-color var(--tr, 160ms ease),
+              color var(--tr, 160ms ease);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn::before {
+  display: none;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn:hover {
+  background: var(--bg3);
+  border-color: var(--border2);
+  color: var(--text);
+  box-shadow: none;
+  transform: none;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn:active {
+  background: var(--bg4);
+  transform: none;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn:hover i {
+  color: inherit;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn.active,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn.btn-primary {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+  color: var(--accent);
+  box-shadow: none;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn.active:hover,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn.btn-primary:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text2);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn.btn-outline:hover {
+  background: var(--bg3);
+  border-color: var(--border2);
+  color: var(--text);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn.btn-success {
+  background: color-mix(in srgb, var(--green) 14%, transparent);
+  border-color: color-mix(in srgb, var(--green) 40%, var(--border));
+  color: var(--green);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .btn.btn-danger {
+  background: color-mix(in srgb, var(--red) 14%, transparent);
+  border-color: color-mix(in srgb, var(--red) 40%, var(--border));
+  color: var(--red);
+}
+
+/* Иконочные кнопки тулбара. */
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .btn {
+  padding: 8px 11px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text2);
+  font-weight: 500;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .btn:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .btn:hover i,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .btn:hover span {
+  color: inherit;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .btn.active,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .btn.btn-primary {
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  border-color: transparent;
+  color: var(--accent);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .btn-icon,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .more-btn,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .close-btn,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm, 8px);
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  transition: background-color var(--tr, 160ms ease),
+              color var(--tr, 160ms ease);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .toolbar .btn-icon:hover,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .more-btn:hover,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .close-btn:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .delete-btn:hover {
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+  color: var(--red);
+}
+
+/* ── 3. Формы ───────────────────────────────────────────────────────────── */
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) textarea,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) select {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 8px);
+  background: var(--bg3);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13.5px;
+  transition: border-color var(--tr, 160ms ease),
+              background-color var(--tr, 160ms ease),
+              box-shadow var(--tr, 160ms ease);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):hover,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) textarea:hover,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) select:hover {
+  border-color: var(--border2);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) input:focus,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) textarea:focus,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) select:focus {
+  outline: none;
+  background: var(--bg2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) input[type="range"] {
+  accent-color: var(--accent);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) input[type="checkbox"],
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) input[type="radio"] {
+  accent-color: var(--accent);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .range-val,
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .setting-row .value {
+  color: var(--text2);
+  font-variant-numeric: tabular-nums;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--border);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .setting-row:last-child {
+  border-bottom: none;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .setting-row .label {
+  color: var(--text);
+  font-size: 13.5px;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .setting-row .desc {
+  color: var(--text3);
+  font-size: 12px;
+}
+
+/* ── 4. Контент и заголовки ─────────────────────────────────────────────── */
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .main-content {
+  max-width: 1320px;
+  padding: 86px 24px 88px;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .page-header {
+  margin-bottom: 20px;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .page-header h1 {
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  color: var(--text);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .page-header .subtitle {
+  color: var(--text3);
+  font-size: 13.5px;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .section-view {
+  animation: none;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .nav-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 56px 24px;
+  border: 1px dashed var(--border2);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text3);
+  text-align: center;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .empty-state .icon {
+  color: var(--text3);
+  opacity: 0.55;
+  font-size: 30px;
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .loading {
+  color: var(--text3);
+}
+
+html:is([data-books-skin="next"],[data-bookgen-skin="next"]) .error {
+  color: var(--red);
+}

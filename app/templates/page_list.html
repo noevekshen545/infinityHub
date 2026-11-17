@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html class="pg-page_list" lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Список</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0d1117;color:#c9d1d9;min-height:100vh}
+a{color:#58a6ff;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:900px;margin:0 auto;padding:16px}
+.top{display:flex;align-items:center;gap:12px;margin:16px 0;flex-wrap:wrap}
+.back{background:#21262d;border:1px solid #30363d;color:#c9d1d9;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;text-decoration:none}
+.back:hover{background:#30363d}
+.top h2{font-size:16px;color:#f0f6fc;flex:1}
+.srch{display:flex;gap:8px;margin:12px 0}
+.srch input{flex:1;padding:10px 14px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;font-size:14px;outline:none}
+.srch input:focus{border-color:#58a6ff}
+.srch button{padding:10px 16px;background:#238636;border:none;border-radius:6px;color:#fff;font-size:13px;cursor:pointer}
+.srch .cl{background:#21262d;border:1px solid #30363d}
+.sbar{display:flex;gap:16px;padding:10px 0;color:#8b949e;font-size:13px;border-bottom:1px solid #21262d;margin-bottom:12px;flex-wrap:wrap}
+.sbar b{color:#58a6ff}
+.card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:18px;margin-bottom:10px;cursor:pointer;transition:all .2s;display:block;color:inherit}
+.card:hover{border-color:#58a6ff}
+.card .nm{color:#484f58;font-size:11px;margin-bottom:4px}
+.card .tt{font-size:16px;font-weight:600;color:#f0f6fc;margin-bottom:8px;line-height:1.4}
+.card .mt{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.card .mt .tg{background:#21262d;padding:2px 8px;border-radius:4px;font-size:11px;color:#8b949e}
+.card .pv{color:#8b949e;font-size:13px;line-height:1.5;max-height:60px;overflow:hidden}
+.card .card-img{width:100%;max-height:160px;object-fit:cover;border-radius:6px;margin-bottom:10px;border:1px solid #30363d}
+.pgn{display:flex;justify-content:center;align-items:center;gap:6px;margin:20px 0;flex-wrap:wrap}
+.pgn button{padding:6px 12px;background:#21262d;border:1px solid #30363d;border-radius:5px;color:#c9d1d9;cursor:pointer;font-size:12px}
+.pgn button:hover{border-color:#58a6ff}
+.pgn button.on{background:#1f6feb;border-color:#1f6feb;color:#fff}
+.pgn button:disabled{opacity:.3;cursor:not-allowed}
+.ld{text-align:center;padding:30px;color:#8b949e}
+@media(max-width:600px){.card{padding:14px}}
+</style><script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+  <script src="/static/js/dialogs.js" defer></script>
+</head><body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="/"><i class="fa-solid fa-arrow-left"></i> Файлы</a>
+    <h2 id="fname"></h2>
+  </div>
+  <div class="srch">
+    <input id="sq" placeholder="Поиск..." onkeydown="if(event.key==='Enter')doS()">
+    <button onclick="doS()">Найти</button>
+    <button class="cl" onclick="clrS()">Сброс</button>
+  </div>
+  <div id="sbar" class="sbar"></div>
+  <div id="list"></div>
+  <div id="pgn" class="pgn"></div>
+</div>
+<script>
+const P=new URLSearchParams(location.search);
+const F=P.get('file')||'',FN=P.get('name')||'';
+let pg=1,sq='';
+const N=10;
+document.getElementById('fname').textContent=FN;
+
+async function load(){
+  document.getElementById('list').innerHTML='<div class="ld">Загрузка...</div>';
+  try{
+    const u=sq?`/api/search?f=${encodeURIComponent(F)}&q=${encodeURIComponent(sq)}&p=${pg}&n=${N}`:`/api/page?f=${encodeURIComponent(F)}&p=${pg}&n=${N}`;
+    const r=await fetch(u),d=await r.json();
+    document.getElementById('sbar').innerHTML=`<div>Всего: <b>${d.total.toLocaleString()}</b></div><div>Стр: <b>${d.page}</b>/<b>${d.pages}</b></div>${sq?'<div>Поиск: <b>'+esc(sq)+'</b></div>':''}`;
+    const el=document.getElementById('list');
+    if(!d.items.length){el.innerHTML='<div style="color:#8b949e;text-align:center;padding:30px">Ничего не найдено</div>';document.getElementById('pgn').innerHTML='';return}
+    el.innerHTML=d.items.map(it=>{
+      const t=it.title||'Без заголовка';
+      const txt=it.selftext||it.text||it.question||it.body||'';
+      const au=it.author||'';
+      const sc=it.score||0;
+      const cc=(it.comments||it.answers||[]).length;
+      let mt='';
+      if(au)mt+='<span class="tg">👤 '+esc(au)+'</span>';
+      mt+='<span class="tg">⬆ '+sc+'</span>';
+      if(cc)mt+='<span class="tg">💬 '+cc+'</span>';
+      // Extract first image URL from text
+      const imgMatch=txt.match(/https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp)/i);
+      const imgHtml=imgMatch?'<img class="card-img" src="'+imgMatch[0]+'" loading="lazy" onerror="this.style.display=\'none\'">':'';
+      return'<a class="card" href="/article?file='+encodeURIComponent(F)+'&index='+it._index+'&name='+encodeURIComponent(FN)+'">'+
+        imgHtml+
+        '<div class="nm">#'+it._index+'</div>'+
+        '<div class="tt">'+esc(t)+'</div>'+
+        '<div class="mt">'+mt+'</div>'+
+        '<div class="pv">'+esc(txt.substring(0,200))+'</div>'+
+      '</a>';
+    }).join('');
+    renderPgn(d.page,d.pages);
+  }catch(e){document.getElementById('list').innerHTML='<div style="color:#da3633;padding:20px">'+e.message+'</div>'}
+}
+function renderPgn(c,p){
+  const d=document.getElementById('pgn');if(p<=1){d.innerHTML='';return}
+  let h=`<button ${c<=1?'disabled':''} onclick="go(${c-1})">←</button>`;
+  let s=Math.max(1,c-3),e=Math.min(p,c+3);
+  if(s>1){h+=`<button onclick="go(1)">1</button>`;if(s>2)h+='<span style="color:#484f58">…</span>'}
+  for(let i=s;i<=e;i++)h+=`<button class="${i===c?'on':''}" onclick="go(${i})">${i}</button>`;
+  if(e<p){if(e<p-1)h+='<span style="color:#484f58">…</span>';h+=`<button onclick="go(${p})">${p}</button>`}
+  h+=`<button ${c>=p?'disabled':''} onclick="go(${c+1})">→</button>`;
+  d.innerHTML=h;
+}
+function go(p){pg=p;load();window.scrollTo({top:0,behavior:'smooth'})}
+function doS(){sq=document.getElementById('sq').value.trim();pg=1;load()}
+function clrS(){sq='';document.getElementById('sq').value='';pg=1;load()}
+function esc(t){if(!t)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+load();
+</script></body></html>

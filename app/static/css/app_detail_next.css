@@ -1,0 +1,353 @@
+/* Skin «next» детальной страницы приложения — язык библиотеки 2.0, тот же,
+   что у списка (/apps): рейл из module_rail.css, карточки на сплошной
+   подложке вместо стекла, акцент из темы приложения.
+
+   Гейт: html[data-apps-skin="next"].pg-page_app_detail. Классическая выдача
+   (?skin=classic) берёт файл из templates_backup и этих правил не подключает.
+
+   Переменные-алиасы (--radius-xl, --on-accent, --*-light, --accent2, --red,
+   --yellow) приходят из алиас-блока apps_next.css: он не ограничен
+   селектором страницы, а сами правила того файла скоупнуты к .pg-page_apps и
+   сюда не дотягиваются.
+
+   Дальше этого файла базовый слой страницы красит только layout: градиенты
+   с #7c3aed, фиолетовое свечение на весь экран и белое пятно модалки
+   «Поделиться» ушли в переменные темы. */
+
+/* ── Каркас: контент правее рейла, колонка не растягивается на 4K ────── */
+html[data-apps-skin="next"].pg-page_app_detail body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  padding: 24px 0 72px calc(var(--rail-w) + var(--rail-pad) * 2);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .hero,
+html[data-apps-skin="next"].pg-page_app_detail .screenshots,
+html[data-apps-skin="next"].pg-page_app_detail .section,
+html[data-apps-skin="next"].pg-page_app_detail #editFormContainer {
+  width: min(1180px, 100% - 48px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Герой: обложка остаётся фоном, но под затемнением ───────────────── */
+html[data-apps-skin="next"].pg-page_app_detail .hero {
+  padding: 44px 28px 40px;
+  margin-bottom: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg2);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  text-align: center;
+}
+
+/* Без обложки — тематическая отмывка акцентом; градиент accent→purple из
+   базового слоя на светлой теме раскрывался в неопределённую краску. */
+html[data-apps-skin="next"].pg-page_app_detail .hero-bg {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 20%, var(--bg2)), var(--bg2) 65%);
+  opacity: 1;
+}
+
+/* С обложкой — та же подложка, но поверх неё сама картинка, прикрытая
+   полосой цвета карточки: текст читается и на светлой, и на тёмной теме,
+   потому что затемнение берётся из var(--bg2), а не из чёрного.
+   Размытие до 14px нужно, чтобы скриншот остался цветовой заликой: у него
+   внутри свои крупные надписи, и резкие они сталкивались с названием
+   приложения. Blur берёт пиксели за краем, поэтому фон висит с запасом
+   наружу — .hero обрезан overflow:hidden, полосы не видно. */
+html[data-apps-skin="next"].pg-page_app_detail .hero-bg.has-cover {
+  top: -28px; right: -28px; bottom: -28px; left: -28px;
+  background-image:
+    linear-gradient(180deg, color-mix(in srgb, var(--bg2) 68%, transparent), color-mix(in srgb, var(--bg2) 86%, transparent)),
+    var(--hero-cover);
+  filter: blur(14px) saturate(1.15);
+  opacity: 1;
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .hero-content { max-width: 820px }
+
+html[data-apps-skin="next"].pg-page_app_detail .app-icon {
+  width: 108px;
+  height: 108px;
+  border-radius: var(--radius-lg);
+  font-size: 46px;
+  margin-bottom: 18px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .app-name {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin-bottom: 6px;
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .app-dev {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 20px;
+}
+
+/* Версия/размер/тип — одна пилюля на подложке, как счётчик категории в
+   списке: три разрозненных числа перетягивали внимание с названия. */
+html[data-apps-skin="next"].pg-page_app_detail .app-stats {
+  display: inline-flex;
+  gap: 30px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 10px 28px;
+  margin-bottom: 24px;
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .app-stat .val {
+  font-size: 18px;
+  font-family: var(--font-mono);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .app-stat .label {
+  font-size: 10px;
+  letter-spacing: .08em;
+  color: var(--text3);
+}
+
+/* ── Кнопки действий ─────────────────────────────────────────────────── */
+html[data-apps-skin="next"].pg-page_app_detail .app-actions button {
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .app-actions button:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--text);
+}
+
+/* Сплошной акцент вместо градиентов accent→accent2 и purple→#7c3aed; «Открыть»
+   — второй акцент темы, чтобы не сливаться с «Установить». */
+html[data-apps-skin="next"].pg-page_app_detail .app-actions .install,
+html[data-apps-skin="next"].pg-page_app_detail .app-actions .share-btn {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--on-accent);
+  box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .app-actions .open-btn {
+  background: var(--accent2);
+  border-color: transparent;
+  color: var(--on-accent);
+  box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .app-actions .install:hover,
+html[data-apps-skin="next"].pg-page_app_detail .app-actions .share-btn:hover,
+html[data-apps-skin="next"].pg-page_app_detail .app-actions .open-btn:hover {
+  background: color-mix(in srgb, var(--accent) 88%, var(--on-accent));
+  border-color: transparent;
+  color: var(--on-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .app-actions .installed {
+  background: var(--green-light);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+/* ── Скриншоты ───────────────────────────────────────────────────────── */
+html[data-apps-skin="next"].pg-page_app_detail .screenshots {
+  padding: 0 0 22px;
+  gap: 12px;
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .screenshot {
+  width: 224px;
+  height: 150px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  box-shadow: var(--shadow);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .screenshot:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Секции-карточки ─────────────────────────────────────────────────── */
+html[data-apps-skin="next"].pg-page_app_detail .section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .section h2 {
+  font-size: 15px;
+  font-weight: 700;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .section h2 i { font-size: 14px }
+
+html[data-apps-skin="next"].pg-page_app_detail .section p {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text2);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .tags { margin-top: 14px }
+
+html[data-apps-skin="next"].pg-page_app_detail .tag {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  background: var(--bg3);
+  border-color: var(--border);
+  color: var(--text2);
+}
+
+/* ── Сетка фактов и похожие приложения: вложенный блок темнее секции ─── */
+html[data-apps-skin="next"].pg-page_app_detail .info-grid {
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .info-item {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 12px;
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .info-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .info-item .val {
+  font-size: 16px;
+  font-family: var(--font-mono);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .info-item .label {
+  font-size: 10px;
+  letter-spacing: .08em;
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .similar-grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .similar-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .similar-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .similar-card img {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .similar-card .sc-name { font-size: 13.5px }
+
+/* ── Форма редактирования ────────────────────────────────────────────── */
+html[data-apps-skin="next"].pg-page_app_detail #editFormContainer { margin-top: 4px }
+
+/* Блок формы лежит внутри секции — тот же уровень вложенности, что у
+   фактов и похожих карточек, поэтому подложка на тон темнее секции. */
+html[data-apps-skin="next"].pg-page_app_detail .edit-form { background: var(--bg3) }
+
+html[data-apps-skin="next"].pg-page_app_detail .form-control { background: var(--bg2) }
+
+/* ── Модальные окна и тост ───────────────────────────────────────────── */
+html[data-apps-skin="next"].pg-page_app_detail .modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-apps-skin="next"].pg-page_app_detail .notification-toast {
+  top: 20px;
+  right: 20px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* ── Узкие экраны: рейл становится выдвижной панелью ─────────────────── */
+@media (max-width: 980px) {
+  /* В выдвижном режиме рейл уезжает за левый край, поэтому контент
+     возвращается на всю ширину; сверху освобождается место под FAB. */
+  html[data-apps-skin="next"].pg-page_app_detail body {
+    padding: 64px 0 72px;
+  }
+
+  html[data-apps-skin="next"].pg-page_app_detail .hero,
+  html[data-apps-skin="next"].pg-page_app_detail .screenshots,
+  html[data-apps-skin="next"].pg-page_app_detail .section,
+  html[data-apps-skin="next"].pg-page_app_detail #editFormContainer {
+    width: auto;
+    margin-left: 14px;
+    margin-right: 14px;
+  }
+
+  html[data-apps-skin="next"].pg-page_app_detail .hero { padding: 32px 18px 28px }
+  html[data-apps-skin="next"].pg-page_app_detail .app-stats { gap: 18px; padding: 9px 18px }
+  html[data-apps-skin="next"].pg-page_app_detail .app-actions { gap: 8px }
+
+  html[data-apps-skin="next"].pg-page_app_detail .notification-toast {
+    left: 14px;
+    right: 14px;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-apps-skin="next"].pg-page_app_detail .app-actions button,
+  html[data-apps-skin="next"].pg-page_app_detail .screenshot,
+  html[data-apps-skin="next"].pg-page_app_detail .info-item,
+  html[data-apps-skin="next"].pg-page_app_detail .similar-card {
+    transition-duration: 0.01ms !important;
+  }
+}

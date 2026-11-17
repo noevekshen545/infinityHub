@@ -1,0 +1,2720 @@
+/* ============================================================================
+   Library Next — новый слой оформления для /books и /bookgen/next.
+
+   Задача слоя — не «свой стиль», а приведение двух больших страниц к общей
+   дизайн-системе Infinity:
+     * только токены design.css/theme.js: --bg, --bg2, --bg3, --text,
+       --text2, --text3, --accent, --border, --shadow, --radius;
+     * никакой собственной палитры — все 9 схем и пользовательский акцент
+       приходят из общей темы;
+     * плоские поверхности вместо градиентов и неоновых свечений;
+     * единые радиусы, отступы, состояния наведения и фокуса.
+
+   Файл подключается последним (в конце <body>), а селекторы с
+   html[data-books-skin="next"] / html[data-bookgen-skin="next"] гарантируют
+   перекрытие инлайн-стилей страниц. Оригинальные шаблоны не изменяются.
+   ========================================================================== */
+
+/* ── Страницы: общий фон и отказ от декоративных свечений ───────────────── */
+html[data-books-skin="next"] body,
+html[data-bookgen-skin="next"] body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+/* Страницы объявляют производные акцента в своём :root — там они рассчитаны
+   на светлую палитру и в тёмных схемах дают чужой оттенок. Пересчитываем их
+   от текущего --accent: тогда и «родные» компоненты страницы (подсветки,
+   свечения, границы стекла) следуют выбранной схеме и акценту. */
+html[data-books-skin="next"] body,
+html[data-bookgen-skin="next"] body {
+  --accent-light: color-mix(in srgb, var(--accent) 14%, transparent);
+  --accent-glow: color-mix(in srgb, var(--accent) 24%, transparent);
+  --glass-border: var(--border);
+  --shadow-sm: var(--shadow);
+}
+
+html[data-books-skin="next"] body::before,
+html[data-bookgen-skin="next"] body::before {
+  display: none !important;
+  background: none !important;
+}
+
+html[data-books-skin="next"] ::selection,
+html[data-bookgen-skin="next"] ::selection {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--text);
+}
+
+html[data-books-skin="next"] *:focus-visible,
+html[data-bookgen-skin="next"] *:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── Общая шапка-панель ─────────────────────────────────────────────────── */
+html[data-books-skin="next"] .toolbar,
+html[data-bookgen-skin="next"] .toolbar {
+  top: 10px;
+  padding: 6px;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg2) 94%, transparent);
+  box-shadow: var(--shadow, 0 4px 14px rgba(16, 24, 40, 0.07));
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+
+html[data-books-skin="next"] .toolbar:hover,
+html[data-bookgen-skin="next"] .toolbar:hover {
+  box-shadow: var(--shadow);
+}
+
+html[data-books-skin="next"] .toolbar .btn,
+html[data-bookgen-skin="next"] .toolbar .btn {
+  padding: 8px 12px;
+  border-radius: calc(var(--radius) - 4px);
+  color: var(--text2);
+  font-weight: 500;
+}
+
+html[data-books-skin="next"] .toolbar .btn:hover,
+html[data-bookgen-skin="next"] .toolbar .btn:hover {
+  background: var(--bg3);
+  color: var(--text);
+  transform: none;
+}
+
+html[data-books-skin="next"] .toolbar .btn:hover i,
+html[data-bookgen-skin="next"] .toolbar .btn:hover i {
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .toolbar .btn.active,
+html[data-bookgen-skin="next"] .toolbar .btn.active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+html[data-books-skin="next"] .toolbar .btn.active i,
+html[data-bookgen-skin="next"] .toolbar .btn.active i {
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .toolbar .btn-icon,
+html[data-bookgen-skin="next"] .toolbar .btn-icon {
+  border-radius: calc(var(--radius) - 4px);
+}
+
+html[data-books-skin="next"] .toolbar .btn-icon:hover,
+html[data-bookgen-skin="next"] .toolbar .btn-icon:hover {
+  background: var(--bg3);
+  color: var(--accent);
+  transform: none;
+}
+
+html[data-books-skin="next"] .toolbar .sep,
+html[data-bookgen-skin="next"] .toolbar .sep {
+  background: var(--border);
+}
+
+html[data-books-skin="next"] .toolbar .search-box,
+html[data-bookgen-skin="next"] .toolbar .search-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+}
+
+html[data-books-skin="next"] .toolbar .search-box:focus-within,
+html[data-bookgen-skin="next"] .toolbar .search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+html[data-books-skin="next"] .more-pop,
+html[data-bookgen-skin="next"] .more-pop {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg, 0 16px 44px rgba(16, 24, 40, 0.13));
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* ── Контент, заголовки, секции ─────────────────────────────────────────── */
+html[data-books-skin="next"] .main-content,
+html[data-bookgen-skin="next"] .main-content {
+  max-width: 1320px;
+  padding: 86px 24px 88px;
+}
+
+html[data-books-skin="next"] .page-header h1,
+html[data-bookgen-skin="next"] .page-header h1 {
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  color: var(--text);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+html[data-books-skin="next"] .page-header .subtitle,
+html[data-bookgen-skin="next"] .page-header .subtitle {
+  color: var(--text3);
+  font-size: 13.5px;
+}
+
+html[data-books-skin="next"] .page-header,
+html[data-bookgen-skin="next"] .page-header {
+  margin-bottom: 20px;
+}
+
+/* ── Кнопки ─────────────────────────────────────────────────────────────── */
+html[data-books-skin="next"] .btn,
+html[data-bookgen-skin="next"] .btn {
+  background: color-mix(in srgb, var(--accent) 13%, var(--bg2));
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--border));
+  border-radius: calc(var(--radius) - 2px);
+  color: var(--accent);
+  box-shadow: none;
+  padding: 9px 16px;
+  font-weight: 600;
+}
+
+html[data-books-skin="next"] .btn::before,
+html[data-bookgen-skin="next"] .btn::before {
+  display: none;
+}
+
+html[data-books-skin="next"] .btn:hover,
+html[data-bookgen-skin="next"] .btn:hover {
+  background: color-mix(in srgb, var(--accent) 20%, var(--bg2));
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: none;
+  box-shadow: none;
+}
+
+html[data-books-skin="next"] .btn:active,
+html[data-bookgen-skin="next"] .btn:active {
+  transform: none;
+}
+
+html[data-books-skin="next"] .btn.btn-outline,
+html[data-bookgen-skin="next"] .btn.btn-outline {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-books-skin="next"] .btn.btn-outline:hover,
+html[data-bookgen-skin="next"] .btn.btn-outline:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .btn.btn-success,
+html[data-bookgen-skin="next"] .btn.btn-success {
+  background: color-mix(in srgb, var(--green) 13%, var(--bg2));
+  border-color: color-mix(in srgb, var(--green) 42%, var(--border));
+  color: var(--green);
+}
+
+html[data-books-skin="next"] .btn.btn-danger,
+html[data-bookgen-skin="next"] .btn.btn-danger {
+  background: color-mix(in srgb, var(--red) 13%, var(--bg2));
+  border-color: color-mix(in srgb, var(--red) 42%, var(--border));
+  color: var(--red);
+}
+
+/* ── Формы ──────────────────────────────────────────────────────────────── */
+html[data-books-skin="next"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html[data-books-skin="next"] textarea,
+html[data-books-skin="next"] select,
+html[data-bookgen-skin="next"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html[data-bookgen-skin="next"] textarea,
+html[data-bookgen-skin="next"] select {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  color: var(--text);
+}
+
+html[data-books-skin="next"] input:focus,
+html[data-books-skin="next"] textarea:focus,
+html[data-books-skin="next"] select:focus,
+html[data-bookgen-skin="next"] input:focus,
+html[data-bookgen-skin="next"] textarea:focus,
+html[data-bookgen-skin="next"] select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+  outline: none;
+}
+
+html[data-books-skin="next"] input[type="range"],
+html[data-bookgen-skin="next"] input[type="range"] {
+  accent-color: var(--accent);
+}
+
+/* ── Карточки и панели ──────────────────────────────────────────────────── */
+html[data-books-skin="next"] .glass-panel,
+html[data-bookgen-skin="next"] .glass-panel,
+html[data-bookgen-skin="next"] .card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-books-skin="next"] .book-grid,
+html[data-bookgen-skin="next"] .book-grid {
+  gap: 18px;
+}
+
+html[data-books-skin="next"] .book-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-books-skin="next"] .book-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  box-shadow: var(--shadow);
+}
+
+html[data-books-skin="next"] .book-cover {
+  background: var(--bg3);
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .book-cover .placeholder {
+  opacity: 0.62;
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .book-cover .format-badge {
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  border: 1px solid var(--border);
+  color: var(--text);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+html[data-books-skin="next"] .book-cover .progress-bar {
+  background: var(--bg4);
+}
+
+html[data-books-skin="next"] .book-cover .progress-bar .fill {
+  background: var(--accent);
+}
+
+html[data-books-skin="next"] .book-card .read-badge {
+  background: color-mix(in srgb, var(--green) 16%, var(--bg2));
+  color: var(--green);
+  box-shadow: none;
+}
+
+html[data-books-skin="next"] .book-card .fav-badge {
+  background: color-mix(in srgb, var(--yellow) 18%, var(--bg2));
+  border: 1px solid color-mix(in srgb, var(--yellow) 46%, transparent);
+  color: color-mix(in srgb, var(--text) 82%, var(--yellow));
+  box-shadow: none;
+}
+
+html[data-books-skin="next"] .book-card .action-btn-overlay {
+  background: var(--bg2);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: calc(var(--radius) - 4px);
+  color: var(--accent);
+  box-shadow: none;
+}
+
+html[data-books-skin="next"] .book-card .action-btn-overlay i {
+  color: inherit;
+}
+
+html[data-books-skin="next"] .book-card .action-btn-overlay.is-fav {
+  background: color-mix(in srgb, var(--yellow) 14%, var(--bg2));
+  border-color: color-mix(in srgb, var(--yellow) 46%, var(--border));
+  color: color-mix(in srgb, var(--yellow) 60%, var(--text));
+}
+
+html[data-books-skin="next"] .book-card .share-btn-overlay,
+html[data-books-skin="next"] .book-card .qdrant-add-overlay {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  color: var(--text2);
+  box-shadow: none;
+}
+
+html[data-books-skin="next"] .book-card .share-btn-overlay:hover,
+html[data-books-skin="next"] .book-card .qdrant-add-overlay:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg2));
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .book-info .title {
+  color: var(--text);
+}
+
+html[data-books-skin="next"] .book-info .author,
+html[data-books-skin="next"] .book-info .meta {
+  color: var(--text3);
+}
+
+/* ── Чипы фильтров ──────────────────────────────────────────────────────── */
+html[data-books-skin="next"] .filter-pills {
+  gap: 6px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  width: auto;
+}
+
+html[data-books-skin="next"] .filter-pill {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text2);
+  padding: 7px 14px;
+}
+
+html[data-books-skin="next"] .filter-pill:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+html[data-books-skin="next"] .filter-pill.active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  color: var(--accent);
+  box-shadow: none;
+  font-weight: 600;
+}
+
+html[data-books-skin="next"] .filter-pill .count {
+  background: var(--bg3);
+  color: var(--text2);
+}
+
+html[data-books-skin="next"] .filter-pill.active .count {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--accent);
+}
+
+/* ── Читалка ────────────────────────────────────────────────────────────── */
+html[data-books-skin="next"] .reader-wrap {
+  background: transparent;
+}
+
+html[data-books-skin="next"] .reader-header {
+  border-bottom: 1px solid var(--border);
+}
+
+html[data-books-skin="next"] .reader {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px 32px 36px;
+  color: var(--text);
+}
+
+html[data-books-skin="next"] .reader-header h1 {
+  font-size: 30px;
+}
+
+/* Панель инструментов читалки: одна аккуратная полоса вместо стены
+   акцентных кнопок. Пункты нейтральные, акцент — только на hover. */
+html[data-books-skin="next"] .reader-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 22px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg3);
+}
+
+html[data-books-skin="next"] .reader-actions .btn {
+  height: 32px;
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: none;
+  transform: none;
+}
+
+html[data-books-skin="next"] .reader-actions .btn i {
+  width: 14px;
+  font-size: 11.5px;
+  text-align: center;
+  color: var(--text3);
+  transition: color 120ms ease;
+}
+
+html[data-books-skin="next"] .reader-actions .btn:hover {
+  background: var(--bg2);
+  border-color: var(--border);
+  color: var(--text);
+  transform: none;
+}
+
+html[data-books-skin="next"] .reader-actions .btn:hover i {
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .reader h1,
+html[data-books-skin="next"] .reader h2,
+html[data-books-skin="next"] .reader h3,
+html[data-books-skin="next"] .reader h4 {
+  color: var(--text);
+}
+
+html[data-books-skin="next"] .reader-header .meta span {
+  background: var(--bg3);
+  color: var(--text2);
+  border-radius: 999px;
+}
+
+html[data-books-skin="next"] .read-progress {
+  background: var(--bg3);
+}
+
+html[data-books-skin="next"] .read-progress .fill {
+  background: var(--accent);
+}
+
+html[data-books-skin="next"] .search-highlight {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--text);
+  border-radius: 3px;
+}
+
+html[data-books-skin="next"] .search-highlight.current {
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+html[data-books-skin="next"] .tts-active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-left-color: var(--accent);
+}
+
+/* ── Режим чтения: чистая страница без карточки и аккуратный бар ───────── */
+html[data-books-skin="next"] body.reading-mode .reader {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+html[data-books-skin="next"] #readingModeBar {
+  background: color-mix(in srgb, var(--bg2) 88%, transparent);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+  padding: 8px 16px;
+}
+
+html[data-books-skin="next"] #readingModeBar .rm-inner {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 1088px;
+  gap: 8px;
+}
+
+html[data-books-skin="next"] #readingModeBar .rm-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text2);
+}
+
+html[data-books-skin="next"] #readingModeBar .rm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+html[data-books-skin="next"] #readingModeBar .rm-btn i {
+  font-size: 11.5px;
+}
+
+html[data-books-skin="next"] #readingModeBar .rm-btn:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+html[data-books-skin="next"] #readingModeBar .rm-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--bg3);
+}
+
+html[data-books-skin="next"] #readingModeBar .rm-group .rm-btn {
+  height: 26px;
+  min-height: 26px;
+  padding: 0 9px;
+  border-radius: 8px;
+}
+
+html[data-books-skin="next"] #readingModeBar .rm-group .rm-btn:hover {
+  background: var(--bg2);
+}
+
+html[data-books-skin="next"] #readingModeBar .rm-btn.primary {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] #readingModeBar .rm-btn.primary:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: var(--accent);
+}
+
+/* ── Боковая панель TOC и коллекция ─────────────────────────────────────── */
+html[data-books-skin="next"] .sidebar,
+html[data-books-skin="next"] .collection-sidebar {
+  background: var(--bg2);
+  border-color: var(--border);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-books-skin="next"] .sidebar-header,
+html[data-books-skin="next"] .cs-tabs {
+  border-bottom: 1px solid var(--border);
+}
+
+html[data-books-skin="next"] .toc-item:hover,
+html[data-books-skin="next"] .cs-item:hover {
+  background: var(--bg3);
+}
+
+html[data-books-skin="next"] .toc-item.active,
+html[data-books-skin="next"] .cs-item.active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+/* ── Виджеты, статистика, заметки, цитаты, словарь ──────────────────────── */
+html[data-books-skin="next"] .goals-widget,
+html[data-books-skin="next"] .pomodoro-widget,
+html[data-books-skin="next"] .stats-panel,
+html[data-books-skin="next"] .ach-card,
+html[data-books-skin="next"] .quote-card,
+html[data-books-skin="next"] .note-card,
+html[data-books-skin="next"] .dict-word-card,
+html[data-books-skin="next"] .bm-item,
+html[data-books-skin="next"] .folder-item {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+
+html[data-books-skin="next"] .goal-progress,
+html[data-books-skin="next"] .stat-bar,
+html[data-books-skin="next"] .ach-progress {
+  background: var(--bg3);
+  border-radius: 999px;
+}
+
+html[data-books-skin="next"] .goal-progress .fill,
+html[data-books-skin="next"] .stat-bar .fill,
+html[data-books-skin="next"] .ach-progress .fill {
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+html[data-books-skin="next"] .heatmap-day {
+  border-radius: 3px;
+}
+
+html[data-books-skin="next"] .empty-state {
+  color: var(--text3);
+}
+
+html[data-books-skin="next"] .empty-state .icon {
+  color: var(--text3);
+  opacity: 0.7;
+}
+
+/* ── Модальные окна ─────────────────────────────────────────────────────── */
+html[data-books-skin="next"] .modal-overlay,
+html[data-bookgen-skin="next"] .modal-overlay,
+html[data-bookgen-skin="next"] .fs-overlay {
+  background: rgba(10, 14, 20, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+html[data-books-skin="next"] .modal,
+html[data-bookgen-skin="next"] .modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg, 0 16px 44px rgba(16, 24, 40, 0.13));
+}
+
+html[data-books-skin="next"] .modal-header,
+html[data-bookgen-skin="next"] .modal-header {
+  border-bottom: 1px solid var(--border);
+}
+
+html[data-books-skin="next"] .modal-close,
+html[data-bookgen-skin="next"] .modal-close {
+  border-radius: calc(var(--radius) - 4px);
+  color: var(--text2);
+}
+
+html[data-books-skin="next"] .modal-close:hover,
+html[data-bookgen-skin="next"] .modal-close:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+html[data-books-skin="next"] .setting-group,
+html[data-bookgen-skin="next"] .form-group {
+  color: var(--text);
+}
+
+html[data-books-skin="next"] .theme-btn {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  color: var(--text2);
+}
+
+html[data-books-skin="next"] .theme-btn:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+html[data-books-skin="next"] .theme-btn.active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .shortcut-item,
+html[data-bookgen-skin="next"] .shortcut-item {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+}
+
+html[data-books-skin="next"] .shortcut-item:hover,
+html[data-bookgen-skin="next"] .shortcut-item:hover {
+  border-color: var(--accent);
+  background: var(--bg3);
+}
+
+html[data-books-skin="next"] .kbd,
+html[data-bookgen-skin="next"] .kbd {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text2);
+}
+
+/* ── BookGen: особая механика редактора глав ────────────────────────────── */
+html[data-bookgen-skin="next"] .tabs {
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+}
+
+html[data-bookgen-skin="next"] .tab {
+  border-radius: calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0 0;
+  color: var(--text2);
+}
+
+html[data-bookgen-skin="next"] .tab:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+html[data-bookgen-skin="next"] .tab.active {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-bottom-color: var(--bg2);
+  color: var(--accent);
+}
+
+html[data-bookgen-skin="next"] .editor-container,
+html[data-bookgen-skin="next"] .editor-pane,
+html[data-bookgen-skin="next"] .chapter-nav-wrap,
+html[data-bookgen-skin="next"] .chapter-list,
+html[data-bookgen-skin="next"] .log-container {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+
+html[data-bookgen-skin="next"] .chapter-row {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+}
+
+html[data-bookgen-skin="next"] .chapter-row:hover {
+  background: var(--bg3);
+}
+
+html[data-bookgen-skin="next"] .chapter-row.current {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+}
+
+html[data-bookgen-skin="next"] .chapter-row.generated {
+  border-left: 3px solid var(--accent);
+}
+
+html[data-bookgen-skin="next"] .progress-bar {
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+html[data-bookgen-skin="next"] .progress-container {
+  background: var(--bg3);
+  border-radius: 999px;
+}
+
+html[data-bookgen-skin="next"] .prompt-chip {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+}
+
+html[data-bookgen-skin="next"] .prompt-chip:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: none;
+}
+
+html[data-bookgen-skin="next"] .status-badge {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 15%, var(--bg2));
+  color: var(--accent);
+}
+
+html[data-bookgen-skin="next"] .book-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-bookgen-skin="next"] .book-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  box-shadow: var(--shadow);
+}
+
+html[data-bookgen-skin="next"] .editor-statusbar,
+html[data-bookgen-skin="next"] .editor-toolbar,
+html[data-bookgen-skin="next"] .pages-toolbar {
+  background: var(--bg2);
+  border-color: var(--border);
+}
+
+html[data-bookgen-skin="next"] .proofread-item:hover {
+  border-color: var(--accent) !important;
+}
+
+/* ── Плавающая панель оформления (превью) ──────────────────────────────── */
+.library-skin {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  font-family: var(--font, "Inter", system-ui, sans-serif);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.library-skin__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg2);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.library-skin__toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.library-skin__toggle .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.library-skin__toggle i {
+  transition: transform 160ms ease;
+}
+
+.library-skin.open .library-skin__toggle i {
+  transform: rotate(180deg);
+}
+
+.library-skin__panel {
+  display: none;
+  width: 276px;
+  max-width: calc(100vw - 32px);
+  max-height: min(70vh, 520px);
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg2);
+  color: var(--text);
+  box-shadow: var(--shadow-lg, 0 16px 44px rgba(16, 24, 40, 0.13));
+}
+
+.library-skin.open .library-skin__panel {
+  display: block;
+}
+
+.library-skin__cap {
+  margin: 10px 2px 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.library-skin__cap:first-child {
+  margin-top: 0;
+}
+
+.library-skin__links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.library-skin__links a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: calc(var(--radius) - 4px);
+  color: var(--text2);
+  text-decoration: none;
+}
+
+.library-skin__links a:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+.library-skin__links a.on {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.library-skin__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.library-skin__theme {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--bg2);
+  color: var(--text2);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11.5px;
+  text-align: left;
+}
+
+.library-skin__theme:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+.library-skin__theme.on {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+.library-skin__theme .swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.library-skin__accents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.library-skin__accent {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.library-skin__accent:hover {
+  transform: scale(1.08);
+}
+
+.library-skin__accent.on {
+  border-color: var(--text);
+}
+
+.library-skin__accent.reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg3);
+  color: var(--text2);
+  width: auto;
+  min-width: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+/* ── Адаптив ────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  html[data-books-skin="next"] .main-content,
+  html[data-bookgen-skin="next"] .main-content {
+    padding: 78px 14px 72px;
+  }
+
+  html[data-books-skin="next"] .book-grid,
+  html[data-bookgen-skin="next"] .book-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  html[data-books-skin="next"] .page-header h1,
+  html[data-bookgen-skin="next"] .page-header h1 {
+    font-size: 22px;
+  }
+
+  .library-skin {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .library-skin__panel {
+    width: min(276px, calc(100vw - 24px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-books-skin="next"] *,
+  html[data-bookgen-skin="next"] *,
+  .library-skin * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  .library-skin {
+    display: none !important;
+  }
+}
+
+/* ======================================================================
+   КАРКАС 2.0 — левое меню-рейл, шапка контента, фильтры, сетка
+   ======================================================================
+   Здесь меняется не палитра, а сама раскладка: меню уезжает из «плавающей
+   таблетки» сверху в постоянный левый рейл, контент получает собственный
+   отступ, шапка становится карточкой, фильтры — сегментированным контролом.
+   Все правила идут после базового слоя, поэтому перекрывают его. */
+
+html[data-books-skin="next"],
+html[data-bookgen-skin="next"] {
+  --rail-w: 250px;
+  --rail-pad: 16px;
+}
+
+/* ── Рейл ───────────────────────────────────────────────────────────── */
+html[data-books-skin="next"] .toolbar,
+html[data-bookgen-skin="next"] .toolbar {
+  position: fixed;
+  top: var(--rail-pad);
+  bottom: var(--rail-pad);
+  left: var(--rail-pad);
+  right: auto;
+  width: var(--rail-w);
+  transform: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  box-shadow: var(--shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+html[data-books-skin="next"] .toolbar:hover,
+html[data-bookgen-skin="next"] .toolbar:hover {
+  box-shadow: var(--shadow);
+}
+
+/* Бренд */
+html[data-books-skin="next"] .toolbar .btn.rail-brand,
+html[data-bookgen-skin="next"] .toolbar .rail-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: auto;
+  padding: 6px 6px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  text-decoration: none;
+  justify-content: flex-start;
+}
+
+html[data-books-skin="next"] .toolbar .btn.rail-brand:hover,
+html[data-bookgen-skin="next"] .toolbar .rail-brand:hover {
+  background: var(--bg3);
+}
+
+html[data-books-skin="next"] .rail-brand-mark,
+html[data-bookgen-skin="next"] .rail-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg3));
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+  color: var(--accent);
+  font-size: 15px;
+}
+
+html[data-books-skin="next"] .rail-brand-mark i,
+html[data-bookgen-skin="next"] .rail-brand-mark i {
+  color: var(--accent);
+  width: auto;
+  font-size: 15px;
+}
+
+html[data-books-skin="next"] .rail-brand-text,
+html[data-bookgen-skin="next"] .rail-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  min-width: 0;
+}
+
+html[data-books-skin="next"] .rail-brand-text b,
+html[data-bookgen-skin="next"] .rail-brand-text b {
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html[data-books-skin="next"] .rail-brand-text small,
+html[data-bookgen-skin="next"] .rail-brand-text small {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--text3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Поиск в рейле */
+html[data-books-skin="next"] .toolbar .search-box,
+html[data-bookgen-skin="next"] .toolbar .search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 36px;
+  margin: 2px 0 6px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+  border-radius: 10px;
+  background: var(--bg2);
+  color: var(--text3);
+  transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+}
+
+html[data-books-skin="next"] .toolbar .search-box:focus-within,
+html[data-bookgen-skin="next"] .toolbar .search-box:focus-within {
+  background: var(--bg2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+html[data-books-skin="next"] .toolbar .search-box i,
+html[data-bookgen-skin="next"] .toolbar .search-box i {
+  width: auto;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/* Селектор повторяет весовую форму общего правила полей ниже, иначе поле
+   внутри рейла получало фон и вложенное скругление — «стенки» в поиске. */
+html[data-books-skin="next"] .toolbar .search-box input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html[data-bookgen-skin="next"] .toolbar .search-box input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 13px;
+  color: var(--text);
+}
+
+html[data-books-skin="next"] .toolbar .search-box input:focus,
+html[data-bookgen-skin="next"] .toolbar .search-box input:focus {
+  border: 0;
+  box-shadow: none;
+}
+
+/* Прокручиваемая середина рейла: меню не «уезжает» под нижние иконки */
+html[data-books-skin="next"] .toolbar .rail-scroll,
+html[data-bookgen-skin="next"] .toolbar .rail-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 -4px;
+  padding: 0 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  overscroll-behavior: contain;
+}
+
+html[data-books-skin="next"] .toolbar .rail-scroll::-webkit-scrollbar,
+html[data-bookgen-skin="next"] .toolbar .rail-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+html[data-books-skin="next"] .toolbar .rail-scroll::-webkit-scrollbar-thumb,
+html[data-bookgen-skin="next"] .toolbar .rail-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--border);
+}
+
+/* Группы меню */
+html[data-books-skin="next"] .toolbar .rail-group,
+html[data-bookgen-skin="next"] .toolbar .rail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0;
+  flex: 0 0 auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+html[data-books-skin="next"] .toolbar .rail-group + .rail-group,
+html[data-bookgen-skin="next"] .toolbar .rail-group + .rail-group {
+  margin-top: 3px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+html[data-books-skin="next"] .toolbar .rail-cap,
+html[data-bookgen-skin="next"] .toolbar .rail-cap {
+  padding: 2px 10px 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+/* Пункты меню */
+html[data-books-skin="next"] .toolbar .btn,
+html[data-bookgen-skin="next"] .toolbar .btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  height: 33px;
+  min-height: 33px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 12.5px;
+  font-weight: 500;
+  box-shadow: none;
+  transform: none;
+}
+
+html[data-books-skin="next"] .toolbar .btn > span,
+html[data-bookgen-skin="next"] .toolbar .btn > span {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html[data-books-skin="next"] .toolbar .btn i,
+html[data-bookgen-skin="next"] .toolbar .btn i {
+  width: 16px;
+  flex: 0 0 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text3);
+  transition: color 140ms ease;
+}
+
+html[data-books-skin="next"] .toolbar .btn:hover,
+html[data-bookgen-skin="next"] .toolbar .btn:hover {
+  background: var(--bg3);
+  border-color: transparent;
+  color: var(--text);
+  transform: none;
+}
+
+html[data-books-skin="next"] .toolbar .btn:hover i,
+html[data-bookgen-skin="next"] .toolbar .btn:hover i {
+  color: var(--text2);
+}
+
+html[data-books-skin="next"] .toolbar .btn.active,
+html[data-bookgen-skin="next"] .toolbar .btn.active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+html[data-books-skin="next"] .toolbar .btn.active i,
+html[data-bookgen-skin="next"] .toolbar .btn.active i {
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .toolbar .badge,
+html[data-bookgen-skin="next"] .toolbar .badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Нижний блок рейла: иконки действий */
+html[data-books-skin="next"] .toolbar .rail-foot,
+html[data-bookgen-skin="next"] .toolbar .rail-foot {
+  flex: 0 0 auto;
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+html[data-books-skin="next"] .toolbar .rail-foot .btn-icon,
+html[data-bookgen-skin="next"] .toolbar .rail-foot .btn-icon {
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 10px;
+  color: var(--text2);
+}
+
+html[data-books-skin="next"] .toolbar .rail-foot .btn-icon i,
+html[data-bookgen-skin="next"] .toolbar .rail-foot .btn-icon i {
+  width: auto;
+  color: inherit;
+  font-size: 13px;
+}
+
+html[data-books-skin="next"] .toolbar .rail-foot .btn-icon:hover,
+html[data-bookgen-skin="next"] .toolbar .rail-foot .btn-icon:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .toolbar .rail-foot details.more,
+html[data-bookgen-skin="next"] .toolbar .rail-foot details.more {
+  margin-left: auto;
+}
+
+/* Zen-режим дублирует режим чтения — кнопку из панели убираем.
+   Сам обработчик остаётся: горячая клавиша и совместимость не ломаются. */
+html[data-books-skin="next"] #zenBtn {
+  display: none !important;
+}
+
+/* Выпадающее «Ещё» открывается вправо от рейла, а не вниз */
+html[data-books-skin="next"] .more-pop,
+html[data-bookgen-skin="next"] .more-pop {
+  top: auto;
+  bottom: 0;
+  left: calc(100% + 10px);
+  right: auto;
+  min-width: 216px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg2);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-books-skin="next"] .more-pop .btn,
+html[data-bookgen-skin="next"] .more-pop .btn {
+  justify-content: flex-start;
+  height: 36px;
+  background: transparent;
+  color: var(--text2);
+  border: 0;
+}
+
+html[data-books-skin="next"] .more-pop .btn:hover,
+html[data-bookgen-skin="next"] .more-pop .btn:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+/* ── Контент ────────────────────────────────────────────────────────── */
+html[data-books-skin="next"] .main-content,
+html[data-bookgen-skin="next"] .main-content {
+  max-width: none;
+  margin: 0 0 0 calc(var(--rail-w) + var(--rail-pad) * 2 + 4px);
+  padding: 20px 28px 96px;
+  position: relative;
+  z-index: 1;
+}
+
+html[data-books-skin="next"] .main-content > .section-view,
+html[data-bookgen-skin="next"] .main-content > .tab-content {
+  max-width: 1480px;
+  margin: 0 auto;
+}
+
+/* Коллекция (жанры) — справа от рейла */
+html[data-books-skin="next"] .collection-sidebar {
+  left: calc(var(--rail-w) + var(--rail-pad) * 2 + 4px);
+  top: 84px;
+  width: 240px;
+  border-radius: 16px;
+}
+
+html[data-books-skin="next"] body.collection-mode .main-content {
+  padding-left: 272px;
+}
+
+/* ── Шапка страницы ─────────────────────────────────────────────────── */
+/* Шапка повторяет старое меню-тулбар: стеклянная полоса, компактные
+   пункты без рамок и мягкая тень. Карточка с акцентной полосой убрана. */
+html[data-books-skin="next"] .page-header,
+html[data-bookgen-skin="next"] .page-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding: 8px 10px 8px 18px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--bg2) 86%, transparent);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  overflow: visible;
+}
+
+html[data-books-skin="next"] .page-header h1,
+html[data-bookgen-skin="next"] .page-header h1 {
+  font-size: 19px;
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+html[data-books-skin="next"] .page-header h1 i,
+html[data-bookgen-skin="next"] .page-header h1 i {
+  font-size: 17px;
+}
+
+html[data-books-skin="next"] .page-header .subtitle,
+html[data-bookgen-skin="next"] .page-header .subtitle {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+html[data-books-skin="next"] .page-header > div:last-child,
+html[data-bookgen-skin="next"] .page-header > div:last-child {
+  align-items: center;
+  gap: 4px;
+}
+
+/* Пункты шапки — как кнопки старого тулбара: без рамки, акцент на hover */
+html[data-books-skin="next"] .page-header .btn,
+html[data-bookgen-skin="next"] .page-header .btn {
+  height: 32px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 12.5px;
+  font-weight: 500;
+  box-shadow: none;
+}
+
+html[data-books-skin="next"] .page-header .btn i,
+html[data-bookgen-skin="next"] .page-header .btn i {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+html[data-books-skin="next"] .page-header .btn:hover,
+html[data-bookgen-skin="next"] .page-header .btn:hover {
+  background: var(--bg3);
+  border-color: transparent;
+  color: var(--text);
+  transform: none;
+}
+
+html[data-books-skin="next"] .page-header .btn:hover i,
+html[data-bookgen-skin="next"] .page-header .btn:hover i {
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .page-header .btn:not(.btn-outline),
+html[data-bookgen-skin="next"] .page-header .btn:not(.btn-outline) {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .page-header .btn:not(.btn-outline) i,
+html[data-bookgen-skin="next"] .page-header .btn:not(.btn-outline) i {
+  color: var(--accent);
+}
+
+/* ── Фильтры ────────────────────────────────────────────────────────── */
+html[data-books-skin="next"] .filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  margin: 0 0 18px;
+  padding: 6px;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg2);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-books-skin="next"] .filter-pill {
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text2);
+  background: transparent;
+}
+
+html[data-books-skin="next"] .filter-pill:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+html[data-books-skin="next"] .filter-pill.active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: none;
+}
+
+html[data-books-skin="next"] .filter-pill .count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--bg3);
+  color: var(--text3);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+html[data-books-skin="next"] .filter-pill.active .count {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent);
+}
+
+/* Форматы — компактные чипы */
+html[data-books-skin="next"] .filter-pill[data-filter="epub"],
+html[data-books-skin="next"] .filter-pill[data-filter="fb2"],
+html[data-books-skin="next"] .filter-pill[data-filter="pdf"],
+html[data-books-skin="next"] .filter-pill[data-filter="txt"] {
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text3);
+  border-color: var(--border);
+}
+
+html[data-books-skin="next"] .filter-pill[data-filter="epub"].active,
+html[data-books-skin="next"] .filter-pill[data-filter="fb2"].active,
+html[data-books-skin="next"] .filter-pill[data-filter="pdf"].active,
+html[data-books-skin="next"] .filter-pill[data-filter="txt"].active {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+html[data-books-skin="next"] .filter-pill.collection-pill {
+  margin-left: auto;
+}
+
+/* ── Сетка книг ─────────────────────────────────────────────────────── */
+html[data-books-skin="next"] .book-grid {
+  grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+  gap: 18px;
+}
+
+html[data-books-skin="next"] .book-card {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  box-shadow: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+html[data-books-skin="next"] .book-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+  box-shadow: var(--shadow);
+}
+
+html[data-books-skin="next"] .book-cover {
+  aspect-ratio: 3 / 4;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── BookGen: карточки и секции ─────────────────────────────────────── */
+html[data-bookgen-skin="next"] .main-content > .tab-content {
+  max-width: 1080px;
+}
+
+html[data-bookgen-skin="next"] .card {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  box-shadow: none;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+}
+
+html[data-bookgen-skin="next"] .card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+html[data-bookgen-skin="next"] .bg-step {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+  color: var(--accent);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+html[data-bookgen-skin="next"] .card .form-group:last-child {
+  margin-bottom: 0;
+}
+
+html[data-bookgen-skin="next"] .form-group input,
+html[data-bookgen-skin="next"] .form-group textarea,
+html[data-bookgen-skin="next"] .form-group select {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13.5px;
+}
+
+html[data-bookgen-skin="next"] .form-group input:focus,
+html[data-bookgen-skin="next"] .form-group textarea:focus,
+html[data-bookgen-skin="next"] .form-group select:focus {
+  background: var(--bg2);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+html[data-bookgen-skin="next"] .page-header .subtitle {
+  margin-top: 5px;
+  font-size: 13px;
+  color: var(--text3);
+}
+
+/* ── Режимы без меню ────────────────────────────────────────────────── */
+html[data-books-skin="next"] body.zen-mode .toolbar,
+html[data-books-skin="next"] body.reading-mode .toolbar,
+html[data-bookgen-skin="next"] body.zen-mode .toolbar {
+  transform: translateX(calc(-100% - 28px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+html[data-books-skin="next"] body.zen-mode .main-content,
+html[data-books-skin="next"] body.reading-mode .main-content,
+html[data-bookgen-skin="next"] body.zen-mode .main-content {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1180px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* Кнопка меню на узких экранах (создаётся library_next.js) */
+.library-rail-toggle,
+.library-rail-scrim {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .library-rail-toggle {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 1002;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: var(--bg2);
+    color: var(--text);
+    box-shadow: var(--shadow);
+  }
+
+  .library-rail-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.42);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+
+  body.library-rail-open .library-rail-scrim {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  html[data-books-skin="next"] .toolbar,
+  html[data-bookgen-skin="next"] .toolbar {
+    width: min(290px, 86vw);
+    transform: translateX(calc(-100% - 28px));
+    transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  body.library-rail-open .toolbar {
+    transform: none;
+  }
+
+  html[data-books-skin="next"] .main-content,
+  html[data-bookgen-skin="next"] .main-content {
+    margin-left: 0;
+    padding: 72px 16px 96px;
+  }
+
+  html[data-books-skin="next"] .collection-sidebar {
+    left: 16px;
+    top: 72px;
+  }
+
+  html[data-books-skin="next"] body.collection-mode .main-content {
+    padding-left: 268px;
+  }
+
+  html[data-books-skin="next"] .page-header,
+  html[data-bookgen-skin="next"] .page-header {
+    padding: 8px 8px 8px 14px;
+    border-radius: 16px;
+  }
+
+  html[data-books-skin="next"] .page-header h1,
+  html[data-bookgen-skin="next"] .page-header h1 {
+    font-size: 17px;
+  }
+
+  html[data-books-skin="next"] .book-grid {
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  html[data-books-skin="next"] .main-content,
+  html[data-bookgen-skin="next"] .main-content {
+    padding: 70px 12px 90px;
+  }
+
+  html[data-books-skin="next"] .filter-pill.collection-pill {
+    margin-left: 0;
+  }
+}
+
+/* ======================================================================
+   РЕЙЛ 3.0 — сворачивание меню, полоса панели жанров, карточка, сортировка
+   ======================================================================
+   Сворачивание повторяет поведение меню Search All: круглая кнопка на
+   правой кромке, иконки без подписей, подсказки в title. Ширина рейла —
+   единственная переменная, поэтому контент и панель жанров сдвигаются сами. */
+
+html[data-books-skin="next"] {
+  --rail-collapsed-w: 76px;
+}
+
+html[data-books-skin="next"].rail-collapsed {
+  --rail-w: var(--rail-collapsed-w);
+}
+
+/* Кнопка-стрелка на кромке рейла */
+html[data-books-skin="next"] .toolbar .rail-collapse {
+  position: absolute;
+  top: 18px;
+  right: -13px;
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg2);
+  color: var(--text3);
+  font-size: 9px;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 2px 6px rgba(17, 24, 39, 0.10), 0 8px 18px -10px rgba(17, 24, 39, 0.30);
+  transition: color 140ms ease, border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+html[data-books-skin="next"] .toolbar .rail-collapse:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(17, 24, 39, 0.10), 0 10px 20px -10px var(--accent-glow);
+}
+
+html[data-books-skin="next"] .toolbar .rail-collapse i {
+  width: auto;
+  color: inherit;
+  font-size: 9px;
+  transition: transform 200ms ease;
+}
+
+html[data-books-skin="next"].rail-collapsed .toolbar .rail-collapse i {
+  transform: rotate(180deg);
+}
+
+/* Меню не обрезает кнопку на кромке; прокрутка остаётся у .rail-scroll */
+html[data-books-skin="next"] .toolbar {
+  overflow: visible;
+}
+
+/* ── Состояние «меню свёрнуто» ──────────────────────────────────────── */
+@media (min-width: 981px) {
+  html[data-books-skin="next"].rail-collapsed .toolbar {
+    align-items: center;
+    padding: 10px 8px;
+  }
+
+  html[data-books-skin="next"].rail-collapsed .toolbar .rail-brand {
+    justify-content: center;
+    padding: 4px 0 10px;
+  }
+
+  html[data-books-skin="next"].rail-collapsed .rail-brand-text,
+  html[data-books-skin="next"].rail-collapsed .rail-cap,
+  html[data-books-skin="next"].rail-collapsed .toolbar .btn > span,
+  html[data-books-skin="next"].rail-collapsed .toolbar .btn .badge {
+    display: none;
+  }
+
+  html[data-books-skin="next"].rail-collapsed .toolbar .search-box {
+    width: 40px;
+    height: 40px;
+    margin: 2px auto 6px;
+    padding: 0;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  html[data-books-skin="next"].rail-collapsed .toolbar .search-box input {
+    display: none;
+  }
+
+  html[data-books-skin="next"].rail-collapsed .toolbar .search-box i {
+    font-size: 13px;
+  }
+
+  html[data-books-skin="next"].rail-collapsed .toolbar .rail-scroll {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    overflow-x: visible;
+  }
+
+  html[data-books-skin="next"].rail-collapsed .toolbar .rail-group {
+    width: 100%;
+    align-items: center;
+    gap: 3px;
+  }
+
+  html[data-books-skin="next"].rail-collapsed .toolbar .rail-group + .rail-group {
+    padding-top: 7px;
+    margin-top: 4px;
+  }
+
+  html[data-books-skin="next"].rail-collapsed .toolbar .btn {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    justify-content: center;
+    margin: 0 auto;
+    border-radius: 11px;
+  }
+
+  html[data-books-skin="next"].rail-collapsed .toolbar .btn i {
+    width: auto;
+    flex: 0 0 auto;
+    font-size: 14px;
+  }
+
+  html[data-books-skin="next"].rail-collapsed .toolbar .rail-foot {
+    justify-content: center;
+    gap: 3px;
+    padding-top: 9px;
+  }
+}
+
+@media (max-width: 980px) {
+  html[data-books-skin="next"] .toolbar .rail-collapse {
+    display: none;
+  }
+}
+
+/* ── Панель жанров: сворачивается в полосу у рейла ──────────────────── */
+html[data-books-skin="next"] .collection-sidebar {
+  left: calc(var(--rail-w) + var(--rail-pad) + 8px);
+  top: var(--rail-pad);
+  bottom: var(--rail-pad);
+  width: 240px;
+  max-height: none;
+  border-radius: 16px;
+  overflow: visible;
+  transition: width 200ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+html[data-books-skin="next"] .collection-sidebar .cs-collapse {
+  position: absolute;
+  top: 13px;
+  right: -13px;
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg2);
+  color: var(--text3);
+  font-size: 9px;
+  cursor: pointer;
+  z-index: 4;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--text) 10%, transparent);
+  transition: color 140ms ease, border-color 140ms ease, background 140ms ease,
+    box-shadow 140ms ease;
+}
+
+html[data-books-skin="next"] .collection-sidebar .cs-collapse:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: var(--bg2);
+  box-shadow: 0 3px 14px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+html[data-books-skin="next"] .collection-sidebar .cs-collapse i {
+  transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+html[data-books-skin="next"] .collection-sidebar .cs-tabs {
+  padding-right: 14px;
+}
+
+/* Панель больше не режет край ручки (overflow:visible), поэтому низ
+   списка скругляем сами — иначе hover-подсветка вылезает за угол. */
+html[data-books-skin="next"] .collection-sidebar .cs-list {
+  border-radius: 0 0 16px 16px;
+}
+
+html[data-books-skin="next"] .collection-sidebar .cs-rail-label {
+  display: none;
+}
+
+html[data-books-skin="next"].cs-collapsed .collection-sidebar {
+  width: 48px;
+}
+
+html[data-books-skin="next"].cs-collapsed .collection-sidebar .cs-tabs,
+html[data-books-skin="next"].cs-collapsed .collection-sidebar .cs-search,
+html[data-books-skin="next"].cs-collapsed .collection-sidebar .cs-list {
+  display: none;
+}
+
+html[data-books-skin="next"].cs-collapsed .collection-sidebar .cs-collapse i {
+  transform: rotate(180deg);
+}
+
+html[data-books-skin="next"].cs-collapsed .collection-sidebar .cs-rail-label {
+  position: absolute;
+  top: 50px;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 0;
+  border: 0;
+  border-radius: 0 0 16px 16px;
+  background: transparent;
+  color: var(--text3);
+  font: inherit;
+  cursor: pointer;
+  transition: color 140ms ease, background 140ms ease;
+}
+
+html[data-books-skin="next"].cs-collapsed .collection-sidebar .cs-rail-label::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12px;
+  right: 12px;
+  height: 1px;
+  background: var(--border);
+}
+
+html[data-books-skin="next"].cs-collapsed .collection-sidebar .cs-rail-label:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+html[data-books-skin="next"] .collection-sidebar .cs-rail-label i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--bg3);
+  font-size: 12px;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+html[data-books-skin="next"].cs-collapsed .collection-sidebar .cs-rail-label:hover i {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .collection-sidebar .cs-rail-label span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+html[data-books-skin="next"].cs-collapsed body.collection-mode .main-content {
+  padding-left: 80px;
+}
+
+@media (max-width: 980px) {
+  html[data-books-skin="next"] .collection-sidebar .cs-collapse,
+  html[data-books-skin="next"] .collection-sidebar .cs-rail-label {
+    display: none;
+  }
+
+  html[data-books-skin="next"].cs-collapsed .collection-sidebar {
+    width: 240px;
+  }
+
+  html[data-books-skin="next"].cs-collapsed .collection-sidebar .cs-tabs,
+  html[data-books-skin="next"].cs-collapsed .collection-sidebar .cs-search {
+    display: flex;
+  }
+
+  html[data-books-skin="next"].cs-collapsed .collection-sidebar .cs-list {
+    display: block;
+  }
+}
+
+/* ── Карточка книги ─────────────────────────────────────────────────── */
+html[data-books-skin="next"] .book-card {
+  border-radius: 16px;
+  outline: none;
+}
+
+html[data-books-skin="next"] .book-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+  box-shadow: 0 14px 30px -18px color-mix(in srgb, var(--text) 55%, transparent);
+}
+
+html[data-books-skin="next"] .book-cover img {
+  transition: transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+html[data-books-skin="next"] .book-card:hover .book-cover img {
+  transform: scale(1.035);
+}
+
+html[data-books-skin="next"] .book-info {
+  padding: 12px 14px 14px;
+}
+
+html[data-books-skin="next"] .book-info .title {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.38;
+  letter-spacing: -0.005em;
+}
+
+html[data-books-skin="next"] .book-info .author {
+  margin-bottom: 9px;
+  font-size: 11.5px;
+}
+
+html[data-books-skin="next"] .book-info .meta {
+  gap: 9px;
+  font-size: 10.5px;
+}
+
+html[data-books-skin="next"] .book-info .meta span {
+  gap: 4px;
+}
+
+html[data-books-skin="next"] .book-info .meta i {
+  font-size: 9.5px;
+  color: var(--text3);
+  opacity: 0.85;
+}
+
+/* Бейджи карточки: слева столбиком, изображения — с другой стороны */
+html[data-books-skin="next"] .cover-badges {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  pointer-events: none;
+}
+
+html[data-books-skin="next"] .cover-badges > * {
+  position: static;
+  top: auto;
+  left: auto;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 7px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+html[data-books-skin="next"] .cover-badges .read-badge {
+  background: color-mix(in srgb, var(--green) 16%, var(--bg2));
+  border: 1px solid color-mix(in srgb, var(--green) 26%, transparent);
+  color: var(--green);
+}
+
+html[data-books-skin="next"] .cover-badges .fav-badge {
+  background: color-mix(in srgb, var(--yellow) 18%, var(--bg2));
+  border: 1px solid color-mix(in srgb, var(--yellow) 28%, transparent);
+  color: var(--yellow);
+}
+
+html[data-books-skin="next"] .cover-badges .src-badge {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg2));
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--accent);
+  font-size: 9.5px;
+}
+
+/* Иллюстрации + формат — один аккуратный чип-ряд в правом верхнем углу */
+html[data-books-skin="next"] .book-cover .cover-chips {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+}
+
+html[data-books-skin="next"] .book-cover .cover-chips .format-badge {
+  position: static;
+  top: auto;
+  right: auto;
+  height: 20px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  color: var(--text);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+html[data-books-skin="next"] .book-cover .cover-chips .img-chip {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  color: var(--text2);
+  font-size: 9px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Кнопки на обложке: один ряд, один шаг, без «съехавшей» Qdrant */
+html[data-books-skin="next"] .book-card .action-btn-overlay,
+html[data-books-skin="next"] .book-card .share-btn-overlay,
+html[data-books-skin="next"] .book-card .qdrant-add-overlay {
+  left: auto;
+  bottom: 10px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+html[data-books-skin="next"] .book-card .action-btn-overlay {
+  right: 10px;
+}
+
+html[data-books-skin="next"] .book-card .share-btn-overlay {
+  right: 50px;
+}
+
+html[data-books-skin="next"] .book-card .qdrant-add-overlay {
+  right: 90px;
+}
+
+html[data-books-skin="next"] .book-card .qdrant-add-overlay.qdrant-added {
+  color: var(--green);
+  border-color: color-mix(in srgb, var(--green) 45%, var(--border));
+  background: color-mix(in srgb, var(--green) 12%, var(--bg2));
+}
+
+@media (max-width: 980px) {
+  html[data-books-skin="next"] .book-card .action-btn-overlay,
+  html[data-books-skin="next"] .book-card .share-btn-overlay,
+  html[data-books-skin="next"] .book-card .qdrant-add-overlay {
+    width: 38px;
+    height: 38px;
+    min-height: 38px;
+    bottom: 8px;
+    border-radius: 12px;
+  }
+
+  html[data-books-skin="next"] .book-card .action-btn-overlay { right: 8px }
+  html[data-books-skin="next"] .book-card .share-btn-overlay { right: 52px }
+  html[data-books-skin="next"] .book-card .qdrant-add-overlay { right: 96px }
+}
+
+/* ── Меню сортировки и фильтров в панели пилюль ─────────────────────── */
+html[data-books-skin="next"] .filter-sort {
+  margin-left: 0;
+  display: flex;
+  align-items: center;
+}
+
+html[data-books-skin="next"] .filter-sort .sort-toggle {
+  gap: 7px;
+  color: var(--text3);
+  border-color: var(--border);
+}
+
+html[data-books-skin="next"] .filter-sort .sort-toggle:hover {
+  color: var(--text);
+}
+
+html[data-books-skin="next"] .filter-sort.open .sort-toggle {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .filter-sort .sort-caret {
+  font-size: 8px;
+  color: var(--text3);
+  transition: transform 180ms ease, color 180ms ease;
+}
+
+html[data-books-skin="next"] .filter-sort.open .sort-caret {
+  transform: rotate(180deg);
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .filter-sort .sort-dot {
+  font-size: 5px;
+  color: var(--accent);
+  margin-left: -2px;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+/* Панель сортировки: position:fixed — меню не режется скролл-контейнером
+   пилюль и не уезжает за низ экрана; координаты ставит positionSortPop(). */
+html[data-books-skin="next"] .sort-pop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2000;
+  width: 292px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg2);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  animation: sortPopIn 140ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes sortPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html[data-books-skin="next"] .sort-pop::-webkit-scrollbar {
+  width: 8px;
+}
+
+html[data-books-skin="next"] .sort-pop::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border: 2px solid var(--bg2);
+  border-radius: 8px;
+}
+
+html[data-books-skin="next"] .sort-pop[hidden] {
+  display: none;
+}
+
+html[data-books-skin="next"] .sort-cap {
+  padding: 10px 10px 5px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+html[data-books-skin="next"] .sort-cap:first-child {
+  padding-top: 6px;
+}
+
+html[data-books-skin="next"] .sort-cap:not(:first-child) {
+  margin-top: 4px;
+  padding-top: 11px;
+  border-top: 1px solid var(--border);
+}
+
+html[data-books-skin="next"] .sort-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text2);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+html[data-books-skin="next"] .sort-opt:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+html[data-books-skin="next"] .sort-opt > i:first-child {
+  width: 16px;
+  flex: 0 0 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+  transition: color 120ms ease;
+}
+
+html[data-books-skin="next"] .sort-opt.active {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+html[data-books-skin="next"] .sort-opt.active > i:first-child {
+  color: var(--accent);
+}
+
+html[data-books-skin="next"] .sort-opt .sort-mark {
+  margin-left: auto;
+  width: auto;
+  font-size: 10px;
+  color: var(--accent);
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+html[data-books-skin="next"] .sort-opt.active .sort-mark {
+  opacity: 1;
+  transform: none;
+}
+
+html[data-books-skin="next"] .sort-select-wrap {
+  position: relative;
+  padding: 0 2px;
+}
+
+html[data-books-skin="next"] .sort-select-wrap > i {
+  position: absolute;
+  top: 50%;
+  right: 13px;
+  margin-top: -4px;
+  font-size: 8px;
+  color: var(--text3);
+  pointer-events: none;
+}
+
+html[data-books-skin="next"] .sort-select,
+html[data-books-skin="next"] .sort-year {
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg3);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+html[data-books-skin="next"] .sort-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 30px;
+  cursor: pointer;
+}
+
+html[data-books-skin="next"] .sort-select:focus,
+html[data-books-skin="next"] .sort-year:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+html[data-books-skin="next"] .sort-select:disabled,
+html[data-books-skin="next"] .sort-year:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+html[data-books-skin="next"] .sort-years {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 2px;
+}
+
+html[data-books-skin="next"] .sort-year {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+html[data-books-skin="next"] .sort-year::placeholder {
+  color: var(--text3);
+}
+
+html[data-books-skin="next"] .sort-year::-webkit-outer-spin-button,
+html[data-books-skin="next"] .sort-year::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+html[data-books-skin="next"] .sort-dash {
+  color: var(--text3);
+  font-size: 11px;
+}
+
+html[data-books-skin="next"] .sort-foot {
+  display: flex;
+  margin-top: 6px;
+  padding: 8px 2px 2px;
+  border-top: 1px solid var(--border);
+}
+
+html[data-books-skin="next"] .sort-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text3);
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+html[data-books-skin="next"] .sort-reset:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+html[data-books-skin="next"] .sort-reset i {
+  font-size: 10px;
+}
+
+@media (max-width: 980px) {
+  html[data-books-skin="next"] .filter-sort {
+    margin-left: 0;
+  }
+}
+
+/* Читалка на телефоне: карточка не должна съедать поля по 32px */
+@media (max-width: 640px) {
+  html[data-books-skin="next"] .reader {
+    padding: 20px 16px 28px;
+  }
+
+  html[data-books-skin="next"] .reader-header h1 {
+    font-size: 24px;
+  }
+
+  html[data-books-skin="next"] .reader-actions {
+    gap: 2px;
+    padding: 4px;
+  }
+
+  html[data-books-skin="next"] .reader-actions .btn {
+    height: 30px;
+    min-height: 30px;
+    padding: 0 9px;
+    font-size: 11.5px;
+  }
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Карточки</title>
+<style>
+:root{--bg:#fff;--fg:#1f2937;--muted:#6b7280;--line:#e5e7eb;--acc:#4f46e5;--card:#fff;--r:14px;--sh:0 1px 3px rgba(16,24,40,.08),0 1px 2px rgba(16,24,40,.06)}
+@media (prefers-color-scheme:dark){:root{--bg:#15171c;--fg:#e8eaed;--muted:#9aa3af;--line:#2b2f37;--acc:#818cf8;--card:#1b1e24;--sh:0 1px 3px rgba(0,0,0,.4)}}
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+h1{font-size:18px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+input,select{font:inherit;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg)}
+input{flex:1;min-width:180px}
+input:focus,select:focus{outline:2px solid var(--acc);outline-offset:-1px}
+.count{color:var(--muted);font-size:13px;margin-left:auto;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:14px 16px;transition:transform .18s ease,box-shadow .18s ease}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(16,24,40,.12)}
+.card h3{margin:0 0 4px;font-size:15px}
+.card p{margin:0;color:var(--muted);font-size:13px}
+.tag{display:inline-block;font-size:11px;font-weight:600;color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent);border-radius:999px;padding:2px 9px;margin-bottom:8px}
+mark{background:color-mix(in srgb,var(--acc) 35%,transparent);color:inherit;border-radius:2px}
+.empty{padding:32px;text-align:center;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<h1 id="title">Карточки</h1>
+<div class="sub">По одной карточке на запись заметки</div>
+<div class="bar">
+  <input id="q" placeholder="Поиск по карточкам…" aria-label="Поиск">
+  <select id="sort" aria-label="Сортировка">
+    <option value="0">По порядку</option>
+    <option value="name">По названию</option>
+  </select>
+  <span class="count" id="c"></span>
+</div>
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty" style="display:none">Ничего не найдено</div>
+<script>
+/* ДАННЫЕ: ИИ вписывает сюда содержимое заметки.
+   ROWS — карточки вида [тег, заголовок, описание]. */
+const ROWS=[["Тег","Заголовок","Описание карточки"]];
+
+const grid=document.getElementById("grid"),
+      q=document.getElementById("q"),
+      sort=document.getElementById("sort"),
+      cnt=document.getElementById("c"),
+      empty=document.getElementById("empty");
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]));}
+function hi(s){
+  const t=q.value.trim();
+  if(!t)return esc(s);
+  const out=esc(s);
+  return out.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"),m=>"<mark>"+m+"</mark>");
+}
+function draw(){
+  const t=q.value.trim().toLowerCase();
+  const f=ROWS.filter(r=>r.join(" ").toLowerCase().includes(t));
+  if(sort.value==="name")f.sort((a,b)=>String(a[1]??"").localeCompare(String(b[1]??""),"ru"));
+  grid.innerHTML=f.map(r=>'<div class="card"><span class="tag">'+hi(r[0]??"")+'</span><h3>'+hi(r[1]??"")+'</h3><p>'+hi(r[2]??"")+'</p></div>').join("");
+  cnt.textContent=f.length+" из "+ROWS.length;
+  empty.style.display=f.length?"none":"";
+}
+q.oninput=draw;
+sort.onchange=draw;
+draw();
+</script>
+</body>
+</html>

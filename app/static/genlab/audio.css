@@ -1,0 +1,68 @@
+/* GenLab — звуковой редактор (волна, выделение, обработка без ИИ). */
+
+.gl-audio {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: var(--gl-bg);
+  color: var(--gl-text);
+}
+.gl-audio[hidden] { display: none; }
+
+.gl-audio-stage {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.gl-audio-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--gl-border);
+  background: var(--gl-surface);
+  flex-wrap: wrap;
+}
+.gl-audio-toolbar .gl-spacer { flex: 1 1 auto; }
+
+.gl-audio-time {
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--gl-text-2);
+  min-width: 130px;
+}
+.gl-audio-selinfo { font-size: 12.5px; color: var(--gl-muted); }
+
+.gl-audio-wave {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px;
+  box-sizing: border-box;
+}
+.gl-audio-wave canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--gl-border);
+  border-radius: var(--gl-radius);
+  cursor: text;
+  touch-action: none;
+}
+
+.gl-btn-danger {
+  color: var(--gl-danger, #e5484d);
+  border-color: var(--gl-danger, #e5484d);
+}
+.gl-btn-danger:hover {
+  background: var(--gl-danger, #e5484d);
+  color: #fff;
+}
+
+@media (max-width: 980px) {
+  .gl-audio-wave { padding: 10px; }
+}

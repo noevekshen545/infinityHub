@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Таблица</title>
+<style>
+:root{--bg:#fff;--fg:#1f2937;--muted:#6b7280;--line:#e5e7eb;--acc:#4f46e5;--head:#f9fafb}
+@media (prefers-color-scheme:dark){:root{--bg:#15171c;--fg:#e8eaed;--muted:#9aa3af;--line:#2b2f37;--acc:#818cf8;--head:#1d2026}}
+*{box-sizing:border-box}
+body{margin:0;padding:18px;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+h1{font-size:18px;margin:0 0 12px}
+.bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);flex:1;min-width:160px}
+input:focus{outline:2px solid var(--acc);outline-offset:-1px}
+.count{color:var(--muted);font-size:13px;margin-left:auto;white-space:nowrap}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--head);font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap;position:sticky;top:0}
+th:hover{color:var(--acc)}
+th .ar{font-size:10px;margin-left:4px;opacity:.6}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:color-mix(in srgb,var(--acc) 8%,transparent)}
+mark{background:color-mix(in srgb,var(--acc) 35%,transparent);color:inherit;border-radius:2px}
+.empty{padding:32px;text-align:center;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<h1 id="title">Таблица</h1>
+<div class="bar">
+  <input id="q" placeholder="Поиск по таблице…" aria-label="Поиск">
+  <span class="count" id="c"></span>
+</div>
+<div class="tw">
+  <table id="tbl">
+    <thead><tr id="hrow"></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+<div class="empty" id="empty" style="display:none">Ничего не найдено</div>
+<script>
+/* ДАННЫЕ: ИИ вписывает сюда содержимое заметки.
+   HEAD — заголовки колонок, DATA — строки, по одной на запись. */
+const HEAD=[];
+const DATA=[];
+
+const tb=document.getElementById("rows"),
+      q=document.getElementById("q"),
+      hrow=document.getElementById("hrow"),
+      cnt=document.getElementById("c"),
+      empty=document.getElementById("empty");
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
+function hi(s){
+  const t=q.value.trim();
+  if(!t)return esc(s);
+  const out=esc(s);
+  return out.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"),m=>"<mark>"+m+"</mark>");
+}
+
+hrow.innerHTML=HEAD.map((h,i)=>'<th data-k="'+i+'">'+esc(h)+'<span class="ar"></span></th>').join("");
+
+let sortK=0,asc=true;
+function draw(){
+  const t=q.value.trim().toLowerCase();
+  const f=t?DATA.filter(r=>r.join(" ").toLowerCase().includes(t)):DATA.slice();
+  f.sort((a,b)=>String(a[sortK]??"").localeCompare(String(b[sortK]??""),"ru",{numeric:true})*(asc?1:-1));
+  tb.innerHTML=f.map(r=>"<tr>"+HEAD.map((_,i)=>"<td>"+hi(r[i]??"")+"</td>").join("")+"</tr>").join("");
+  cnt.textContent=f.length+" из "+DATA.length;
+  empty.style.display=f.length?"none":"";
+  hrow.querySelectorAll("th").forEach(th=>{
+    const ar=th.querySelector(".ar");
+    if(ar)ar.textContent=(+th.dataset.k===sortK)?(asc?"▲":"▼"):"";
+  });
+}
+hrow.querySelectorAll("th").forEach(th=>th.onclick=()=>{
+  const k=+th.dataset.k;
+  if(k===sortK)asc=!asc;else{sortK=k;asc=true;}
+  draw();
+});
+q.oninput=draw;
+draw();
+</script>
+</body>
+</html>

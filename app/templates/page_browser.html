@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Infinity Браузер</title>
+<!-- Тема: тот же механизм, что на остальных страницах (webui_assets):
+     инлайн-сниппет применяет тему до первой отрисовки, theme.js синхронизирует
+     с другими окнами через localStorage/storage. design.css даёт токены. -->
+<script>(function(){try{var k="infinity_theme",l="html_theme";
+var v=localStorage.getItem(k)||localStorage.getItem(l)||"dark";
+if(["light","dark","sepia","warm","paper","ocean","forest","midnight","rose"]
+.indexOf(v)<0)v="dark";
+if(v!=="dark")document.documentElement.className+=" "+v;
+document.documentElement.setAttribute("data-theme",v);}catch(e){}})();</script>
+<link rel="stylesheet" href="/static/css/design.css">
+<link rel="stylesheet" href="/static/css/browser.css">
+<script src="/static/js/win_nav.js?v=3" defer></script>
+<script src="/static/js/theme.js" defer></script>
+</head>
+<body class="pg-page_browser electron-browser">
+<!-- Вся верхняя область перетаскивает frameless-окно (кнопки — no-drag). -->
+<div class="bb-chrome" id="bbChrome">
+
+  <!-- Полоса вкладок + кнопки режима/окна -->
+  <div class="bb-tabstrip" id="bbTabstrip">
+    <div class="bb-tabs" id="bbTabs"><!-- вкладки добавляет browser.js --></div>
+    <button class="bb-tab-add" id="bbTabAdd" title="Новая вкладка (Ctrl+T)">
+      <svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+    <div class="bb-win">
+      <button class="bb-win-btn" id="bbModeHalf" title="В правой половине окна приложения">
+        <svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M8 3v10" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+      <button class="bb-win-btn" id="bbModeFull" title="На весь экран окна приложения">
+        <svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+      <button class="bb-win-btn" id="bbNewWindow" title="Отдельное окно браузера">
+        <svg viewBox="0 0 16 16"><rect x="2" y="2.5" width="12" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M2 6h12" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+      <button class="bb-win-btn bb-win-close" id="bbClose" title="Закрыть браузер">
+        <svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Тулбар: навигация, адресная строка, действия -->
+  <div class="bb-toolbar">
+    <button class="bb-nav" id="bbBack" title="Назад">
+      <svg viewBox="0 0 16 16"><path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="bb-nav" id="bbFwd" title="Вперёд">
+      <svg viewBox="0 0 16 16"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="bb-nav" id="bbReload" title="Перезагрузить">
+      <svg viewBox="0 0 16 16"><path d="M13 8a5 5 0 1 1-1.5-3.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13 2.5V5h-2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="bb-nav" id="bbHome" title="Домашняя страница">
+      <svg viewBox="0 0 16 16"><path d="M2.5 7.5L8 3l5.5 4.5V13a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V7.5z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    </button>
+
+    <div class="bb-omnibox" id="bbOmnibox">
+      <span class="bb-omni-lock" id="bbOmniLock" title="Соединение защищено">
+        <svg viewBox="0 0 16 16"><rect x="3.5" y="7" width="9" height="6" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 7V5.5a2.5 2.5 0 0 1 5 0V7" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+      </span>
+      <input id="bbUrl" type="text" spellcheck="false" autocomplete="off"
+             placeholder="Введите адрес или поисковый запрос">
+      <button class="bb-star" id="bbStar" title="Добавить в закладки">
+        <svg viewBox="0 0 16 16"><path d="M8 2l1.9 3.9 4.3.6-3.1 3 .7 4.2L8 11.8 4.2 13.7l.7-4.2-3.1-3 4.3-.6L8 2z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <button class="bb-nav" id="bbIncognito" title="Новая вкладка инкогнито">
+      <svg viewBox="0 0 16 16"><path d="M4 6.5c0-2.2 1.8-4 4-4s4 1.8 4 4c0 3-1.2 5.5-2 7H6c-.8-1.5-2-4-2-7z" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="6.2" cy="6.5" r=".7" fill="currentColor"/><circle cx="9.8" cy="6.5" r=".7" fill="currentColor"/></svg>
+    </button>
+    <button class="bb-nav" id="bbHistoryBtn" title="История">
+      <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M8 4.5V8l2.5 1.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </button>
+    <button class="bb-nav" id="bbDownloadsBtn" title="Загрузки">
+      <svg viewBox="0 0 16 16"><path d="M8 2v8M4.5 7L8 10.5 11.5 7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    </button>
+    <button class="bb-nav" id="bbPasswordsBtn" title="Пароли профиля">
+      <svg viewBox="0 0 16 16"><circle cx="5.5" cy="8" r="2.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 8h6M11.5 8v2M13.5 8v1.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </button>
+    <!-- Сохранить страницу в модуль HTML Viewer (Ctrl+S) -->
+    <button class="bb-nav" id="bbSavePage" title="Сохранить страницу в HTML Viewer (Ctrl+S)">
+      <svg viewBox="0 0 16 16"><path d="M8 1.5v8M5 6.5L8 9.5l3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.5 10.5v3a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    </button>
+    <!-- Переводчик: переводит страницу «на месте» (лёгкий веб-сервис на
+         сервере), сохраняя вёрстку. Частая операция — кнопка в панели. -->
+    <button class="bb-nav" id="bbTranslate" title="Перевести страницу на месте">
+      <svg viewBox="0 0 16 16"><path d="M2 3h6M5 3v1.5c0 3-1.5 5.5-3 7" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M3.6 8.2c.9 1.5 2 2.6 3.2 3.2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M7.5 13l3.2-8 3.2 8M8.8 10.4h4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <!-- Иконки включённых Chrome-расширений. Electron грузит расширение,
+         но свою кнопку действия не рисует — выводим её сами из манифеста. -->
+    <div class="bb-ext-icons" id="bbExtIcons" hidden></div>
+    <button class="bb-nav" id="bbMenuBtn" title="Меню">
+      <svg viewBox="0 0 16 16"><circle cx="8" cy="3" r="1.2" fill="currentColor"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="13" r="1.2" fill="currentColor"/></svg>
+    </button>
+  </div>
+
+  <!-- Панель закладок (переключаемая) -->
+  <div class="bb-bookmarks" id="bbBookmarks" hidden></div>
+
+  <!-- Область вкладок: сюда монтируются <webview> -->
+  <div class="bb-views" id="bbViews"></div>
+
+  <!-- Панель загрузок -->
+  <div class="bb-downloads" id="bbDownloads" hidden></div>
+
+  <!-- Выдвижные панели: история и загрузки -->
+  <div class="bb-panel" id="bbHistoryPanel" hidden>
+    <div class="bb-panel-head"><span>История</span>
+      <button class="bb-panel-clear" id="bbHistoryClear">Очистить</button>
+      <button class="bb-panel-close" data-close-panel>×</button></div>
+    <input class="bb-hist-search" id="bbHistorySearch" type="search"
+           placeholder="Поиск по истории" spellcheck="false" autocomplete="off">
+    <div class="bb-panel-body" id="bbHistoryList"></div>
+  </div>
+  <div class="bb-panel" id="bbDownloadsPanel" hidden>
+    <div class="bb-panel-head"><span>Загрузки</span>
+      <button class="bb-panel-clear" id="bbDownloadsClear">Очистить</button>
+      <button class="bb-panel-close" data-close-panel>×</button></div>
+    <div class="bb-panel-body" id="bbDownloadsList"></div>
+  </div>
+  <!-- Панель Chrome-расширений: список установленных, вкл/выкл, удаление,
+       добавление папки или файла .crx/.zip с ПК. Живёт в main.js (session.extensions). -->
+  <!-- Пароли профиля: записи из /api/vault/passwords. Клик по записи
+       подставляет логин и пароль в форму текущей страницы. -->
+  <div class="bb-panel" id="bbPasswordsPanel" hidden>
+    <div class="bb-panel-head"><span>Пароли профиля</span>
+      <button class="bb-panel-clear" id="bbPasswordsOpenVault">Буфер обмена</button>
+      <button class="bb-panel-close" data-close-panel>×</button></div>
+    <div class="bb-panel-body" id="bbPasswordsList"></div>
+  </div>
+
+  <div class="bb-panel" id="bbExtPanel" hidden>    <div class="bb-panel-head"><span>Расширения</span>
+      <button class="bb-panel-clear" id="bbExtAddCrx">Файл .crx/.zip…</button>
+      <button class="bb-panel-clear" id="bbExtAddFolder">Папка…</button>
+      <button class="bb-panel-close" data-close-panel>×</button></div>
+    <div class="bb-panel-body" id="bbExtList"></div>
+  </div>
+  <!-- Панель собственных плагинов: свой формат plugin.json (JS/CSS на
+       страницах), отдельно от Chrome-расширений. Движок — desktop/plugins.js. -->
+  <div class="bb-panel" id="bbPluginsPanel" hidden>
+    <div class="bb-panel-head"><span>Плагины</span>
+      <button class="bb-panel-clear" id="bbPluginsAddArchive">Архив .zip…</button>
+      <button class="bb-panel-clear" id="bbPluginsAddFolder">Папка…</button>
+      <button class="bb-panel-close" data-close-panel>×</button></div>
+    <div class="bb-panel-body" id="bbPluginsList"></div>
+  </div>
+
+  <!-- Поиск по странице (Ctrl+F). Панель своя, а не встроенная в webview:
+      findInPage у <webview> нет, поэтому ищем и подсвечиваем вручную. -->
+  <div class="bb-find" id="bbFind" hidden>
+    <input id="bbFindInput" type="text" placeholder="Поиск на странице"
+           spellcheck="false" autocomplete="off">
+    <span class="bb-find-count" id="bbFindCount"></span>
+    <button class="bb-find-btn" id="bbFindPrev" title="Назад (Shift+Enter)">
+      <svg viewBox="0 0 16 16"><path d="M4 6.5L8 3l4 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 3v10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+    <button class="bb-find-btn" id="bbFindNext" title="Далее (Enter)">
+      <svg viewBox="0 0 16 16"><path d="M4 9.5L8 13l4-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 13V3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+    <button class="bb-find-btn" id="bbFindClose" title="Закрыть (Esc)">
+      <svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <!-- Плавающее меню выделенного текста (как в модулях книг/ZIM) -->
+  <div class="bb-selmenu" id="bbSelMenu" hidden>
+    <button data-sel="notes" title="Сохранить выделенное в заметки"><i>📝</i> В заметки</button>
+    <button data-sel="ask" title="Спросить ИИ о выделенном"><i>🤖</i> Спросить ИИ</button>
+    <button data-sel="copy" title="Скопировать"><i>📋</i> Копировать</button>
+  </div>
+
+  <!-- Определение слова по двойному клику -->
+  <div class="bb-wordpop" id="bbWordPop" hidden>
+    <div class="bb-wordpop-head">
+      <span class="bb-wordpop-word" id="bbWordTerm"></span>
+      <button class="bb-wordpop-close" id="bbWordClose" title="Закрыть">×</button>
+    </div>
+    <div class="bb-wordpop-phon" id="bbWordPhon"></div>
+    <div class="bb-wordpop-body" id="bbWordBody"></div>
+  </div>
+
+  <!-- Выпадающее меню -->
+  <div class="bb-menu" id="bbMenu" hidden>
+    <button data-menu="new-tab">Новая вкладка <kbd>Ctrl+T</kbd></button>
+    <button data-menu="incognito">Новая вкладка инкогнито <kbd>Ctrl+Shift+N</kbd></button>
+    <button data-menu="bookmarks">Панель закладок <kbd>Ctrl+Shift+B</kbd></button>
+    <button data-menu="bookmark-folder">Новая папка закладок</button>
+    <div class="bb-menu-sep"></div>
+    <button data-menu="history">История <kbd>Ctrl+H</kbd></button>
+    <button data-menu="downloads">Загрузки <kbd>Ctrl+J</kbd></button>
+    <button data-menu="save-page">Сохранить страницу в HTML Viewer <kbd>Ctrl+S</kbd></button>
+    <div class="bb-menu-sep"></div>
+    <button data-menu="find">Найти на странице <kbd>Ctrl+F</kbd></button>
+    <button data-menu="reader">Читаемый режим <kbd>F9</kbd></button>
+    <button data-menu="translate-inline">Перевести страницу на месте <kbd>F10</kbd></button>
+    <button data-menu="print-pdf">Печать в PDF <kbd>Ctrl+P</kbd></button>
+    <button data-menu="open-viewer">Открыть в HTML Viewer</button>
+    <button data-menu="ask-ai">Спросить ИИ о странице <kbd>Ctrl+Shift+Q</kbd></button>
+    <div class="bb-menu-sep"></div>
+    <button data-menu="zoom-reset">Масштаб 100% <kbd>Ctrl+0</kbd></button>
+    <button data-menu="trackers" id="bbMenuTrackers">Заблокировано трекеров: …</button>
+    <button data-menu="extensions">Расширения Chrome <kbd>Ctrl+Shift+X</kbd></button>
+    <button data-menu="plugins">Плагины браузера <kbd>Ctrl+Shift+P</kbd></button>
+    <div class="bb-menu-sep"></div>
+    <button data-menu="home">Домашняя страница</button>
+  </div>
+
+  <!-- Уведомления (тосты). Живут внутри .bb-chrome, чтобы позиционироваться
+       от него, и не перехватывают клики (pointer-events на контейнере none). -->
+  <div class="bb-toasts" id="bbToasts"></div>
+
+  <!-- Разделитель дока: активен только в режиме half (главное окно приложения
+       сужено, браузер стоит вплотную к его правому краю). Тянем за полосу —
+       меняем, где проходит граница «приложение / браузер». -->
+  <div class="bb-dock-handle" id="bbDockHandle" title="Изменить ширину браузера и приложения" hidden></div>
+</div>
+
+<script src="/static/js/browser.js" defer></script>
+</body>
+</html>
+

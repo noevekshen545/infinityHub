@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Автоматизация</title>
+<style>
+/* Палитра не своя: страница приезжает через webui_assets.inject, где на <html>
+   лежит инлайн-палитра theme.js. Поэтому только алиасы --au-* над общими
+   токенами с запасом; свои --bg/--text не объявляем — инлайн <html> перекроет
+   любой :root, и модуль ушёл бы в собственную тёмную палитру.
+   Текст по акценту — --bg2: на светлой теме белый на индиго, на тёмной почти
+   чёрный на голубом; в обеих читаемо. */
+:root{
+  --au-bg:var(--bg,#202020); --au-bg2:var(--bg2,#2b2b2b); --au-bg3:var(--bg3,#333333);
+  --au-border:var(--border,rgba(255,255,255,.1)); --au-border2:var(--border2,rgba(255,255,255,.16));
+  --au-text:var(--text,#fff); --au-text2:var(--text2,#c4c4c4); --au-text3:var(--text3,#9a9a9a);
+  --au-accent:var(--accent,#4cc2ff); --au-accent2:var(--accent2,#69d0ff);
+  --au-danger:var(--danger,#da3633); --au-ok:var(--success,#3fb950);
+  --au-on:var(--bg2,#2b2b2b);
+  --au-grad:linear-gradient(135deg,var(--accent,#4cc2ff),var(--accent2,#69d0ff));
+  --r:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:var(--font,system-ui,-apple-system,"Segoe UI",sans-serif);
+     background:var(--au-bg);color:var(--au-text);display:flex;flex-direction:column;
+     overflow:hidden}
+
+header{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--au-bg2);
+       border-bottom:1px solid var(--au-border);flex:0 0 auto;flex-wrap:wrap}
+.brand{font-weight:700;font-size:15px;background:var(--au-grad);-webkit-background-clip:text;
+       -webkit-text-fill-color:transparent;letter-spacing:.2px}
+.meta{display:flex;flex-direction:column;gap:1px;margin-left:6px;min-width:0}
+.meta b{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:30ch}
+.meta span{font-size:11px;color:var(--au-text3)}
+.spacer{flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:8px;cursor:pointer;
+     font-size:12px;font-weight:600;border:1px solid var(--au-border);background:var(--au-bg3);
+     color:var(--au-text);transition:filter .12s,background .12s,border-color .12s;white-space:nowrap}
+.btn:hover{filter:brightness(1.18)}
+.btn:active{transform:translateY(1px)}
+.btn.prim{background:var(--au-grad);border:1px solid transparent;color:var(--au-on)}
+.btn.danger{color:var(--au-danger);border-color:var(--au-danger)}
+.btn.danger:hover{background:var(--au-danger);color:var(--au-on)}
+.btn.rec{color:var(--au-danger)}
+.btn.rec.on{background:var(--au-danger);color:var(--au-on);animation:pulse 1.4s infinite}
+.btn:disabled{opacity:.4;cursor:default;filter:none}
+@keyframes pulse{50%{filter:brightness(.7)}}
+input,select,textarea{font:inherit;color:var(--au-text);background:var(--au-bg3);
+     border:1px solid var(--au-border);border-radius:7px;padding:6px 8px}
+input:focus,textarea:focus{outline:none;border-color:var(--au-accent)}
+
+main{flex:1;display:flex;min-height:0}
+aside{flex:0 0 232px;background:var(--au-bg2);border-right:1px solid var(--au-border);
+      display:flex;flex-direction:column;min-height:0}
+aside .top{padding:8px 10px;border-bottom:1px solid var(--au-border);display:flex;flex-direction:column;gap:6px}
+aside .top input{width:100%;font-size:12px}
+.lib{flex:1;overflow:auto;padding:4px}
+.item{padding:8px 9px;border-radius:8px;cursor:pointer;border:1px solid transparent;margin-bottom:2px}
+.item:hover{background:var(--au-bg3)}
+.item.on{background:var(--au-bg3);border-color:var(--au-accent)}
+.item b{display:block;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item span{display:block;font-size:11px;color:var(--au-text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.work{flex:1;display:flex;flex-direction:column;min-width:0}
+.tabs{display:flex;gap:0;background:var(--au-bg2);border-bottom:1px solid var(--au-border);flex:0 0 auto;padding:0 10px}
+.tab{padding:9px 14px;font-size:12px;font-weight:600;color:var(--au-text2);cursor:pointer;
+     border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none}
+.tab.on{color:var(--au-accent);border-bottom-color:var(--au-accent)}
+.pane{flex:1;overflow:auto;padding:12px;min-height:0}
+.pane.hide{display:none}
+#code{width:100%;height:100%;min-height:100%;resize:none;font-family:var(--mono,ui-monospace,Consolas,monospace);
+     font-size:13px;line-height:1.5;white-space:pre;border-radius:var(--r);tab-size:4}
+
+.card{display:flex;gap:10px;align-items:flex-start;background:var(--au-bg2);border:1px solid var(--au-border);
+      border-radius:var(--r);padding:8px 10px;margin-bottom:6px}
+.card .ln{flex:0 0 34px;text-align:right;font-size:11px;color:var(--au-text3);font-family:var(--mono,monospace);padding-top:2px}
+.card .bd{min-width:0;flex:1}
+.card .lb{font-size:13px;font-weight:600}
+.card .cd{font-size:11px;color:var(--au-text3);font-family:var(--mono,monospace);margin-top:2px;
+          white-space:pre-wrap;word-break:break-all}
+.card.here{border-color:var(--au-accent);background:var(--au-bg3)}
+.card.dep1{margin-left:18px}.card.dep2{margin-left:36px}.card.dep3{margin-left:54px}
+.err{background:color-mix(in srgb,var(--au-danger) 14%,transparent);border:1px solid var(--au-danger);
+     border-radius:var(--r);padding:9px 11px;font-size:12px;margin-bottom:10px}
+.hint{font-size:11px;color:var(--au-text3);margin-bottom:8px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+
+.log{font-family:var(--mono,ui-monospace,Consolas,monospace);font-size:12px;line-height:1.55}
+.log div{padding:1px 0;color:var(--au-text2)}
+.log .error{color:var(--au-danger)}
+.log .warn{color:var(--au-accent2)}
+.log .out{color:var(--au-text3)}
+
+footer{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:8px 14px;
+       background:var(--au-bg2);border-top:1px solid var(--au-border);font-size:12px;flex-wrap:wrap}
+.state{display:flex;align-items:center;gap:6px;font-weight:600}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--au-text3)}
+.dot.running{background:var(--au-accent)}
+.dot.paused{background:var(--au-accent2)}
+.dot.stopping{background:#d29922}
+.dot.done{background:var(--au-ok)}
+.dot.error,.dot.stopped{background:var(--au-danger)}
+.ctl{color:var(--au-text3)}
+.help td{padding:4px 10px 4px 0;vertical-align:top;font-size:12px}
+.help code{font-family:var(--mono,ui-monospace,Consolas,monospace);color:var(--au-accent);font-size:12px}
+#toast{position:fixed;left:50%;bottom:56px;transform:translateX(-50%);background:var(--au-bg3);
+       border:1px solid var(--au-border2);border-radius:9px;padding:9px 14px;font-size:12px;
+       opacity:0;transition:opacity .18s;pointer-events:none;z-index:50;max-width:70vw}
+#toast.show{opacity:1}
+#toast.err{border-color:var(--au-danger);color:var(--au-danger)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Автоматизация</div>
+  <div class="meta"><b id="mname">новый макрос</b><span id="mmeta">не сохранён</span></div>
+  <div class="spacer"></div>
+  <button class="btn" id="bNew" title="Новый пустой макрос (Ctrl+N)">Новый</button>
+  <button class="btn" id="bSave" title="Сохранить в библиотеку профиля (Ctrl+S)">Сохранить</button>
+  <button class="btn" id="bDup" title="Создать копию">Копия</button>
+  <button class="btn danger" id="bDel" title="Убрать в карантин (не удаление)">Удалить</button>
+  <button class="btn" id="bDry" title="Показать, что сделает макрос, не вводя ничего">Сухой прогон</button>
+  <button class="btn prim" id="bRun" title="Исполнить макрос (Ctrl+Enter)">Запуск</button>
+  <button class="btn" id="bPause" title="Пауза / продолжение">Пауза</button>
+  <button class="btn danger" id="bStop" title="Остановить и отпустить модификаторы">Стоп</button>
+  <button class="btn rec" id="bRec" title="Запись моих действий (нужен флаг «разрешить запись ввода»)">● Запись</button>
+  <button class="btn" id="bHelp" title="Список доступных команд макроса">Справка</button>
+</header>
+
+<main>
+  <aside>
+    <div class="top">
+      <input id="filter" placeholder="поиск по библиотеке" autocomplete="off">
+      <div class="hint" id="store">—</div>
+    </div>
+    <div class="lib" id="lib"></div>
+  </aside>
+
+  <div class="work">
+    <div class="tabs">
+      <button class="tab on" data-pane="lane">Лента шагов</button>
+      <button class="tab" data-pane="code">Код</button>
+      <button class="tab" data-pane="log">Журнал</button>
+      <button class="tab" data-pane="set">Настройки</button>
+      <button class="tab" data-pane="help">Справка</button>
+    </div>
+    <div class="pane" id="pane-lane"><div id="lane"></div></div>
+    <div class="pane hide" id="pane-code"><textarea id="code" spellcheck="false"
+      placeholder="# Макрос — обычный Python. Например:&#10;# k.press('win+d')&#10;# sleep(0.4)&#10;# m.click(800, 300)"></textarea></div>
+    <div class="pane hide" id="pane-log"><div class="log" id="log"></div></div>
+    <div class="pane hide" id="pane-set">
+      <div class="hint">Макрос не запустится, если активное окно похоже по заголовку на одно из этих слов
+        (защита паролей и банков). Каждое слово — с новой строки.</div>
+      <textarea id="sensitive" rows="6" style="width:100%"></textarea>
+      <div class="row" style="margin-top:10px">
+        <label style="font-size:12px">Секунд до жёсткого kill после «Стоп»</label>
+        <input id="grace" type="number" min="0.3" max="30" step="0.1" style="width:80px">
+        <button class="btn" id="bSetSave">Сохранить настройки</button>
+      </div>
+      <div class="hint">Карантин удалённых макросов:</div>
+      <div id="trash" class="log"></div>
+    </div>
+    <div class="pane hide" id="pane-help"><div id="help" class="help"></div></div>
+  </div>
+</main>
+
+<footer>
+  <div class="state"><span class="dot" id="dot"></span><span id="stateName">свободно</span></div>
+  <div class="ctl" id="ctl">—</div>
+  <div class="spacer"></div>
+  <div class="ctl" id="keys">клавиши модуля: —</div>
+</footer>
+<div id="toast"></div>
+
+<script>
+var $ = function (id) { return document.getElementById(id); };
+/* Чей профиль: сервер пишет метку в страницу, адрес — запас для ручного открытия.
+   Право доступа проверяет маршрут, не страница. */
+var PROFILE = String((window.__AUTO_PROFILE) ||
+                     (new URLSearchParams(location.search).get('profile')) || '');
+var st = { name: '', source: '', dirty: false, list: [], timer: null, recPoll: null, lane: null };
+
+function withProfile(path) {
+  if (!PROFILE) return path;
+  return path + (path.indexOf('?') >= 0 ? '&' : '?') + 'profile=' + encodeURIComponent(PROFILE);
+}
+function api(path, body) {
+  if (!body) return fetch(withProfile(path)).then(function (r) { return r.json(); });
+  if (PROFILE) body.profile = PROFILE;
+  return fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' },
+                       body: JSON.stringify(body) })
+    .then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); })
+    .then(function (res) {
+      if (res.status >= 400) throw new Error((res.j && res.j.error) || 'HTTP ' + res.status);
+      return res.j;
+    });
+}
+function toast(msg, err) {
+  var t = $('toast');
+  t.textContent = msg;
+  t.className = 'show' + (err ? ' err' : '');
+  clearTimeout(t._h);
+  t._h = setTimeout(function () { t.className = ''; }, 2600);
+}
+/* Имя макроса спрашиваем у общих диалогов. Родной prompt() в Electron-оболочке
+   не реализован и возвращает null (в журнале окна это выглядит как
+   «Uncaught Error: prompt() is not supported»), поэтому кнопка «Сохранить» в
+   собранном приложении молчала. dialogs.js подключается темой страницы; если
+   его почему-то нет — честно пробуем нативный prompt. */
+function askName(label, value) {
+  if (window.InfinityDialogs && InfinityDialogs.prompt) {
+    return InfinityDialogs.prompt({ label: label, value: value || '' });
+  }
+  return Promise.resolve(window.prompt(label, value || ''));
+}
+function showPane(name) {
+  ['lane', 'code', 'log', 'set', 'help'].forEach(function (p) {
+    $('pane-' + p).className = 'pane' + (p === name ? '' : ' hide');
+  });
+  document.querySelectorAll('.tab').forEach(function (tab) {
+    tab.className = 'tab' + (tab.dataset.pane === name ? ' on' : '');
+  });
+}
+document.querySelectorAll('.tab').forEach(function (tab) {
+  tab.addEventListener('click', function () { showPane(tab.dataset.pane); });
+});
+
+/* ---------- лента шагов ---------- */
+function esc(text) {
+  return String(text == null ? '' : text).replace(/[&<>"]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+  });
+}
+var HERE = 0;
+function renderLane(lane) {
+  st.lane = lane;
+  var box = $('lane');
+  if (!lane) { box.innerHTML = '<div class="hint">Начните писать код — карточки появятся сами.</div>'; return; }
+  if (!lane.ok) {
+    box.innerHTML = '<div class="err">В коде ошибка: ' + esc(lane.error) +
+                    '</div><div class="hint">Лента построится, когда код станет читаемым.</div>';
+    return;
+  }
+  if (!lane.count) { box.innerHTML = '<div class="hint">Макрос пустой.</div>'; return; }
+  var html = lane.steps.map(function (step) {
+    var here = st.name && HERE && step.line === HERE ? ' here' : '';
+    return '<div class="card dep' + Math.min(3, step.indent) + here + '">' +
+           '<div class="ln">' + esc(step.line) + '</div><div class="bd">' +
+           '<div class="lb">' + esc(step.label) + '</div>' +
+           '<div class="cd">' + esc(step.code) + '</div></div></div>';
+  }).join('');
+  box.innerHTML = html;
+}
+function parseNow() {
+  api('/api/automator/parse', { source: $('code').value }).then(renderLane).catch(function () {});
+}
+$('code').addEventListener('input', function () {
+  st.dirty = true;
+  clearTimeout(st.parse);
+  st.parse = setTimeout(parseNow, 320);
+});
+$('code').addEventListener('keydown', function (event) {
+  /* Tab внутри textarea иначе уводит фокус с редактора. */
+  if (event.key === 'Tab') {
+    event.preventDefault();
+    var area = this, from = area.selectionStart, to = area.selectionEnd;
+    area.value = area.value.slice(0, from) + '    ' + area.value.slice(to);
+    area.selectionStart = area.selectionEnd = from + 4;
+    st.dirty = true;
+    clearTimeout(st.parse);
+    st.parse = setTimeout(parseNow, 320);
+  }
+});
+function setCode(source, name) {
+  st.name = name || '';
+  $('code').value = source || '';
+  st.dirty = false;
+  $('mname').textContent = name || 'новый макрос';
+  $('mmeta').textContent = name ? '' : 'не сохранён';
+  HERE = 0;
+  parseNow();
+}
+
+/* ---------- библиотека ---------- */
+function loadLib(keep) {
+  api('/api/automator/list').then(function (data) {
+    st.list = data.macros || [];
+    $('store').textContent = data.store || '';
+    var word = ($('filter').value || '').toLowerCase();
+    $('lib').innerHTML = st.list.filter(function (item) {
+      return !word || (item.title || item.name).toLowerCase().indexOf(word) >= 0 ||
+             item.name.toLowerCase().indexOf(word) >= 0;
+    }).map(function (item) {
+      return '<div class="item' + (item.name === st.name ? ' on' : '') + '" data-name="' +
+             esc(item.name) + '"><b>' + esc(item.title || item.name) + '</b><span>' +
+             esc(item.name) + (item.runs ? ' · запусков ' + item.runs : '') +
+             (item.missing ? ' · файла нет' : '') + '</span></div>';
+    }).join('') || '<div class="hint">Библиотека пуста.</div>';
+    document.querySelectorAll('.item').forEach(function (node) {
+      node.addEventListener('click', function () { openMacro(node.dataset.name); });
+    });
+    if (!keep && !st.name && st.list.length) openMacro(st.list[0].name);
+  }).catch(function (e) { toast(e.message, true); });
+}
+function openMacro(name) {
+  if (st.dirty && !confirm('Несохранённый код будет потерян. Открыть ' + name + '?')) return;
+  api('/api/automator/get?name=' + encodeURIComponent(name)).then(function (data) {
+    setCode(data.source, data.name);
+    $('mmeta').textContent = (data.meta.title || data.name) +
+      (data.meta.desc ? ' — ' + data.meta.desc : '');
+    loadLib(true);
+  }).catch(function (e) { toast(e.message, true); });
+}
+$('filter').addEventListener('input', function () { loadLib(true); });
+
+/* ---------- действия ---------- */
+async function save() {
+  var name = st.name;
+  if (!name) {
+    name = await askName('Имя макроса (латиница, цифры, дефис):', 'my_macro');
+    if (!name) return;
+  }
+  var title = await askName('Название для списка (можно по-русски):',
+                            name.replace(/[_\-]/g, ' ')) || name;
+  api('/api/automator/save', { name: name, source: $('code').value, title: title })
+    .then(function (data) {
+      st.dirty = false;
+      setQuietSaved(data.name, data.meta);
+      toast('Сохранён макрос ' + data.name);
+      loadLib(true);
+    }).catch(function (e) { toast(e.message, true); showPane('code'); });
+}
+function setQuietSaved(name, meta) {
+  st.name = name;
+  $('mname').textContent = name;
+  $('mmeta').textContent = (meta && meta.title) || name;
+}
+function startRun(dry) {
+  var body = dry ? { dry: true } : {};
+  if (st.name && !st.dirty) body.name = st.name;
+  else body.source = $('code').value;
+  api('/api/automator/run', body).then(function () {
+    showPane('log');
+    $('log').innerHTML = '';
+    poll();
+    toast(dry ? 'Сухой прогон: ничего не вводится' : 'Макрос пошёл');
+  }).catch(function (e) { toast(e.message, true); });
+}
+function stopRun(hard) {
+  api('/api/automator/stop', { hard: !!hard })
+    /* Ожидание здесь обязательно: ответ команды не ждёт, что раннер погас.
+       Показываем состояние из статуса, а не объявляем «остановлено» заранее —
+       иначе потерянная команда выглядела бы успехом. */
+    .then(function () {
+      return api('/api/automator/status').then(function (data) {
+        renderStatus(data);
+        toast(data.running ? 'Останавливается…' : 'Остановлено');
+      });
+    })
+    .catch(function (e) { toast(e.message, true); });
+}
+function togglePause() {
+  var state = $('stateName').textContent;
+  api('/api/automator/pause', { action: state === 'пауза' ? 'resume' : 'pause' })
+    .catch(function (e) { toast(e.message, true); });
+}
+
+/* ---------- состояние и журнал ---------- */
+var LABEL = { idle: 'свободно', starting: 'стартует', running: 'исполняется',
+              paused: 'пауза', stopping: 'останавливается', done: 'готово',
+              stopped: 'остановлен', error: 'ошибка' };
+function renderStatus(data) {
+  $('dot').className = 'dot ' + (data.state || 'idle');
+  $('stateName').textContent = LABEL[data.state] || data.state || 'свободно';
+  var parts = [];
+  if (data.name) parts.push(data.name + (data.dry ? ' (сухо)' : ''));
+  if (data.seconds) parts.push(data.seconds + ' c');
+  if (data.line) parts.push('строка ' + data.line);
+  if (data.reason) parts.push(data.reason);
+  $('ctl').textContent = parts.join(' · ') || '—';
+  HERE = data.line || HERE;
+  var logs = data.log || [];
+  $('log').innerHTML = logs.map(function (item) {
+    return '<div class="' + esc(item.level) + '">' + esc(item.text) + '</div>';
+  }).join('');
+  if (st.lane) renderLane(st.lane);
+  if (data.record && data.record.active) {
+    $('bRec').className = 'btn rec on';
+    $('bRec').textContent = '■ Запись (' + data.record.count + ')';
+  }
+  var busy = ['running', 'paused', 'stopping', 'starting'].indexOf(data.state) >= 0;
+  $('bRun').disabled = $('bDry').disabled = busy;
+  $('bPause').disabled = !(data.state === 'running' || data.state === 'paused');
+  $('bStop').disabled = !busy;
+}
+function poll() {
+  clearInterval(st.timer);
+  st.timer = setInterval(function () {
+    api('/api/automator/status').then(function (data) {
+      renderStatus(data);
+      if (!data.running) { clearInterval(st.timer); loadLib(true); }
+    }).catch(function () {});
+  }, 450);
+}
+
+/* ---------- запись ввода ---------- */
+function recordToggle() {
+  if ($('bRec').className.indexOf('on') >= 0) {
+    api('/api/automator/record', { action: 'stop' }).then(async function (data) {
+      $('bRec').className = 'btn rec';
+      $('bRec').textContent = '● Запись';
+      setCode(data.source, '');
+      st.name = '';
+      var name = await askName('Записано шагов: ' + data.count + '. Имя макроса:',
+                               data.title || data.name || 'recorded');
+      if (name) {
+        api('/api/automator/save', { name: name, source: data.source, title: name })
+          .then(function (saved) { setQuietSaved(saved.name, saved.meta); st.dirty = false;
+                                   toast('Записанный макрос сохранён'); loadLib(true); })
+          .catch(function (e) { toast(e.message, true); });
+      }
+      showPane('code');
+    }).catch(function (e) { toast(e.message, true); });
+    return;
+  }
+  askName('Имя записываемого макроса:', 'recorded').then(function (name) {
+    if (!name) return;
+    api('/api/automator/record', { action: 'start', name: name }).then(function () {
+      $('bRec').className = 'btn rec on';
+      $('bRec').textContent = '■ Стоп записи';
+      toast('Записываю всё, что вы делаете. Нажмите ещё раз, чтобы закончить.');
+    }).catch(function (e) { toast(e.message, true); });
+  });
+}
+
+/* ---------- настройки, карантин, справка ---------- */
+function loadSettings() {
+  api('/api/automator/settings').then(function (data) {
+    $('sensitive').value = (data.settings.sensitive || []).join('\n');
+    $('grace').value = data.settings.stop_grace;
+    var keys = data.hotkeys || {};
+    $('keys').textContent = 'клавиши модуля: открыть ' + (keys.bindings['automator.toggle'] || '—') +
+                            ', panic ' + (keys.bindings['automator.panic'] || '—');
+  }).catch(function (e) { toast(e.message, true); });
+  api('/api/automator/trash').then(function (data) {
+    $('trash').innerHTML = (data.files || []).map(function (item) {
+      return '<div>' + esc(item.file) + (item.folder ? ' (папка)' : '') + ' · ' +
+             esc(item.modified) +
+             (item.folder ? '' : ' <button class="btn" data-back="' + esc(item.file) +
+              '">вернуть</button>') + '</div>';
+    }).join('') || '<div class="hint">Карантин пуст.</div>';
+    document.querySelectorAll('[data-back]').forEach(function (node) {
+      node.addEventListener('click', function () {
+        api('/api/automator/restore', { file: node.dataset.back })
+          .then(function (r) { toast('Вернут макрос ' + r.name); loadLib(true); loadSettings(); })
+          .catch(function (e) { toast(e.message, true); });
+      });
+    });
+  }).catch(function () {});
+}
+function saveSettings() {
+  var words = $('sensitive').value.split('\n').map(function (w) { return w.trim(); }).filter(Boolean);
+  api('/api/automator/settings', { settings: { sensitive: words,
+                                              stop_grace: parseFloat($('grace').value) || 2 } })
+    .then(function () { toast('Настройки сохранены'); loadSettings(); })
+    .catch(function (e) { toast(e.message, true); });
+}
+function loadHelp() {
+  api('/api/automator/help').then(function (data) {
+    $('help').innerHTML = '<table>' + (data.api || []).map(function (item) {
+      return '<tr><td><code>' + esc(item[0]) + '</code></td><td>' + esc(item[1]) + '</td></tr>';
+    }).join('') + '</table>';
+  }).catch(function (e) { toast(e.message, true); });
+}
+
+$('bNew').addEventListener('click', function () {
+  if (st.dirty && !confirm('Несохранённый код будет потерян. Продолжить?')) return;
+  setCode('', '');
+  showPane('code');
+});
+$('bSave').addEventListener('click', save);
+$('bDup').addEventListener('click', function () {
+  if (!st.name) { toast('Сначала откройте макрос', true); return; }
+  askName('Имя копии:', st.name + '_copy').then(function (name) {
+    if (!name) return;
+    api('/api/automator/duplicate', { name: st.name, new_name: name })
+      .then(function (data) { toast('Создан ' + data.name); loadLib(true); openMacro(data.name); })
+      .catch(function (e) { toast(e.message, true); });
+  });
+});
+$('bDel').addEventListener('click', function () {
+  if (!st.name) { toast('Нечего удалять', true); return; }
+  if (!confirm('Убрать ' + st.name + ' в карантин? Файл останется в папке модуля.')) return;
+  api('/api/automator/delete', { name: st.name }).then(function () {
+    toast('Макрос убран в карантин');
+    setCode('', '');
+    loadLib(true);
+    loadSettings();
+  }).catch(function (e) { toast(e.message, true); });
+});
+$('bDry').addEventListener('click', function () { startRun(true); });
+$('bRun').addEventListener('click', function () { startRun(false); });
+$('bStop').addEventListener('click', function () { stopRun(false); });
+$('bPause').addEventListener('click', togglePause);
+$('bRec').addEventListener('click', recordToggle);
+$('bHelp').addEventListener('click', function () { showPane('help'); loadHelp(); });
+$('bSetSave').addEventListener('click', saveSettings);
+
+document.addEventListener('keydown', function (event) {
+  if (!(event.ctrlKey || event.metaKey)) return;
+  var key = event.key.toLowerCase();
+  if (key === 's') { event.preventDefault(); save(); }
+  else if (key === 'n') { event.preventDefault(); $('bNew').click(); }
+  else if (event.key === 'Enter') { event.preventDefault(); startRun(false); }
+  else if (key === 'escape') { event.preventDefault(); stopRun(true); }
+});
+window.addEventListener('beforeunload', function () {
+  if (st.dirty) navigator.sendBeacon &&
+    navigator.sendBeacon(withProfile('/api/automator/stop'), JSON.stringify({ hard: false }));
+});
+
+setCode('', '');
+loadLib(false);
+loadSettings();
+loadHelp();
+api('/api/automator/status').then(renderStatus).catch(function () {});
+poll();
+</script>
+</body>
+</html>

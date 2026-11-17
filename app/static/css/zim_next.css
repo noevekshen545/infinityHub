@@ -1,0 +1,377 @@
+/* Skin «next» библиотеки ZIM (/zim): язык дизайн-системы 2.0 — рейл из
+   module_rail.css, карточки и шапка на переменных темы, модалки в общем
+   стиле. Правила идут ПОСЛЕ базового <style> страницы и ПОСЛЕ design.css,
+   поэтому перекрывают раскладку; красок мимо переменных темы здесь нет,
+   кроме алиас-блока и текста на сплошном акценте.
+   Гейт: html[data-zim-skin="next"].pg-page_zim. Классическая выдача
+   (?skin=classic) этот файл не подключает и остаётся со своей палитрой. */
+
+/* ── Алиасы переменных ──────────────────────────────────────────────────
+   Страница читает имена, которых нет в design.css (--yellow, --green,
+   --red, --on-accent). Пока локальная таблица тем была на месте, они
+   брались из неё; со скином палитра приходит из темы приложения, поэтому
+   имена задаём здесь — иначе подписи и статусы остались бы неопределёнными,
+   а градиент на неопределённой переменной стал бы невалидным и фон пропал
+   вместе с белым текстом поверх него. */
+html[data-zim-skin="next"] {
+  --yellow: var(--warning, #c98a12);
+  --green: var(--success, #1f9254);
+  --red: var(--danger, #d64545);
+  --on-accent: #fff;
+}
+
+/* ── Каркас: контент правее рейла ─────────────────────────────────────── */
+html[data-zim-skin="next"].pg-page_zim .wrap {
+  max-width: 1120px;
+  margin: 0 auto 0 calc(var(--rail-w) + var(--rail-pad) * 2 + 8px);
+  padding: 24px 28px 96px;
+}
+
+html[data-zim-skin="next"].pg-page_zim body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+}
+
+/* ── Шапка модуля ─────────────────────────────────────────────────────── */
+html[data-zim-skin="next"].pg-page_zim .hdr {
+  text-align: left;
+  margin: 0 0 22px;
+  padding: 0 0 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+html[data-zim-skin="next"].pg-page_zim .hdr h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.02em;
+  margin: 0 0 6px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .hdr p {
+  color: var(--text-2, var(--text2));
+  font-size: 13px;
+}
+
+/* ── Поиск ────────────────────────────────────────────────────────────── */
+html[data-zim-skin="next"].pg-page_zim .srch {
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .srch input {
+  padding: 11px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 14px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .srch input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+html[data-zim-skin="next"].pg-page_zim .srch button {
+  padding: 0 18px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2, var(--text2));
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--tr);
+}
+
+html[data-zim-skin="next"].pg-page_zim .srch button:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--bg3);
+}
+
+/* ── Секция пользовательских вики ─────────────────────────────────────── */
+html[data-zim-skin="next"].pg-page_zim .uw-section {
+  margin: 0 0 26px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .uw-head {
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .uw-head h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .uw-head h2 i {
+  color: var(--accent);
+  font-size: 14px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .uw-head p {
+  width: 100%;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-2, var(--text2));
+  line-height: 1.5;
+}
+
+html[data-zim-skin="next"].pg-page_zim .uw-grid {
+  gap: 12px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .uw-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .uw-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+html[data-zim-skin="next"].pg-page_zim .uw-badge.vector {
+  color: var(--purple, var(--accent));
+  background: color-mix(in srgb, var(--purple, var(--accent)) 16%, transparent);
+}
+
+html[data-zim-skin="next"].pg-page_zim .uw-actions button {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2, var(--text2));
+  transition: var(--tr);
+}
+
+/* ── Карточки ZIM ─────────────────────────────────────────────────────── */
+html[data-zim-skin="next"].pg-page_zim .files {
+  gap: 14px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .fc {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+/* Полоса сверху карточки: градиент собирается из переменных темы, поэтому
+   не красит страницу мимо палитры. */
+html[data-zim-skin="next"].pg-page_zim .fc::before {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2, var(--accent)));
+}
+
+html[data-zim-skin="next"].pg-page_zim .fc:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  box-shadow: var(--shadow-md);
+}
+
+html[data-zim-skin="next"].pg-page_zim .fc h3 {
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+html[data-zim-skin="next"].pg-page_zim .fc .st {
+  font-size: 12px;
+  color: var(--text-2, var(--text2));
+}
+
+html[data-zim-skin="next"].pg-page_zim .badge {
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg3));
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+html[data-zim-skin="next"].pg-page_zim .mark-fav {
+  color: var(--yellow);
+}
+
+/* ── Пункты рейла, специфичные для модуля ─────────────────────────────── */
+/* «Сетка»/«Список» помечаются классом on (его ставит setView страницы), а
+   общий рейл знает про active — поэтому здесь тот же вид, что у .btn.active. */
+html[data-zim-skin="next"].pg-page_zim .toolbar .btn.on {
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg3));
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
+  color: var(--accent);
+  font-weight: 650;
+}
+
+/* Текущая тема — подписью в том же пункте, иначе кнопка «Тема» остаётся
+   безымянной и непонятно, что выбрано. */
+html[data-zim-skin="next"].pg-page_zim .rail-tag {
+  margin-left: auto;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text-2, var(--text2));
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
+/* В свёрнутом рейле подпись не умещается — она и так уезжает в title. */
+html[data-zim-skin="next"].rail-collapsed .rail-tag {
+  display: none;
+}
+
+/* ── Модалки: общая форма вместо разбросанных инлайновых стилей ───────── */
+html[data-zim-skin="next"].pg-page_zim .modal-bg {
+  background: rgba(6, 8, 12, .58);
+  z-index: 10003;
+}
+
+html[data-zim-skin="next"].pg-page_zim .share-modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 22px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .modal-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .modal-title-row h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .modal-title-row h2 i {
+  color: var(--accent);
+}
+
+html[data-zim-skin="next"].pg-page_zim .modal-x {
+  background: none;
+  border: none;
+  color: var(--text-3, var(--text2));
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+html[data-zim-skin="next"].pg-page_zim .modal-x:hover {
+  color: var(--text);
+}
+
+html[data-zim-skin="next"].pg-page_zim .share-btn-primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-radius: var(--radius-sm);
+}
+
+html[data-zim-skin="next"].pg-page_zim .share-btn-primary:hover {
+  background: var(--accent-2, var(--accent2));
+}
+
+/* ── Выбор темы ───────────────────────────────────────────────────────── */
+html[data-zim-skin="next"].pg-page_zim .theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+html[data-zim-skin="next"].pg-page_zim .theme-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2, var(--text2));
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--tr);
+}
+
+html[data-zim-skin="next"].pg-page_zim .theme-cell:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+html[data-zim-skin="next"].pg-page_zim .theme-cell.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg3));
+  color: var(--accent);
+  font-weight: 650;
+}
+
+html[data-zim-skin="next"].pg-page_zim .tc-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+html[data-zim-skin="next"].pg-page_zim .theme-note {
+  margin-top: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-3, var(--text2));
+}
+
+/* ── Узкие экраны ─────────────────────────────────────────────────────── */
+@media (max-width: 980px) {
+  html[data-zim-skin="next"].pg-page_zim .wrap {
+    margin-left: 0;
+    padding: 74px 14px 40px;
+  }
+
+  html[data-zim-skin="next"].pg-page_zim .files,
+  html[data-zim-skin="next"].pg-page_zim .uw-grid {
+    grid-template-columns: 1fr;
+  }
+
+  html[data-zim-skin="next"].pg-page_zim .fc {
+    padding: 16px;
+  }
+
+  html[data-zim-skin="next"].pg-page_zim .theme-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* На мобильном карточка целиком служит кнопкой, а hover-кнопки
+     «Поделиться»/«В векторную БД» видны только когда их коснулись. */
+  html[data-zim-skin="next"].pg-page_zim .zim-share-btn,
+  html[data-zim-skin="next"].pg-page_zim .fc-wrap .qdrant-add-btn {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-zim-skin="next"].pg-page_zim .fc,
+  html[data-zim-skin="next"].pg-page_zim .uw-card,
+  html[data-zim-skin="next"].pg-page_zim .theme-cell {
+    transition-duration: .01ms;
+  }
+
+  html[data-zim-skin="next"].pg-page_zim .files,
+  html[data-zim-skin="next"].pg-page_zim .hdr {
+    animation: none;
+  }
+}

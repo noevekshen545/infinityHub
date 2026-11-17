@@ -1,0 +1,2702 @@
+<!DOCTYPE html>
+<html class="pg-page_social_friends" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Друзья — Infinity Social</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/fonts/google-fonts.css">
+<link rel="stylesheet" href="/static/css/social-theme.css?v=11">
+<link rel="stylesheet" href="/static/css/social-composer.css?v=1">
+<link rel="stylesheet" href="/static/css/social-comments.css?v=1">
+<style>
+/* ширина задаётся в social-theme.css: .main { max-width: 85% } */
+.user-card{cursor:pointer;display:flex;align-items:center;gap:14px;padding:16px 18px}
+.user-card .ua{width:48px;height:48px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:18px;color:white;font-weight:600;overflow:hidden}
+.user-card .ua img{width:100%;height:100%;object-fit:cover}
+.user-card .ui{flex:1;min-width:0}
+.user-card .un{font-weight:600;font-size:14px}
+.user-card .us{font-size:12px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-card .uo{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-left:4px}
+.user-card .uo.online{background:var(--green)}
+.user-card .uo.offline{background:var(--text3)}
+.user-card .uactions{display:flex;gap:6px;flex-shrink:0}
+.user-card .uactions button{padding:6px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;transition:var(--tr);cursor:pointer;border:none;font-family:inherit}
+.btn-accept{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;padding:7px 16px!important;border-radius:var(--radius-sm)!important;font-size:12px;font-weight:600;box-shadow:0 2px 8px var(--accent-glow)}
+.btn-accept:hover{opacity:0.9;box-shadow:0 4px 14px var(--accent-glow)}
+.btn-reject{background:var(--bg3);color:var(--text2);border:1px solid var(--border);padding:7px 14px!important;border-radius:var(--radius-sm)!important;font-size:12px}
+.btn-reject:hover{background:var(--bg4);color:var(--text);border-color:var(--border2)}
+.sub-header{font-size:14px;font-weight:600;color:var(--text2);margin:16px 0 10px;display:flex;align-items:center;gap:8px}
+.sub-header i{color:var(--accent)}
+.user-count{font-size:13px;color:var(--text3);margin-bottom:12px}
+
+.group-card { cursor:pointer; transition:all .2s ease; padding:16px; display:flex; flex-direction:column; gap:10px; position:relative; overflow:hidden }
+.group-card:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.15) }
+.group-card .ga { width:56px;height:56px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,var(--accent2),var(--purple));display:flex;align-items:center;justify-content:center;font-size:24px;color:white;font-weight:700;position:relative;overflow:hidden }
+.group-card .ga img{width:100%;height:100%;object-fit:cover}
+.group-card .gi { flex:1;min-width:0 }
+.group-card .gn { font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px }
+.group-card .gn i{font-size:11px;color:var(--text3)}
+.group-card .gs { font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px }
+.group-card .gc-meta{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:8px;margin-top:4px}
+.group-card .gc-meta span{display:flex;align-items:center;gap:3px}
+.group-card .gc-badge{position:absolute;top:10px;right:10px;font-size:9px;padding:2px 8px;border-radius:10px;font-weight:600}
+.group-card .gc-badge.channel{background:rgba(168,85,247,0.15);color:#a855f7}
+.group-card .gc-badge.group{background:rgba(59,130,246,0.15);color:#3b82f6}
+.group-card .gc-badge.admin{background:rgba(245,158,11,0.15);color:#f59e0b}
+/* Сетка карточек групп/каналов. Значение берётся из social-theme.css
+   (.gc-grid) — здесь оно было продублировано с другим minmax, из-за
+   чего правило темы молча перебивалось страницей. */
+.gc-req-list{display:flex;flex-direction:column;gap:8px}
+.toolbar {
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 1000; background: var(--glass);
+  backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl); padding: 6px;
+  display: flex; align-items: center; gap: 4px;
+  box-shadow: var(--shadow-lg);
+  max-width: calc(100vw - 24px);
+  transition: var(--tr);
+}
+.toolbar:hover { box-shadow: var(--shadow-lg), 0 0 60px var(--accent-glow) }
+.post.pinned{background:var(--accent-light)!important;border:1px solid var(--accent)!important;border-left:3px solid var(--accent)!important}
+.poll-option:hover{border-color:var(--accent)!important;background:var(--hover)!important}
+#group-chat-messages{scroll-behavior:smooth}
+.toolbar .brand { font-size: 15px; font-weight: 800; color: var(--accent); padding: 6px 12px; border-radius: 10px; cursor: pointer; transition: var(--tr); display: inline-flex; align-items: center; gap: 6px; text-decoration: none }
+.toolbar .brand:hover { background: var(--accent-light); transform: scale(1.05) }
+.toolbar .sep { width: 1px; height: 20px; background: var(--border2); margin: 0 4px }
+.toolbar .btn { background: transparent; border: 1px solid transparent; color: var(--text2); padding: 8px 14px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 500; transition: var(--tr); display: inline-flex; align-items: center; gap: 7px; font-family: inherit; text-decoration: none; white-space: nowrap }
+.toolbar .btn:hover { background: var(--hover); color: var(--text); transform: translateY(-1px) }
+.toolbar .btn:hover i { color: var(--accent) }
+.toolbar .btn.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; box-shadow: 0 4px 16px var(--accent-glow) }
+.toolbar .btn.active i { color: #fff }
+.toolbar .btn-icon { background: transparent; border: 1px solid transparent; color: var(--text2); padding: 8px 10px; border-radius: 12px; cursor: pointer; font-size: 15px; transition: var(--tr); display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px }
+.toolbar .btn-icon:hover { background: var(--hover); color: var(--accent); transform: rotate(15deg) }
+.main { padding-top: 76px !important }
+.theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px }
+.theme-btn { padding: 14px 10px; border: 2px solid var(--border); border-radius: 14px; cursor: pointer; font-size: 12px; font-weight: 600; transition: var(--tr); display: flex; flex-direction: column; align-items: center; gap: 8px; background: var(--bg); color: var(--text) }
+.theme-btn:hover { border-color: var(--accent); transform: translateY(-2px) }
+.theme-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent) }
+.theme-btn .icon { font-size: 26px }
+
+/* Стили автоформатируемого поля (.af-*, .autoform, .autoarea) и форматирования
+   постов вынесены в social-composer.css / social-theme.css: те же правила
+   нужны ленте и профилю, а здесь они лежали копией. */
+/* ===== ГРУППЫ vs КАНАЛЫ: визуальное различие ===== */
+.gt-group{--kind:var(--accent);--kind-soft:rgba(59,130,246,.14)}
+.gt-channel{--kind:#a855f7;--kind-soft:rgba(168,85,247,.14)}
+/* Карточка канала — с акцентной полосой слева, как у Telegram */
+.group-card.is-channel{border-left:3px solid #a855f7}
+.group-card.is-channel .ga{background:linear-gradient(135deg,#a855f7,#6366f1)}
+.group-card.is-channel::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,rgba(168,85,247,.07),transparent 55%)}
+/* Карточка группы */
+.group-card.is-group{border-left:3px solid var(--accent)}
+.group-card.is-group .ga{background:linear-gradient(135deg,var(--accent2),var(--purple))}
+/* Обложка группы/канала: канал — фиолетовый, группа — акцентный */
+#group-cover.gt-channel{background:linear-gradient(135deg,#7c3aed,#4f46e5)}
+#group-cover.gt-group{background:linear-gradient(135deg,var(--accent2),var(--purple))}
+/* Шапка канала без блока «участников» и форума. Скрытие задаётся из JS
+   (applyGroupKindUI): каналу форум не нужен. */
+.group-tabs.gt-channel [data-gtab="chat"],.group-tabs.gt-channel [data-gtab="requests"],.group-tabs.gt-channel [data-gtab="forum"]{display:none}
+/* Статистика в шапке группы/канала */
+.gt-stats{display:flex;gap:10px;flex-wrap:wrap}
+.gt-stats:empty{display:none}
+.gt-stat{display:flex;align-items:baseline;gap:6px;padding:7px 12px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);font-size:12px;color:var(--text3);transition:var(--tr)}
+.gt-stat:hover{border-color:var(--accent);transform:translateY(-1px)}
+.gt-stat i{font-size:12px;color:var(--accent)}
+.gt-stat b{font-size:15px;font-weight:800;color:var(--text)}
+.gt-stat span{font-size:11px}
+.gt-stat-skel{width:220px;height:34px;border-radius:12px;background:var(--bg3);animation:gcPulse 1.2s ease-in-out infinite}
+@keyframes gcPulse{0%,100%{opacity:.5}50%{opacity:.9}}
+@media (max-width:768px){.gt-stat{flex:1 1 calc(50% - 5px);justify-content:center}}
+.gc-count{display:inline-block;min-width:17px;padding:0 5px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;text-align:center;line-height:17px}
+/* Список заявок */
+.gc-req-list{display:flex;flex-direction:column;gap:8px}
+.gc-req{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.gc-req .ga{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent2),var(--purple));color:#fff;font-weight:700;overflow:hidden;flex-shrink:0}
+.gc-req .ga img{width:100%;height:100%;object-fit:cover}
+.gc-req .gi{flex:1;min-width:0}
+.gc-req-actions{display:flex;gap:6px;flex-shrink:0}
+/* Заголовок страницы вкладок групп/каналов */
+.tab-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.tab-head h2{font-size:20px;font-weight:800;margin:0;display:flex;align-items:center;gap:10px}
+.tab-head h2 i{color:var(--accent)}
+.tab-head .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+/* Активная вкладка групп/каналов в основных табах */
+.tabs button[data-tab="channels"].active{background:linear-gradient(135deg,#7c3aed,#4f46e5)}
+/* Карточки: аккуратнее тени и границы */
+.group-card{border:1px solid var(--border);border-radius:16px}
+.group-card:hover{box-shadow:0 10px 28px rgba(0,0,0,.18)}
+/* Пустое состояние */
+.empty-state .btn{margin-top:4px}
+@media (max-width:768px){.gc-req{flex-wrap:wrap}.gc-req-actions{width:100%}.gc-req-actions .btn{flex:1}}
+
+/* ===== Панели подвкладок группы =====
+   .g-tab-content использовался на восьми панелях, но правил для него не
+   было нигде — класс .active не на что не влиял, переключение работало
+   только благодаря ручному показу/скрытию из JS. */
+.g-tab-content{display:none}
+.g-tab-content.active{display:block;animation:gtFade .18s ease}
+@keyframes gtFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* Девять вкладок с flex:1 и white-space:nowrap не влезали в 820px —
+   подписи сжимались и строка переполнялась. */
+#group-tabs{flex-wrap:wrap;overflow-x:auto;scrollbar-width:none}
+#group-tabs::-webkit-scrollbar{display:none}
+#group-tabs button{flex:1 1 auto;min-width:88px}
+
+/* Активная подвкладка альбомов (Фото/Видео/Аудио). Класс .on ставился
+   из JS, но правила для него не было — подсветки не происходило. */
+.btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.btn-outline:hover{border-color:var(--accent);color:var(--text);background:var(--hover)}
+
+/* ===== Альбомы группы =====
+   Разметка карточек и их стили — общие (social-theme.css: .albums-grid,
+   .album-card--v2). Здесь только подвкладки Фото/Видео/Аудио. */
+
+/* ===== Форум группы ===== */
+.forum-layout{display:grid;grid-template-columns:196px 1fr;gap:16px;align-items:start}
+@media (max-width:720px){.forum-layout{grid-template-columns:1fr}}
+.forum-side{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:8px;position:sticky;top:84px}
+@media (max-width:720px){.forum-side{position:static}}
+.forum-side-head{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.04em;padding:6px 8px 8px}
+.forum-side-head button{margin-left:auto;background:none;border:none;color:var(--accent);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:6px}
+.forum-side-head button:hover{background:var(--hover)}
+.forum-sec{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:var(--radius-sm);cursor:pointer;
+  font-size:13px;color:var(--text2);transition:var(--tr);border:none;background:none;width:100%;text-align:left;font-family:inherit}
+.forum-sec:hover{background:var(--hover);color:var(--text)}
+.forum-sec.is-active{background:var(--accent-light);color:var(--accent);font-weight:600}
+.forum-sec i{width:15px;text-align:center;font-size:11px;flex-shrink:0}
+.forum-sec .fs-n{margin-left:auto;font-size:10px;color:var(--text3);font-variant-numeric:tabular-nums}
+.forum-sec.is-active .fs-n{color:var(--accent)}
+
+.forum-main{min-width:0}
+.forum-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.forum-search{flex:1;min-width:150px}
+.forum-sorts{display:flex;gap:4px}
+.forum-sort{padding:5px 11px;border-radius:999px;border:1px solid var(--border);background:none;color:var(--text3);
+  font-size:11px;font-family:inherit;cursor:pointer;transition:var(--tr);white-space:nowrap}
+.forum-sort:hover{border-color:var(--border2);color:var(--text2)}
+.forum-sort.is-active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+
+.forum-thread{display:flex;gap:11px;padding:11px 13px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-md);cursor:pointer;margin-bottom:8px;transition:var(--tr)}
+.forum-thread:hover{border-color:var(--border2);background:var(--hover)}
+.forum-thread.is-pinned{border-left:3px solid var(--yellow)}
+.forum-thread.is-closed{opacity:.72}
+.forum-t-ava{width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;
+  background:linear-gradient(135deg,var(--accent2),var(--purple));display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:600;font-size:13px}
+.forum-t-ava img{width:100%;height:100%;object-fit:cover}
+.forum-t-body{flex:1;min-width:0}
+.forum-t-title{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.forum-t-meta{font-size:11px;color:var(--text3);margin-top:3px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.forum-t-meta span{display:inline-flex;align-items:center;gap:3px}
+.forum-t-stats{display:flex;gap:12px;flex-shrink:0;align-items:center;text-align:center}
+.forum-t-stats b{display:block;font-size:14px;color:var(--text2);font-variant-numeric:tabular-nums}
+.forum-t-stats span{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.03em}
+@media (max-width:560px){.forum-t-stats{display:none}}
+.forum-flag{font-size:9px;padding:2px 7px;border-radius:999px;font-weight:700;letter-spacing:.02em}
+.forum-flag--pin{background:var(--yellow-light);color:var(--yellow)}
+.forum-flag--close{background:var(--bg4);color:var(--text3)}
+.forum-flag--sec{background:var(--accent-light);color:var(--accent)}
+
+/* Ответы внутри темы */
+.forum-post{display:flex;gap:11px;padding:13px 0;border-bottom:1px solid var(--border)}
+.forum-post:last-child{border-bottom:none}
+.forum-post--first{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-md);padding:15px;margin-bottom:6px}
+.forum-p-main{flex:1;min-width:0}
+.forum-p-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+.forum-p-text{font-size:13px;color:var(--text2);line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.forum-p-actions{display:flex;gap:2px;margin-top:6px;opacity:0;transition:var(--tr)}
+.forum-post:hover .forum-p-actions,.forum-p-actions:focus-within{opacity:1}
+@media (max-width:640px){.forum-p-actions{opacity:1}}
+.forum-reply-form{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.forum-reply-form textarea{width:100%;min-height:82px;max-height:min(340px,40vh);resize:vertical;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text);
+  padding:11px 13px;font-size:13px;font-family:inherit;line-height:1.5}
+.forum-reply-form textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.forum-reply-bar{display:flex;align-items:center;gap:8px;margin-top:8px}
+.forum-reply-bar .grow{flex:1}
+/* Вложения и инструменты ответа в форуме */
+.frp-tools{display:flex;gap:2px}
+.frp-tool{width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  border:none;background:transparent;border-radius:var(--radius-sm);color:var(--text3);
+  cursor:pointer;transition:var(--tr);font-size:14px}
+.frp-tool:hover{background:var(--hover);color:var(--text)}
+.rp-atts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rp-att{position:relative;width:74px;height:74px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);background:var(--bg3);display:flex;align-items:center;
+  justify-content:center;overflow:hidden}
+.rp-att img{width:100%;height:100%;object-fit:cover}
+.rp-att i{font-size:20px;color:var(--text3)}
+.rp-att.is-uploading{opacity:.5}
+.rp-att.is-uploading::after{content:'';position:absolute;inset:0;
+  border:2px solid var(--accent);border-top-color:transparent;border-radius:var(--radius-sm);
+  animation:spin .8s linear infinite}
+.rp-att-name{position:absolute;left:0;right:0;bottom:0;padding:2px 4px;font-size:9px;
+  color:#fff;background:rgba(0,0,0,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-att [data-att-del]{position:absolute;top:2px;right:2px;width:18px;height:18px;
+  border:none;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;cursor:pointer;
+  font-size:9px;display:flex;align-items:center;justify-content:center}
+.rp-att [data-att-del]:hover{background:var(--red)}
+.forum-p-atts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.forum-p-atts img{max-width:190px;max-height:190px;border-radius:var(--radius-sm);
+  cursor:zoom-in;object-fit:cover;display:block}
+.forum-p-atts video{max-width:320px;max-height:240px;border-radius:var(--radius-sm)}
+.forum-p-atts audio{width:240px}
+.forum-p-file{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;
+  border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;
+  color:var(--text2);text-decoration:none}
+.forum-p-file:hover{background:var(--hover)}
+/* Панель эмодзи лежит внутри модального окна темы: без этого z-index она
+   оказывалась под оверлеем. */
+#fpPicker{z-index:120}
+</style>
+<script src="/static/js/i18n.js"></script>
+<script src="/static/js/social-emoji.js?v=6"></script>
+<script src="/static/js/social-ui.js?v=6"></script>
+<link rel="stylesheet" href="/static/css/social-lightbox.css?v=2">
+<link rel="stylesheet" href="/static/css/social-viewer.css?v=1">
+<link rel="stylesheet" href="/static/css/social-photo-editor.css?v=1">
+<link rel="stylesheet" href="/static/css/social-share.css?v=1">
+<script src="/static/js/social-dock.js?v=7"></script>
+<script src="/static/js/social-viewer.js?v=1"></script>
+<script src="/static/js/social-lightbox.js?v=3"></script>
+<script src="/static/js/social-comments.js?v=2"></script>
+<script src="/static/js/social-mentions.js?v=1"></script>
+<script src="/static/js/social-album-view.js?v=1"></script>
+<script src="/static/js/social-photo-editor.js?v=1"></script>
+<script src="/static/js/social-share.js?v=1"></script>
+<script src="/static/js/social-composer.js?v=1"></script>
+<script src="/static/js/social-album-player.js?v=4"></script>
+<script src="/static/js/social-forum.js?v=1"></script>
+<!-- Статьи (задача 1.6): Markdown рендерится библиотекой marked,
+     HTML очищается DOMPurify перед вставкой на страницу. -->
+<script type="importmap">
+{ "imports": {
+    "marked": "/vendor/marked/marked.esm.js",
+    "dompurify": "/vendor/dompurify/dompurify.es.mjs"
+  }
+}
+</script>
+<script type="module" src="/static/js/social-articles.js?v=1"></script>
+<style>
+/* Оформление отрендеренного Markdown внутри статьи */
+.article-md{font-size:14px;line-height:1.65;color:var(--text)}
+.article-md h1,.article-md h2,.article-md h3{margin:16px 0 8px;line-height:1.3}
+.article-md p{margin:0 0 10px}
+.article-md img{max-width:100%;border-radius:8px}
+.article-md pre{background:var(--bg2);padding:10px;border-radius:8px;overflow:auto}
+.article-md code{background:var(--bg2);padding:1px 5px;border-radius:4px;font-size:13px}
+.article-md blockquote{margin:0 0 10px;padding:4px 12px;border-left:3px solid var(--border);color:var(--text2)}
+.article-md ul,.article-md ol{margin:0 0 10px;padding-left:22px}
+.article-md table{border-collapse:collapse;width:100%}
+.article-md td,.article-md th{border:1px solid var(--border);padding:6px}
+</style>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+<script>
+const savedTheme = localStorage.getItem('infinity_theme') || 'dark';
+document.body.className = '';
+if (savedTheme !== 'dark') document.body.classList.add(savedTheme);
+</script>
+
+<div class="toolbar">
+  <a class="brand" href="/social/friends"><i class="fas fa-users"></i> Social</a>
+  <div class="sep"></div>
+  <a class="btn" href="/social/feed"><i class="fas fa-newspaper"></i><span>Лента</span></a>
+  <a class="btn" href="/social/profile"><i class="fas fa-user"></i><span>Профиль</span></a>
+  <a class="btn active" href="/social/friends"><i class="fas fa-user-friends"></i><span>Друзья</span></a>
+  <a class="btn" href="/social/messages"><i class="fas fa-envelope"></i><span>Сообщения</span><span class="count" style="background:var(--red);color:white;padding:1px 6px;border-radius:10px;font-size:10px;display:none" id="msg-count">0</span></a>
+  <a class="btn" href="/social/friends?tab=groups"><i class="fas fa-users"></i><span>Группы</span></a>
+  <a class="btn" href="/social/friends?tab=channels"><i class="fas fa-bullhorn"></i><span>Каналы</span></a>
+  <div class="sep"></div>
+  <a class="btn" href="/social/music"><i class="fas fa-music"></i><span>Музыка</span></a>
+  <a class="btn" href="/social/video"><i class="fas fa-video"></i><span>Видео</span></a>
+  <div class="sep"></div>
+  <button class="btn-icon" onclick="openThemePicker()" title="Тема"><i class="fas fa-palette"></i></button>
+  <a class="btn-icon" href="/" title="На главную"><i class="fas fa-home"></i></a>
+</div>
+<!-- PAGE_START -->
+<main class="main">
+  <div class="page-header">
+    <h1><i class="fas fa-user-friends"></i> Друзья</h1>
+  </div>
+
+  <div class="tabs">
+    <button class="active" data-tab="friends" onclick="switchTab('friends')"><i class="fas fa-user-friends"></i> Друзья</button>
+    <button data-tab="requests" onclick="switchTab('requests')"><i class="fas fa-user-clock"></i> Заявки</button>
+    <button data-tab="people" onclick="switchTab('people')"><i class="fas fa-users"></i> Люди</button>
+    <button data-tab="groups" onclick="switchTab('groups')"><i class="fas fa-users"></i> Группы</button>
+    <button data-tab="channels" onclick="switchTab('channels')"><i class="fas fa-bullhorn"></i> Каналы</button>
+    <button data-tab="search" onclick="switchTab('search')"><i class="fas fa-search"></i> Поиск</button>
+  </div>
+
+  <div id="tab-friends" class="tab-content active">
+    <div class="user-count" id="friends-count-info"></div>
+    <div id="friends-list"></div>
+  </div>
+
+  <div id="tab-requests" class="tab-content">
+    <div class="sub-header"><i class="fas fa-inbox"></i> Входящие</div>
+    <div id="incoming-list"></div>
+    <div class="sub-header"><i class="fas fa-paper-plane"></i> Исходящие</div>
+    <div id="outgoing-list"></div>
+  </div>
+
+  <div id="tab-people" class="tab-content">
+    <div class="search-bar" style="margin-bottom:12px">
+      <i class="fas fa-search"></i><input type="text" id="people-search-input" placeholder="Поиск по имени..." onkeydown="if(event.key==='Enter')searchPeople()">
+      <button class="btn btn-secondary btn-xs" onclick="searchPeople()">Найти</button>
+    </div>
+    <div id="people-list"><div class="loading"><i class="fas fa-spinner"></i></div></div>
+  </div>
+
+  <div id="tab-groups" class="tab-content">
+    <div id="groups-main">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="sub-header" style="margin:0"><i class="fas fa-users"></i> Мои группы</div>
+        <div style="display:flex;gap:8px">
+          <div class="search-bar"><i class="fas fa-search"></i><input type="text" id="groups-search" placeholder="Поиск групп..." onkeydown="if(event.key==='Enter')searchGroups()"></div>
+          <button class="btn btn-primary" onclick="openCreateGroup()"><i class="fas fa-plus"></i> Создать</button>
+        </div>
+      </div>
+      <div id="groups-list"></div>
+    </div>
+    <div id="group-detail" style="display:none">
+      <button class="btn btn-secondary" onclick="closeGroupDetail()" style="margin-bottom:12px"><i class="fas fa-arrow-left"></i> Назад к группам</button>
+      <div id="group-header" class="glass-card" style="padding:0;overflow:hidden">
+        <div id="group-cover" style="height:160px;background:linear-gradient(135deg,var(--accent2),var(--purple));position:relative;display:flex;align-items:flex-end;padding:16px 20px">
+          <div id="group-avatar" style="width:72px;height:72px;border-radius:16px;background:rgba(0,0,0,0.4);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;font-size:32px;color:white;font-weight:700;overflow:hidden;border:3px solid rgba(255,255,255,0.3);flex-shrink:0">
+            <span id="gd-avatar-letter">G</span>
+          </div>
+          <div style="margin-left:16px;color:white;text-shadow:0 2px 8px rgba(0,0,0,0.4)">
+            <div id="gd-name" style="font-size:22px;font-weight:700"></div>
+            <div id="gd-meta" style="font-size:13px;opacity:0.9"></div>
+          </div>
+        </div>
+        <div id="group-actions" style="padding:12px 20px;display:flex;gap:8px;flex-wrap:wrap"></div>
+        <div id="group-stats" class="gt-stats" style="padding:0 20px 14px"></div>
+      </div>
+      <div id="group-tabs" class="tabs" style="margin-top:12px">
+        <button class="active" data-gtab="posts" onclick="switchGroupTab('posts')"><i class="fas fa-newspaper"></i> <span id="gt-wall-label">Стена</span></button>
+        <button data-gtab="chat" id="gt-chat" onclick="switchGroupTab('chat')"><i class="fas fa-comments"></i> Чат</button>
+        <button data-gtab="requests" id="gt-requests" onclick="switchGroupTab('requests')"><i class="fas fa-user-clock"></i> Заявки <span id="gt-requests-count" class="gc-count" style="display:none">0</span></button>
+        <button data-gtab="members" id="gt-members" onclick="switchGroupTab('members')"><i class="fas fa-users"></i> <span id="gt-members-label">Участники</span></button>
+        <button data-gtab="activity" id="gt-activity" onclick="switchGroupTab('activity')"><i class="fas fa-chart-line"></i> Активность</button>
+        <button data-gtab="albums" id="gt-albums" onclick="switchGroupTab('albums')"><i class="fas fa-images"></i> Альбомы</button>
+        <button data-gtab="articles" id="gt-articles" onclick="switchGroupTab('articles')"><i class="fas fa-newspaper"></i> Статьи</button>
+        <button data-gtab="forum" id="gt-forum" onclick="switchGroupTab('forum')"><i class="fas fa-comments"></i> Форум</button>
+        <button data-gtab="settings" id="gt-settings" onclick="switchGroupTab('settings')"><i class="fas fa-cog"></i> Настройки</button>
+      </div>
+        <div id="group-posts" class="g-tab-content active">
+        <div id="group-post-form" class="glass-card autoform" style="position:relative">
+          <div class="af-wrap">
+            <textarea id="group-post-content" class="af-area" rows="1" placeholder="Написать пост в группе..."></textarea>
+            <button type="button" class="af-expand" data-sc-expand title="Развернуть / свернуть"><i class="fas fa-chevron-down"></i></button>
+          </div>
+          <div class="af-bar"><span class="af-count" id="group-post-count">0</span><span class="af-hint">Enter — отправить, Shift+Enter — новая строка</span></div>
+          <div id="group-media-preview" class="sc-atts" style="display:none"></div>
+          <div class="gp-bar">
+            <div class="gp-tools">
+              <label class="gp-tool" title="Фото или видео">
+                <i class="fas fa-image"></i>
+                <input type="file" accept="image/*,video/*,audio/*" multiple id="group-media-input">
+              </label>
+              <button type="button" class="gp-tool" title="Прикрепить" onclick="openGroupAttachModal()"><i class="fas fa-paperclip"></i></button>
+              <button type="button" class="gp-tool" title="Опрос" onclick="showPollCreator()"><i class="fas fa-poll"></i></button>
+              <button type="button" class="gp-tool" data-sc-emoji title="Эмодзи и стикеры"><i class="fas fa-smile"></i></button>
+            </div>
+            <button class="btn btn-primary" data-sc-submit><i class="fas fa-paper-plane"></i> Опубликовать</button>
+          </div>
+          <div id="gpStickerChip"></div>
+          <div class="wall-picker" id="gpPicker">
+            <div class="wp-tabs">
+              <button type="button" class="active" data-wtab="emoji" onclick="gpPicker.switchTab('emoji')">Эмодзи</button>
+              <button type="button" data-wtab="sticker" onclick="gpPicker.switchTab('sticker')">Стикеры</button>
+            </div>
+            <div class="wp-body" id="gpBody"></div>
+          </div>
+          <div id="group-poll-creator" style="display:none;margin-top:10px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm)">
+            <input type="text" id="poll-question" placeholder="Вопрос опроса..." style="width:100%;padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;font-family:inherit;margin-bottom:6px">
+            <div id="poll-options">
+              <input type="text" class="poll-opt" placeholder="Вариант 1" style="width:100%;padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;font-family:inherit;margin-bottom:4px">
+              <input type="text" class="poll-opt" placeholder="Вариант 2" style="width:100%;padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;font-family:inherit;margin-bottom:4px">
+            </div>
+            <button class="btn btn-secondary btn-xs" onclick="addPollOption()"><i class="fas fa-plus"></i> Добавить вариант</button>
+            <div style="margin-top:6px;display:flex;gap:6px">
+              <button class="btn btn-primary btn-xs" onclick="confirmPoll()"><i class="fas fa-check"></i> Готово</button>
+              <button class="btn btn-secondary btn-xs" onclick="cancelPoll()">Отмена</button>
+            </div>
+          </div>
+        </div>
+        <div class="search-bar" style="margin:10px 0"><i class="fas fa-search"></i><input type="text" id="group-posts-search" placeholder="Поиск по постам..." onkeydown="if(event.key==='Enter')loadGroupPosts()"><button class="btn btn-secondary btn-xs" onclick="loadGroupPosts()">Найти</button></div>
+        <div id="group-posts-list"></div>
+      </div>
+        <div id="group-chat" class="g-tab-content" style="display:none;flex-direction:column;height:500px">
+        <div id="group-chat-messages" style="flex:1;overflow-y:auto;padding:10px;background:var(--bg2);border-radius:var(--radius-sm);margin-bottom:8px;display:flex;flex-direction:column"></div>
+        <div id="gc-reply-preview" style="display:none;align-items:center;gap:6px;font-size:12px;color:var(--text2);background:var(--bg3);border-left:3px solid var(--accent);border-radius:6px;padding:6px 10px;margin-bottom:4px"></div>
+        <div style="position:relative">
+          <div class="search-bar" style="margin-top:8px;position:relative"><i class="fas fa-pen"></i><input type="text" id="group-chat-input" placeholder="Сообщение в чат..." onkeydown="if(event.key==='Enter')sendGroupChat()"><button class="btn btn-primary btn-xs" onclick="gcPicker.toggle()" title="Эмодзи и стикеры" style="padding:6px 10px"><i class="fas fa-smile"></i></button><button class="btn btn-primary btn-xs" onclick="sendGroupChat()"><i class="fas fa-paper-plane"></i></button></div>
+          <div id="gcStickerChip" style="position:absolute;bottom:100%;left:0;z-index:5"></div>
+          <div class="wall-picker" id="gcPicker">
+            <div class="wp-tabs">
+              <button type="button" class="active" data-wtab="emoji" onclick="gcPicker.switchTab('emoji')">Эмодзи</button>
+              <button type="button" data-wtab="sticker" onclick="gcPicker.switchTab('sticker')">Стикеры</button>
+            </div>
+            <div class="wp-body" id="gcBody"></div>
+          </div>
+        </div>
+      </div>
+      <div id="group-members" class="g-tab-content" style="display:none"></div>
+      <div id="group-requests" class="g-tab-content" style="display:none"></div>
+      <div id="group-albums" class="g-tab-content" style="display:none">
+        <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-sm on" data-akind="photo" onclick="switchAlbumKind('photo',this)"><i class="fas fa-images"></i> Фото</button>
+          <button class="btn btn-sm" data-akind="video" onclick="switchAlbumKind('video',this)"><i class="fas fa-video"></i> Видео</button>
+          <button class="btn btn-sm" data-akind="audio" onclick="switchAlbumKind('audio',this)"><i class="fas fa-music"></i> Аудио</button>
+          <div style="flex:1"></div>
+          <button class="btn btn-primary btn-sm" id="gaCreateBtn" onclick="openAlbumCreate()" style="display:none"><i class="fas fa-plus"></i> Создать альбом</button>
+        </div>
+        <div id="album-list"></div>
+      </div>
+      <!-- Статьи группы или канала (задача 1.6) -->
+      <div id="group-articles" class="g-tab-content" style="display:none">
+        <div style="display:flex;gap:6px;margin-bottom:12px;align-items:center">
+          <div style="flex:1"></div>
+          <button class="btn btn-primary btn-sm" id="gaArticleCreate" onclick="openArticleCreate()" style="display:none"><i class="fas fa-plus"></i> Написать статью</button>
+        </div>
+        <div id="article-list"></div>
+      </div>
+      <!-- Форум группы: разделы слева, темы справа. Наполняет social-forum.js -->
+      <div id="group-forum" class="g-tab-content" style="display:none">
+        <div class="forum-layout">
+          <aside class="forum-side">
+            <div class="forum-side-head"><i class="fas fa-folder-open"></i> Разделы <button title="Настроить разделы" onclick="manageForumSections()"><i class="fas fa-cog"></i></button></div>
+            <button class="forum-sec is-active" data-fsec="" onclick="selectForumSection('')"><i class="fas fa-layer-group"></i> Все темы <span class="fs-n" data-fsec-count></span></button>
+            <div id="forum-sections"></div>
+            <button class="forum-sec" data-fsec="__none__" onclick="selectForumSection('__none__')"><i class="fas fa-inbox"></i> Без раздела</button>
+          </aside>
+          <div class="forum-main">
+            <div class="forum-toolbar">
+              <div class="search-bar forum-search"><i class="fas fa-search"></i><input type="text" id="forum-search" placeholder="Поиск по темам..." onkeydown="if(event.key==='Enter')loadForumThreads(true)"><button class="btn btn-secondary btn-xs" onclick="loadForumThreads(true)">Найти</button></div>
+              <div class="forum-sorts">
+                <button class="forum-sort is-active" data-fsort="active" onclick="setForumSort('active')">Активные</button>
+                <button class="forum-sort" data-fsort="new" onclick="setForumSort('new')">Новые</button>
+                <button class="forum-sort" data-fsort="posts" onclick="setForumSort('posts')">Ответы</button>
+                <button class="forum-sort" data-fsort="views" onclick="setForumSort('views')">Просмотры</button>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="openForumCreate()"><i class="fas fa-plus"></i> Новая тема</button>
+            </div>
+            <div id="forum-threads"></div>
+          </div>
+        </div>
+      </div>
+      <div id="group-activity" class="g-tab-content" style="display:none"></div>
+      <div id="group-settings" class="g-tab-content" style="display:none"></div>
+    </div>
+  </div>
+
+  <div id="tab-channels" class="tab-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="sub-header" style="margin:0"><i class="fas fa-bullhorn"></i> Каналы</div>
+      <button class="btn btn-primary" onclick="createChannel()"><i class="fas fa-plus"></i> Создать канал</button>
+    </div>
+    <div class="search-bar" style="margin-bottom:12px">
+      <i class="fas fa-search"></i><input type="text" id="channels-search-input" placeholder="Поиск каналов..." onkeydown="if(event.key==='Enter')searchChannels()">
+      <button class="btn btn-secondary btn-xs" onclick="searchChannels()">Найти</button>
+    </div>
+    <div id="channels-list"><div class="loading"><i class="fas fa-spinner"></i></div></div>
+  </div>
+
+  <div id="tab-search" class="tab-content">
+    <div class="sub-header" style="margin-top:0"><i class="fas fa-globe"></i> Федеративный поиск</div>
+    <div class="search-bar" style="margin-bottom:16px">
+      <i class="fas fa-globe"></i><input type="text" id="ap-search-input" placeholder="user@domain.com — поиск в Fediverse..." onkeydown="if(event.key==='Enter')searchAP()">
+      <button class="btn btn-secondary btn-xs" onclick="searchAP()">Найти</button>
+      <button class="btn btn-secondary btn-xs" onclick="searchAPAll()" title="Искать на всех известных инстансах"><i class="fas fa-network-wired"></i> По всем</button>
+    </div>
+    <div id="ap-search-results"></div>
+
+    <hr style="border-color:var(--border);margin:16px 0">
+    <div class="sub-header"><i class="fas fa-globe"></i> Инстансы (LAN-сеть)</div>
+    <div class="search-bar" style="margin-bottom:8px">
+      <i class="fas fa-server"></i><input type="text" id="instance-address-input" placeholder="http://192.168.1.10:8080 — добавить инстанс...">
+      <button class="btn btn-secondary btn-xs" onclick="addInstance()"><i class="fas fa-plus"></i> Добавить</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="btn btn-primary btn-xs" onclick="openPairModal('create')"><i class="fas fa-qrcode"></i> Создать код</button>
+      <button class="btn btn-secondary btn-xs" onclick="openPairModal('connect')"><i class="fas fa-plug"></i> Ввести код</button>
+      <button class="btn btn-secondary btn-xs" onclick="refreshPeers()"><i class="fas fa-sync"></i> Обновить пиров</button>
+    </div>
+    <div id="instances-list" style="display:grid;gap:6px"></div>
+
+    <hr style="border-color:var(--border);margin:16px 0">
+    <div class="sub-header"><i class="fas fa-user-friends"></i> Мои подписки в Fediverse</div>
+    <div id="fed-follows-list"></div>
+    <hr style="border-color:var(--border);margin:16px 0">
+    <div class="sub-header"><i class="fas fa-search"></i> Локальный поиск</div>
+    <div class="search-bar">
+      <i class="fas fa-search"></i><input type="text" id="search-input" placeholder="Поиск пользователей..." onkeydown="if(event.key==='Enter')searchUsers()">
+      <button class="btn btn-secondary btn-xs" onclick="searchUsers()">Найти</button>
+    </div>
+    <div id="search-results"></div>
+  </div>
+</main>
+
+<!-- Модалки группы: раньше лежали внутри #group-posts (вкладка «Стена») и не
+     открывались с других вкладок, а «всплывали» при переключении на стену.
+     Вынесены на уровень body, как остальные модалки страницы. -->
+<div class="modal-overlay" id="group-attach-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title"><i class="fas fa-paperclip"></i> Прикрепить к записи</div>
+    <div style="display:grid;gap:10px">
+      <button class="btn" onclick="closeModal('group-attach-modal');document.getElementById('group-media-input').click()"><i class="fas fa-upload"></i> Загрузить с ПК</button>
+      <button class="btn btn-outline" onclick="closeModal('group-attach-modal');openGroupAlbumPicker()"><i class="fas fa-images"></i> Из альбомов группы</button>
+    </div>
+    <div class="m-actions"><button class="btn-secondary" onclick="closeModal('group-attach-modal')">Отмена</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="group-album-picker">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-title"><i class="fas fa-images"></i> Выбор из альбомов группы</div>
+    <div id="group-album-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;max-height:60vh;overflow:auto"></div>
+    <div class="m-actions"><button class="btn-secondary" onclick="closeModal('group-album-picker')">Закрыть</button></div>
+  </div>
+</div>
+<div class="modal-overlay" id="group-album-create-modal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-title"><i class="fas fa-images"></i> Новый альбом</div>
+    <div style="display:grid;gap:10px">
+      <label style="font-size:12px;color:var(--text2)">Название<input id="gaTitle" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text)"></label>
+      <label style="font-size:12px;color:var(--text2)">Тип<select id="gaKind" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text)"><option value="photo">Фото</option><option value="video">Видео</option><option value="audio">Аудио</option></select></label>
+      <label style="font-size:12px;color:var(--text2)">Приватность<select id="gaPrivacy" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text)"><option value="0">Публичный</option><option value="1">Только участники</option><option value="2">Приватный</option><option value="3">По ссылке</option></select></label>
+    </div>
+    <div class="m-actions"><button class="btn-secondary" onclick="closeModal('group-album-create-modal')">Отмена</button><button class="btn-primary" onclick="submitGroupAlbumCreate()">Создать</button></div>
+  </div>
+</div>
+
+<!-- Просмотр альбома группы (задача 1.5) -->
+<div class="modal-overlay" id="album-view-modal">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-title"><i class="fas fa-images"></i> Альбом</div>
+    <div id="album-view-content"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-secondary" onclick="closeAlbumView()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- Статьи группы или канала (задача 1.6) -->
+<div class="modal-overlay" id="article-view-modal">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-title"><i class="fas fa-newspaper"></i> Статья</div>
+    <div id="article-view-body"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <!-- Панель действий заполняется при открытии статьи: у автора
+           и администраторов появляются «Править» и «Удалить». -->
+      <span id="article-view-actions" style="flex:1"></span>
+      <button class="btn btn-secondary" onclick="closeModal('article-view-modal')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- Форум: просмотр темы -->
+<div class="modal-overlay" id="forum-thread-modal">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-title"><i class="fas fa-comments"></i> Тема</div>
+    <div id="forum-thread-body"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <span id="forum-thread-actions" style="flex:1"></span>
+      <button class="btn btn-secondary" onclick="closeForumThread()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- Форум: создание темы -->
+<div class="modal-overlay" id="forum-create-modal">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-title"><i class="fas fa-plus"></i> Новая тема</div>
+    <div style="display:grid;gap:10px">
+      <label style="font-size:12px;color:var(--text2)">Раздел<select id="forum-new-section" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text)"></select></label>
+      <label style="font-size:12px;color:var(--text2)">Заголовок<input id="forum-new-title" maxlength="160" placeholder="О чём тема?" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text)"></label>
+      <label style="font-size:12px;color:var(--text2)">Сообщение<textarea id="forum-new-body" rows="7" placeholder="Текст первого сообщения..." style="width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-family:inherit;font-size:13px;line-height:1.5;resize:vertical"></textarea></label>
+    </div>
+    <div class="m-actions"><button class="btn-secondary" onclick="closeModal('forum-create-modal')">Отмена</button><button class="btn-primary" onclick="submitForumThread()">Создать тему</button></div>
+  </div>
+</div>
+
+<!-- Форум: управление разделами -->
+<div class="modal-overlay" id="forum-sections-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title"><i class="fas fa-folder-open"></i> Разделы форума</div>
+    <div id="forum-sections-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;max-height:44vh;overflow:auto"></div>
+    <div style="display:flex;gap:8px">
+      <input id="forum-new-section-title" maxlength="80" placeholder="Название нового раздела" style="flex:1;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-family:inherit">
+      <button class="btn btn-primary" onclick="submitForumSection()"><i class="fas fa-plus"></i></button>
+    </div>
+    <div class="m-actions"><button class="btn-secondary" onclick="closeModal('forum-sections-modal')">Готово</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="article-editor-modal">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-title"><i class="fas fa-feather-alt"></i> Редактор статьи</div>
+    <div id="article-editor"></div>
+    <!-- Обложка выбирается через скрытый input: отдельного диалога
+         не нужно, кнопка просто кликает его. -->
+    <input type="file" id="article-cover-input" accept="image/*,video/*,audio/*" style="display:none" onchange="uploadArticleCover(this)">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-secondary" onclick="closeModal('article-editor-modal')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveArticle()"><i class="fas fa-save"></i> Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="group-modal">
+  <div class="modal">
+    <div class="modal-title"><i class="fas" id="gm-modal-icon"></i> <span id="gm-modal-title">Создать группу</span></div>
+    <label id="gm-name-label">Название группы</label>
+    <input type="text" id="group-name" placeholder="Название" maxlength="64">
+    <label>Описание</label>
+    <textarea id="group-desc" placeholder="О чём ваша группа? (необязательно)" maxlength="1000"></textarea>
+    <label>Приватность</label>
+    <select id="group-privacy">
+      <option value="public">Публичная — могут найти и вступить все</option>
+      <option value="closed">Закрытая — видят все, вступают по заявке</option>
+      <option value="private">Приватная — только по приглашению</option>
+    </select>
+    <label id="gm-perm-label">Кто может публиковать посты</label>
+    <select id="group-post-perm">
+      <option value="0">Все участники</option>
+      <option value="1">Администраторы и модераторы</option>
+      <option value="2">Только администраторы</option>
+    </select>
+    <label>Категория <span style="font-weight:400;color:var(--text3)">(необязательно)</span></label>
+    <input type="text" id="group-category" placeholder="новости, игры, музыка" maxlength="50">
+    <p style="font-size:12px;color:var(--text3);margin:12px 0 0" id="gm-hint"></p>
+    <div class="m-actions" style="margin-top:16px">
+      <button class="btn-secondary" onclick="closeModal('group-modal')">Отмена</button>
+      <button class="btn-primary" id="group-create-btn" onclick="createGroup()"><i class="fas fa-plus"></i> Создать</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API='/api/social'; let activeProfile=null;
+function _jsonHeaders(opts){const h=Object.assign({},(opts&&opts.headers)||{});if(opts&&opts.body!==undefined&&!(opts.body instanceof FormData)&&!('Content-Type' in h))h['Content-Type']='application/json';return h}
+async function api(url,opts={}){const res=await fetch(url,{...opts,headers:_jsonHeaders(opts)});return res.json()}
+// Бросает исключение при 4xx/5xx — для операций, где нужен тост с текстом ошибки
+async function apiOrThrow(url,opts={}){
+  const res=await fetch(url,{...opts,headers:_jsonHeaders(opts)});
+  let data={};
+  try{data=await res.json()}catch(e){data={}}
+  if(!res.ok)throw new Error(data.detail||data.error||('Ошибка '+res.status));
+  return data;
+}
+function avStyle(crop){
+  if(typeof crop==='string'){try{crop=JSON.parse(crop)}catch(e){crop=null}}
+  if(!crop||typeof crop!=='object'||Array.isArray(crop))crop={zoom:1,x:.5,y:.5};
+  const z=Math.max(.5,Math.min(4,crop.zoom||1));
+  const x=Math.max(0,Math.min(100,(crop.x??.5)*100));
+  const y=Math.max(0,Math.min(100,(crop.y??.5)*100));
+  return `object-position:${x}% ${y}%;transform:scale(${z});transform-origin:${x}% ${y}%`;
+}
+function escapeHtml(t){return String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function closeModal(id){const m=document.getElementById(id);if(m)m.classList.remove('active','show')}
+function openModal(id){const m=document.getElementById(id);if(m)m.classList.add('active','show')}
+function toast(msg,type=''){const t=document.createElement('div');t.style.cssText='position:fixed;bottom:20px;right:20px;background:'+(type==='error'?'var(--red)':'var(--accent)')+';color:white;padding:12px 20px;border-radius:12px;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:300px';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000)}
+
+let groupWs=null;
+
+async function init(){
+  try{const p=await api(`${API}/me`);if(p&&p.profile_id){activeProfile=p.profile_id}}catch(e){}
+  if(!activeProfile)activeProfile='default';
+  loadFriends(); loadRequests(); loadGroups(); loadConvCount();
+initAutoFields();
+  applyDeepLink();
+  // WebSocket
+  try{
+    groupWs=new WebSocket(`${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/api/social/ws`);
+    groupWs.onmessage=e=>{
+      try{
+        const msg=JSON.parse(e.data);
+        if(msg.type==='group_chat'&&currentGroup&&msg.group_id===currentGroup.id){
+          const list=document.getElementById('group-chat-messages');
+          if(list&&list.style.display!=='none') refreshGroupChat();
+        }
+        // Живые ответы форума: раньше тема обновлялась только после
+        // перезагрузки, и собеседник не видел ответ, пока не обновит страницу.
+        if(msg.type==='forum_post'&&window.SocialForum){
+          SocialForum.onForumMessage(msg);
+        }
+        if(msg.type==='group_post'&&currentGroup&&msg.group_id===currentGroup.id){
+          const wall=document.getElementById('group-posts');
+          if(wall&&wall.offsetParent!==null) loadGroupPosts();
+        }
+      }catch(e){}
+    };
+  }catch(e){}
+}
+// Разбор ?tab= / ?group= / ?invite= — открытие нужного экрана по прямой ссылке
+async function applyDeepLink(){
+  const p=new URLSearchParams(location.search);
+  const tab=p.get('tab');
+  const groupId=p.get('group');
+  const invite=p.get('invite');
+  if(groupId){
+    switchTab('groups');
+    if(invite)await joinByInviteCode(invite);
+    await openGroupDetail(groupId);
+    history.replaceState(null,'',location.pathname);
+    return;
+  }
+  if(tab&&['friends','requests','people','groups','channels','search'].includes(tab)){
+    switchTab(tab);
+    history.replaceState(null,'',location.pathname);
+  }
+}
+async function joinByInviteCode(code){
+  try{
+    const res=await apiOrThrow(`${API}/groups/join-by-invite/${encodeURIComponent(code)}`,{method:'POST'});
+    toast(res.already?'Вы уже были в этой группе':'Вы присоединились по приглашению','success');
+    loadGroups();loadChannels();
+    return res.group_id;
+  }catch(e){toast(e.message||'Приглашение недействительно','error');return ''}
+}
+async function loadConvCount(){
+  try{const convs=await api(`${API}/conversations`);const u=convs.reduce((s,c)=>s+(c.unread_count||0),0);const el=document.getElementById('msg-count');if(u>0){el.textContent=u>99?'99+':u;el.style.display='inline'}else el.style.display='none'}catch(e){}
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  // Раньше здесь стояли getElementById без проверки: неизвестное имя вкладки
+  // роняло страницу с TypeError.
+  const btn=document.querySelector(`.tabs button[data-tab="${name}"]`);
+  const pane=document.getElementById(`tab-${name}`);
+  if(btn)btn.classList.add('active');
+  if(pane)pane.classList.add('active');
+  if(name==='friends')loadFriends();
+  if(name==='requests')loadRequests();
+  if(name==='people')loadPeople();
+  if(name==='groups')loadGroups();
+  if(name==='channels')loadChannels();
+  if(name==='search'){document.getElementById('ap-search-input').focus();loadFedFollows();loadInstances()}
+}
+
+async function loadFriends(){
+  const list=document.getElementById('friends-list'); list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  const friends=await api(`${API}/friends`); list.innerHTML='';
+  document.getElementById('friends-count-info').textContent=`Всего друзей: ${friends.length}`;
+  if(!friends.length){list.innerHTML='<div class="empty-state"><i class="fas fa-user-friends"></i><p>Пока нет друзей. Найдите пользователей в поиске!</p></div>';return}
+  friends.forEach(f=>{
+    const fid=f.requester_id===activeProfile?f.addressee_id:f.requester_id;
+    const card=document.createElement('div'); card.className='glass-card user-card'; card.onclick=()=>location.href=`/social/profile?id=${fid}`;
+    const initial=(f.display_name||fid||'?')[0].toUpperCase();
+    card.innerHTML=`<div class="ua">${f.avatar_path?`<img src="${f.avatar_path}" style="object-fit:cover;${avStyle(f.avatar_crop)}" alt="">`:initial}</div><div class="ui"><div class="un">${escapeHtml(f.display_name||fid)}</div><div class="us">${escapeHtml(f.status||'')}</div></div><div class="uo ${f.is_online?'online':'offline'}"></div><div class="uactions" onclick="event.stopPropagation()"><button class="btn btn-secondary btn-sm" onclick="location.href='/social/messages?user=${fid}'"><i class="fas fa-envelope"></i></button><button class="btn btn-danger btn-sm" onclick="removeFriend('${fid}')"><i class="fas fa-user-minus"></i></button></div>`;
+    list.appendChild(card);
+  });
+}
+
+async function loadRequests(){
+  const data=await api(`${API}/friends/requests`);
+  const inc=document.getElementById('incoming-list'); inc.innerHTML='';
+  if(data.incoming&&data.incoming.length){
+    data.incoming.forEach(r=>{
+      const card=document.createElement('div'); card.className='glass-card user-card';
+      const initial=(r.display_name||r.requester_id||'?')[0].toUpperCase();
+      card.innerHTML=`<div class="ua">${initial}</div><div class="ui"><div class="un">${escapeHtml(r.display_name||r.requester_id)}</div><div class="us">Хочет добавить вас в друзья</div></div><div class="uactions" onclick="event.stopPropagation()"><button class="btn-accept" onclick="acceptRequest('${r.requester_id}')"><i class="fas fa-check"></i> Принять</button><button class="btn-reject" onclick="rejectRequest('${r.requester_id}')"><i class="fas fa-times"></i></button></div>`;
+      card.onclick=()=>location.href=`/social/profile?id=${r.requester_id}`; inc.appendChild(card);
+    });
+  }else inc.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-inbox"></i><p>Нет входящих заявок</p></div>';
+
+  const out=document.getElementById('outgoing-list'); out.innerHTML='';
+  if(data.outgoing&&data.outgoing.length){
+    data.outgoing.forEach(r=>{
+      const card=document.createElement('div'); card.className='glass-card user-card';
+      const initial=(r.display_name||r.addressee_id||'?')[0].toUpperCase();
+      card.innerHTML=`<div class="ua">${initial}</div><div class="ui"><div class="un">${escapeHtml(r.display_name||r.addressee_id)}</div><div class="us">Ожидание ответа</div></div><div class="uactions" onclick="event.stopPropagation()"><button class="btn btn-danger btn-sm" onclick="cancelRequest('${r.addressee_id}')"><i class="fas fa-times"></i> Отменить</button></div>`;
+      card.onclick=()=>location.href=`/social/profile?id=${r.addressee_id}`; out.appendChild(card);
+    });
+  }else out.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-paper-plane"></i><p>Нет исходящих заявок</p></div>';
+}
+
+// ===== PEOPLE =====
+async function loadPeople(){
+  const list=document.getElementById('people-list');
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  try {
+    const users=await api(`${API}/search?q=`);
+    list.innerHTML='';
+    if(!users||!users.length){list.innerHTML='<div class="empty-state" style="padding:30px"><i class="fas fa-users"></i><p>Пользователей пока нет</p></div>';return}
+    users.forEach(u=>{
+      if(u.profile_id===activeProfile)return;
+      const card=document.createElement('div'); card.className='glass-card user-card';
+      const initial=(u.display_name||u.profile_id||'?')[0].toUpperCase();
+      card.innerHTML=`<div class="ua">${u.avatar_path?`<img src="${u.avatar_path}" style="object-fit:cover;${avStyle(u.avatar_crop)}" alt="">`:initial}</div><div class="ui"><div class="un">${escapeHtml(u.display_name||u.profile_id)}</div><div class="us">${escapeHtml(u.status||'')}</div></div><div class="uo ${u.is_online?'online':'offline'}"></div><div class="uactions" onclick="event.stopPropagation()"><button class="btn btn-secondary btn-sm" onclick="location.href='/social/messages?user=${u.profile_id}'"><i class="fas fa-envelope"></i></button><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();location.href='/social/profile?id=${u.profile_id}'"><i class="fas fa-user"></i></button></div>`;
+      card.onclick=()=>location.href=`/social/profile?id=${u.profile_id}`; list.appendChild(card);
+    });
+  } catch(e) { list.innerHTML='<div class="empty-state" style="padding:30px"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки</p></div>' }
+}
+async function searchPeople(){
+  const q=document.getElementById('people-search-input').value.trim();
+  const list=document.getElementById('people-list');
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  const users=await api(`${API}/search?q=${encodeURIComponent(q)}`);
+  list.innerHTML='';
+  if(!users||!users.length){list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-search"></i><p>Ничего не найдено</p></div>';return}
+  users.forEach(u=>{
+    if(u.profile_id===activeProfile)return;
+    const card=document.createElement('div'); card.className='glass-card user-card';
+    const initial=(u.display_name||u.profile_id||'?')[0].toUpperCase();
+    card.innerHTML=`<div class="ua">${u.avatar_path?`<img src="${u.avatar_path}" style="object-fit:cover;${avStyle(u.avatar_crop)}" alt="">`:initial}</div><div class="ui"><div class="un">${escapeHtml(u.display_name||u.profile_id)}</div><div class="us">${escapeHtml(u.status||'')}</div></div><div class="uo ${u.is_online?'online':'offline'}"></div><div class="uactions" onclick="event.stopPropagation()"><button class="btn btn-secondary btn-sm" onclick="location.href='/social/messages?user=${u.profile_id}'"><i class="fas fa-envelope"></i></button><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();location.href='/social/profile?id=${u.profile_id}'"><i class="fas fa-user"></i></button></div>`;
+    card.onclick=()=>location.href=`/social/profile?id=${u.profile_id}`; list.appendChild(card);
+  });
+}
+
+// ===== CHANNELS =====
+// createChannel/openCreateGroup определены ниже — единая форма, готовящаяся под тип
+async function loadChannels(){
+  const list=document.getElementById('channels-list');
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  try {
+    const [mine,pub]=await Promise.all([api(`${API}/groups`),api(`${API}/groups/discover?limit=50`)]);
+    const map=new Map();
+    [...(mine||[]).filter(g=>g.is_channel),...(pub||[]).filter(g=>g.is_channel)].forEach(g=>{if(!map.has(g.id))map.set(g.id,g)});
+    renderChannelCards([...map.values()],list);
+  } catch(e) { list.innerHTML='<div class="empty-state" style="padding:30px"><i class="fas fa-exclamation-triangle"></i><p>Каналы недоступны: '+escapeHtml(e.message||'ошибка')+'</p></div>' }
+}
+function renderChannelCards(channels,list){
+  list.innerHTML='';
+  list.className='';
+  if(!channels.length){
+    list.innerHTML='<div class="empty-state" style="padding:30px"><i class="fas fa-bullhorn"></i><p>Каналов пока нет</p><button class="btn btn-primary" onclick="createChannel()" style="margin-top:12px"><i class="fas fa-plus"></i> Создать канал</button></div>';
+    return;
+  }
+  list.className='gc-grid';
+  channels.forEach(g=>{
+    const card=document.createElement('div'); card.className='glass-card group-card is-channel';
+    card.onclick=()=>{switchTab('groups');openGroupDetail(g.id)};
+    const initial=(g.name||'C')[0].toUpperCase();
+    const desc=g.description?(g.description.length>70?g.description.substring(0,70)+'...':g.description):'Без описания';
+    const cnt=g.member_count||0;
+    const word=cnt===1?'подписчик':(cnt>=2&&cnt<=4?'подписчика':'подписчиков');
+    const actions=g.is_member
+      ? `<div class="gc-actions" onclick="event.stopPropagation()"><button class="btn btn-primary btn-xs" onclick="switchTab('groups');openGroupDetail('${g.id}')"><i class="fas fa-sign-in-alt"></i> Открыть</button><button class="btn btn-secondary btn-xs" onclick="event.stopPropagation();leaveChannel('${g.id}')" title="Отписаться"><i class="fas fa-sign-out-alt"></i></button></div>`
+      : `<div class="gc-actions" onclick="event.stopPropagation()"><button class="btn btn-primary btn-xs" onclick="event.stopPropagation();subscribeChannel('${g.id}')"><i class="fas fa-user-plus"></i> Подписаться</button></div>`;
+    card.innerHTML=`<div class="ga">${g.avatar_path?`<img src="${g.avatar_path}" alt="">`:escapeHtml(initial)}</div><span class="gc-badge channel"><i class="fas fa-bullhorn"></i> Канал</span><div class="gi"><div class="gn">${escapeHtml(g.name||'Без названия')}</div><div class="gs">${escapeHtml(desc)}</div><div class="gc-meta"><span><i class="fas fa-user-friends"></i> ${cnt} ${word}</span><span><i class="fas fa-newspaper"></i> лента</span>${g.category?`<span><i class="fas fa-tag"></i> ${escapeHtml(g.category)}</span>`:''}${g.privacy&&g.privacy!=='public'?`<span><i class="fas fa-lock"></i> ${g.privacy==='closed'?'Закрытый':'Приватный'}</span>`:''}</div>${actions}</div>`;
+    list.appendChild(card);
+  });
+}
+async function subscribeChannel(id){
+  try{await apiOrThrow(`${API}/groups/${id}/join`,{method:'POST'});toast('Вы подписались на канал','success');loadChannels();loadGroups()}
+  catch(e){toast(e.message||'Не удалось подписаться','error')}
+}
+async function leaveChannel(id){
+  if(!await UI.confirm({title:'Отписаться от канала?',text:'Вы перестанете получать новые публикации. Ранее опубликованные записи останутся.',okText:'Отписаться',danger:true}))return;
+  try{await apiOrThrow(`${API}/groups/${id}/leave`,{method:'POST'});toast('Вы отписались','success');loadChannels();loadGroups()}
+  catch(e){toast(e.message||'Не удалось отписаться','error')}
+}
+async function searchChannels(){
+  const q=document.getElementById('channels-search-input').value.trim();
+  const list=document.getElementById('channels-list');
+  if(!q){loadChannels();return}
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  const groups=await api(`${API}/groups/discover?search=${encodeURIComponent(q)}&limit=50`);
+  const channels=(groups||[]).filter(g=>g.is_channel);
+  if(!channels.length){list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-search"></i><p>Каналы не найдены</p></div>';return}
+  renderChannelCards(channels,list);
+}
+
+// ===== FEDERATION SEARCH =====
+let fedFollowingState = new Set();
+
+async function loadFedFollows() {
+  const list = document.getElementById('fed-follows-list');
+  try {
+    const rows = await api(`${API}/ap/following`);
+    list.innerHTML = '';
+    fedFollowingState = new Set((rows || []).map(r => r.actor_url));
+    if (!rows || !rows.length) { list.innerHTML = '<div class="empty-state" style="padding:14px"><i class="fas fa-globe"></i><p style="font-size:12px">Вы пока ни на кого не подписаны. Найдите пользователя выше.</p></div>'; return }
+    rows.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'glass-card user-card';
+      const initial = (r.display_name || r.username || '?')[0].toUpperCase();
+      const badge = r.status === 'pending' ? ' <span style="font-size:10px;color:var(--yellow)">(в обработке)</span>' : r.status === 'failed' ? ' <span style="font-size:10px;color:var(--red)">(ошибка)</span>' : '';
+      card.innerHTML = `<div class="ua">${r.avatar_url ? `<img src="${r.avatar_url}" alt="">` : initial}</div><div class="ui"><div class="un">${escapeHtml(r.display_name || r.username) || ''}${badge}</div><div class="us">${escapeHtml(r.actor_url)}</div></div><div class="uactions"><button class="btn btn-secondary btn-sm" onclick="unfollowRemote('${r.actor_url.replace(/'/g, "\\'")}')"><i class="fas fa-user-minus"></i> Отписаться</button></div>`;
+      list.appendChild(card);
+    });
+  } catch (e) { list.innerHTML = '<div class="empty-state" style="padding:14px"><i class="fas fa-exclamation-triangle"></i><p style="font-size:12px">Подписки недоступны</p></div>' }
+}
+
+async function followRemote(actorUrl, btn) {
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>' }
+  try {
+    const res = await api(`${API}/ap/follow`, { method: 'POST', body: JSON.stringify({ actor_url: actorUrl }) });
+    if (res.ok || res.status === 'pending') {
+      toast('Запрос на подписку отправлен');
+      fedFollowingState.add(actorUrl);
+      updateFedButton(btn, actorUrl);
+    } else toast('Не удалось подписаться', 'error');
+  } catch (e) { toast('Ошибка сети', 'error') }
+  if (btn) btn.disabled = false;
+}
+
+async function unfollowRemote(actorUrl) {
+  try {
+    await api(`${API}/ap/follow`, { method: 'DELETE', body: JSON.stringify({ actor_url: actorUrl }) });
+    fedFollowingState.delete(actorUrl);
+    toast('Вы отписались');
+    loadFedFollows();
+  } catch (e) { toast('Ошибка сети', 'error') }
+}
+
+function updateFedButton(btn, actorUrl) {
+  if (!btn) return;
+  btn.disabled = false;
+  if (fedFollowingState.has(actorUrl)) {
+    btn.className = 'btn btn-secondary btn-sm';
+    btn.innerHTML = '<i class="fas fa-check"></i> Подписан';
+  } else {
+    btn.className = 'btn btn-primary btn-sm';
+    btn.innerHTML = '<i class="fas fa-user-plus"></i> Подписаться';
+  }
+}
+
+async function searchAP(){
+  const q=document.getElementById('ap-search-input').value.trim();
+  const list=document.getElementById('ap-search-results');
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  if(!q.includes('@')){list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-globe"></i><p>Введите адрес в формате user@domain.com</p></div>';return}
+  try {
+    const results=await api(`${API}/ap/search?q=${encodeURIComponent(q)}`);
+    list.innerHTML='';
+    if(!results||!results.length){list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-globe"></i><p>Пользователь не найден в Fediverse</p></div>';return}
+    results.forEach(r=>{
+      const card=document.createElement('div'); card.className='glass-card user-card';
+      const initial=(r.display_name||r.username||'?')[0].toUpperCase();
+      const following=fedFollowingState.has(r.actor_id);
+      const followBtn = following
+        ? `<button class="btn btn-secondary btn-sm" id="fed-btn-${encodeURIComponent(r.actor_id)}" onclick="unfollowRemote('${r.actor_id.replace(/'/g, "\\'")}')"><i class="fas fa-check"></i> Подписан</button>`
+        : `<button class="btn btn-primary btn-sm" id="fed-btn-${encodeURIComponent(r.actor_id)}" onclick="followRemote('${r.actor_id.replace(/'/g, "\\'")}', this)"><i class="fas fa-user-plus"></i> Подписаться</button>`;
+      card.innerHTML=`<div class="ua">${r.avatar_url?`<img src="${r.avatar_url}" alt="">`:initial}</div><div class="ui"><div class="un">${escapeHtml(r.display_name||r.username)}</div><div class="us">${r.actor_id||''}</div></div><div class="uactions">${followBtn}<button class="btn btn-secondary btn-sm" onclick="location.href='/social/messages?remote=${encodeURIComponent(r.actor_id)}'"><i class="fas fa-envelope"></i> Написать</button></div>`;
+      list.appendChild(card);
+    });
+  } catch(e) { list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-exclamation-triangle"></i><p>Ошибка поиска</p></div>' }
+}
+
+// ===== LAN instances & pairing =====
+let pairMode = 'create';
+// openModal/closeModal определены выше (строка ~337) — единые, работают с .active и .show
+
+async function loadInstances(){
+  const list=document.getElementById('instances-list');
+  try {
+    const data=await api(`${API}/ap/instances`);
+    const rows=Array.isArray(data)?data:(data&&data.instances)?data.instances:[];
+    list.innerHTML='';
+    if(!rows.length){list.innerHTML='<div class="empty-state" style="padding:16px"><i class="fas fa-server"></i><p>Инстансов не добавлено. Добавьте адрес соседнего инстанса в LAN или создайте код.</p></div>';return}
+    rows.forEach(r=>{
+      const card=document.createElement('div'); card.className='glass-card user-card';
+      const verify=r.verified_at?`<span class="us" style="color:var(--success)"><i class="fas fa-check-circle"></i> Проверен</span>`:`<span class="us" style="color:var(--warn)"><i class="fas fa-hourglass-half"></i> Проверяется</span>`;
+      card.innerHTML=`<div class="ui"><div class="un">${escapeHtml(r.domain)}</div><div style="font-size:12px;color:var(--text3)">${r.protocol||'http'}://${escapeHtml(r.domain)} ${verify}</div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="btn btn-secondary btn-xs" onclick="searchOnInstance('${escapeHtml(r.domain)}')"><i class="fas fa-search"></i> Найти юзеров</button>
+          <button class="btn btn-danger btn-xs" onclick="removeInstance('${escapeHtml(r.domain)}')"><i class="fas fa-trash"></i> Удалить</button>
+        </div></div>`;
+      list.appendChild(card);
+    });
+  } catch(e){ list.innerHTML='<div class="empty-state" style="padding:16px"><i class="fas fa-exclamation-triangle"></i><p>Ошибка загрузки инстансов</p></div>' }
+}
+
+async function addInstance(){
+  const input=document.getElementById('instance-address-input');
+  const addr=input.value.trim();
+  if(!addr){input.focus();return}
+  try {
+    await api(`${API}/ap/instances`, {method:'POST', body: JSON.stringify({address: addr})});
+    input.value='';
+    await loadInstances();
+  } catch(e){ alert('Не удалось добавить инстанс. Проверьте адрес.'); }
+}
+
+async function removeInstance(domain){
+  if(!await UI.confirm({title:'Удалить инстанс?',text:'Инстанс '+domain+' будет удалён из списка.',okText:'Удалить',danger:true}))return;
+  try { await api(`${API}/ap/instances?domain=${encodeURIComponent(domain)}`, {method:'DELETE'}); await loadInstances(); }
+  catch(e){ alert('Ошибка удаления'); }
+}
+
+async function openPairModal(mode){
+  pairMode=mode;
+  document.getElementById('pair-create').style.display = mode==='create'?'block':'none';
+  document.getElementById('pair-connect').style.display = mode==='connect'?'block':'none';
+  document.getElementById('pair-title').innerHTML = mode==='create'
+    ? '<i class="fas fa-qrcode"></i> Создать код подключения'
+    : '<i class="fas fa-plug"></i> Ввести код друга';
+  const pr=document.getElementById('pair-code-result'); if(pr) pr.style.display='none';
+  const st=document.getElementById('pair-connect-status'); if(st) st.innerHTML='';
+  openModal('pair-modal');
+}
+
+async function createPairCode(){
+  const res=document.getElementById('pair-code-result');
+  res.style.display='none';
+  try {
+    const data=await api(`${API}/ap/pair/create`, {method:'POST'});
+    document.getElementById('pair-code').textContent=data.code||'';
+    document.getElementById('pair-address').textContent=data.address||window.location.host;
+    document.getElementById('pair-full-message').textContent= data.message || '';
+    res.style.display='block';
+  } catch(e){ alert('Не удалось создать код'); }
+}
+
+function copyPairResult(){
+  const msg=document.getElementById('pair-full-message').textContent;
+  (navigator.clipboard?navigator.clipboard.writeText(msg):Promise.reject()).catch(()=>{
+    const ta=document.createElement('textarea'); ta.value=msg; document.body.appendChild(ta); ta.select();
+    try{document.execCommand('copy')}catch(_){} document.body.removeChild(ta);
+  });
+}
+
+async function connectPairCode(){
+  const code=document.getElementById('pair-connect-code').value.trim().toUpperCase();
+  const address=document.getElementById('pair-connect-address').value.trim();
+  const st=document.getElementById('pair-connect-status');
+  st.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  if(!code||!address){ st.innerHTML='<span style="color:var(--warn)">Введите код и адрес</span>'; return; }
+  try {
+    const data=await api(`${API}/ap/pair/connect`, {method:'POST', body: JSON.stringify({code: code, address: address})});
+    st.innerHTML=`<span style="color:var(--success)"><i class="fas fa-check-circle"></i> Подключено! ${data.paired_with?('Инстанс: '+escapeHtml(data.paired_with)):''}</span>`;
+    setTimeout(()=>{ closeModal('pair-modal'); loadInstances(); },1200);
+  } catch(e){ st.innerHTML='<span style="color:var(--danger)">Не удалось подключиться. Проверьте код и адрес.</span>'; }
+}
+
+async function refreshPeers(){
+  const list=document.getElementById('instances-list');
+  try {
+    list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+    await api(`${API}/ap/peers/refresh`, {method:'POST'});
+    await loadInstances();
+  } catch(e){ list.innerHTML='<div class="empty-state" style="padding:16px"><i class="fas fa-exclamation-triangle"></i><p>Ошибка обновления пиров</p></div>'; }
+}
+
+async function searchOnInstance(domain){
+  const list=document.getElementById('ap-search-results');
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  try {
+    const data=await api(`${API}/ap/search-instances?instance=${encodeURIComponent(domain)}`);
+    list.innerHTML='';
+    const results=data&&data.length?data:[];
+    if(!results.length){list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-globe"></i><p>Не удалось найти пользователей на '+escapeHtml(domain)+'</p></div>';return}
+    results.forEach(r=>{
+      const card=document.createElement('div'); card.className='glass-card user-card';
+      const initial=(r.display_name||r.username||'?')[0].toUpperCase();
+      const following=fedFollowingState.has(r.actor_id);
+      const followBtn = following
+        ? `<button class="btn btn-secondary btn-sm" onclick="unfollowRemote('${r.actor_id.replace(/'/g, "\\'")}')"><i class="fas fa-check"></i> Подписан</button>`
+        : `<button class="btn btn-primary btn-sm" onclick="followRemote('${r.actor_id.replace(/'/g, "\\'")}', this)"><i class="fas fa-user-plus"></i> Подписаться</button>`;
+      card.innerHTML=`<div class="ua">${r.avatar_url?`<img src="${r.avatar_url}" alt="">`:initial}</div><div class="ui"><div class="un">${escapeHtml(r.display_name||r.username)}</div><div class="us">${r.actor_id||''}</div></div><div class="uactions">${followBtn}<button class="btn btn-secondary btn-sm" onclick="location.href='/social/messages?remote=${encodeURIComponent(r.actor_id)}'"><i class="fas fa-envelope"></i> Написать</button></div>`;
+      list.appendChild(card);
+    });
+  } catch(e){ list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-exclamation-triangle"></i><p>Ошибка поиска</p></div>' }
+}
+
+async function searchAPAll(){
+  const q=document.getElementById('ap-search-input').value.trim();
+  const list=document.getElementById('ap-search-results');
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  if(!q){ list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-globe"></i><p>Введите имя для поиска</p></div>'; return; }
+  try {
+    const data=await api(`${API}/ap/search-instances?username=${encodeURIComponent(q)}`);
+    list.innerHTML='';
+    const results=data&&data.length?data:[];
+    if(!results.length){list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-globe"></i><p>Никто не найден на всех инстансах</p></div>';return}
+    results.forEach(r=>{
+      const card=document.createElement('div'); card.className='glass-card user-card';
+      const initial=(r.display_name||r.username||'?')[0].toUpperCase();
+      const following=fedFollowingState.has(r.actor_id);
+      const followBtn = following
+        ? `<button class="btn btn-secondary btn-sm" onclick="unfollowRemote('${r.actor_id.replace(/'/g, "\\'")}')"><i class="fas fa-check"></i> Подписан</button>`
+        : `<button class="btn btn-primary btn-sm" onclick="followRemote('${r.actor_id.replace(/'/g, "\\'")}', this)"><i class="fas fa-user-plus"></i> Подписаться</button>`;
+      card.innerHTML=`<div class="ua">${r.avatar_url?`<img src="${r.avatar_url}" alt="">`:initial}</div><div class="ui"><div class="un">${escapeHtml(r.display_name||r.username)}</div><div class="us">${r.actor_id||''}</div><div class="us">${r.instance||''}</div></div><div class="uactions">${followBtn}<button class="btn btn-secondary btn-sm" onclick="location.href='/social/messages?remote=${encodeURIComponent(r.actor_id)}'"><i class="fas fa-envelope"></i> Написать</button></div>`;
+      list.appendChild(card);
+    });
+  } catch(e){ list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-exclamation-triangle"></i><p>Ошибка поиска</p></div>' }
+}
+
+// ===== GROUPS (VK/Facebook-style channels) =====
+let currentGroup = null;
+let currentGroupRole = '';
+// Статьи живут в отдельном модульном скрипте social-articles.js, а он не видит
+// let-переменные этой страницы: на уровне скрипта let создаёт глобальную
+// привязку, но не свойство window. Поэтому отдаём наружу явно.
+window.SOCIAL_API = API;
+Object.defineProperty(window, 'currentGroup', {
+  get: () => currentGroup, set: v => { currentGroup = v; }
+});
+
+// Единый рендер карточки группы/канала.
+// Параметр list не использовался: функция только строит карточку и
+// возвращает её, добавление делает вызывающий код.
+function renderEntityCard(g){
+  const isCh=!!g.is_channel;
+  const card=document.createElement('div');
+  card.className='glass-card group-card '+(isCh?'is-channel':'is-group');
+  card.onclick=()=>openGroupDetail(g.id);
+  const initial=(g.name||(isCh?'C':'G'))[0].toUpperCase();
+  const roleBadge=g.my_role==='admin'?'<span class="gc-badge admin"><i class="fas fa-crown"></i> Админ</span>'
+    :g.my_role==='moderator'?'<span class="gc-badge admin"><i class="fas fa-shield-alt"></i> Модератор</span>':'';
+  const typeBadge=isCh?'<span class="gc-badge channel"><i class="fas fa-bullhorn"></i> Канал</span>'
+    :'<span class="gc-badge group"><i class="fas fa-users"></i> Группа</span>';
+  const cnt=g.member_count||0;
+  const n10=cnt%10,n100=cnt%100;
+  const word=isCh?(n10===1&&n100!==11?'подписчик':(n10>=2&&n10<=4&&(n100<12||n100>14)?'подписчика':'подписчиков'))
+    :(n10===1&&n100!==11?'участник':(n10>=2&&n10<=4&&(n100<12||n100>14)?'участника':'участников'));
+  const priv=g.privacy==='public'?['globe','Публичная','Публичный']
+    :g.privacy==='closed'?['lock','Закрытая','Закрытый']:['shield-alt','Приватная','Приватный'];
+  const desc=g.description?(g.description.length>80?g.description.substring(0,80)+'...':g.description):'Без описания';
+  const meta=`<span title="Участники"><i class="fas fa-user-friends"></i> ${cnt} ${word}</span>`
+    +`<span title="Приватность"><i class="fas fa-${priv[0]}"></i> ${isCh?priv[2]:priv[1]}</span>`
+    +(g.category?`<span><i class="fas fa-tag"></i> ${escapeHtml(g.category)}</span>`:'')
+    +(isCh?`<span><i class="fas fa-newspaper"></i> лента</span>`:`<span><i class="fas fa-comments"></i> чат</span>`);
+  card.innerHTML=`<div class="ga">${g.avatar_path?`<img src="${g.avatar_path}" alt="">`:escapeHtml(initial)}</div>${typeBadge}${roleBadge}`
+    +`<div class="gi"><div class="gn">${escapeHtml(g.name||'Без названия')}</div><div class="gs">${escapeHtml(desc)}</div><div class="gc-meta">${meta}</div></div>`;
+  return card;
+}
+
+async function loadGroups(){
+  const list=document.getElementById('groups-list');
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  document.getElementById('groups-main').style.display='block';
+  document.getElementById('group-detail').style.display='none';
+  try {
+    // Во вкладке «Группы» показываем только группы — каналы живут в своей вкладке
+    const all=await api(`${API}/groups`);
+    const groups=(all||[]).filter(g=>!g.is_channel);
+    list.innerHTML='';
+    // Сбрасываем класс сетки: после предыдущего непустого ответа он
+    // оставался на контейнере, и блок «Вы не состоите ни в одной группе»
+    // занимал одну колонку вместо всей ширины.
+    list.className='';
+    if(!groups.length){
+      list.innerHTML='<div class="empty-state" style="padding:30px"><i class="fas fa-users"></i><p>Вы не состоите ни в одной группе</p><button class="btn btn-primary" onclick="openCreateGroup()" style="margin-top:12px"><i class="fas fa-plus"></i> Создать группу</button></div>';
+      return;
+    }
+    list.className='gc-grid';
+    groups.forEach(g=>list.appendChild(renderEntityCard(g)));
+  } catch(e) { list.innerHTML='<div class="empty-state" style="padding:30px"><i class="fas fa-exclamation-triangle"></i><p>Группы недоступны: '+escapeHtml(e.message||'ошибка')+'</p></div>' }
+}
+
+async function searchGroups(){
+  const q=document.getElementById('groups-search').value.trim();
+  if(!q){loadGroups();return}
+  const list=document.getElementById('groups-list');
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  const all=await api(`${API}/groups?search=${encodeURIComponent(q)}`);
+  const groups=(all||[]).filter(g=>!g.is_channel);
+  list.innerHTML='';
+  if(!groups.length){list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-search"></i><p>Группы не найдены</p></div>';return}
+  list.className='gc-grid';
+  groups.forEach(g=>list.appendChild(renderEntityCard(g)));
+}
+
+// ===== Автоформатируемые поля ввода =====
+// textarea растёт под содержимое, чтобы текст не вылезал за границы поля
+function autoGrow(el,maxH){
+  if(!el)return 0;
+  el.style.height='auto';
+  const limit=maxH||420;
+  const h=Math.min(el.scrollHeight,limit);
+  el.style.height=h+'px';
+  el.style.overflowY=el.scrollHeight>limit?'auto':'hidden';
+  return el.scrollHeight;
+}
+function autoGrowAll(){document.querySelectorAll('.af-area,.autoarea').forEach(t=>autoGrow(t))}
+
+// Разбивка текста поста: абзацы, ссылки, хэштеги и упоминания
+// На странице «Друзья» функция экранирования называется escapeHtml (не esc, как в мессенджере)
+function formatPostText(t){
+  return escapeHtml(t)
+    .replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>')
+    // Лента читает параметр как ?hashtag=, а здесь был ?tag=: ссылка
+    // приводила на неотфильтрованную ленту, молча игнорируя хэштег.
+    .replace(/(^|\s)#([\wа-яёА-ЯЁ-]{2,})/g,'$1<a href="/social/feed?hashtag=$2" class="af-tag">#$2</a>')
+    .replace(/(^|\s)@([\wа-яёА-ЯЁ.-]{2,})/g,'$1<span class="af-mention">@$2</span>')
+    .replace(/\n{3,}/g,'<br><br>')
+    .replace(/\n/g,'<br>');
+}
+
+function initAutoFields(){
+  // Стена группы/канала: общий компонент. Он же вешает подсказки @, которых
+  // здесь раньше не было (только в комментариях и на форуме).
+  if(window.SocialComposer){
+    groupComposer=SocialComposer.create({
+      area:'group-post-content', form:'group-post-form',
+      count:'group-post-count', preview:'group-media-preview',
+      fileInput:'group-media-input',
+      max:4000, placeholder:'Написать пост в группе...',
+      groupId:()=>(currentGroup&&currentGroup.id)||'',
+      onSubmit:(text,atts,sticker)=>submitGroupPost(text,atts,sticker),
+    });
+    // Панель эмодзи для стены уже создаётся ниже (gpPicker) — второй экземпляр
+    // на тот же контейнер удвоил бы обработчики, поэтому здесь только кнопка.
+    // gpPicker объявлен let'ом позже в этом же скрипте, но обработчик срабатывает
+    // по клику, когда скрипт уже выполнен, — ссылка безопасна.
+    const em=document.querySelector('#group-post-form [data-sc-emoji]');
+    if(em)em.addEventListener('click',()=>{ if(gpPicker)gpPicker.toggle(); });
+  }
+  document.querySelectorAll('textarea').forEach(t=>{
+    if(t.id==='group-post-content')return;
+    if(!t.classList.contains('autoarea'))t.classList.add('autoarea');
+    autoGrow(t);
+    t.addEventListener('input',()=>autoGrow(t));
+  });
+  // Если общий компонент не загрузился — держим хотя бы прежнюю обвязку,
+  // чтобы стена группы не осталась вовсе без отправки.
+  if(!groupComposer) initGroupPostFallback();
+  window.addEventListener('resize',autoGrowAll);
+}
+
+function initGroupPostFallback(){
+  const area=document.getElementById('group-post-content');
+  const count=document.getElementById('group-post-count');
+  if(!area)return;
+  autoGrow(area);
+  area.addEventListener('input',()=>{
+    autoGrow(area);
+    if(count){
+      const n=area.value.length;
+      count.textContent=n>2000?(n+' / 4000'):String(n);
+      count.classList.toggle('is-over',n>4000);
+    }
+  });
+  area.addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(area.value.trim())createGroupPost()}
+  });
+  const inp=document.getElementById('group-media-input');
+  if(inp)inp.addEventListener('change',()=>handleGroupMediaSelect(inp));
+  const btn=document.querySelector('#group-post-form .af-expand');
+  if(btn)btn.addEventListener('click',()=>{
+    const tall=area.classList.toggle('is-tall');
+    area.style.maxHeight=tall?'min(70vh,600px)':'';
+    autoGrow(area);
+  });
+  const send=document.querySelector('#group-post-form .btn-primary');
+  if(send)send.addEventListener('click',createGroupPost);
+  if(window.SocialMentions)SocialMentions.attach(area,{groupId:()=>(currentGroup&&currentGroup.id)||''});
+}
+
+async function openGroupDetail(id){
+  try {
+    currentGroup = await api(`${API}/groups/${id}`);
+  } catch(e) { toast('Ошибка загрузки группы','error'); return }
+  if(!currentGroup||!currentGroup.id){toast('Группа не найдена','error');return}
+  currentGroupRole = currentGroup.my_role || '';
+  // При переходе в другую группу закрываем все открытые модалки: окно
+  // («Создать альбом», просмотр альбома, выбор вложений) относилось к
+  // предыдущей группе и не должно «переезжать» в новую.
+  document.querySelectorAll('.modal-overlay.active,.modal-overlay.show').forEach(m=>m.classList.remove('active','show'));
+  // Аудиоальбом предыдущей группы продолжал играть под страницей: трекер
+  // останавливается только в closeAlbumView, а сюда мы попадаем мимо неё.
+  if(window.SocialAlbumPlayer)SocialAlbumPlayer.stop();
+  // Таймеры чата и форума тоже могли остаться от предыдущей группы.
+  stopGroupChatTimer();
+  if(typeof window.stopForumTimer==='function')window.stopForumTimer();
+  document.getElementById('groups-main').style.display='none';
+  document.getElementById('group-detail').style.display='block';
+
+  // Header
+  const initial = (currentGroup.name||'G')[0].toUpperCase();
+  const avatar = document.getElementById('group-avatar');
+  // ВАЖНО: innerHTML заменяет содержимое, поэтому букву-заглушку #gd-avatar-letter
+  // использовать нельзя — её элемент исчезнет из DOM. Ставим текст напрямую.
+  if(currentGroup.avatar_path) avatar.innerHTML=`<img src="${currentGroup.avatar_path}" style="width:100%;height:100%;object-fit:cover" alt="">`;
+  else avatar.textContent = initial;
+  document.getElementById('gd-name').textContent = currentGroup.name||'Без названия';
+  const privacyLabel = currentGroup.privacy==='public'?'Публичная':currentGroup.privacy==='closed'?'Закрытая':'Приватная';
+  document.getElementById('gd-meta').textContent = `${privacyLabel} · ${currentGroup.member_cnt||currentGroup.member_count||0} участников`;
+  if(currentGroup.cover_path) document.getElementById('group-cover').style.backgroundImage=`url(${currentGroup.cover_path})`;
+
+  // Actions
+  const actions = document.getElementById('group-actions');
+  actions.innerHTML='';
+  const pf=document.getElementById('group-post-form');
+  if(currentGroup.is_member){
+    actions.innerHTML+=`<span style="font-size:13px;color:var(--text2);padding:6px 12px;background:var(--bg3);border-radius:var(--radius-sm)"><i class="fas fa-check-circle" style="color:var(--green)"></i> Вы участник${currentGroupRole==='admin'?' (админ)':currentGroupRole==='moderator'?' (модератор)':''}</span>`;
+    if(currentGroupRole!=='admin') actions.innerHTML+=`<button class="btn btn-danger" onclick="leaveGroup('${currentGroup.id}')" style="font-size:12px"><i class="fas fa-sign-out-alt"></i> Выйти</button>`;
+  } else {
+    if(currentGroup.privacy==='public'){
+      actions.innerHTML+=`<button class="btn btn-primary" onclick="joinGroup('${currentGroup.id}')"><i class="fas fa-user-plus"></i> Вступить</button>`;
+    } else if(currentGroup.privacy==='closed'){
+      actions.innerHTML+=`<button class="btn btn-primary" onclick="requestJoinGroup()"><i class="fas fa-user-plus"></i> Подать заявку</button>`;
+    } else {
+      actions.innerHTML+=`<span style="font-size:13px;color:var(--text3);padding:6px 12px;background:var(--bg3);border-radius:var(--radius-sm)"><i class="fas fa-lock"></i> Приватная группа</span>`;
+    }
+  }
+  if(pf) pf.style.display=currentGroup.is_member?'block':'none';
+
+  // Группа и канал — разные сущности: у канала нет чата и заявок, стена называется «Лента»
+  applyGroupKindUI();
+  loadGroupStats();
+  refreshRequestsBadge();
+  switchGroupTab('posts');
+}
+
+// Компактная статистика в шапке
+async function loadGroupStats(){
+  const el=document.getElementById('group-stats');
+  if(!el||!currentGroup)return;
+  el.innerHTML='<div class="gt-stat-skel"></div>';
+  try{
+    const s=await api(`${API}/groups/${currentGroup.id}/stats`);
+    if(!currentGroup||!el)return;
+    const isCh=!!currentGroup.is_channel;
+    const cells=isCh
+      ? [['fas fa-user-friends',s.members,'подписчиков'],['fas fa-newspaper',s.posts,'публикаций'],['fas fa-eye',s.views,'просмотров'],['fas fa-fire',s.posts_today,'за сегодня']]
+      : [['fas fa-user-friends',s.members,'участников'],['fas fa-comments',s.posts,'постов'],['fas fa-chart-line',s.active_week,'активных за неделю'],['fas fa-circle',s.online,'онлайн']];
+    el.innerHTML=cells.map(([ic,v,l])=>`<div class="gt-stat"><i class="${ic}"></i><b>${v||0}</b><span>${l}</span></div>`).join('');
+  }catch(e){el.innerHTML=''}
+}
+
+function applyGroupKindUI(){
+  const isCh=!!currentGroup.is_channel;
+  const kind=isCh?'gt-channel':'gt-group';
+  // Визуальный тип сущности на обложке и панели вкладок
+  const cover=document.getElementById('group-cover');
+  if(cover){cover.classList.remove('gt-channel','gt-group');cover.classList.add(kind)}
+  const tabs=document.getElementById('group-tabs');
+  if(tabs){tabs.classList.remove('gt-channel','gt-group');tabs.classList.add(kind)}
+  const set=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt};
+  const show=(id,on)=>{const el=document.getElementById(id);if(el)el.style.display=on?'':'none'};
+  show('gt-chat',!isCh);          // у канала чата нет
+  show('gt-requests',!isCh);      // заявки — только для групп
+  show('gt-forum',!isCh);         // форум — только для групп
+  set('gt-wall-label',isCh?'Лента':'Стена');
+  set('gt-members-label',isCh?'Подписчики':'Участники');
+  const ta=document.getElementById('group-post-content');
+  if(ta)ta.placeholder=isCh?'Опубликовать запись в канале...':'Написать пост в группе...';
+  // У канала форма записи показывается только админу (остальные — только чтение ленты)
+  const form=document.getElementById('group-post-form');
+  if(form)form.style.display=(currentGroup.is_member&&(!isCh||currentGroupRole==='admin'))?'':'none';
+}
+
+async function refreshRequestsBadge(){
+  const el=document.getElementById('gt-requests-count');
+  if(!el||!currentGroup)return;
+  if(!currentGroup.my_role||!['admin','moderator'].includes(currentGroup.my_role)){el.style.display='none';return}
+  try{
+    const reqs=await api(`${API}/groups/${currentGroup.id}/join-requests`);
+    const n=(reqs||[]).filter(r=>r.status==='pending').length;
+    el.textContent=n; el.style.display=n?'inline-block':'none';
+  }catch(e){el.style.display='none'}
+}
+
+async function loadGroupRequests(){
+  const list=document.getElementById('group-requests');
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  try{
+    const reqs=await apiOrThrow(`${API}/groups/${currentGroup.id}/join-requests`);
+    const pending=(reqs||[]).filter(r=>r.status==='pending');
+    let html='<div class="sub-header" style="margin-top:0"><i class="fas fa-user-clock"></i> Заявки на вступление</div>';
+    if(!pending.length){list.innerHTML=html+'<div class="empty-state" style="padding:24px"><i class="fas fa-check-circle"></i><p>Новых заявок нет</p></div>';return}
+    html+='<div class="gc-req-list">';
+    pending.forEach(r=>{
+      const nm=r.display_name||r.profile_id;
+      const ini=(nm||'?')[0].toUpperCase();
+      html+=`<div class="gc-req glass-card">
+        <div class="ga" style="width:40px;height:40px;border-radius:50%">${r.avatar_path?`<img src="${r.avatar_path}" alt="">`:escapeHtml(ini)}</div>
+        <div class="gi"><div class="gn">${escapeHtml(nm)}</div>
+        <div class="gs">${r.created_at?new Date(r.created_at*1000).toLocaleString('ru-RU'):''}${r.message?' · '+escapeHtml(r.message):''}</div></div>
+        <div class="gc-req-actions">
+          <button class="btn btn-primary btn-xs" onclick="approveGroupRequest('${r.id}')"><i class="fas fa-check"></i> Принять</button>
+          <button class="btn btn-secondary btn-xs" onclick="rejectGroupRequest('${r.id}')"><i class="fas fa-times"></i></button>
+        </div></div>`;
+    });
+    list.innerHTML=html+'</div>';
+  }catch(e){list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-lock"></i><p>Недоступно</p></div>'}
+}
+async function approveGroupRequest(rid){
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/join-requests/${rid}/approve`,{method:'POST'});
+    toast('Заявка принята','success'); loadGroupRequests(); refreshRequestsBadge(); loadGroupMembers();
+  }catch(e){toast(e.message||'Не удалось принять','error')}
+}
+async function rejectGroupRequest(rid){
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/join-requests/${rid}/reject`,{method:'POST'});
+    toast('Заявка отклонена','success'); loadGroupRequests(); refreshRequestsBadge();
+  }catch(e){toast(e.message||'Не удалось отклонить','error')}
+}
+
+function closeGroupDetail(){
+  // Таймеры и плееры предыдущей группы продолжали работать после возврата
+  // в список: чат опрашивал endpoint уже несуществующего на экране группы,
+  // аудио играло, форум — то же самое.
+  stopGroupChatTimer();
+  if(window.SocialAlbumPlayer)SocialAlbumPlayer.stop();
+  if(typeof window.stopForumTimer==='function')window.stopForumTimer();
+  document.getElementById('groups-main').style.display='block';
+  document.getElementById('group-detail').style.display='none';
+  loadGroups();
+}
+
+function switchGroupTab(name){
+  // У канала нет чата, заявок и форума — принудительно возвращаем на ленту
+  if(currentGroup&&currentGroup.is_channel&&(name==='chat'||name==='requests'||name==='forum'))name='posts';
+  document.querySelectorAll('.tabs [data-gtab]').forEach(b=>b.classList.remove('active'));
+  // Раньше панели скрывались инлайновым display:none, а #group-posts был
+  // помечен классом .active. Класс .active теперь единственный источник
+  // видимости (правило .g-tab-content.active), поэтому чистим оба.
+  document.querySelectorAll('.g-tab-content').forEach(t=>{t.style.display='none';t.classList.remove('active')});
+  const btn=document.querySelector(`.tabs [data-gtab="${name}"]`);
+  if(btn)btn.classList.add('active');
+  const pane=document.getElementById(`group-${name}`);
+  if(pane){pane.style.display='block';pane.classList.add('active')}
+  if(name==='posts') loadGroupPosts();
+  if(name==='chat') loadGroupChat();
+  if(name==='members') loadGroupMembers();
+  if(name==='requests') loadGroupRequests();
+  if(name==='albums') loadGroupAlbums();
+  if(name==='articles') loadGroupArticles();
+  if(name==='forum'&&window.loadForum)loadForum();
+  if(name==='activity') loadGroupActivity();
+  if(name==='settings') loadGroupSettings();
+}
+
+// Собирает медиа поста для лайтбокса: картинки и видео по порядку,
+// вместе с подписью — раньше она терялась, и в просмотрщике была пустая
+// строка вместо названия файла.
+function collectPostMedia(attachments) {
+  return (attachments || [])
+    .filter(a => a && (a.type === 'image' || a.type === 'video'))
+    .map(a => ({ type: a.type, src: a.src || a.url || '', caption: a.title || '' }))
+    .filter(a => a.src);
+}
+
+// Открытие медиа по клику. Обработчик один на документ вместо
+// lbOpen(...) в каждом onclick: список медиа лежит в data-lb-list,
+// поэтому разметка не раздувается и не ломается на кавычках в URL.
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-lb]');
+  if (!el || typeof lbOpen !== 'function') return;
+  let items = [];
+  try { items = JSON.parse(el.getAttribute('data-lb-list') || '[]'); } catch (err) { items = []; }
+  if (!items.length) return;
+  e.preventDefault();
+  e.stopPropagation();
+  lbOpen(items, parseInt(el.getAttribute('data-lb-idx'), 10) || 0);
+});
+
+// --- Альбомы группы (задача 1.5) ---
+// Подвкладка (фото/видео/аудио) хранится в dataset кнопки вкладки:
+// иначе при переключении вкладок и обратно подвкладка сбрасывалась бы.
+let albumKind = 'photo';
+
+function switchAlbumKind(kind, btn) {
+  // Селектор был глобальным и цеплял ещё и кнопку вкладки «Альбомы»:
+  // подвкладка сохраняется в её dataset, и на следующем вызове она сама
+  // себе ставила .on. Ограничиваем поиск контейнером подвкладок.
+  document.querySelectorAll('#group-albums [data-akind]').forEach(b => b.classList.toggle('on', b.dataset.akind === kind));
+  const tabBtn = document.querySelector('.tabs [data-gtab="albums"]');
+  if (tabBtn) tabBtn.dataset.akind = kind;
+  loadGroupAlbums();
+}
+
+const ALBUM_KIND_META = {
+  photo: { icon: 'fa-images', label: 'Фото' },
+  video: { icon: 'fa-video', label: 'Видео' },
+  audio: { icon: 'fa-music', label: 'Аудио' },
+};
+
+const ALBUM_PRIVACY_META = {
+  0: { icon: '', label: '' },
+  1: { icon: 'fa-users', label: 'участники' },
+  2: { icon: 'fa-lock', label: 'приватный' },
+  3: { icon: 'fa-link', label: 'по ссылке' },
+};
+
+async function loadGroupAlbums() {
+  const box = document.getElementById('album-list');
+  if (!box || !currentGroup) return;
+  const tabBtn = document.querySelector('.tabs [data-gtab="albums"]');
+  albumKind = (tabBtn && tabBtn.dataset.akind) || albumKind;
+  // Сбрасываем и класс сетки: иначе пустое состояние оказалось бы её
+  // элементом и занимало одну колонку вместо всей ширины.
+  box.className = '';
+  box.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i></div>';
+  let albums;
+  try {
+    const r = await apiOrThrow(`${API}/groups/${currentGroup.id}/albums?kind=${albumKind}`);
+    albums = r.albums || [];
+  } catch (e) {
+    box.innerHTML = '<div class="empty-state" style="padding:20px;color:var(--red)">' + escapeHtml(e.message) + '</div>';
+    return;
+  }
+  // Кнопку показываем только участникам: у постороннего сервер всё равно
+  // отвечает 403, а кнопка с доступным действием вводила в заблуждение.
+  const btn = document.getElementById('gaCreateBtn');
+  if (btn) btn.style.display = currentGroup.is_member ? '' : 'none';
+
+  if (!albums.length) {
+    box.innerHTML = '<div class="empty-state" style="padding:24px"><i class="fas fa-images" style="font-size:28px;opacity:.4"></i>'
+      + '<p>Альбомов пока нет</p></div>';
+    return;
+  }
+  box.className = 'albums-grid';
+  box.innerHTML = albums.map(a => {
+    const kind = a.kind || albumKind || 'photo';
+    const km = ALBUM_KIND_META[kind] || ALBUM_KIND_META.photo;
+    const pm = ALBUM_PRIVACY_META[a.privacy] || ALBUM_PRIVACY_META[0];
+    return `
+      <div class="album-card--v2" onclick="openAlbumView('${a.id}')" title="${escapeHtml(a.title)}">
+        <div class="album-cover">
+          ${a.cover_path
+            ? `<img src="${escapeHtml(a.cover_path)}" alt="" loading="lazy">`
+            : `<div class="album-cover-empty"><i class="fas ${km.icon}"></i></div>`}
+          <span class="album-kind"><i class="fas ${km.icon}"></i>${km.label}</span>
+          ${pm.icon ? `<span class="album-vis" title="${pm.label}"><i class="fas ${pm.icon}"></i></span>` : ''}
+          <div class="album-menu">
+            <button type="button" title="Переименовать" onclick="event.stopPropagation();renameAlbum('${a.id}')"><i class="fas fa-pen"></i></button>
+            <button type="button" class="danger" title="Удалить" onclick="event.stopPropagation();deleteAlbum('${a.id}')"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+        <div class="album-info">
+          <div class="album-title">${escapeHtml(a.title)}</div>
+          <div class="album-sub">
+            <span><i class="fas fa-images"></i> ${a.photo_count || 0}</span>
+            ${pm.label ? `<span>· ${pm.label}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function albumPrivacyLabel(p) {
+  const m = ALBUM_PRIVACY_META[p];
+  return m && m.label ? ' · ' + m.label : '';
+}
+
+function openAlbumCreate() {
+  if (!currentGroup) { toast('Группа не загружена', 'error'); return; }
+  if (!currentGroup.is_member) { toast('Создавать альбомы может только участник группы', 'error'); return; }
+  const t = document.getElementById('gaTitle'); if (t) t.value = '';
+  const k = document.getElementById('gaKind'); if (k) k.value = albumKind || 'photo';
+  const p = document.getElementById('gaPrivacy'); if (p) p.value = '0';
+  openModal('group-album-create-modal');
+}
+async function submitGroupAlbumCreate() {
+  const title = (document.getElementById('gaTitle').value || '').trim();
+  if (!title) { toast('Введите название альбома', 'error'); return; }
+  // api() не бросает исключение на 4xx/5xx — при 403 показывалось
+  // «Альбом создан», хотя ничего не создалось.
+  try {
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/albums`, {
+      method: 'POST',
+      body: JSON.stringify({
+        title,
+        kind: document.getElementById('gaKind').value,
+        privacy: parseInt(document.getElementById('gaPrivacy').value, 10)
+      })
+    });
+    closeModal('group-album-create-modal');
+    toast('Альбом создан');
+    loadGroupAlbums();
+  } catch (e) { toast('Не удалось создать альбом: ' + e.message, 'error'); }
+}
+
+let currentAlbum = null;
+
+const ALBUM_ACCEPT = { photo: 'image/*', video: 'video/*', audio: 'audio/*' };
+
+async function openAlbumView(albumId) {
+  const box = document.getElementById('album-view-content');
+  if (!box) return;
+  try {
+    if (window.SocialAlbumPlayer) SocialAlbumPlayer.stop();
+    const a = await apiOrThrow(`${API}/groups/${currentGroup.id}/albums/${albumId}`);
+    currentAlbum = a;
+    openModal('album-view-modal');
+    const photos = a.photos || [];
+    // accept берём из альбома, а не из активной подвкладки: при переходе
+    // из «Фото» в видеоальбом подвкладка могла остаться на photo, и
+    // загрузка видео отклонялась браузером как недопустимый тип.
+    const accept = ALBUM_ACCEPT[a.kind] || 'image/*';
+    // Клик по плитке открывает просмотрщик с панелью комментариев,
+    // поэтому плитке передаётся не готовый onclick, а идентификатор
+    // фото и индекс альбома. Обработчик — в openGroupAlbumFrame.
+    const tiles = window.SocialAlbumPlayer
+      ? SocialAlbumPlayer.buildTiles(photos, { canEdit: a.can_edit, remove: 'removeAlbumPhoto', onOpen: 'openGroupAlbumFrame' })
+      : '';
+    box.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:15px">${escapeHtml(a.title)}</div>
+          <div style="font-size:11px;color:var(--text3)">${a.photo_count || 0} шт.${albumPrivacyLabel(a.privacy)}</div>
+        </div>
+        ${a.can_edit ? `<select id="album-privacy" onchange="saveAlbumPrivacy()" style="padding:7px 9px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-family:inherit;font-size:12px">
+          <option value="0"${a.privacy==0?' selected':''}>Публичный</option>
+          <option value="1"${a.privacy==1?' selected':''}>Только участники</option>
+          <option value="2"${a.privacy==2?' selected':''}>Приватный</option>
+          <option value="3"${a.privacy==3?' selected':''}>По ссылке</option></select>` : ''}
+        ${a.can_edit ? `<button class="btn btn-secondary btn-sm" onclick="pickAlbumFiles()"><i class="fas fa-plus"></i> Добавить</button>` : ''}
+        ${a.can_edit ? `<button class="btn btn-secondary btn-sm" onclick="deleteAlbum('${a.id}')" title="Удалить альбом"><i class="fas fa-trash"></i></button>` : ''}
+      </div>
+      <input type="file" id="album-file-input" accept="${accept}" multiple style="display:none" onchange="uploadAlbumFiles(this)">
+      ${photos.length
+        ? `<div class="album-photos">` + tiles + '</div>'
+        : '<div class="empty-state" style="padding:20px"><i class="fas fa-images" style="opacity:.4"></i><p>Альбом пуст</p></div>'}`;
+    if (window.SocialAlbumPlayer) SocialAlbumPlayer.mount(box, photos);
+  } catch (e) {
+    toast('Не удалось открыть альбом: ' + e.message, 'error');
+  }
+}
+
+/* Открытие кадра альбома группы в просмотрщике с панелью комментариев.
+   Вызывается из social-album-player.js через opts.onOpen. */
+function openGroupAlbumFrame(photoId, index) {
+  if (!currentAlbum) return;
+  SocialAlbumView.open(currentAlbum, {
+    contextLabel: 'Альбом группы «' + (currentAlbum.title || '') + '»',
+    onEditPhoto: pid => { if (window.SocialPhotoEditor) SocialPhotoEditor.open(pid, openGroupAlbumFrame); },
+    onDeletePhoto: pid => removeAlbumPhoto(pid),
+    onShare: item => { if (window.SocialShare) SocialShare.openForPhoto(item, currentGroup.id); },
+  }, index);
+}
+
+async function renameAlbum(albumId) {
+  const album = currentAlbum && currentAlbum.id === albumId
+    ? currentAlbum
+    : (await api(`${API}/groups/${currentGroup.id}/albums/${albumId}`).catch(() => null));
+  if (!album) { toast('Не удалось загрузить альбом', 'error'); return; }
+  // UI.prompt принимает объект опций: второй позиционный аргумент
+  // игнорировался бы, и поле открывалось пустым.
+  const promptFn = (window.UI && UI.prompt) ? UI.prompt : null;
+  const title = promptFn
+    ? await promptFn({ title: 'Название альбома', label: 'Название', value: album.title, required: false })
+    : window.prompt('Название альбома', album.title);
+  if (title === null || !String(title).trim() || title === album.title) return;
+  try {
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/albums/${albumId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ title: String(title).trim() })
+    });
+    toast('Название изменено');
+    loadGroupAlbums();
+    if (currentAlbum && currentAlbum.id === albumId) openAlbumView(albumId);
+  } catch (e) { toast('Не удалось изменить: ' + e.message, 'error'); }
+}
+
+async function saveAlbumPrivacy() {
+  const sel = document.getElementById('album-privacy');
+  if (!sel || !currentAlbum) return;
+  try {
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/albums/${currentAlbum.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ privacy: parseInt(sel.value, 10) })
+    });
+    toast('Видимость изменена');
+    loadGroupAlbums();
+  } catch (e) { toast('Не удалось изменить: ' + e.message, 'error'); }
+}
+
+function pickAlbumFiles() {
+  const i = document.getElementById('album-file-input');
+  if (i) i.click();
+}
+
+async function uploadAlbumFiles(input) {
+  const files = Array.from(input.files || []);
+  if (!files.length || !currentAlbum) return;
+  let done = 0;
+  for (const f of files) {
+    const fd = new FormData();
+    fd.append('file', f);
+    try {
+      await apiOrThrow(`${API}/groups/${currentGroup.id}/albums/${currentAlbum.id}/photos/upload`,
+        { method: 'POST', body: fd });
+      done++;
+    } catch (e) { toast('Не удалось загрузить ' + f.name + ': ' + e.message, 'error'); }
+  }
+  input.value = '';
+  if (done) toast('Загружено: ' + done);
+  else return;                       // ничего не загрузили — перерисовывать незачем
+  openAlbumView(currentAlbum.id);
+  loadGroupAlbums();
+}
+
+async function removeAlbumPhoto(photoId) {
+  if (!currentAlbum) return;
+  try {
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/albums/${currentAlbum.id}/photos/${photoId}`,
+      { method: 'DELETE' });
+    openAlbumView(currentAlbum.id);
+    loadGroupAlbums();
+  } catch (e) { toast('Не удалось убрать: ' + e.message, 'error'); }
+}
+
+function closeAlbumView() {
+  if (window.SocialAlbumPlayer) SocialAlbumPlayer.stop();
+  closeModal('album-view-modal');
+}
+
+async function deleteAlbum(albumId) {
+  // Нативный confirm выбивался из общего стиля диалогов страницы.
+  const confirmFn = (window.UI && UI.confirm) ? UI.confirm : null;
+  const ok = confirmFn ? await confirmFn('Удалить альбом?') : window.confirm('Удалить альбом?');
+  if (!ok) return;
+  try {
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/albums/${albumId}`, { method: 'DELETE' });
+    closeAlbumView();
+    toast('Альбом удалён');
+    loadGroupAlbums();
+  } catch (e) { toast('Не удалось удалить: ' + e.message, 'error'); }
+}
+
+async function loadGroupPosts(){
+  const list=document.getElementById('group-posts-list');
+  if(!list||!currentGroup)return;
+  const q=document.getElementById('group-posts-search')?.value?.trim()||'';
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  let posts;
+  try {
+    const url=q?`${API}/groups/${currentGroup.id}/posts?search=${encodeURIComponent(q)}`:`${API}/groups/${currentGroup.id}/posts`;
+    posts=await apiOrThrow(url);
+  } catch(e) {
+    list.innerHTML='<div class="empty-state" style="padding:20px;color:var(--red)"><i class="fas fa-exclamation-triangle"></i><p>'+escapeHtml(e.message||'Ошибка загрузки')+'</p></div>';
+    return;
+  }
+  list.innerHTML='';
+  if(!posts||!posts.length){list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-newspaper"></i><p>Пока нет постов</p></div>';return}
+  posts.forEach(p=>{
+      const div=document.createElement('div'); div.className='post'+(p.is_pinned?' pinned':'');
+      div.setAttribute('data-post-id', p.id);
+      const initial=(p.display_name||p.author_id||'?')[0].toUpperCase();
+      const time=p.created_at?new Date(p.created_at*1000).toLocaleString('ru-RU'):'';
+      const content=formatPostText(p.content);
+      // Карточка репоста: раньше social_group_posts вообще не умел repost_id,
+      // и поделиться постом группы было нечем.
+      let repostCard='';
+      if(p.repost_id){
+        const rn=p.repost_author_name||p.repost_author_id||'Участник';
+        const body=p.repost_type==='photo'&&p.repost_photo_url
+          ? `<img class="rp-photo" src="${escapeHtml(p.repost_photo_url)}" alt="" loading="lazy">`
+          : `<div class="rp-text">${formatPostText(p.repost_content||'')}</div>`;
+        repostCard=`<div class="repost-card" data-lb data-lb-list='${JSON.stringify(p.repost_type==='photo'&&p.repost_photo_url?[{type:'image',src:p.repost_photo_url,caption:p.repost_content||''}]:[])}' data-lb-idx="0">
+          <div class="rp-head"><i class="fas fa-share-alt"></i> ${escapeHtml(rn)}
+          <span class="rp-where">${p.repost_type==='group_post'?'из группы':'поделился'}</span></div>
+          ${body}
+        </div>`;
+      }
+      // Лайтбокс открывается делегированием по data-lb: раньше список
+      // вклеивался прямо в onclick через JSON.stringify, а тот выдаёт
+      // двойные кавычки — атрибут обрывался на первом же символе и
+      // клик по фото в посте группы не делал ничего.
+      const postMedia=collectPostMedia(p.attachments);
+      const lbJson=JSON.stringify(postMedia).replace(/'/g,'&#39;');
+      const medias=(p.attachments||[]).filter(a=>a.type==='image'||a.type==='video'||a.type==='audio'||a.type==='sticker').map(a=>{
+        const u=escapeHtml(a.url);
+        const idx=postMedia.findIndex(x=>x.src===(a.src||a.url));
+        if(a.type==='audio')return `<div style="margin:4px 0"><audio src="${u}" controls preload="none" style="width:100%"></audio>${a.title?`<div style="font-size:12px;color:var(--text3);margin-top:4px">${escapeHtml(a.title)}</div>`:''}</div>`;
+        if(a.type==='video')return `<video src="${u}" controls style="max-width:100%;max-height:300px;border-radius:8px;margin:4px 0"></video>`;
+        if(a.type==='sticker')return `<img src="${u}" style="max-width:160px;border-radius:12px;display:block;margin:4px 0" alt="sticker">`;
+        return `<img src="${u}" alt="" loading="lazy" data-lb data-lb-list='${lbJson}' data-lb-idx="${idx}" style="max-width:100%;max-height:300px;border-radius:8px;margin:4px 0;cursor:zoom-in">`;
+      }).join('');
+      let pollHtml='';
+      if(p.poll){
+        const poll=p.poll;
+        pollHtml=`<div class="poll-block">
+          <div class="poll-question"><i class="fas fa-chart-bar"></i> ${escapeHtml(poll.question)}</div>`;
+        poll.options.forEach((opt,i)=>{
+          const pct=poll.total_votes>0?Math.round((poll.votes[i]||0)/poll.total_votes*100):0;
+          // Раньше у проголосованного варианта подставлялся второй атрибут
+          // style=, и браузер оставлял только первый — терялись padding,
+          // рамка и позиционирование полоски результата.
+          const cls='poll-option'+(poll.my_vote===i?' is-voted':'');
+          pollHtml+=`<div class="${cls}" onclick="votePoll('${p.id}','${poll.id}',${i})">
+            <div class="poll-option-bar" style="width:${pct}%"></div>
+            <span>${escapeHtml(opt)}</span>
+            <span class="poll-option-pct">${poll.votes[i]||0} · ${pct}%</span>
+          </div>`;
+        });
+        pollHtml+=`<div style="font-size:11px;color:var(--text3);margin-top:6px">Всего голосов: ${poll.total_votes}</div></div>`;
+      }
+      div.innerHTML=`
+        <div class="post-header">
+          <div class="post-avatar" onclick="event.stopPropagation();window.location.href='/social/profile?id=${p.author_id}'">${p.avatar_path?`<img src="${p.avatar_path}" style="object-fit:cover;${avStyle(p.avatar_crop)}" alt="">`:escapeHtml(initial)}</div>
+          <div><div class="post-author"><a href="/social/profile?id=${p.author_id}">${escapeHtml(p.display_name||p.author_id)}</a></div><div class="post-time">${p.is_pinned?'<i class="fas fa-thumbtack"></i> '+time:time}</div></div>
+          ${(p.author_id===activeProfile||currentGroupRole==='admin'||currentGroupRole==='moderator')?`
+            <div style="margin-left:auto;display:flex;gap:2px">
+                ${(currentGroupRole==='admin'||currentGroupRole==='moderator')?`<button onclick="pinGroupPost('${p.id}',this)" class="btn btn-xxs" title="${p.is_pinned?'Открепить':'Закрепить'}"><i class="fas fa-thumbtack"></i></button>`:''}
+              <button onclick="deleteGroupPost('${p.id}')" class="btn btn-xxs" title="Удалить пост"><i class="fas fa-trash"></i></button>
+            </div>`:''}
+        </div>
+        <div class="post-content">${content}</div>
+        ${repostCard}
+        ${medias?`<div class="post-media" style="margin:6px 0">${medias}</div>`:''}
+        ${pollHtml}
+        <div class="post-actions">
+          <button class="${p.liked_by_me?'liked':''}" onclick="likeGroupPost('${p.id}',this)"><i class="fa${p.liked_by_me?'s':'r'} fa-heart"></i> <span>${p.likes_count||0}</span></button>
+          <button onclick="toggleComments('${p.id}',this)"><i class="far fa-comment"></i> <span data-comment-count>${p.comments_count || 0}</span></button>
+          <button onclick="shareGroupPost(this)"><i class="fas fa-share-alt"></i> <span>Поделиться</span></button>
+        </div>
+        <div id="comments-${p.id}" style="display:none"></div>`;
+      list.appendChild(div);
+      // Счётчик комментариев приходит с сервером вместе с постом — отдельный
+      // запрос на каждый пост ленты был лишним (и он всё равно не обновлял
+      // цифру: искал .comment-count вне контейнера комментариев).
+    });
+}
+
+/* Комментарии поста — общий компонент social-comments.js.
+   Раньше здесь был свой рендерер на инлайн-стилях: без аватара-фото,
+   без времени, без лайков, удаления и ответов, и с инлайновым <input>
+   внутри .search-bar. Счётчик обновлялся по селектору
+   #comments-{id} .comment-count, хотя .comment-count лежал в
+   .post-actions за пределами этого контейнера — запрос всегда
+   возвращал null и цифра не менялась. */
+async function toggleComments(postId,btn){
+  const sec=document.getElementById('comments-'+postId);
+  if(!sec)return;
+  const btnSpan=btn&&btn.querySelector('[data-comment-count]');
+  if(sec.style.display!=='none'){sec.style.display='none';return}
+  sec.style.display='block';
+  if(sec.dataset.mounted)return;
+  if(!window.SocialComments){toast('Компонент комментариев не загружен','error');return}
+  SocialComments.mount(sec,{
+    me:activeProfile,
+    canLike:true,
+    /* Упоминания подсказываются по участникам этой группы. */
+    groupId:()=>currentGroup&&currentGroup.id,
+    listUrl:`${API}/groups/${currentGroup.id}/posts/${postId}/comments`,
+    postUrl:`${API}/groups/${currentGroup.id}/posts/${postId}/comments`,
+    delUrl:id=>`${API}/groups/${currentGroup.id}/posts/${postId}/comments/${encodeURIComponent(id)}`,
+    onChange:n=>{if(btnSpan)btnSpan.textContent=n},
+  });
+  sec.dataset.mounted='1';
+}
+
+/**
+ * Основной путь публикации на стену группы.
+ *
+ * @param {string} content      текст поста
+ * @param {Array}  uploadedAtts уже загруженные вложения {type,url,title} — их
+ *                              присылает SocialComposer; в резервном пути
+ *                              передаётся пустой массив
+ * @param {Object} sticker      выбранный стикер {url} или null
+ */
+async function submitGroupPost(content,uploadedAtts,sticker){
+  if(!currentGroup||!currentGroup.id){toast('Группа не загружена','error');return}
+  let attachments=(uploadedAtts||[]).slice();
+  // Вложения, взятые из альбомов группы через окно «Прикрепить», композер не
+  // видит: они приходят уже готовыми ссылками, поэтому добавляем здесь.
+  attachments.push(...groupAlbumAttachments);
+  groupAlbumAttachments=[];
+
+  // Опрос создаётся отдельно и привязывается к посту по poll_id.
+  const pollOpts=document.querySelectorAll('#poll-options input');
+  const pollQuestion=document.getElementById('poll-question').value.trim();
+  let pollId=null;
+  if(pollQuestion&&pollOpts.length>=2){
+    const options=Array.from(pollOpts).map(i=>i.value.trim()).filter(Boolean);
+    if(options.length>=2){
+      const pollRes=await api(`${API}/groups/${currentGroup.id}/polls`,{method:'POST',body:JSON.stringify({question:pollQuestion,options})});
+      if(pollRes&&pollRes.id) pollId=pollRes.id;
+    }
+  }
+  document.getElementById('poll-question').value='';
+  document.querySelectorAll('.poll-opt').forEach(i=>i.value='');
+  if(sticker&&sticker.url) attachments.push({type:'sticker',url:sticker.url});
+  else if(gpPicker&&gpPicker.pending) attachments.push({type:'sticker',url:gpPicker.pending});
+
+  const body={content};
+  if(attachments.length) body.attachments=attachments;
+  if(pollId) body.poll_id=pollId;
+  const res=await api(`${API}/groups/${currentGroup.id}/posts`,{method:'POST',body:JSON.stringify(body)});
+  if(gpPicker&&gpPicker.clearPending) gpPicker.clearPending();
+  if(res.ok||res.id){loadGroupPosts();cancelPoll()}
+  else throw new Error(res.error||res.message||res.detail||'Ошибка при создании поста');
+}
+
+// Резервный путь — если social-composer.js не загрузился.
+async function createGroupPost(){
+  const ta=document.getElementById('group-post-content');
+  const content=ta.value.trim();
+  if(!content&&!groupMediaFiles.length&&!groupAlbumAttachments.length&&!pendingPollId){toast('Напишите текст поста или добавьте медиа');return}
+  if(!currentGroup||!currentGroup.id){toast('Группа не загружена','error');return}
+  ta.value='';
+  autoGrow(ta);
+  const cnt=document.getElementById('group-post-count');if(cnt){cnt.textContent='0';cnt.classList.remove('is-over')}
+  try{
+    const uploaded=[];
+    for(const f of groupMediaFiles){
+      const form=new FormData();
+      form.append('file',f);
+      const resp=await fetch(`${API}/upload/post-media`,{method:'POST',body:form});
+      const res=await resp.json();
+      if(res&&res.path) uploaded.push({type:f.type.startsWith('video/')?'video':f.type.startsWith('audio/')?'audio':'image',url:res.path,title:f.name});
+    }
+    groupMediaFiles=[];
+    const pv=document.getElementById('group-media-preview');
+    if(pv){pv.style.display='none';pv.innerHTML=''}
+    await submitGroupPost(content,uploaded,null);
+  }catch(e){toast('Ошибка сети: '+e.message,'error')}
+}
+
+async function deleteGroupPost(postId){
+  if(!await UI.confirm({title:'Удалить пост?',text:'Публикация будет удалена без возможности восстановления.',okText:'Удалить',danger:true}))return;
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/posts/${postId}`,{method:'DELETE'});
+    toast('Пост удалён','success');
+    loadGroupPosts();
+  }catch(e){toast(e.message||'Не удалось удалить пост','error')}
+}
+
+async function likeGroupPost(postId,btn){
+  try{
+    const res=await apiOrThrow(`${API}/groups/${currentGroup.id}/posts/${postId}/like`,{method:'POST'});
+    const span=btn.querySelector('span');
+    // Раньше span разыменовывался без проверки: при смене разметки кнопки
+    // это давало TypeError, а лайк визуально не срабатывал.
+    const count=span?parseInt(span.textContent,10)||0:0;
+    const icon=btn.querySelector('i');
+    if(res.liked){btn.classList.add('liked');if(icon)icon.className='fas fa-heart';if(span)span.textContent=count+1}
+    else{btn.classList.remove('liked');if(icon)icon.className='far fa-heart';if(span)span.textContent=Math.max(0,count-1)}
+  }catch(e){toast(e.message||'Не удалось поставить лайк','error')}
+}
+
+async function pinGroupPost(postId,btn){
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/posts/${postId}/pin`,{method:'POST'});
+    loadGroupPosts();
+  }catch(e){toast(e.message||'Не удалось закрепить','error')}
+}
+
+/* Кнопка «Поделиться» у поста на стене группы: открывает то же окно
+   выбора места, что и фото в просмотрщике. */
+function shareGroupPost(btn){
+  const card=btn.closest('.post');
+  if(!card)return;
+  const postId=card.getAttribute('data-post-id');
+  if(!postId||!window.SocialShare){toast('Окно недоступно','error');return}
+  const contentEl=card.querySelector('.post-content');
+  const img=card.querySelector('.post-media img');
+  SocialShare.open({
+    id:postId, kind:'group_post',
+    image:img?img.getAttribute('src'):'',
+    caption:contentEl?contentEl.textContent:'',
+    groupId:currentGroup?currentGroup.id:'',
+    defaultTab:'group',
+  });
+}
+
+// --- Media & Poll helpers ---
+let groupMediaFiles=[];
+let groupAlbumAttachments=[];
+let groupComposer=null;
+function openGroupAttachModal(){ openModal('group-attach-modal') }
+async function openGroupAlbumPicker(){
+  if(!currentGroup){ toast('Группа не загружена','error'); return; }
+  openModal('group-album-picker');
+  const box=document.getElementById('group-album-list');
+  box.innerHTML='<div style="padding:20px;color:var(--text3)"><i class="fas fa-spinner fa-spin"></i></div>';
+  try{
+    const r=await api(`${API}/groups/${currentGroup.id}/albums`);
+    const albums=r.albums||[];
+    if(!albums.length){ box.innerHTML='<div style="padding:20px;color:var(--text3)">Альбомов нет</div>'; return; }
+    box.innerHTML=albums.map(a=>{
+      const kind=a.kind||'photo'; const icon=kind==='video'?'fa-film':kind==='audio'?'fa-music':'fa-image';
+      return `<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer" onclick="openGroupAlbumForAttach('${a.id}')">
+        <div style="height:90px;background:var(--bg3);display:flex;align-items:center;justify-content:center">${a.cover_path?`<img src="${escapeHtml(a.cover_path)}" style="width:100%;height:100%;object-fit:cover">`:`<i class="fas ${icon}" style="font-size:28px;color:var(--text3)"></i>`}</div>
+        <div style="padding:8px"><div style="font-weight:600;font-size:13px">${escapeHtml(a.title)}</div><div style="font-size:11px;color:var(--text3)">${a.photo_count||0} шт.</div></div>
+      </div>`;
+    }).join('');
+  }catch(e){ box.innerHTML='<div style="padding:20px;color:var(--red)">'+escapeHtml(e.message)+'</div>'; }
+}
+let _groupAttachAlbumPhotos = [];
+async function openGroupAlbumForAttach(albumId){
+  const box=document.getElementById('group-album-list');
+  box.innerHTML='<div style="padding:20px;color:var(--text3)"><i class="fas fa-spinner fa-spin"></i></div>';
+  try{
+    const a=await api(`${API}/groups/${currentGroup.id}/albums/${albumId}`);
+    const photos=a.photos||[];
+    _groupAttachAlbumPhotos=photos;
+    if(!photos.length){ box.innerHTML='<div style="padding:20px;color:var(--text3)">Альбом пуст</div>'; return; }
+    box.innerHTML=photos.map((p,i)=>{
+      const kind=p.media_type||'photo'; const icon=kind==='video'?'fa-film':kind==='audio'?'fa-music':'fa-image';
+      return `<div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer" onclick="attachGroupAlbumPhoto(${i})">
+        <div style="height:110px;background:var(--bg3);display:flex;align-items:center;justify-content:center">${kind==='photo'?`<img src="${escapeHtml(p.url)}" style="width:100%;height:100%;object-fit:cover">`:`<i class="fas ${icon}" style="font-size:30px;color:var(--text3)"></i>`}</div>
+        <div style="padding:6px;font-size:11px">${escapeHtml(p.caption||'Без названия')}</div>
+      </div>`;
+    }).join('');
+  }catch(e){ box.innerHTML='<div style="padding:20px;color:var(--red)">'+escapeHtml(e.message)+'</div>'; }
+}
+function attachGroupAlbumPhoto(i){
+  const p=_groupAttachAlbumPhotos[i]; if(!p) return;
+  const type=p.media_type==='video'?'video':p.media_type==='audio'?'audio':'image';
+  // Если стена группы использует общий композер, превью ведёт он: иначе эта
+  // функция перезаписала бы уже добавленные файлы.
+  if(groupComposer){
+    groupComposer.addAttachment({type,url:p.url,title:p.caption||''});
+  }else{
+    groupAlbumAttachments.push({type,url:p.url,title:p.caption||''});
+    renderGroupMediaPreview();
+  }
+  closeModal('group-album-picker');
+  toast('Добавлено из альбома');
+}
+function renderGroupMediaPreview(){
+  const preview=document.getElementById('group-media-preview');
+  if(!preview) return;
+  preview.innerHTML='';
+  if(!groupMediaFiles.length && !groupAlbumAttachments.length){ preview.style.display='none'; return; }
+  preview.style.display='flex';
+  groupMediaFiles.forEach((f,i)=>{
+    const url=URL.createObjectURL(f);
+    const div=document.createElement('div');
+    div.style.cssText='position:relative;width:56px;height:56px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex-shrink:0';
+    div.innerHTML=(f.type.startsWith('video/')?`<video src="${url}" style="width:100%;height:100%;object-fit:cover"></video>`:f.type.startsWith('audio/')?`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--green),var(--accent));color:#fff"><i class="fas fa-music"></i></div>`:`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`)+`<button onclick="removeGroupMediaFile(${i})" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.6);color:#fff;cursor:pointer">—</button>`;
+    preview.appendChild(div);
+  });
+  groupAlbumAttachments.forEach((a,i)=>{
+    const div=document.createElement('div');
+    div.style.cssText='position:relative;width:56px;height:56px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex-shrink:0';
+    div.innerHTML=(a.type==='video'?`<video src="${escapeHtml(a.url)}" style="width:100%;height:100%;object-fit:cover"></video>`:a.type==='audio'?`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--green),var(--accent));color:#fff"><i class="fas fa-music"></i></div>`:`<img src="${escapeHtml(a.url)}" style="width:100%;height:100%;object-fit:cover">`)+`<button onclick="removeGroupAlbumAttachment(${i})" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.6);color:#fff;cursor:pointer">—</button>`;
+    preview.appendChild(div);
+  });
+}
+function removeGroupMediaFile(i){ groupMediaFiles.splice(i,1); renderGroupMediaPreview(); }
+function removeGroupAlbumAttachment(i){ groupAlbumAttachments.splice(i,1); renderGroupMediaPreview(); }
+
+function handleGroupMediaSelect(input){
+  for(const f of Array.from(input.files||[])) groupMediaFiles.push(f);
+  input.value='';
+  renderGroupMediaPreview();
+}
+
+function showPollCreator(){
+  document.getElementById('group-poll-creator').style.display='block';
+}
+
+function cancelPoll(){
+  document.getElementById('group-poll-creator').style.display='none';
+}
+
+function addPollOption(){
+  const opts=document.getElementById('poll-options');
+  const n=opts.querySelectorAll('input').length+1;
+  const inp=document.createElement('input'); inp.type='text'; inp.className='poll-opt'; inp.placeholder=`Вариант ${n}`;
+  inp.style.cssText='width:100%;padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;font-family:inherit;margin-bottom:4px';
+  opts.appendChild(inp);
+}
+
+function confirmPoll(){
+  document.getElementById('group-poll-creator').style.display='none';
+}
+
+async function votePoll(postId,pollId,opt){
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/polls/${pollId}/vote`,{method:'POST',body:JSON.stringify({option:opt})});
+    loadGroupPosts();
+  }catch(e){toast(e.message||'Не удалось проголосовать','error')}
+}
+
+// --- Group Chat ---
+let groupChatTimer=null;
+
+function stopGroupChatTimer(){
+  if(groupChatTimer){clearInterval(groupChatTimer);groupChatTimer=null}
+}
+
+async function loadGroupChat(){
+  const list=document.getElementById('group-chat-messages');
+  if(!list||!currentGroup)return;
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  try{
+    const msgs=await apiOrThrow(`${API}/groups/${currentGroup.id}/chat`);
+    list.innerHTML='';
+    groupChatIndex={};
+    (msgs||[]).forEach(m=>{groupChatIndex[m.id]=m});
+    if(!msgs||!msgs.length){list.innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:30px"><i class="fas fa-comments" style="font-size:24px;display:block;margin-bottom:8px"></i>Чат пока пуст</div>';return}
+    msgs.forEach(m=>renderGroupChatMsg(list,m));
+    list.scrollTop=list.scrollHeight;
+  }catch(e){list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-exclamation-triangle"></i><p>Ошибка</p></div>'}
+  // Автообновление. Раньше таймер нигде не снимался: после закрытия группы
+  // он продолжал опрашивать endpoint в фоне и падал на currentGroup=null.
+  stopGroupChatTimer();
+  groupChatTimer=setInterval(refreshGroupChat,3000);
+}
+
+function refreshGroupChat(){
+  const list=document.getElementById('group-chat-messages');
+  // Без проверки currentGroup таймер вылетал с TypeError после возврата
+  // в список групп.
+  if(!list||!currentGroup)return;
+  if(list.style.display==='none') return;
+  // Запрашиваем ПОСЛЕДНЕЕ ВРЕМЯ: сервер отдаёт сообщения новее ?after=.
+  // Старый код передавал время последнего сообщения в ?before=, получал
+  // более раннюю страницу и полностью перерисовывал список — история
+  // исчезала каждые 3 секунды.
+  const nodes=list.querySelectorAll('.chat-msg');
+  const lastMsg=nodes[nodes.length-1];
+  const after=lastMsg?lastMsg.dataset.time:undefined;
+  api(`${API}/groups/${currentGroup.id}/chat${after?`?after=${after}`:''}`).then(msgs=>{
+    if(!msgs||!msgs.length||!currentGroup)return;
+    // Только добавляем: перерисовка убирала бы позицию прокрутки.
+    msgs.forEach(m=>{groupChatIndex[m.id]=m});
+    msgs.forEach(m=>renderGroupChatMsg(list,m));
+    list.scrollTop=list.scrollHeight;
+  }).catch(()=>{});
+}
+
+function renderGroupChatMsg(list,m){
+  const div=document.createElement('div'); div.className='chat-msg'; div.dataset.time=m.created_at; div.dataset.mid=m.id;
+  const isMe=m.sender_id===activeProfile;
+  const canModerate=currentGroupRole==='admin'||currentGroupRole==='moderator';
+  div.style.cssText=`display:flex;gap:6px;margin-bottom:6px;${isMe?'flex-direction:row-reverse':''}`;
+  const ci=(m.display_name||m.sender_id||'?')[0].toUpperCase();
+  const sticker=(m.attachments||[]).find(a=>a.type==='sticker');
+  const reacts=(m.reactions||[]).map(r=>`<button class="gc-react ${r.me?'mine':''}" onclick="toggleGroupReact('${currentGroup.id}','${m.id}','${escapeHtml(r.emoji)}')" title="${escapeHtml((r.users||[]).join(', '))}">${escapeHtml(r.emoji)} <b>${r.count}</b></button>`).join('');
+  let replyHtml='';
+  if(m.reply_to){
+    const src=(groupChatIndex||{})[m.reply_to];
+    replyHtml=`<div class="gc-reply"><i class="fas fa-reply"></i> ${escapeHtml(src?((src.display_name||src.sender_id)+': '+src.content).slice(0,70):'Сообщение')}</div>`;
+  }
+  const menu=(isMe||canModerate)?`<div class="gc-msg-menu">
+      <button title="Реакция" onclick="openGroupEmojiPicker('${m.id}')"><i class="fas fa-smile"></i></button>
+      <button title="Ответить" onclick="setGroupReply('${m.id}','${escapeHtml((m.display_name||m.sender_id).slice(0,30))}')"><i class="fas fa-reply"></i></button>
+      ${isMe?`<button title="Изменить" onclick="editGroupMsg('${m.id}')"><i class="fas fa-pen"></i></button>`:''}
+      ${canModerate?`<button title="Закрепить" onclick="pinGroupMsg('${m.id}',${m.is_pinned?0:1})"><i class="fas fa-thumbtack"></i></button>`:''}
+      <button title="Удалить" class="danger" onclick="deleteGroupMsg('${m.id}')"><i class="fas fa-trash"></i></button>
+    </div>`:'';
+  div.innerHTML=`
+    <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--purple));display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:600;flex-shrink:0;overflow:hidden">${m.avatar_path?`<img src="${m.avatar_path}" style="width:100%;height:100%;object-fit:cover" alt="">`:ci}</div>
+    <div style="max-width:70%;min-width:0">
+      ${replyHtml}
+      <div style="padding:6px 10px;border-radius:10px;background:${isMe?'var(--accent)':'var(--bg3)'};color:${isMe?'white':'var(--text)'};font-size:12px;position:relative">
+        <div style="font-size:10px;font-weight:600;margin-bottom:2px;opacity:0.7">${escapeHtml(m.display_name||m.sender_id)}</div>
+        ${sticker?`<img src="${sticker.url}" style="max-width:150px;display:block" alt="sticker">`:escapeHtml(m.content||'')}
+        <div style="font-size:9px;opacity:0.5;margin-top:2px">${m.created_at?new Date(m.created_at*1000).toLocaleTimeString('ru-RU'):''}${m.edited_at?' · изм.':''}${m.is_pinned?' · <i class="fas fa-thumbtack"></i>':''}</div>
+        ${menu}
+      </div>
+      ${reacts?`<div class="gc-reacts">${reacts}</div>`:''}
+    </div>`;
+  list.appendChild(div);
+}
+
+// Индекс сообщений для показа цитаты ответа
+let groupChatIndex={};
+
+async function toggleGroupReact(gid,mid,emoji){
+  try{
+    await apiOrThrow(`${API}/groups/${gid}/chat/messages/${mid}/reaction`,{method:'POST',body:JSON.stringify({emoji})});
+    await loadGroupChat();
+  }catch(e){toast(e.message||'Не удалось поставить реакцию','error')}
+}
+const GROUP_EMOJI=['👍','❤️','🔥','😂','😮','😢','🙏','🎉'];
+function openGroupEmojiPicker(mid){
+  document.querySelectorAll('.gc-emoji-pop').forEach(p=>p.remove());
+  const pop=document.createElement('div');
+  pop.className='gc-emoji-pop';
+  pop.innerHTML=GROUP_EMOJI.map(e=>`<button onclick="toggleGroupReact('${currentGroup.id}','${mid}','${e}');this.parentElement.remove()">${e}</button>`).join('');
+  const msg=document.querySelector(`.chat-msg[data-mid="${mid}"]`);
+  if(!msg)return;
+  msg.style.position='relative';
+  msg.appendChild(pop);
+  setTimeout(()=>document.addEventListener('click',function h(ev){
+    if(!pop.contains(ev.target)){pop.remove();document.removeEventListener('click',h)}
+  }),10);
+}
+let groupReplyTo='';
+function setGroupReply(mid,name){
+  groupReplyTo=mid;
+  const box=document.getElementById('gc-reply-preview');
+  if(box){box.style.display='flex';box.innerHTML=`<i class="fas fa-reply"></i> Ответ ${escapeHtml(name)}<button onclick="cancelGroupReply()" style="margin-left:auto;border:none;background:none;color:inherit;cursor:pointer"><i class="fas fa-times"></i></button>`}
+  document.getElementById('group-chat-input').focus();
+}
+function cancelGroupReply(){
+  groupReplyTo='';
+  const box=document.getElementById('gc-reply-preview');
+  if(box){box.style.display='none';box.innerHTML=''}
+}
+async function editGroupMsg(mid){
+  const old=(groupChatIndex[mid]||{}).content||'';
+  const next=await UI.prompt({title:'Изменить сообщение',label:'Текст сообщения',value:old,multiline:true,rows:4,maxlength:2000,okText:'Сохранить'});
+  if(next===null||next===old)return;
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/chat/messages/${mid}`,{method:'PUT',body:JSON.stringify({content:next})});
+    toast('Сообщение изменено','success');
+    await loadGroupChat();
+  }catch(e){toast(e.message||'Не удалось изменить','error')}
+}
+async function pinGroupMsg(mid,pinned){
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/chat/messages/${mid}/pin`,{method:'POST',body:JSON.stringify({pinned:!!pinned})});
+    toast(pinned?'Сообщение закреплено':'Закрепление снято','success');
+    await loadGroupChat();
+  }catch(e){toast(e.message||'Нет прав','error')}
+}
+async function deleteGroupMsg(mid){
+  if(!await UI.confirm({title:'Удалить сообщение?',text:'Сообщение будет удалено у всех участников.',okText:'Удалить',danger:true}))return;
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/chat/messages/${mid}`,{method:'DELETE'});
+    toast('Сообщение удалено','success');
+    await loadGroupChat();
+  }catch(e){toast(e.message||'Нет прав на удаление','error')}
+}
+
+async function sendGroupChat(){
+  const input=document.getElementById('group-chat-input');
+  const content=input.value.trim();
+  const sticker=gcPicker&&gcPicker.pending?gcPicker.pending:null;
+  if(!content&&!sticker) return;
+  input.value='';
+  const body={content};
+  if(groupReplyTo){body.reply_to=groupReplyTo;cancelGroupReply()}
+  if(sticker) body.attachments=JSON.stringify([{type:'sticker',url:sticker}]);
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/chat`,{method:'POST',body:JSON.stringify(body)});
+    if(gcPicker&&gcPicker.clearPending) gcPicker.clearPending();
+    await loadGroupChat();
+  }catch(e){toast(e.message||'Сообщение не отправлено','error')}
+}
+
+// --- Activity ---
+async function loadGroupActivity(){
+  const list=document.getElementById('group-activity');
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  try{
+    const items=await api(`${API}/groups/${currentGroup.id}/activity`);
+    list.innerHTML=`<div class="sub-header" style="margin-top:0"><i class="fas fa-chart-line"></i> Активность</div>`;
+    if(!items||!items.length){list.innerHTML+=`<div class="empty-state" style="padding:20px"><i class="fas fa-chart-line"></i><p>Пока нет активности</p></div>`;return}
+    items.forEach(item=>{
+      const ci=(item.user||'?')[0].toUpperCase();
+      list.innerHTML+=`<div class="glass-card" style="padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--purple));display:flex;align-items:center;justify-content:center;font-size:12px;color:white;font-weight:600;flex-shrink:0;overflow:hidden">${item.avatar?`<img src="${item.avatar}" style="width:100%;height:100%;object-fit:cover">`:ci}</div>
+        <div style="flex:1;font-size:13px"><strong>${escapeHtml(item.user)}</strong> ${item.text}${item.content?`: ${escapeHtml(item.content.substring(0,80))}`:''}</div>
+        <div style="font-size:11px;color:var(--text3);flex-shrink:0">${item.time?new Date(item.time*1000).toLocaleString('ru-RU'):''}</div>
+      </div>`;
+    });
+  }catch(e){list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-exclamation-triangle"></i><p>Ошибка</p></div>'}
+}
+
+async function loadGroupMembers(){
+  const list=document.getElementById('group-members');
+  list.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  const members=await api(`${API}/groups/${currentGroup.id}/members`);
+  list.innerHTML=`<div class="sub-header" style="margin-top:0"><i class="fas fa-users"></i> Участники (${members.length})</div>`;
+  members.forEach(m=>{
+    const card=document.createElement('div'); card.className='glass-card user-card';
+    card.onclick=()=>window.location.href=`/social/profile?id=${m.profile_id}`;
+    const initial=(m.display_name||m.profile_id||'?')[0].toUpperCase();
+    let roleIcon='';
+    if(m.role==='admin') roleIcon='<span style="color:var(--yellow);font-size:12px" title="Администратор"><i class="fas fa-crown"></i></span>';
+    else if(m.role==='moderator') roleIcon='<span style="color:var(--accent);font-size:12px" title="Модератор"><i class="fas fa-shield-alt"></i></span>';
+    card.innerHTML=`<div class="ua">${m.avatar_path?`<img src="${m.avatar_path}" style="object-fit:cover;${avStyle(m.avatar_crop)}" alt="">`:initial}</div><div class="ui"><div class="un">${escapeHtml(m.display_name||m.profile_id)} ${roleIcon}</div><div class="us">${m.role}</div></div><div class="uo ${m.is_online?'online':'offline'}"></div>`;
+    // Admin actions
+    if(currentGroupRole==='admin'&&m.role!=='admin'&&m.profile_id!==activeProfile){
+      const btns=[];
+      if(m.role==='member')
+        btns.push(`<button class="btn btn-secondary btn-xxs" onclick="event.stopPropagation();promoteMember('${m.profile_id}','moderator')"><i class="fas fa-shield-alt"></i> Модератор</button>`);
+      if(m.role==='moderator')
+        btns.push(`<button class="btn btn-secondary btn-xxs" onclick="event.stopPropagation();promoteMember('${m.profile_id}','member')"><i class="fas fa-user"></i> Участник</button>`);
+      btns.push(`<button class="btn btn-danger btn-xxs" onclick="event.stopPropagation();kickMember('${m.profile_id}')"><i class="fas fa-user-minus"></i></button>`);
+      btns.push(`<button class="btn btn-danger btn-xxs" style="background:var(--red)" onclick="event.stopPropagation();banMember('${m.profile_id}')"><i class="fas fa-ban"></i></button>`);
+      card.querySelector('.ui').innerHTML+=`<div class="uactions" style="margin-top:4px">${btns.join('')}</div>`;
+    }
+    list.appendChild(card);
+  });
+}
+
+async function loadGroupSettings(){
+  const list=document.getElementById('group-settings');
+  if(currentGroupRole!=='admin'&&currentGroupRole!=='moderator'){
+    list.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-lock"></i><p>Только администратор может изменять настройки</p></div>';
+    return;
+  }
+  const pp=currentGroup.post_permission||0;
+  list.innerHTML=`
+    <div class="glass-card">
+      <h3 style="font-size:15px;font-weight:600;margin-bottom:14px"><i class="fas fa-cog"></i> Настройки группы</h3>
+      <label>Название</label><input type="text" id="gs-name" value="${escapeHtml(currentGroup.name||'')}" style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;margin-bottom:12px;font-family:inherit">
+      <label>Описание</label><textarea id="gs-desc" style="width:100%;min-height:60px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:10px;font-size:14px;margin-bottom:12px;font-family:inherit">${escapeHtml(currentGroup.description||'')}</textarea>
+      <label>Приватность</label>
+      <select id="gs-privacy" style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;margin-bottom:12px;font-family:inherit">
+        <option value="public" ${currentGroup.privacy==='public'?'selected':''}>Публичная — могут найти и вступить все</option>
+        <option value="closed" ${currentGroup.privacy==='closed'?'selected':''}>Закрытая — видят все, вступают по запросу</option>
+        <option value="private" ${currentGroup.privacy==='private'?'selected':''}>Приватная — только по приглашению</option>
+      </select>
+      <label>Кто может писать посты</label>
+      <select id="gs-post-perm" style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;margin-bottom:12px;font-family:inherit">
+        <option value="0" ${pp==0?'selected':''}>Все участники</option>
+        <option value="1" ${pp==1?'selected':''}>Администраторы и модераторы</option>
+        <option value="2" ${pp==2?'selected':''}>Только администраторы</option>
+      </select>
+      <label>Категория</label>
+      <input type="text" id="gs-category" value="${escapeHtml(currentGroup.category||'')}" placeholder="Например: Музыка, Технологии, Игры..." style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;margin-bottom:12px;font-family:inherit">
+      <label>Теги (через запятую)</label>
+      <input type="text" id="gs-tags" value="${escapeHtml(currentGroup.tags||'')}" style="width:100%;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;margin-bottom:12px;font-family:inherit">
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" onclick="saveGroupSettings()"><i class="fas fa-save"></i> Сохранить</button>
+        ${currentGroupRole==='admin'?`<button class="btn btn-danger" onclick="deleteGroup()" style="margin-left:auto"><i class="fas fa-trash"></i> Удалить группу</button>`:''}
+      </div>
+    </div>
+    ${currentGroupRole==='admin'?`
+    <div class="glass-card">
+      <h3 style="font-size:15px;font-weight:600;margin-bottom:14px"><i class="fas fa-user-shield"></i> Управление ролями</h3>
+      <div id="settings-members"><div class="loading"><i class="fas fa-spinner"></i></div></div>
+    </div>
+    <div class="glass-card">
+      <h3 style="font-size:15px;font-weight:600;margin-bottom:14px"><i class="fas fa-hand-paper"></i> Заявки на вступление</h3>
+      <div id="settings-join-requests"><div class="loading"><i class="fas fa-spinner"></i></div></div>
+    </div>
+    <div class="glass-card">
+      <h3 style="font-size:15px;font-weight:600;margin-bottom:14px"><i class="fas fa-ban"></i> Забаненные</h3>
+      <div id="settings-bans"><div class="loading"><i class="fas fa-spinner"></i></div></div>
+    </div>`:''}
+    <div class="glass-card">
+      <h3 style="font-size:15px;font-weight:600;margin-bottom:14px"><i class="fas fa-image"></i> Медиа</h3>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div class="file-input"><span class="file-label"><i class="fas fa-user-circle"></i> Аватар</span><input type="file" accept="image/jpeg,image/png,image/webp" id="gs-avatar" onchange="uploadGroupAvatar(this)"></div>
+        <div class="file-input"><span class="file-label"><i class="fas fa-image"></i> Обложка</span><input type="file" accept="image/jpeg,image/png,image/webp" id="gs-cover" onchange="uploadGroupCover(this)"></div>
+      </div>
+    </div>
+  `;
+  if(currentGroupRole==='admin'){loadSettingsMembers();loadJoinRequests();loadBans();}
+}
+
+async function loadSettingsMembers(){
+  const list=document.getElementById('settings-members');
+  try{
+    const members=await api(`${API}/groups/${currentGroup.id}/members`);
+    list.innerHTML='';
+    members.forEach(m=>{
+      if(m.profile_id===activeProfile) return;
+      const card=document.createElement('div'); card.style.cssText='display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)';
+      const initial=(m.display_name||m.profile_id||'?')[0].toUpperCase();
+      let roleName=m.role==='admin'?'Админ':m.role==='moderator'?'Модератор':'Участник';
+      card.innerHTML=`
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--purple));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">${m.avatar_path?`<img src="${m.avatar_path}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:initial}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:500">${escapeHtml(m.display_name||m.profile_id)}</div><div style="font-size:11px;color:var(--text3)">${roleName}</div></div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          ${m.role!=='admin'?`<button class="btn btn-primary btn-xxs" onclick="promoteMember('${m.profile_id}','${m.role==='member'?'moderator':'member'}')"><i class="fas fa-${m.role==='member'?'shield-alt':'user'}"></i> ${m.role==='member'?'Модератор':'Участник'}</button>`:''}
+          <button class="btn btn-danger btn-xxs" onclick="kickMember('${m.profile_id}')"><i class="fas fa-user-minus"></i></button>
+          <button class="btn btn-danger btn-xxs" style="background:var(--red)" onclick="banMember('${m.profile_id}')"><i class="fas fa-ban"></i></button>
+        </div>`;
+      list.appendChild(card);
+    });
+  }catch(e){list.innerHTML='<div class="empty-state" style="padding:10px"><i class="fas fa-exclamation-triangle"></i><p>Ошибка</p></div>'}
+}
+
+async function saveGroupSettings(){
+  const data={
+    name: document.getElementById('gs-name').value.trim(),
+    description: document.getElementById('gs-desc').value.trim(),
+    privacy: document.getElementById('gs-privacy').value,
+    category: document.getElementById('gs-category').value.trim(),
+    tags: document.getElementById('gs-tags').value.trim(),
+    post_permission: parseInt(document.getElementById('gs-post-perm').value)
+  };
+  await api(`${API}/groups/${currentGroup.id}`,{method:'PUT',body:JSON.stringify(data)});
+  openGroupDetail(currentGroup.id);
+}
+
+async function deleteGroup(){
+  const isCh=!!(currentGroup&&currentGroup.is_channel);
+  if(!await UI.confirm({title:'Удалить навсегда?',text:`«${currentGroup.name}» будет удалена вместе со всеми постами${isCh?' и публикациями':', чатом и участниками'}. Действие необратимо.`,okText:'Удалить навсегда',danger:true}))return;
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}`,{method:'DELETE'});
+    toast(isCh?'Канал удалён':'Группа удалена','success');
+    closeGroupDetail(); loadGroups(); loadChannels();
+  }catch(e){toast(e.message||'Не удалось удалить','error')}
+}
+
+async function joinGroup(id){
+  try{
+    const res=await apiOrThrow(`${API}/groups/${id}/join`,{method:'POST'});
+    if(res.status==='pending'){toast('Заявка отправлена — дождитесь решения администратора','info');return}
+    toast('Вы вступили','success');
+    await openGroupDetail(id);
+  }catch(e){toast(e.message||'Не удалось вступить','error')}
+}
+
+async function requestJoinGroup(){
+  const msg=await UI.prompt({title:'Заявка на вступление',label:'Сообщение администратору',placeholder:'Напишите, почему хотите вступить',multiline:true,rows:3,maxlength:500,okText:'Отправить заявку',required:false});
+  if(msg===null)return;
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/join-request`,{method:'POST',body:JSON.stringify({message:msg})});
+    toast('Заявка отправлена!','success');
+    await openGroupDetail(currentGroup.id);
+  }catch(e){toast(e.message||'Ошибка при отправке заявки','error')}
+}
+
+async function leaveGroup(id){
+  if(!await UI.confirm({title:'Выйти из группы?',text:'Вы перестанете получать публикации и сообщения. Ваши прошлые посты останутся.',okText:'Выйти',danger:true}))return;
+  try{
+    await apiOrThrow(`${API}/groups/${id}/leave`,{method:'POST'});
+    toast('Вы вышли','success');
+    closeGroupDetail(); loadGroups(); loadChannels();
+  }catch(e){toast(e.message||'Не удалось выйти','error')}
+}
+
+async function kickMember(pid){
+  if(!await UI.confirm({title:'Исключить участника?',text:'Пользователь потеряет доступ к группе, его сообщения останутся.',okText:'Исключить',danger:true}))return;
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/members/kick`,{method:'POST',body:JSON.stringify({profile_id:pid})});
+    toast('Участник исключён','success');
+    loadGroupMembers();
+  }catch(e){toast(e.message||'Не удалось исключить','error')}
+}
+
+async function promoteMember(pid,role){
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/members/promote`,{method:'POST',body:JSON.stringify({profile_id:pid,role})});
+    toast(role==='admin'?'Назначен администратором':role==='moderator'?'Назначен модератором':'Роль изменена','success');
+    loadGroupMembers();
+    if(document.getElementById('settings-members')&&document.getElementById('settings-members').innerHTML!=='') loadSettingsMembers();
+  }catch(e){toast(e.message||'Не удалось изменить роль','error')}
+}
+
+async function banMember(pid){
+  const reason=await UI.prompt({title:'Забанить участника?',label:'Причина (необязательно)',placeholder:'Например: спам',multiline:true,rows:2,maxlength:300,okText:'Забанить',required:false});
+  if(reason===null)return;
+  try{
+    await apiOrThrow(`${API}/groups/${currentGroup.id}/ban`,{method:'POST',body:JSON.stringify({profile_id:pid,reason:reason})});
+    toast('Участник забанен','success');
+    loadGroupMembers();
+    if(document.getElementById('settings-members')&&document.getElementById('settings-members').innerHTML!==''){loadSettingsMembers();loadBans()}
+  }catch(e){toast(e.message||'Не удалось забанить','error')}
+}
+
+// --- Join Requests ---
+async function loadJoinRequests(){
+  const list=document.getElementById('settings-join-requests');
+  if(!list)return;
+  try{
+    const reqs=await api(`${API}/groups/${currentGroup.id}/join-requests`);
+    list.innerHTML='';
+    if(!reqs||!reqs.length){list.innerHTML='<div style="font-size:13px;color:var(--text3);padding:4px 0">Нет активных заявок</div>';return}
+    reqs.forEach(r=>{
+      const ci=(r.display_name||r.profile_id||'?')[0].toUpperCase();
+      list.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--purple));display:flex;align-items:center;justify-content:center;font-size:12px;color:white;font-weight:600;flex-shrink:0;overflow:hidden">${r.avatar_path?`<img src="${r.avatar_path}" style="width:100%;height:100%;object-fit:cover">`:ci}</div>
+        <div style="flex:1;font-size:13px;font-weight:500">${escapeHtml(r.display_name||r.profile_id)}${r.message?`<div style="font-size:11px;color:var(--text3);font-weight:400">${escapeHtml(r.message)}</div>`:''}</div>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-primary btn-xs" onclick="approveJoinRequest('${r.id}')"><i class="fas fa-check"></i></button>
+          <button class="btn btn-danger btn-xs" onclick="rejectJoinRequest('${r.id}')"><i class="fas fa-times"></i></button>
+        </div>
+      </div>`;
+    });
+  }catch(e){list.innerHTML='<div style="font-size:13px;color:var(--text3);padding:4px 0">Ошибка загрузки</div>'}
+}
+
+async function approveJoinRequest(reqId){
+  await api(`${API}/groups/${currentGroup.id}/join-requests/${reqId}/approve`,{method:'POST'});
+  loadJoinRequests();
+}
+
+async function rejectJoinRequest(reqId){
+  await api(`${API}/groups/${currentGroup.id}/join-requests/${reqId}/reject`,{method:'POST'});
+  loadJoinRequests();
+}
+
+// --- Bans ---
+async function loadBans(){
+  const list=document.getElementById('settings-bans');
+  if(!list)return;
+  try{
+    const bans=await api(`${API}/groups/${currentGroup.id}/bans`);
+    list.innerHTML='';
+    if(!bans||!bans.length){list.innerHTML='<div style="font-size:13px;color:var(--text3);padding:4px 0">Нет забаненных пользователей</div>';return}
+    bans.forEach(b=>{
+      const ci=(b.display_name||b.profile_id||'?')[0].toUpperCase();
+      list.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--purple));display:flex;align-items:center;justify-content:center;font-size:12px;color:white;font-weight:600;flex-shrink:0;overflow:hidden">${b.avatar_path?`<img src="${b.avatar_path}" style="width:100%;height:100%;object-fit:cover">`:ci}</div>
+        <div style="flex:1;font-size:13px;font-weight:500">${escapeHtml(b.display_name||b.profile_id)}${b.reason?`<div style="font-size:11px;color:var(--text3);font-weight:400">Причина: ${escapeHtml(b.reason)}</div>`:''}</div>
+        <button class="btn btn-secondary btn-xs" onclick="unbanMember('${b.profile_id}')"><i class="fas fa-undo"></i> Разбанить</button>
+      </div>`;
+    });
+  }catch(e){list.innerHTML='<div style="font-size:13px;color:var(--text3);padding:4px 0">Ошибка</div>'}
+}
+
+async function unbanMember(pid){
+  await api(`${API}/groups/${currentGroup.id}/unban`,{method:'POST',body:JSON.stringify({profile_id:pid})});
+  loadBans();
+}
+
+async function uploadGroupAvatar(input){
+  if(!input.files||!input.files[0])return;
+  const fd=new FormData();fd.append('file',input.files[0]);
+  await fetch(`${API}/groups/${currentGroup.id}/upload/avatar`,{method:'POST',body:fd});
+  openGroupDetail(currentGroup.id);
+}
+
+async function uploadGroupCover(input){
+  if(!input.files||!input.files[0])return;
+  const fd=new FormData();fd.append('file',input.files[0]);
+  await fetch(`${API}/groups/${currentGroup.id}/upload/cover`,{method:'POST',body:fd});
+  openGroupDetail(currentGroup.id);
+}
+
+// --- Create Group ---
+// Создание группы/канала — это разные сущности, поэтому форма готовится под конкретный тип
+let gmKind = 'group';   // 'group' | 'channel'
+function openCreateGroup(){ gmKind='group'; prepareCreateModal(); openModal('group-modal'); }
+function createChannel(){ gmKind='channel'; prepareCreateModal(); openModal('group-modal'); }
+function prepareCreateModal(){
+  const isCh = gmKind==='channel';
+  const ic=document.getElementById('gm-modal-icon');
+  if(ic)ic.className='fas '+(isCh?'fa-bullhorn':'fa-users');
+  const t=document.getElementById('gm-modal-title');
+  if(t)t.textContent=isCh?'Создать канал':'Создать группу';
+  const nl=document.getElementById('gm-name-label');
+  if(nl)nl.textContent=isCh?'Название канала':'Название группы';
+  const n=document.getElementById('group-name'); if(n)n.placeholder=isCh?'Название канала':'Название группы';
+  const d=document.getElementById('group-desc'); if(d)d.placeholder=isCh?'О чём этот канал? (необязательно)':'О чём ваша группа? (необязательно)';
+  const perm=document.getElementById('group-post-perm');
+  if(perm){perm.value=isCh?'2':'0';perm.disabled=isCh}
+  const pl=document.getElementById('gm-perm-label');
+  if(pl)pl.textContent=isCh?'Публикации в канале (только администратор)':'Кто может публиковать посты';
+  const hint=document.getElementById('gm-hint');
+  if(hint)hint.textContent=isCh
+    ? 'В канале нет чата — это лента для ваших подписчиков. Публиковать может только администратор.'
+    : 'В группе есть стена и чат, участники могут писать, вы управляете ролями и заявками.';
+  const btn=document.getElementById('group-create-btn');
+  if(btn)btn.innerHTML='<i class="fas fa-plus"></i> '+(isCh?'Создать канал':'Создать группу');
+}
+async function createGroup(){
+  const name=document.getElementById('group-name').value.trim();
+  if(!name){toast('Укажите название','error');document.getElementById('group-name').focus();return}
+  const isChannel=gmKind==='channel'?1:0;
+  const btn=document.getElementById('group-create-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Создание...'}
+  try{
+    const res=await apiOrThrow(`${API}/groups`,{method:'POST',body:JSON.stringify({
+      name,
+      description:document.getElementById('group-desc').value.trim(),
+      privacy:document.getElementById('group-privacy').value,
+      is_channel:isChannel,
+      post_permission:isChannel?2:parseInt(document.getElementById('group-post-perm').value||'0',10),
+      category:document.getElementById('group-category').value.trim()
+    })});
+    closeModal('group-modal');
+    document.getElementById('group-name').value='';
+    document.getElementById('group-desc').value='';
+    document.getElementById('group-category').value='';
+    toast(isChannel?'Канал создан!':'Группа создана!','success');
+    await loadGroups();
+    if(isChannel)await loadChannels();
+    if(res&&res.id)await openGroupDetail(res.id);
+  }catch(e){
+    toast(e.message||'Ошибка создания','error');
+  }finally{
+    if(btn){btn.disabled=false;prepareCreateModal()}
+  }
+}
+
+async function acceptRequest(pid){await api(`${API}/friends/accept`,{method:'POST',body:JSON.stringify({profile_id:pid})});loadRequests();loadFriends()}
+async function rejectRequest(pid){await api(`${API}/friends/reject`,{method:'POST',body:JSON.stringify({profile_id:pid})});loadRequests()}
+async function cancelRequest(pid){await api(`${API}/friends/reject`,{method:'POST',body:JSON.stringify({profile_id:pid})});loadRequests()}
+async function removeFriend(fid){if(!await UI.confirm({title:'Удалить из друзей?',text:'Пользователь будет удалён из вашего списка друзей.',okText:'Удалить',danger:true}))return;await api(`${API}/friends/${fid}`,{method:'DELETE'});loadFriends()}
+
+async function searchUsers(){
+  const q=document.getElementById('search-input').value.trim(); const results=document.getElementById('search-results');
+  results.innerHTML='<div class="loading"><i class="fas fa-spinner"></i></div>';
+  const users=await api(`${API}/search?q=${encodeURIComponent(q)}`); results.innerHTML='';
+  if(!users.length){results.innerHTML='<div class="empty-state" style="padding:20px"><i class="fas fa-search"></i><p>Ничего не найдено</p></div>';return}
+  users.forEach(u=>{
+    if(u.profile_id===activeProfile)return;
+    const card=document.createElement('div'); card.className='glass-card user-card'; card.onclick=()=>location.href=`/social/profile?id=${u.profile_id}`;
+    const initial=(u.display_name||u.profile_id||'?')[0].toUpperCase();
+    card.innerHTML=`<div class="ua">${u.avatar_path?`<img src="${u.avatar_path}" style="object-fit:cover;${avStyle(u.avatar_crop)}" alt="">`:initial}</div><div class="ui"><div class="un">${escapeHtml(u.display_name||u.profile_id)}</div><div class="us">${escapeHtml(u.status||'Новый пользователь')}</div></div><div class="uo ${u.is_online?'online':'offline'}"></div><div class="uactions" onclick="event.stopPropagation()"><button class="btn btn-secondary btn-sm" onclick="location.href='/social/messages?user=${u.profile_id}'"><i class="fas fa-envelope"></i></button><button class="btn btn-primary btn-sm" onclick="sendRequest('${u.profile_id}',this)"><i class="fas fa-user-plus"></i></button></div>`;
+    results.appendChild(card);
+  });
+}
+
+async function sendRequest(pid,btn){
+  await api(`${API}/friends/request`,{method:'POST',body:JSON.stringify({profile_id:pid})});
+  btn.innerHTML='<i class="fas fa-clock"></i>'; btn.disabled=true; btn.style.opacity='0.6';
+}
+
+function getTheme() { return localStorage.getItem('infinity_theme') || 'dark' }
+function setTheme(t) {
+  document.body.className = '';
+  if (t !== 'dark') document.body.classList.add(t);
+  localStorage.setItem('infinity_theme', t);
+  document.querySelectorAll('.theme-btn').forEach(el => el.classList.toggle('active', el.dataset.theme === t));
+}
+function openThemePicker() {
+  openModal('themeModal');
+  document.querySelectorAll('.theme-btn').forEach(el => el.classList.toggle('active', el.dataset.theme === getTheme()));
+}
+function closeThemePicker() { closeModal('themeModal') }
+
+init();
+setInterval(loadConvCount,15000);
+
+/* ---- Group wall/chat pickers ---- */
+let gpPicker = null, gcPicker = null;
+if (typeof window.SOCIAL_EMOJI !== 'undefined' && window.SOCIAL_EMOJI.makeWallPicker) {
+  gpPicker = window.SOCIAL_EMOJI.makeWallPicker({ panel: 'gpPicker', body: 'gpBody', target: 'group-post-content', chips: ['gpStickerChip'] });
+  gcPicker = window.SOCIAL_EMOJI.makeWallPicker({ panel: 'gcPicker', body: 'gcBody', target: 'group-chat-input', chips: ['gcStickerChip'] });
+}
+document.addEventListener('click', function (e) {
+  if (gpPicker && gpPicker.close && !e.target.closest('#gpPicker') && !e.target.closest('.gp-tools')) gpPicker.close();
+  if (gcPicker && gcPicker.close && !e.target.closest('#gcPicker') && !e.target.closest('#group-chat .search-bar .btn[onclick*="gcPicker"]')) gcPicker.close();
+});
+</script>
+<!-- PAGE_END -->
+<div class="modal-overlay" id="pair-modal">
+  <div class="modal">
+    <div class="modal-title" id="pair-title"><i class="fas fa-qrcode"></i> Подключение инстансов</div>
+    <div id="pair-body">
+      <div id="pair-create" style="display:none">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Создайте код и отправьте его другу вместе с адресом через любой мессенджер. Код действует 10 минут.</p>
+        <button class="btn btn-primary" style="width:100%" onclick="createPairCode()"><i class="fas fa-magic"></i> Создать код</button>
+        <div id="pair-code-result" style="display:none;margin-top:12px;text-align:center">
+          <div style="font-size:30px;letter-spacing:6px;font-weight:800;color:var(--accent);background:var(--bg3);border:1px dashed var(--accent);border-radius:12px;padding:14px" id="pair-code"></div>
+          <div style="font-size:12px;color:var(--text3);margin-top:6px">Адрес вашего инстанса: <b id="pair-address"></b></div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px">Отправьте другу: <i id="pair-full-message"></i></div>
+          <button class="btn btn-secondary btn-xs" style="margin-top:10px" onclick="copyPairResult()"><i class="fas fa-copy"></i> Копировать</button>
+        </div>
+      </div>
+      <div id="pair-connect" style="display:none">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Введите код и адрес инстанса, которые вы получили от друга через сторонний мессенджер.</p>
+        <label>Код</label>
+        <input type="text" id="pair-connect-code" placeholder="XXXXXXXX" maxlength="8" style="text-transform:uppercase">
+        <label>Адрес инстанса друга</label>
+        <input type="text" id="pair-connect-address" placeholder="http://192.168.1.10:8080">
+        <div class="m-actions">
+          <button class="btn btn-primary" onclick="connectPairCode()"><i class="fas fa-plug"></i> Подключиться</button>
+          <button class="btn btn-secondary" onclick="closeModal('pair-modal')"><i class="fas fa-times"></i> Отмена</button>
+        </div>
+        <div id="pair-connect-status" style="text-align:center;margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="themeModal">
+  <div class="modal">
+    <div class="modal-title"><i class="fas fa-palette"></i> Выбор темы</div>
+    <div class="theme-grid">
+      <div class="theme-btn" data-theme="dark" onclick="setTheme('dark')"><span class="icon"><i class="fas fa-moon"></i></span>Тёмная</div>
+      <div class="theme-btn" data-theme="light" onclick="setTheme('light')"><span class="icon"><i class="fas fa-sun"></i></span>Светлая</div>
+      <div class="theme-btn" data-theme="sepia" onclick="setTheme('sepia')"><span class="icon"><i class="fas fa-scroll"></i></span>Сепия</div>
+      <div class="theme-btn" data-theme="warm" onclick="setTheme('warm')"><span class="icon"><i class="fas fa-fire"></i></span>Тёплая</div>
+      <div class="theme-btn" data-theme="paper" onclick="setTheme('paper')"><span class="icon"><i class="fas fa-file"></i></span>Бумага</div>
+      <div class="theme-btn" data-theme="ocean" onclick="setTheme('ocean')"><span class="icon"><i class="fas fa-water"></i></span>Океан</div>
+      <div class="theme-btn" data-theme="forest" onclick="setTheme('forest')"><span class="icon"><i class="fas fa-tree"></i></span>Лес</div>
+      <div class="theme-btn" data-theme="midnight" onclick="setTheme('midnight')"><span class="icon"><i class="fas fa-star"></i></span>Полночь</div>
+      <div class="theme-btn" data-theme="rose" onclick="setTheme('rose')"><span class="icon"><i class="fas fa-rose"></i></span>Роза</div>
+    </div>
+    <div class="m-actions"><button class="btn-primary" onclick="closeThemePicker()"><i class="fas fa-check"></i> Готово</button></div>
+  </div>
+</div>
+</body>
+</html>

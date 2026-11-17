@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f1319">
+<title>HA Web Panel — вход</title>
+<link rel="icon" href="/ha/favicon.ico">
+<style>
+/* Вход в панель. Оформление — по общей теме системы (design.css): панель
+   не выглядит «чужой» ни в светлой, ни в тёмной теме, ни в одной из
+   остальных восьми. */
+body{
+ min-height:100vh;display:flex;align-items:center;justify-content:center;
+ background:
+   radial-gradient(1200px 800px at 20% -10%,
+     color-mix(in srgb, var(--accent) 14%, transparent) 0%, transparent 55%),
+   var(--bg);
+ color:var(--text);
+ font-family:var(--font);
+ transition:background .25s, color .25s;
+}
+.ha-login-card{
+ width:min(380px,92vw);
+ background:var(--card);
+ border:1px solid var(--border);
+ border-radius:var(--radius-lg);
+ padding:34px 30px;
+ box-shadow:var(--shadow-lg);
+}
+.ha-login-logo{
+ width:58px;height:58px;border-radius:18px;margin:0 auto 16px;
+ display:flex;align-items:center;justify-content:center;font-size:28px;
+ background:linear-gradient(135deg,var(--accent),var(--accent2,var(--accent)));
+ box-shadow:var(--shadow-md);
+}
+.ha-login-card h1{font-size:19px;text-align:center;margin-bottom:4px;color:var(--text)}
+.ha-login-card p{color:var(--text2);text-align:center;font-size:13px;margin-bottom:22px}
+.ha-login-card input{
+ width:100%;padding:13px 14px;border-radius:var(--radius);
+ border:1px solid var(--border-2,var(--border));background:var(--bg2);
+ color:var(--text);font-size:15px;outline:none;font-family:inherit;
+}
+.ha-login-card input:focus{border-color:var(--accent)}
+.ha-login-card button{
+ width:100%;margin-top:14px;padding:13px;border:0;
+ border-radius:var(--radius);font-size:15px;font-weight:600;
+ color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2,var(--accent)));
+ cursor:pointer;font-family:inherit;
+}
+.ha-login-card button:active{transform:scale(.98)}
+.ha-login-err{color:var(--danger,#d64545);font-size:13px;text-align:center;margin-top:12px;min-height:18px}
+</style>
+</head>
+<body data-ha-base="{{ha_base}}">
+<form class="ha-login-card" onsubmit="return doLogin(event)">
+ <div class="ha-login-logo">🏠</div>
+ <h1>HA Web Panel</h1>
+ <p>Введите пароль доступа к панели</p>
+ <input id="pw" type="password" placeholder="Пароль" autofocus autocomplete="current-password">
+ <button type="submit">Войти</button>
+ <div class="ha-login-err" id="err"></div>
+</form>
+<script>
+(function(){
+ var base=(document.body&&document.body.dataset.haBase)||'/ha';
+ if(!/^[A-Za-z0-9_\-./]*$/.test(base))base='/ha';
+ window.HA_BASE=base.replace(/\/+$/,'');
+})();
+async function doLogin(e){
+ e.preventDefault();
+ const pw=document.getElementById('pw').value;
+ try{
+  const r=await fetch(window.HA_BASE+'/api/login',{method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({password:pw})});
+  if(r.ok){location.href=window.HA_BASE+'/';}
+  else{const d=await r.json().catch(()=>({}));
+   document.getElementById('err').textContent=d.error||'Ошибка входа';}
+ }catch(_){document.getElementById('err').textContent='Сервер недоступен';}
+ return false;
+}
+</script>
+</body></html>

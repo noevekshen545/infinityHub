@@ -1,0 +1,74 @@
+/* Recovery Guard 3.0 — консоль администратора (guard.md §7). */
+:root {
+  --bg: #f4f6fb; --fg: #1c2333; --card: #fff; --line: #e1e6f0;
+  --muted: #75809a; --brand: #3b6df2; --brand-2: #2f5edb;
+  --ok: #2f9e5f; --warn: #e2a13b; --bad: #e04b4b; --purple: #7a4df2;
+  --code-bg: #f7f9fc;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11151f; --fg: #e7ecf5; --card: #1a2030; --line: #2a3346;
+    --muted: #8a94ab; --brand: #5b86ff; --brand-2: #6f95ff;
+    --ok: #46c47e; --warn: #f0b65c; --bad: #ff6b6b; --purple: #a07bff;
+    --code-bg: #0e131e;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+.rg-wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
+.rg-head { display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.rg-head h1 { font-size: 22px; margin: 0; }
+.rg-head .sub { color: var(--muted); font-size: 13px; }
+.rg-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;
+  border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.rg-tab { all: unset; cursor: pointer; padding: 8px 12px; border-radius: 8px;
+  font-size: 13.5px; font-weight: 600; color: var(--muted); }
+.rg-tab:hover { background: var(--card); }
+.rg-tab.active { background: var(--brand); color: #fff; }
+.rg-card { background: var(--card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+.rg-card h2 { font-size: 15px; margin: 0 0 12px; }
+.rg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px; }
+.rg-stat { border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.rg-stat .k { color: var(--muted); font-size: 12px; }
+.rg-stat .v { font-size: 20px; font-weight: 700; margin-top: 4px; }
+button.rg-btn { all: unset; cursor: pointer; text-align: center; padding: 9px 12px;
+  border-radius: 9px; font-size: 13px; font-weight: 600; background: var(--brand);
+  color: #fff; }
+button.rg-btn:hover { background: var(--brand-2); }
+button.rg-ghost { background: transparent; color: var(--fg);
+  border: 1px solid var(--line); }
+button.rg-danger { background: var(--bad); }
+button.rg-warn { background: var(--warn); color: #221a06; }
+table.rg-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.rg-tbl th, table.rg-tbl td { text-align: left; padding: 7px 8px;
+  border-bottom: 1px solid var(--line); vertical-align: top; }
+table.rg-tbl th { color: var(--muted); font-weight: 600; }
+code, pre { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; }
+pre.rg-code { background: var(--code-bg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px; font-size: 12px; max-height: 320px;
+  overflow: auto; white-space: pre-wrap; }
+.rg-pill { display: inline-block; padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; }
+.rg-good { background: rgba(47,158,95,.15); color: var(--ok); }
+.rg-bad { background: rgba(224,75,75,.15); color: var(--bad); }
+.rg-warn { background: rgba(226,161,59,.18); color: var(--warn); }
+.rg-muted { color: var(--muted); font-size: 12px; }
+.rg-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.rg-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.rg-field label { font-size: 12px; color: var(--muted); }
+.rg-field input, .rg-field select { background: var(--card); color: var(--fg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px; font-size: 13px; }
+.rg-hypo { border: 1px solid var(--line); border-left: 4px solid var(--warn);
+  border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+.rg-hypo.high { border-left-color: var(--bad); }
+.rg-hypo.low { border-left-color: var(--muted); }
+.rg-bar { height: 8px; border-radius: 6px; background: var(--line); overflow: hidden; }
+.rg-bar > i { display: block; height: 100%; background: var(--brand); }
+.rg-toast { position: fixed; right: 16px; bottom: 16px; background: var(--card);
+  border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.18); max-width: 360px; display: none; }
+.rg-hide { display: none; }

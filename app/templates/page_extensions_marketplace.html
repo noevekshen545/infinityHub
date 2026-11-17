@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html class="pg-page_extensions_marketplace" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extensions Marketplace — Infinity</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;--text:#c9d1d9;--text2:#8b949e;--accent:#58a6ff;--green:#238636;--orange:#f97316;--purple:#8b5cf6;--gradient:linear-gradient(135deg,#58a6ff,#8b5cf6);--font-sans:system-ui,-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-height:100vh}
+.toolbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.toolbar .logo{font-size:18px;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.toolbar .back{padding:6px 12px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:12px;text-decoration:none;transition:all 0.2s}
+.toolbar .back:hover{border-color:var(--accent)}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+.header{margin-bottom:24px}
+.header h1{font-size:24px;display:flex;align-items:center;gap:10px}
+.header p{font-size:13px;color:var(--text2);margin-top:6px}
+.filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.filter-bar input,.filter-bar select{padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none}
+.filter-bar input:focus,.filter-bar select:focus{border-color:var(--accent)}
+.filter-bar input{flex:1;min-width:200px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;transition:all 0.2s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.card .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.card .name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+.card .version{font-size:10px;padding:2px 6px;background:var(--bg3);border-radius:4px;color:var(--text2);white-space:nowrap}
+.card .author{font-size:11px;color:var(--text2);margin-bottom:6px}
+.card .desc{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:10px}
+.card .stats{display:flex;gap:14px;font-size:11px;color:var(--text3);margin-bottom:8px}
+.card .stats span{display:flex;align-items:center;gap:4px}
+.card .tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
+.card .tag{padding:2px 7px;background:var(--bg3);border-radius:4px;font-size:9px;color:var(--text2)}
+.card .category-badge{padding:2px 8px;border-radius:4px;font-size:9px;font-weight:600;color:#fff}
+.card .actions{display:flex;gap:6px}
+.card .actions button{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s}
+.card .actions button:hover{border-color:var(--accent)}
+.card .actions button.primary{background:var(--gradient);border-color:transparent;color:#fff}
+.category-colors{books:#6366f1;media:#a855f7;notes:#10b981;search:#f97316;ui:#3b82f6;agent:#ef4444;other:#6b7280}
+.no-results{padding:60px 20px;text-align:center;color:var(--text2)}
+.no-results i{font-size:40px;display:block;margin-bottom:12px;opacity:0.3}
+</style>
+<script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+<nav class="toolbar">
+  <a href="/settings" class="back"><i class="fas fa-arrow-left"></i> Настройки</a>
+  <span class="logo"><i class="fas fa-store"></i> Extensions Marketplace</span>
+</nav>
+<div class="container">
+  <div class="header">
+    <h1><i class="fas fa-puzzle-piece" style="color:var(--accent)"></i> Магазин расширений</h1>
+    <p>Найдите расширения для всех модулей Infinity AI. Установка в один клик.</p>
+    <a href="/api/extensions/builder-page" class="btn" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:linear-gradient(135deg,#6366f1,#a855f7);color:#fff;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none;margin-top:10px;transition:all 0.2s;border:none;cursor:pointer"><i class="fas fa-magic"></i> Создать расширение (no-code)</a>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="Поиск расширений..." oninput="searchMarketplace()">
+    <select id="categoryFilter" onchange="searchMarketplace()">
+      <option value="">Все категории</option>
+    </select>
+    <button class="btn" onclick="searchMarketplace()"><i class="fas fa-search"></i></button>
+  </div>
+
+  <div id="installedBadge" style="margin-bottom:12px;font-size:12px;color:var(--text2)">
+    <span id="installedCount">Загрузка...</span>
+  </div>
+
+  <div class="grid" id="marketplaceGrid"></div>
+</div>
+
+<script>
+const CATEGORY_COLORS = {
+  books: '#6366f1', media: '#a855f7', notes: '#10b981',
+  search: '#f97316', ui: '#3b82f6', agent: '#ef4444', other: '#6b7280'
+};
+const CATEGORY_NAMES = {
+  books: 'Книги', media: 'Медиа', notes: 'Заметки',
+  search: 'Поиск', ui: 'Интерфейс', agent: 'Агент', other: 'Другое'
+};
+
+/* Данные маркетплейса приходят из сети/файлов и раньше вставлялись в HTML
+   без экранирования — имя расширения могло содержать разметку. */
+function esc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+let _installed = [];
+
+async function loadMarketplace() {
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch('/api/extensions/marketplace/list'),
+      fetch('/api/extensions')
+    ]);
+    const d1 = await r1.json();
+    const d2 = await r2.json();
+    const exts = d1.extensions || [];
+    _installed = (d2.extensions || []).map(e => e.name);
+
+    document.getElementById('installedCount').textContent = 'Установлено: ' + _installed.length + ' | Доступно: ' + exts.length;
+
+    const cats = [...new Set(exts.map(e => e.category).filter(Boolean))];
+    const sel = document.getElementById('categoryFilter');
+    cats.forEach(c => {
+      if (![...sel.options].some(o => o.value === c)) {
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = CATEGORY_NAMES[c] || c;
+        sel.appendChild(opt);
+      }
+    });
+
+    renderExtensions(exts);
+  } catch (e) {
+    document.getElementById('marketplaceGrid').innerHTML = '<div class="no-results"><i class="fas fa-exclamation-triangle"></i>Ошибка загрузки</div>';
+  }
+}
+
+function renderExtensions(exts) {
+  const grid = document.getElementById('marketplaceGrid');
+  if (exts.length === 0) {
+    grid.innerHTML = '<div class="no-results"><i class="fas fa-box-open"></i>Ничего не найдено</div>';
+    return;
+  }
+  const isInstalled = name => _installed.includes(name);
+  grid.innerHTML = exts.map((e, i) => {
+    const color = CATEGORY_COLORS[e.category] || '#6b7280';
+    const rating = Number(e.rating);
+    const tags = Array.isArray(e.tags) ? e.tags : [];
+    const url = e.download_url || e.source_url || '';
+    return `
+    <div class="card">
+      <div class="top">
+        <div class="name">
+          <i class="fas ${esc(e.icon || 'fa-puzzle-piece')}" style="color:${color}"></i>
+          ${esc(e.name)}
+        </div>
+        <span class="version">v${esc(e.version || '0.0.0')}</span>
+      </div>
+      <div class="author"><i class="fas fa-user"></i> ${esc(e.author || 'Unknown')}</div>
+      <div class="desc">${esc(e.description || '')}</div>
+      <div class="stats">
+        <span><i class="fas fa-download"></i> ${Number(e.downloads) || 0}</span>
+        <span><i class="fas fa-star" style="color:#f59e0b"></i> ${(isFinite(rating) ? rating : 0).toFixed(1)}</span>
+        <span style="padding:2px 7px;border-radius:4px;font-size:9px;font-weight:600;color:#fff;background:${color}">
+          ${esc(CATEGORY_NAMES[e.category] || e.category || '')}
+        </span>
+      </div>
+      ${tags.length ? `<div class="tags">${tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
+      <div class="actions">
+        ${isInstalled(e.name)
+          ? '<button style="background:var(--green);border-color:var(--green);color:#fff" disabled><i class="fas fa-check"></i> Установлено</button>'
+          : (url ? `<button class="primary" data-i="${i}" data-act="install"><i class="fas fa-download"></i> Установить</button>` : '')
+        }
+        ${e.source_url ? `<button data-i="${i}" data-act="source"><i class="fas fa-external-link-alt"></i></button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const e = exts[Number(btn.dataset.i)] || {};
+      if (btn.dataset.act === 'install') {
+        installMarketplaceExt(e.name, e.source_url, e.download_url);
+      } else if (e.source_url) {
+        window.open(e.source_url, '_blank', 'noopener');
+      }
+    });
+  });
+}
+
+async function installMarketplaceExt(name, sourceUrl, downloadUrl) {
+  const url = downloadUrl || sourceUrl;
+  if (!url) { toast('Нет URL для установки', 'error'); return; }
+  try {
+    const r = await fetch('/api/extensions/marketplace/install', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, source_url: sourceUrl, download_url: downloadUrl })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      toast('Расширение установлено!', 'success');
+      loadMarketplace();
+    } else {
+      toast('Ошибка: ' + (d.error || ''), 'error');
+    }
+  } catch (e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+function searchMarketplace() {
+  const q = document.getElementById('searchInput').value;
+  const cat = document.getElementById('categoryFilter').value;
+  const params = new URLSearchParams();
+  if (q) params.set('query', q);
+  if (cat) params.set('category', cat);
+  fetch('/api/extensions/marketplace/list?' + params.toString())
+    .then(r => r.json())
+    .then(d => renderExtensions(d.extensions || []))
+    .catch(() => {});
+}
+
+function toast(msg, type) {
+  type = type || 'info';
+  const existing = document.querySelector('.ext-toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'ext-toast';
+  const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+  t.innerHTML = '<i class="fas ' + (icons[type] || icons.info) + '"></i><span>' + esc(msg) + '</span>';
+  t.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:10px;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-size:12px;z-index:99999;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation:fadeIn 0.2s ease;max-width:400px';
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', loadMarketplace);
+</script>
+</body>
+</html>

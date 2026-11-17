@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<!-- PAGE_DOCKER_V6 — новый UI модуля Docker для Infinity.
+     Отдаётся docker_module._render_docker_page() с webui_assets.inject():
+     тема приложения (infinity_theme), design.css, loader расширений.
+     API: /docker/api/* (прокси движка) и /docker/api/hub/* (docker_module). -->
+<html class="pg-page_docker" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Docker — Infinity</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<style>
+/* ── Токены-страховки. design.css подключается ПОСЛЕ и перекрывает их. ── */
+:root{
+  --red:#d64545; --green:#1f9254; --yellow:#c98a12; --purple:#7c5cf0;
+  --blue:#3b82f6; --orange:#ea580c; --link:var(--accent);
+  --text2:var(--text-2,#555); --text3:var(--text-3,#777);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font,-apple-system,"Segoe UI",Roboto,sans-serif);
+  font-size:14px;line-height:1.5;color:var(--text);background:var(--bg);
+  transition:background .25s,color .25s;
+}
+::selection{background:var(--accent-soft,rgba(59,110,245,.15))}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── Каркас: шапка + сайдбар + контент ── */
+.dt-app{display:flex;flex-direction:column;height:100vh}
+.dt-top{
+  display:flex;align-items:center;gap:10px;padding:10px 18px;flex:none;
+  background:var(--glass,rgba(255,255,255,.8));backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);position:relative;z-index:30
+}
+.dt-brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;white-space:nowrap}
+.dt-brand .dt-logo{
+  width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2,var(--accent)));
+  color:#fff;font-size:15px;box-shadow:0 4px 12px var(--accent-glow,rgba(59,110,245,.25))
+}
+.dt-top a.back{color:var(--text-2);font-size:13px;padding:6px 10px;border-radius:8px}
+.dt-top a.back:hover{background:var(--hover);text-decoration:none;color:var(--text)}
+.dt-spacer{flex:1}
+.dt-pill{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;
+  font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--bg2)
+}
+.dt-pill .dt-dot{width:8px;height:8px;border-radius:50%;background:var(--text3)}
+.dt-pill.on{border-color:var(--green);color:var(--green);background:color-mix(in srgb,var(--green) 10%,transparent)}
+.dt-pill.on .dt-dot{background:var(--green);box-shadow:0 0 8px var(--green);animation:dt-pulse 1.8s infinite}
+.dt-pill.off{border-color:var(--red);color:var(--red);background:color-mix(in srgb,var(--red) 8%,transparent)}
+.dt-pill.off .dt-dot{background:var(--red)}
+@keyframes dt-pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--green) 45%,transparent)}70%{box-shadow:0 0 0 6px transparent}}
+.dt-btn{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:9px;
+  border:1px solid var(--border);background:var(--bg2);color:var(--text);
+  font:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:var(--tr,all .18s);white-space:nowrap
+}
+.dt-btn:hover{background:var(--bg3);border-color:var(--border-2,var(--border));transform:translateY(-1px)}
+.dt-btn:active{transform:translateY(0)}
+.dt-btn[disabled]{opacity:.5;cursor:wait;transform:none}
+.dt-btn.primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2,var(--accent)));
+  border-color:transparent;color:#fff;box-shadow:0 3px 10px var(--accent-glow,rgba(59,110,245,.25))
+}
+.dt-btn.primary:hover{filter:brightness(1.08);box-shadow:0 6px 16px var(--accent-glow,rgba(59,110,245,.35))}
+.dt-btn.danger{color:var(--red);border-color:color-mix(in srgb,var(--red) 35%,transparent)}
+.dt-btn.danger:hover{background:color-mix(in srgb,var(--red) 10%,transparent)}
+.dt-btn.warn{color:var(--yellow)}
+.dt-btn.sm{padding:4px 9px;font-size:12px;border-radius:7px}
+.dt-btn.xs{padding:2px 7px;font-size:11px;border-radius:6px;gap:4px}
+.dt-btn .dt-spin{width:12px;height:12px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:dt-rot 1s linear infinite}
+@keyframes dt-rot{to{transform:rotate(360deg)}}
+
+.dt-body{display:flex;flex:1;min-height:0}
+/* ── Сайдбар ── */
+.dt-nav{
+  width:216px;flex:none;padding:12px 8px;overflow-y:auto;flex:none;
+  border-right:1px solid var(--border);background:var(--bg2)
+}
+.dt-nav-g{font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);padding:12px 12px 4px}
+.dt-nav-i{
+  display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:9px;cursor:pointer;
+  font-size:13px;color:var(--text-2,var(--text2));border-left:3px solid transparent;transition:var(--tr,all .15s)
+}
+.dt-nav-i i{width:16px;text-align:center;font-size:13px}
+.dt-nav-i:hover{background:var(--hover);color:var(--text)}
+.dt-nav-i.on{
+  background:color-mix(in srgb,var(--accent) 12%,transparent);
+  border-left-color:var(--accent);color:var(--accent);font-weight:600
+}
+.dt-nav-i .dt-badge{
+  margin-left:auto;font-size:10px;padding:1px 7px;border-radius:99px;font-weight:700;
+  background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent)
+}
+/* ── Контент ── */
+.dt-main{flex:1;overflow-y:auto;padding:18px;animation:dt-fade .25s}
+@keyframes dt-fade{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
+.dt-sec{display:none}
+.dt-sec.on{display:block}
+.dt-h{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.dt-h h1{font-size:19px;font-weight:700;display:flex;align-items:center;gap:9px}
+.dt-h h1 i{color:var(--accent)}
+.dt-h .dt-sub{color:var(--text-3);font-size:12.5px;font-weight:400}
+.dt-h .dt-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+/* ── Карточки и панели ── */
+.dt-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius,12px);
+  padding:16px;box-shadow:var(--shadow,0 1px 2px rgba(0,0,0,.05));transition:var(--tr,all .18s)
+}
+.dt-card+.dt-card{margin-top:12px}
+.dt-card h2{font-size:15px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.dt-card h2 i{color:var(--accent)}
+.dt-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
+.dt-grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.dt-grid4{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.dt-stat{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius,12px);
+  padding:14px 16px;position:relative;overflow:hidden;transition:var(--tr,all .2s)
+}
+.dt-stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-md,0 6px 18px rgba(0,0,0,.12));border-color:var(--accent)}
+.dt-stat .dt-lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);font-weight:600}
+.dt-stat .dt-val{font-size:24px;font-weight:800;margin-top:2px}
+.dt-stat .dt-sub{font-size:12px;color:var(--text-2,var(--text2));margin-top:1px}
+.dt-stat>i{position:absolute;right:12px;top:12px;font-size:26px;opacity:.13;color:var(--accent)}
+
+/* ── Таблицы ── */
+.dt-table{width:100%;border-collapse:collapse;font-size:13px}
+.dt-table th{
+  text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;
+  color:var(--text3);padding:8px 10px;border-bottom:1px solid var(--border);font-weight:600;white-space:nowrap
+}
+.dt-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.dt-table tr:last-child td{border-bottom:0}
+.dt-table tr:hover td{background:var(--hover)}
+.dt-acts{white-space:nowrap;text-align:right;display:flex;gap:5px;justify-content:flex-end}
+
+/* ── Бейджи/чипы ── */
+.dt-badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:600}
+.dt-badge.g{background:color-mix(in srgb,var(--green) 13%,transparent);color:var(--green)}
+.dt-badge.r{background:color-mix(in srgb,var(--red) 13%,transparent);color:var(--red)}
+.dt-badge.y{background:color-mix(in srgb,var(--yellow) 15%,transparent);color:var(--yellow)}
+.dt-badge.b{background:color-mix(in srgb,var(--blue) 13%,transparent);color:var(--blue)}
+.dt-badge.acc{background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent)}
+.dt-badge.gray{background:var(--hover);color:var(--text3)}
+.dt-chip{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:11.5px;
+  border:1px solid var(--border);background:var(--bg2);color:var(--text-2,var(--text2));
+  cursor:pointer;transition:var(--tr,all .15s);font-weight:500;user-select:none
+}
+.dt-chip:hover{border-color:var(--accent);color:var(--accent)}
+.dt-chip.on{background:color-mix(in srgb,var(--accent) 14%,transparent);border-color:var(--accent);color:var(--accent);font-weight:600}
+.dt-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.dt-dot.run{background:var(--green);animation:dt-pulse2 1.6s infinite}
+.dt-dot.stop{background:var(--text3)}
+@keyframes dt-pulse2{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--green) 40%,transparent)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
+/* ── Формы ── */
+.dt-in,select.dt-in,textarea.dt-in{
+  width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:9px;
+  background:var(--bg2);color:var(--text);font:inherit;font-size:13px;transition:var(--tr,all .15s)
+}
+.dt-in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft,rgba(59,110,245,.15))}
+textarea.dt-in{min-height:64px;resize:vertical;font-family:var(--font-mono,ui-monospace,Consolas,monospace);font-size:12.5px}
+.dt-lb{display:block;font-size:12px;color:var(--text-2,var(--text2));margin:8px 0 3px;font-weight:500}
+.dt-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dt-row.end{justify-content:flex-end;margin-top:10px}
+.dt-filter{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.dt-filter .dt-in{width:auto;min-width:160px}
+
+/* ── Карточка приложения (Топ-100 / поиск Hub) ── */
+.dt-app-card{
+  display:flex;flex-direction:column;gap:9px;padding:16px;border-radius:var(--radius,12px);
+  background:var(--card);border:1px solid var(--border);
+  transition:var(--tr,all .22s cubic-bezier(.4,0,.2,1));position:relative;overflow:hidden
+}
+.dt-app-card::before{
+  content:'';position:absolute;inset:0 0 auto 0;height:3px;opacity:0;transition:opacity .25s;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2,var(--accent)))
+}
+.dt-app-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg,0 12px 32px rgba(0,0,0,.18));border-color:color-mix(in srgb,var(--accent) 45%,var(--border))}
+.dt-app-card:hover::before{opacity:1}
+.dt-app-top{display:flex;gap:12px;align-items:flex-start}
+.dt-app-ico{
+  width:46px;height:46px;flex:none;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);border:1px solid var(--border);overflow:hidden;font-weight:800;font-size:18px;color:var(--accent)
+}
+.dt-app-ico img{width:28px;height:28px;object-fit:contain}
+.dt-app-name{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dt-app-meta{display:flex;gap:10px;font-size:11.5px;color:var(--text-3);flex-wrap:wrap;margin-top:2px}
+.dt-app-meta i{margin-right:3px}
+.dt-app-meta .dt-stars{color:var(--yellow);font-weight:600}
+.dt-app-desc{font-size:12.5px;color:var(--text-2,var(--text2));flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px}
+.dt-app-foot{display:flex;gap:7px;align-items:center;margin-top:auto}
+.dt-app-foot .dt-btn{flex:1;justify-content:center}
+.dt-app-installed{position:absolute;top:10px;right:10px;z-index:2}
+.dt-icon-btn{
+  width:30px;height:30px;flex:none;border-radius:8px;border:1px solid var(--border);background:var(--bg2);
+  color:var(--text-2,var(--text2));cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  font-size:13px;transition:var(--tr,all .15s)
+}
+.dt-icon-btn:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-1px)}
+.dt-icon-btn:focus-visible,.dt-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── Действия на карточках контейнеров/образов ── */
+.dt-card{transition:var(--tr,all .18s)}
+.dt-card:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--border));box-shadow:var(--shadow-md,0 6px 18px rgba(0,0,0,.12))}
+.dt-port-row{
+  display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:7px 8px;margin-bottom:6px;
+  border:1px solid var(--border);border-radius:9px;background:var(--bg2)
+}
+.dt-port-label{
+  font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;font-weight:700;
+  color:var(--accent);margin-right:2px
+}
+.dt-acts{flex-wrap:wrap}
+.dt-btn .fa-solid,.dt-btn .fas{margin-right:1px}
+.dt-toast.warn{border-left-color:var(--yellow)}
+
+/* ── Скелетоны и empty-state ── */
+.dt-skel{border-radius:10px;background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4,var(--bg3)) 50%,var(--bg3) 75%);background-size:400% 100%;animation:dt-sh 1.3s infinite}
+@keyframes dt-sh{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.dt-skel-card{height:158px}
+.dt-empty{padding:34px 20px;text-align:center;color:var(--text-3)}
+.dt-empty i{font-size:34px;opacity:.4;display:block;margin-bottom:10px}
+.dt-empty .dt-empty-t{font-size:14px;color:var(--text-2,var(--text2));font-weight:600;margin-bottom:4px}
+
+/* ── Логи / терминал ── */
+.dt-logs{
+  background:#0b1220;color:#c9d7e8;border:1px solid var(--border);border-radius:10px;padding:12px;
+  height:320px;overflow:auto;white-space:pre-wrap;word-break:break-all;
+  font:12px/1.55 var(--font-mono,ui-monospace,Consolas,monospace)
+}
+.dt-term{background:#050a14;color:#7ee787;height:400px}
+/* ── Модалки, тосты ── */
+.dt-overlay{
+  position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:16px;
+  background:color-mix(in srgb,var(--bg) 55%,transparent);backdrop-filter:blur(6px)
+}
+.dt-modal{
+  width:min(720px,100%);max-height:88vh;overflow:auto;background:var(--bg2);
+  border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-lg);
+  padding:20px;animation:dt-pop .22s cubic-bezier(.34,1.4,.64,1)
+}
+.dt-modal.wide{width:min(1000px,100%)}
+@keyframes dt-pop{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+.dt-modal-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.dt-modal-h h2{font-size:16px;flex:1;display:flex;align-items:center;gap:8px}
+.dt-modal-h h2 i{color:var(--accent)}
+.dt-toast-box{position:fixed;right:16px;bottom:16px;z-index:99;display:flex;flex-direction:column;gap:8px;max-width:360px}
+.dt-toast{
+  background:var(--bg2);border:1px solid var(--border);border-left:4px solid var(--accent);
+  border-radius:10px;padding:11px 14px;font-size:13px;box-shadow:var(--shadow-lg);animation:dt-slide .25s
+}
+.dt-toast.err{border-left-color:var(--red)}
+.dt-toast.ok{border-left-color:var(--green)}
+@keyframes dt-slide{from{opacity:0;transform:translateX(30px)}to{opacity:1}}
+
+/* ── Info-блок ── */
+.dt-info{
+  background:color-mix(in srgb,var(--accent) 7%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);
+  border-radius:10px;padding:11px 13px;margin-bottom:12px;font-size:12.5px
+}
+.dt-chart{width:100%;height:160px;display:block}
+
+/* ── Адаптив ── */
+@media(max-width:900px){
+  .dt-body{flex-direction:column}
+  .dt-nav{
+    width:100%;display:flex;overflow-x:auto;padding:8px;border-right:0;
+    border-bottom:1px solid var(--border);gap:4px
+  }
+  .dt-nav-g{display:none}
+  .dt-nav-i{white-space:nowrap;border-left:0;border-bottom:3px solid transparent;border-radius:8px;padding:7px 12px}
+  .dt-nav-i.on{border-bottom-color:var(--accent)}
+  .dt-main{padding:12px}
+  .dt-grid3{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+  .dt-hide-sm{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+<div class="dt-app">
+
+  <!-- ══════════ ШАПКА ══════════ -->
+  <header class="dt-top">
+    <a class="back" href="/" title="На главную Infinity"><i class="fas fa-arrow-left"></i></a>
+    <div class="dt-brand"><span class="dt-logo"><i class="fab fa-docker"></i></span> Docker</div>
+    <span id="daemonPill" class="dt-pill off"><span class="dt-dot"></span> <span id="daemonTxt">проверка…</span></span>
+    <div class="dt-spacer"></div>
+    <select id="hostSel" class="dt-in" style="width:auto;min-width:0;padding:6px 8px;font-size:12px" onchange="switchHost(this.value)"></select>
+    <button class="dt-btn sm" onclick="hostsModal()" title="Удалённые Docker-хосты"><i class="fas fa-server"></i></button>
+    <button class="dt-btn sm" onclick="toggleLang()" id="langBtn" title="Язык">EN</button>
+    <button class="dt-btn sm" id="themeBtn" onclick="cycleTheme()" title="Тема (синхронна с Infinity)"><i class="fas fa-adjust"></i></button>
+    <button class="dt-btn primary" id="btnDaemon" onclick="toggleDaemon()"><i class="fas fa-power-off"></i> <span id="btnDaemonTxt">Запустить</span></button>
+  </header>
+
+  <div class="dt-body">
+    <!-- ══════════ САЙДБАР ══════════ -->
+    <nav class="dt-nav" id="sideNav">
+      <div class="dt-nav-g" data-i18n="g_inst">Установка</div>
+      <div class="dt-nav-i on" data-tab="top100" onclick="setTab('top100')"><i class="fas fa-rocket"></i> <span data-i18n="top100">Топ-100</span></div>
+      <div class="dt-nav-i" data-tab="hub" onclick="setTab('hub')"><i class="fas fa-search"></i> <span data-i18n="hub">Поиск Hub</span></div>
+      <div class="dt-nav-g" data-i18n="g_mon">Мониторинг</div>
+      <div class="dt-nav-i" data-tab="dashboard" onclick="setTab('dashboard')"><i class="fas fa-chart-pie"></i> <span data-i18n="dashboard">Дашборд</span></div>
+      <div class="dt-nav-i" data-tab="events" onclick="setTab('events')"><i class="fas fa-bolt"></i> <span data-i18n="events">События</span></div>
+      <div class="dt-nav-g" data-i18n="g_res">Ресурсы</div>
+      <div class="dt-nav-i" data-tab="containers" onclick="setTab('containers')"><i class="fas fa-box"></i> <span data-i18n="containers">Контейнеры</span> <span class="dt-badge acc" id="ctBadge" style="display:none"></span></div>
+      <div class="dt-nav-i" data-tab="images" onclick="setTab('images')"><i class="fas fa-compact-disc"></i> <span data-i18n="images">Образы</span></div>
+      <div class="dt-nav-i" data-tab="volumes" onclick="setTab('volumes')"><i class="fas fa-database"></i> <span data-i18n="volumes">Тома</span></div>
+      <div class="dt-nav-i" data-tab="networks" onclick="setTab('networks')"><i class="fas fa-project-diagram"></i> <span data-i18n="networks">Сети</span></div>
+      <div class="dt-nav-i" data-tab="stacks" onclick="setTab('stacks')"><i class="fas fa-layer-group"></i> <span data-i18n="stacks">Стеки</span></div>
+      <div class="dt-nav-g" data-i18n="g_tools">Инструменты</div>
+      <div class="dt-nav-i" data-tab="build" onclick="setTab('build')"><i class="fas fa-hammer"></i> <span data-i18n="build">Сборка / команда</span></div>
+      <div class="dt-nav-g" data-i18n="g_sys">Система</div>
+      <div class="dt-nav-i" data-tab="settings" onclick="setTab('settings')"><i class="fas fa-cog"></i> <span data-i18n="settings">Настройки</span></div>
+      <div class="dt-nav-i" data-tab="logs" onclick="setTab('logs')"><i class="fas fa-file-alt"></i> <span data-i18n="logs">Логи</span></div>
+      <div class="dt-nav-i" data-tab="info" onclick="setTab('info')"><i class="fas fa-info-circle"></i> <span data-i18n="info">Инфо</span></div>
+    </nav>
+
+    <!-- ══════════ КОНТЕНТ ══════════ -->
+    <main class="dt-main" id="mainArea">
+      <!-- ══════════ ТОП-100 ══════════ -->
+      <section id="sec-top100" class="dt-sec on">
+        <div class="dt-h">
+          <h1><i class="fas fa-rocket"></i> <span data-i18n="top100">Топ-100</span></h1>
+          <span class="dt-sub" id="topSource"></span>
+          <div class="dt-actions">
+            <select id="topSort" class="dt-in" style="width:auto" onchange="renderTop()">
+              <option value="pulls">По скачиваниям</option>
+              <option value="stars">По звёздам</option>
+              <option value="name">По имени</option>
+              <option value="cat">По категории</option>
+            </select>
+            <button class="dt-btn sm" onclick="loadTop(true)" title="Обновить рейтинг с Docker Hub"><i class="fas fa-sync"></i></button>
+          </div>
+        </div>
+        <div class="dt-info"><i class="fas fa-info-circle"></i> <span data-i18n="top_hint">Один клик — и контейнер установлен с безопасными пресетами. «⚙» — настройка портов, томов и ENV перед установкой. Рейтинг и скачивания живьём с Docker Hub.</span></div>
+        <div class="dt-filter">
+          <input id="topSearch" class="dt-in" style="min-width:220px" placeholder="🔍 Фильтр по имени, описанию, категории…" oninput="renderTop()">
+          <div class="dt-row" id="topCats"></div>
+        </div>
+        <div class="dt-grid3" id="topGrid">
+          <div class="dt-skel dt-skel-card"></div><div class="dt-skel dt-skel-card"></div>
+          <div class="dt-skel dt-skel-card"></div><div class="dt-skel dt-skel-card"></div>
+          <div class="dt-skel dt-skel-card"></div><div class="dt-skel dt-skel-card"></div>
+        </div>
+      </section>
+
+      <!-- ══════════ ПОИСК HUB ══════════ -->
+      <section id="sec-hub" class="dt-sec">
+        <div class="dt-h">
+          <h1><i class="fas fa-search"></i> <span data-i18n="hub">Поиск Docker Hub</span></h1>
+          <span class="dt-sub" id="hubCount"></span>
+        </div>
+        <div class="dt-card">
+          <div class="dt-row">
+            <input id="hubQ" class="dt-in" style="flex:1;min-width:200px" placeholder="nginx, postgres, jellyfin…"
+                   onkeydown="if(event.key==='Enter')doHubSearch()">
+            <button class="dt-btn primary" onclick="doHubSearch()"><i class="fas fa-search"></i> <span data-i18n="find">Найти</span></button>
+          </div>
+          <div id="hubResults" style="margin-top:14px"></div>
+        </div>
+      </section>
+
+      <!-- ══════════ ДАШБОРД ══════════ -->
+      <section id="sec-dashboard" class="dt-sec">
+        <div class="dt-h">
+          <h1><i class="fas fa-chart-pie"></i> <span data-i18n="dashboard">Дашборд</span></h1>
+          <div class="dt-actions"><button class="dt-btn sm" onclick="refreshDashboard()"><i class="fas fa-sync"></i></button></div>
+        </div>
+        <div class="dt-info" id="dashIp"></div>
+        <div class="dt-grid4" id="dashStats"></div>
+        <div class="dt-grid2" style="margin-top:12px">
+          <div class="dt-card"><h2><i class="fas fa-play-circle"></i> <span data-i18n="active">Активные контейнеры</span></h2><div id="dashRunning"></div></div>
+          <div class="dt-card"><h2><i class="fas fa-chart-line"></i> CPU / RAM</h2>
+            <select id="dashCid" class="dt-in" onchange="drawChart()" style="margin-bottom:8px"></select>
+            <svg class="dt-chart" id="dashChart" viewBox="0 0 400 160" preserveAspectRatio="none"></svg>
+            <div class="dt-row" style="margin-top:6px;font-size:11px;color:var(--text-3)">
+              <span><span style="display:inline-block;width:10px;height:3px;background:#3b82f6;vertical-align:middle"></span> CPU</span>
+              <span><span style="display:inline-block;width:10px;height:3px;background:#22c55e;vertical-align:middle"></span> RAM</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ══════════ СОБЫТИЯ ══════════ -->
+      <section id="sec-events" class="dt-sec">
+        <div class="dt-h">
+          <h1><i class="fas fa-bolt"></i> <span data-i18n="events">События</span></h1>
+          <div class="dt-actions">
+            <select id="evSince" class="dt-in" style="width:auto" onchange="loadEvents()">
+              <option value="5m">5 мин</option><option value="1h">1 час</option><option value="24h">24 часа</option>
+            </select>
+            <button class="dt-btn sm" onclick="loadEvents()"><i class="fas fa-sync"></i></button>
+          </div>
+        </div>
+        <div class="dt-card"><div id="eventsBox"></div></div>
+      </section>
+
+      <!-- ══════════ КОНТЕЙНЕРЫ ══════════ -->
+      <section id="sec-containers" class="dt-sec">
+        <div class="dt-h">
+          <h1><i class="fas fa-box"></i> <span data-i18n="containers">Контейнеры</span></h1>
+          <div class="dt-actions">
+            <button class="dt-btn primary" onclick="quickRun()"><i class="fas fa-plus"></i> <span data-i18n="create">Создать</span></button>
+            <button class="dt-btn sm" onclick="refresh()"><i class="fas fa-sync"></i></button>
+          </div>
+        </div>
+        <div class="dt-filter">
+          <input id="ctFilter" class="dt-in" placeholder="🔍 Имя или образ…" oninput="renderContainers()">
+          <select id="ctState" class="dt-in" style="width:auto" onchange="renderContainers()">
+            <option value="">все</option><option>running</option><option>exited</option><option>paused</option>
+          </select>
+          <button class="dt-btn sm" onclick="bulkOp('start')" title="Запустить выбранные"><i class="fas fa-play"></i></button>
+          <button class="dt-btn sm" onclick="bulkOp('stop')" title="Остановить выбранные"><i class="fas fa-pause"></i></button>
+          <button class="dt-btn sm" onclick="bulkOp('restart')" title="Перезапустить"><i class="fas fa-redo"></i></button>
+          <button class="dt-btn danger sm" onclick="bulkOp('rm')" title="Удалить выбранные"><i class="fas fa-trash"></i></button>
+          <div style="flex:1"></div>
+          <button class="dt-icon-btn" id="viewGridBtn" onclick="setView('grid')" title="Сетка"><i class="fas fa-th"></i></button>
+          <button class="dt-icon-btn" id="viewListBtn" onclick="setView('list')" title="Список"><i class="fas fa-list"></i></button>
+        </div>
+        <div id="containersBox"></div>
+      </section>
+
+      <!-- ══════════ ОБРАЗЫ ══════════ -->
+      <section id="sec-images" class="dt-sec">
+        <div class="dt-h">
+          <h1><i class="fas fa-compact-disc"></i> <span data-i18n="images">Образы</span></h1>
+          <div class="dt-actions">
+            <label class="dt-btn primary sm" title="Загрузить образ из файла .tar">
+              <i class="fas fa-upload"></i> Загрузить образ
+              <input type="file" accept=".tar,application/x-tar" style="display:none" onchange="uploadImageFile(this)">
+            </label>
+            <button class="dt-btn warn sm" onclick="prune('images')" title="Очистка неиспользуемых"><i class="fas fa-broom"></i></button>
+            <button class="dt-btn sm" onclick="refresh()" title="Обновить список"><i class="fas fa-sync"></i></button>
+          </div>
+        </div>
+        <div class="dt-filter"><input id="imFilter" class="dt-in" placeholder="🔍 Имя образа…" oninput="renderImages()"></div>
+        <div id="imagesBox"></div>
+      </section>
+
+      <!-- ══════════ ТОМА ══════════ -->
+      <section id="sec-volumes" class="dt-sec">
+        <div class="dt-h">
+          <h1><i class="fas fa-database"></i> <span data-i18n="volumes">Тома</span></h1>
+          <div class="dt-actions">
+            <button class="dt-btn primary sm" onclick="volCreate()"><i class="fas fa-plus"></i></button>
+            <button class="dt-btn sm" onclick="refreshResources()"><i class="fas fa-sync"></i></button>
+          </div>
+        </div>
+        <div class="dt-card"><div id="volsBox"></div></div>
+      </section>
+
+      <!-- ══════════ СЕТИ ══════════ -->
+      <section id="sec-networks" class="dt-sec">
+        <div class="dt-h">
+          <h1><i class="fas fa-project-diagram"></i> <span data-i18n="networks">Сети</span></h1>
+          <div class="dt-actions">
+            <button class="dt-btn primary sm" onclick="netCreate()"><i class="fas fa-plus"></i></button>
+            <button class="dt-btn sm" onclick="refreshResources()"><i class="fas fa-sync"></i></button>
+          </div>
+        </div>
+        <div class="dt-card"><div id="netsBox"></div></div>
+      </section>
+
+      <!-- ══════════ СТЕКИ ══════════ -->
+      <section id="sec-stacks" class="dt-sec">
+        <div class="dt-h">
+          <h1><i class="fas fa-layer-group"></i> <span data-i18n="stacks">Стеки (Compose)</span></h1>
+          <div class="dt-actions"><button class="dt-btn primary" onclick="stackNew()"><i class="fas fa-plus"></i> <span data-i18n="deploy">Деплой</span></button></div>
+        </div>
+        <div class="dt-card"><div id="stacksBox"></div></div>
+      </section>
+      <!-- ══════════ СБОРКА / КОМАНДА ══════════ -->
+      <section id="sec-build" class="dt-sec">
+        <div class="dt-h"><h1><i class="fas fa-hammer"></i> <span data-i18n="build">Сборка / команда</span></h1></div>
+        <div class="dt-grid2">
+          <div class="dt-card"><h2><i class="fas fa-terminal"></i> <span data-i18n="cmd">Команда docker</span></h2>
+            <textarea id="cmdRef" placeholder="docker run -d -p 8080:80 nginx:alpine"></textarea>
+            <div class="dt-row end"><button class="dt-btn primary" onclick="doCmd()"><i class="fas fa-play"></i> <span data-i18n="run2">Выполнить</span></button></div>
+          </div>
+          <div class="dt-card"><h2><i class="fas fa-cubes"></i> <span data-i18n="build2">Сборка образа</span></h2>
+            <label class="dt-lb">Tag</label><input id="bTag" class="dt-in" placeholder="myapp:1.0">
+            <label class="dt-lb">Dockerfile</label><textarea id="bFile" placeholder="FROM nginx:alpine"></textarea>
+            <div class="dt-row end"><button class="dt-btn primary" onclick="doBuild()"><i class="fas fa-cubes"></i> <span data-i18n="build3">Собрать</span></button></div>
+          </div>
+          <div class="dt-card"><h2><i class="fas fa-key"></i> <span data-i18n="registry">Registry</span></h2>
+            <label class="dt-lb">Server</label><input id="rgSrv" class="dt-in" placeholder="ghcr.io">
+            <label class="dt-lb">Login</label><input id="rgUser" class="dt-in">
+            <label class="dt-lb">Password</label><input id="rgPass" class="dt-in" type="password">
+            <div class="dt-row end">
+              <button class="dt-btn primary" onclick="rgLogin()"><i class="fas fa-sign-in-alt"></i> Login</button>
+              <button class="dt-btn" onclick="rgLogout()">Logout</button>
+            </div>
+          </div>
+          <div class="dt-card"><h2><i class="fas fa-file-archive"></i> <span data-i18n="tar">Импорт / экспорт .tar</span></h2>
+            <label class="dt-lb">Load (путь к .tar)</label><input id="loadPath" class="dt-in" placeholder="/mnt/c/…/img.tar">
+            <div class="dt-row"><button class="dt-btn sm" onclick="doLoad()"><i class="fas fa-download"></i> Загрузить</button></div>
+            <label class="dt-lb">Save</label>
+            <input id="saveRef" class="dt-in" placeholder="nginx:alpine" style="margin-bottom:5px">
+            <input id="savePath" class="dt-in" placeholder="/mnt/c/…/out.tar">
+            <div class="dt-row end"><button class="dt-btn sm" onclick="doSave()"><i class="fas fa-save"></i> Сохранить</button></div>
+          </div>
+        </div>
+      </section>
+      <!-- ══════════ НАСТРОЙКИ ══════════ -->
+      <section id="sec-settings" class="dt-sec">
+        <div class="dt-h"><h1><i class="fas fa-cog"></i> <span data-i18n="settings">Настройки</span></h1></div>
+        <div class="dt-card">
+          <h2><i class="fas fa-sliders-h"></i> <span data-i18n="daemon">Параметры демона</span></h2>
+          <div class="dt-grid2">
+            <div>
+              <label class="dt-lb"><input type="checkbox" id="cfgIptables"> iptables (полная сеть)</label>
+              <label class="dt-lb"><input type="checkbox" id="cfgProxy"> userland-proxy</label>
+              <label class="dt-lb"><input type="checkbox" id="cfgBridgeNone"> bridge=none</label>
+              <label class="dt-lb"><input type="checkbox" id="cfgAutostartDaemon"> автозапуск демона</label>
+              <label class="dt-lb"><input type="checkbox" id="cfgAutoCt"> автозапуск контейнеров</label>
+              <label class="dt-lb"><input type="checkbox" id="cfgAlerts"> алерты о падении</label>
+              <div class="dt-row" style="margin-top:8px"><button class="dt-btn sm" onclick="reqNotif()"><i class="fas fa-bell"></i> Уведомления</button></div>
+            </div>
+            <div>
+              <label class="dt-lb">Storage</label>
+              <select id="cfgDriver" class="dt-in"><option value="overlay2">overlay2</option><option value="vfs">vfs</option><option value="">auto</option></select>
+              <label class="dt-lb">Log level</label>
+              <select id="cfgLog" class="dt-in"><option>info</option><option>debug</option><option>warn</option></select>
+              <label class="dt-lb">Пароль UI</label><input id="cfgPass" class="dt-in" type="password" placeholder="—">
+              <label class="dt-lb">Доп. аргументы dockerd</label><textarea id="cfgExtra" class="dt-in"></textarea>
+            </div>
+          </div>
+          <div class="dt-row end">
+            <button class="dt-btn primary" onclick="saveSettings(false)"><i class="fas fa-save"></i> Сохранить</button>
+            <button class="dt-btn warn" onclick="saveSettings(true)">Сохранить + перезапустить демон</button>
+          </div>
+          <div class="dt-row" style="margin-top:10px">
+            <button class="dt-btn sm" onclick="netDiag()"><i class="fas fa-stethoscope"></i> Диагностика сети</button>
+            <button class="dt-btn sm" onclick="installIptables()"><i class="fas fa-download"></i> Установить iptables</button>
+          </div>
+        </div>
+        <div class="dt-card">
+          <h2><i class="fas fa-box-open"></i> <span data-i18n="backup">Резервная копия</span></h2>
+          <label class="dt-lb">Путь .tar.gz</label><input id="bkPath" class="dt-in" placeholder="/mnt/c/…/backup.tar.gz">
+          <label class="dt-lb"><input type="checkbox" id="bkFull"> включая данные (data)</label>
+          <label class="dt-lb"><input type="checkbox" id="bkStop" checked> остановить демон перед</label>
+          <div class="dt-row"><button class="dt-btn primary" onclick="backupNow()"><i class="fas fa-box-open"></i> Backup</button>
+            <button class="dt-btn warn" onclick="restoreNow()"><i class="fas fa-history"></i> Restore</button></div>
+        </div>
+        <div class="dt-card">
+          <h2><i class="fas fa-key"></i> API-токены / вебхуки</h2>
+          <div class="dt-row"><input id="tkName" class="dt-in" style="max-width:200px" placeholder="name">
+            <button class="dt-btn primary sm" onclick="tkCreate()"><i class="fas fa-plus"></i> создать</button></div>
+          <div id="tkList" style="margin-top:10px"></div>
+          <p style="margin-top:8px;font-size:12px;color:var(--text-3)">Webhook: <code>GET /hook/&lt;token&gt;/restart/&lt;name&gt;</code> · API: <code>?api_token=</code></p>
+        </div>
+        <div class="dt-card">
+          <h2><i class="fas fa-broom"></i> <span data-i18n="cleanup">Очистка</span></h2>
+          <div class="dt-row">
+            <button class="dt-btn sm" onclick="showDf()">df</button>
+            <button class="dt-btn warn sm" onclick="prune('containers')">контейнеры</button>
+            <button class="dt-btn warn sm" onclick="prune('images')">образы</button>
+            <button class="dt-btn warn sm" onclick="prune('volumes')">тома</button>
+            <button class="dt-btn warn sm" onclick="prune('networks')">сети</button>
+          </div>
+          <pre id="dfOut" class="dt-logs" style="height:180px;display:none;margin-top:10px"></pre>
+        </div>
+      </section>
+
+      <!-- ══════════ ЛОГИ ══════════ -->
+      <section id="sec-logs" class="dt-sec">
+        <div class="dt-h"><h1><i class="fas fa-file-alt"></i> <span data-i18n="logs">Логи dockerd</span></h1>
+          <div class="dt-actions"><button class="dt-btn sm" onclick="refreshLog()"><i class="fas fa-sync"></i></button></div>
+        </div>
+        <div class="dt-card"><pre id="daemonLog" class="dt-logs"></pre></div>
+      </section>
+
+      <!-- ══════════ ИНФО ══════════ -->
+      <section id="sec-info" class="dt-sec">
+        <div class="dt-h"><h1><i class="fas fa-info-circle"></i> <span data-i18n="info">Информация</span></h1></div>
+        <div class="dt-card"><div id="infoBox"></div></div>
+      </section>
+    </main>
+  </div>
+</div>
+<!-- ══════════ МОДАЛКИ / ТОСТЫ ══════════ -->
+<div id="modal" class="dt-overlay" style="display:none" onclick="if(event.target===this)hide('#modal')">
+  <div class="dt-modal" id="modalBox">
+    <div class="dt-modal-h"><h2 id="modalTitle"></h2>
+      <button class="dt-icon-btn" onclick="hide('#modal')" title="Закрыть"><i class="fas fa-times"></i></button></div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+<div id="taskOverlay" class="dt-overlay" style="display:none" onclick="if(event.target===this)closeTask()">
+  <div class="dt-modal wide">
+    <div class="dt-modal-h"><h2 id="taskTitle"><i class="fas fa-tasks"></i> …</h2>
+      <button class="dt-icon-btn" onclick="closeTask()"><i class="fas fa-times"></i></button></div>
+    <pre id="taskLogs" class="dt-logs"></pre>
+  </div>
+</div>
+<div id="loginOverlay" class="dt-overlay" style="display:none">
+  <div class="dt-modal" style="width:min(360px,100%)">
+    <div class="dt-modal-h"><h2><i class="fas fa-lock"></i> Вход в Docker UI</h2></div>
+    <label class="dt-lb">Пароль</label>
+    <input id="loginPass" class="dt-in" type="password" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="dt-row end"><button class="dt-btn primary" onclick="doLogin()">Войти</button></div>
+  </div>
+</div>
+<div id="toastBox" class="dt-toast-box"></div>
+<script>
+/* ============================================================================
+   Docker UI v6 — новый UI Infinity. Данные: /docker/api/* (движок-прокси) и
+   /docker/api/hub/* (модуль). Безопасный рендер: динамика только через
+   data-атрибуты и esc().
+   ============================================================================ */
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const show=s=>{$(s).style.display='flex'}, hide=s=>{$(s).style.display='none'};
+const empty=(m,tt)=>'<div class="dt-empty"><i class="fas fa-inbox"></i><div class="dt-empty-t">'+(tt||'Пусто')+'</div>'+(m?('<div>'+esc(m)+'</div>'):'')+'</div>';
+const skel=n=>'<div class="dt-skel dt-skel-card"></div>'.repeat(n||6);
+function fmtN(n){n=Number(n)||0;
+  if(n>=1e9)return(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';
+  if(n>=1e6)return(n/1e6).toFixed(1).replace(/\.0$/,'')+'M';
+  if(n>=1e3)return(n/1e3).toFixed(1).replace(/\.0$/,'')+'K';
+  return String(n);}
+function toast(m,type='ok'){
+  const d=document.createElement('div');d.className='dt-toast '+type;d.textContent=m;
+  $('#toastBox').appendChild(d);setTimeout(()=>{d.style.opacity='0';setTimeout(()=>d.remove(),300)},5000);}
+async function confirmDlg(msg){
+  openModal('<i class="fas fa-exclamation-triangle"></i> Подтверждение',
+    '<div style="padding:6px 0 4px">'+esc(msg)+'</div>'+
+    '<div class="dt-row end"><button class="dt-btn danger" id="cOk">Да</button><button class="dt-btn" id="cNo">Отмена</button></div>');
+  return new Promise(ok=>{$('#cOk').onclick=()=>{hide('#modal');ok(true)};
+    $('#cNo').onclick=()=>{hide('#modal');ok(false)};});}
+function err(r){if(r&&r.error&&r.error!=='auth'){toast('⚠ '+r.error,'err');return true}return false}
+
+/* ── Состояние ── */
+let daemonOn=false,taskTimer=null,currentTab='top100',CT=[],IM=[],PREV={},CFG_ALERTS=true,WSL_IP='';
+let TOP_ITEMS=[],TOP_CATS=[],TOP_CAT='',TOP_TS=0,TOP_LIVE=false,INSTALLED={},HUB_PAGE=1,termWs=null,FS={id:'',path:'/'};
+window.HOST={name:'local'};
+
+/* ── i18n (RU/EN, паритет со старым UI) ── */
+const T={ru:{g_inst:'Установка',g_mon:'Мониторинг',g_res:'Ресурсы',g_tools:'Инструменты',g_sys:'Система',
+  top100:'Топ-100',hub:'Поиск Hub',dashboard:'Дашборд',events:'События',containers:'Контейнеры',images:'Образы',
+  volumes:'Тома',networks:'Сети',stacks:'Стеки',build:'Сборка / команда',settings:'Настройки',logs:'Логи',info:'Инфо',
+  start:'Запустить',stop:'Остановить',create:'Создать',deploy:'Деплой',cmd:'Команда docker',run2:'Выполнить',
+  build2:'Сборка образа',build3:'Собрать',find:'Найти',active:'Активные контейнеры',daemon:'Параметры демона',
+  backup:'Резервная копия',cleanup:'Очистка',registry:'Registry',tar:'Импорт / экспорт .tar',
+  top_hint:'Один клик — и контейнер установлен с безопасными пресетами. «⚙» — настройка портов, томов и ENV перед установкой. Рейтинг и скачивания живьём с Docker Hub.'},
+ en:{g_inst:'Install',g_mon:'Monitoring',g_res:'Resources',g_tools:'Tools',g_sys:'System',
+  top100:'Top 100',hub:'Hub search',dashboard:'Dashboard',events:'Events',containers:'Containers',images:'Images',
+  volumes:'Volumes',networks:'Networks',stacks:'Stacks',build:'Build / command',settings:'Settings',logs:'Logs',info:'Info',
+  start:'Start',stop:'Stop',create:'+ Create',deploy:'+ Deploy',cmd:'Docker command',run2:'Run',
+  build2:'Build image',build3:'Build',find:'Search',active:'Running containers',daemon:'Daemon options',
+  backup:'Backup',cleanup:'Cleanup',registry:'Registry',tar:'Import / export .tar',
+  top_hint:'One click installs a container with safe presets. «⚙» — configure ports, volumes and ENV first. Stars and pulls are live from Docker Hub.'}};
+let LANG=localStorage.getItem('dpt_lang')||'ru';
+const t=k=>(T[LANG]&&T[LANG][k])||T.ru[k]||k;
+function applyLang(){$$('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
+  $('#langBtn').textContent=LANG==='ru'?'EN':'RU';}
+function toggleLang(){LANG=LANG==='ru'?'en':'ru';localStorage.setItem('dpt_lang',LANG);applyLang();setTab(currentTab);}
+
+/* ── Тема: следуем единой теме Infinity ── */
+function setTheme(th){document.body.classList.remove('light','dark','sepia','warm','paper','ocean','forest','midnight','rose');
+  if(th)document.body.classList.add(th);}
+function cycleTheme(){
+  if(window.InfinityTheme&&typeof InfinityTheme.toggle==='function'){InfinityTheme.toggle();return;}
+  const th=['light','dark','sepia','warm','paper','ocean'];
+  const cur=(document.body.className.match(/\b(light|dark|sepia|warm|paper|ocean|forest|midnight|rose)\b/)||[])[1]||'light';
+  setTheme(th[(th.indexOf(cur)+1)%th.length]);
+  localStorage.setItem('infinity_theme',document.body.className.match(/\b(light|dark|sepia|warm|paper|ocean|forest|midnight|rose)\b/)[1]);}
+/* ── API-слой: токен, 401→логин, префикс /docker ── */
+async function api(p,o={}){
+  try{
+    const r=await fetch(p,{method:o.method||'GET',
+      headers:{'Content-Type':'application/json','X-Token':localStorage.getItem('dpt_token')||''},
+      body:o.body?JSON.stringify(o.body):undefined});
+    if(r.status===401){show('#loginOverlay');return{error:'auth'};}
+    return await r.json();
+  }catch(e){return{error:e.message};}}
+async function doLogin(){
+  const r=await fetch('/docker/api/login',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({password:$('#loginPass').value})});
+  const d=await r.json();
+  if(d.token){localStorage.setItem('dpt_token',d.token);hide('#loginOverlay');location.reload();}
+  else toast(d.error||'ошибка входа','err');}
+
+/* ── Навигация ── */
+const TABS=['top100','hub','dashboard','events','containers','images','volumes','networks','stacks','build','settings','logs','info'];
+const TAB_LOAD={dashboard:refreshDashboard,events:loadEvents,info:refreshInfo,stacks:renderStacks,
+  settings:refreshSettings,logs:refreshLog,volumes:refreshResources,networks:refreshResources,top100:renderTop};
+function setTab(tb){
+  currentTab=tb;
+  $$('.dt-nav-i').forEach(b=>b.classList.toggle('on',b.dataset.tab===tb));
+  TABS.forEach(x=>{const el=$('#sec-'+x);if(el)el.classList.toggle('on',x===tb);});
+  TAB_LOAD[tb]&&TAB_LOAD[tb]();
+  if(tb==='containers'||tb==='images')refresh();}
+function openModal(title,html,wide){$('#modalTitle').innerHTML=title;$('#modalBody').innerHTML=html;
+  $('#modalBox').classList.toggle('wide',!!wide);show('#modal');}
+function getView(){return localStorage.getItem('dpt_view')||'grid'}
+function setView(v){document.body.classList.toggle('dt-list',v==='list');
+  localStorage.setItem('dpt_view',v);
+  const g=$('#viewGridBtn'),l=$('#viewListBtn');if(g)g.style.borderColor=v==='grid'?'var(--accent)':'';if(l)l.style.borderColor=v==='list'?'var(--accent)':'';
+  if(currentTab==='containers')renderContainers();if(currentTab==='images')renderImages();}
+setView(getView());
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){hide('#modal');closeTask();}});
+
+/* ── Состояние демона ── */
+async function toggleDaemon(){
+  const b=$('#btnDaemon');b.disabled=true;b.innerHTML='<span class="dt-spin"></span>';
+  const r=await api('/docker/api/daemon/'+(daemonOn?'stop':'start'),{method:'POST'});
+  if(!r.ok)toast(r.error,'err');else toast('✅ '+(r.config||''),'ok');refresh();}
+function setPill(on,txt){
+  $('#daemonPill').className='dt-pill '+(on?'on':'off');
+  $('#daemonTxt').textContent=txt||(on?'работает':'не запущен');
+  $('#btnDaemonTxt').textContent=on?t('stop'):t('start');}
+async function refresh(){
+  const s=await api('/docker/api/state');
+  daemonOn=!!s.daemon;WSL_IP=s.wsl_ip||'';
+  const c=await api('/docker/api/config');CFG_ALERTS=c.alerts!==false;
+  setPill(s.daemon,s.daemon?('● '+s.version):null);
+  $('#btnDaemon').disabled=false;
+  if(s.daemon){
+    const [im,ct]=await Promise.all([api('/docker/api/images'),api('/docker/api/containers')]);
+    IM=im;CT=ct;detectAlerts(ct);markInstalled();
+    renderImages();renderContainers();
+    const run=ct.filter(c=>c.state==='running').length;
+    const bd=$('#ctBadge');if(ct.length){bd.style.display='';bd.textContent=run+'/'+ct.length;}else bd.style.display='none';
+  }else{
+    $('#containersBox').innerHTML=empty('демон не запущен','Docker не работает');
+    $('#imagesBox').innerHTML=empty('демон не запущен','Docker не работает');
+    $('#ctBadge').style.display='none';}}
+function detectAlerts(ct){
+  if(!CFG_ALERTS)return;
+  for(const c of ct){const p=PREV[c.id];
+    if(p==='running'&&c.state==='exited'){toast('⚠ '+c.name+' упал','err');
+      if('Notification' in window&&Notification.permission==='granted')
+        new Notification('Docker UI',{body:c.name+' exited'});}
+    PREV[c.id]=c.state;}}
+
+/* ── Хосты ── */
+async function loadHosts(){
+  const d=await api('/docker/api/hosts');if(d.error)return;
+  const cur=d.current||'local';
+  window.HOST=(cur==='local')?{name:'local'}:((d.hosts||[]).find(h=>h.name===cur)||{name:'local'});
+  $('#hostSel').innerHTML='<option value="local">💻 local</option>'+
+    (d.hosts||[]).map(h=>`<option value="${esc(h.name)}" ${h.name===cur?'selected':''}>🖥 ${esc(h.name)}</option>`).join('');}
+async function switchHost(n){await api('/docker/api/host/current',{method:'POST',body:{name:n}});await loadHosts();toast('хост: '+n);refresh();}
+function hostsModal(){openModal('<i class="fas fa-server"></i> Удалённые хосты',
+  `<label class="dt-lb">Имя</label><input id="hN" class="dt-in">
+   <label class="dt-lb">URL</label><input id="hU" class="dt-in" placeholder="http://1.2.3.4:8077">
+   <label class="dt-lb">Token</label><input id="hT" class="dt-in">
+   <div class="dt-row end"><button class="dt-btn primary" onclick="hostAdd()">+ Добавить</button></div>
+   <div id="hList" style="margin-top:10px"></div>`);hostList();}
+async function hostAdd(){if(err(await api('/docker/api/hosts',{method:'POST',body:{name:$('#hN').value.trim(),url:$('#hU').value.trim(),token:$('#hT').value.trim()}})))return;toast('добавлен');loadHosts();hostList();}
+async function hostList(){const d=await api('/docker/api/hosts');
+  $('#hList').innerHTML=(d.hosts||[]).map(h=>`<div class="dt-row" style="justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">
+    <b>${esc(h.name)}</b> <span style="color:var(--text-3);font-size:12px">${esc(h.url)}</span>
+    <button class="dt-icon-btn" onclick="hostRm('${esc(h.name)}')"><i class="fas fa-trash"></i></button></div>`).join('')||empty();}
+async function hostRm(n){await api('/docker/api/hosts/remove',{method:'POST',body:{name:n}});loadHosts();hostList();}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ТОП-100 — загрузка, фильтр, карточки
+   ══════════════════════════════════════════════════════════════════════════ */
+async function loadTop(force){
+  const g=$('#topGrid');if(g)g.innerHTML=skel(9);
+  const sort=$('#topSort')?$('#topSort').value:'pulls';
+  const r=await api('/docker/api/hub/top?sort='+sort+(force?'&refresh=1':''));
+  if(r.error){if(g)g.innerHTML=empty(r.error,'Не удалось загрузить каталог');return;}
+  TOP_ITEMS=r.items||[];TOP_CATS=r.cats||[];TOP_TS=r.cached_at||0;TOP_LIVE=!!r.live;
+  renderTopCats();renderTop();}
+function renderTopCats(){
+  const box=$('#topCats');if(!box)return;
+  box.innerHTML='<span class="dt-chip on" data-cat="" onclick="pickCat(this)">Все · '+TOP_ITEMS.length+'</span>'+
+    TOP_CATS.map(c=>`<span class="dt-chip" data-cat="${esc(c.name)}" onclick="pickCat(this)">${esc(c.name)} · ${c.count}</span>`).join('');}
+function pickCat(el){$$('#topCats .dt-chip').forEach(x=>x.classList.remove('on'));el.classList.add('on');
+  TOP_CAT=el.dataset.cat;renderTop();}
+function renderTop(){
+  const g=$('#topGrid');if(!g)return;
+  const q=($('#topSearch')?$('#topSearch').value:'').toLowerCase();
+  const L=TOP_ITEMS.filter(e=>(!TOP_CAT||e.category===TOP_CAT)&&
+    (!q||(e.id+' '+e.name+' '+e.category+' '+e.desc).toLowerCase().includes(q)));
+  const src=$('#topSource');
+  if(src){const age=TOP_TS?Math.max(0,Math.round((Date.now()/1000-TOP_TS)/60)):null;
+    src.textContent=TOP_LIVE?('★ живьём с Docker Hub'+(age!=null?' · обновлено '+age+' мин назад':''))
+      :'· офлайн: каталог без живых данных';}
+  if(!L.length){g.innerHTML=empty('','Ничего не найдено');return;}
+  g.innerHTML=L.map(appCard).join('');}
+function iconHTML(e){
+  if(e.icon)return '<img src="https://cdn.simpleicons.org/'+esc(e.icon)+'" alt="" loading="lazy" '+
+    "onerror=\"this.style.display='none';this.nextElementSibling.style.display='block'\">"+
+    '<span style="display:none">'+esc((e.name||'?')[0].toUpperCase())+'</span>';
+  return '<span>'+esc((e.name||'?')[0].toUpperCase())+'</span>';}
+function isInstalled(e){
+  const img=(e.image||'').split(':')[0].toLowerCase();
+  const owner=img.includes('/')?img:('library/'+img);
+  return INSTALLED[img]||INSTALLED[owner]||false;}
+function appCard(e){
+  const inst=isInstalled(e);
+  return '<div class="dt-app-card" data-id="'+esc(e.id)+'">'+
+    (inst?'<span class="dt-badge g dt-app-installed"><i class="fas fa-check"></i> установлено</span>':'')+
+    '<div class="dt-app-top">'+
+      '<div class="dt-app-ico">'+iconHTML(e)+'</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="dt-app-name">'+esc(e.name)+
+          (e.official?'<span class="dt-badge b"><i class="fas fa-check-circle"></i> Official</span>':'')+
+          (e.live?'<span class="dt-badge acc">live</span>':'')+'</div>'+
+        '<div class="dt-app-meta">'+
+          '<span class="dt-stars"><i class="fas fa-star"></i>'+fmtN(e.stars)+'</span>'+
+          '<span><i class="fas fa-download"></i>'+fmtN(e.pulls)+'</span>'+
+          '<span><i class="fas fa-tag"></i>'+esc(e.category)+'</span>'+
+        '</div></div></div>'+
+    '<div class="dt-app-desc">'+esc(e.desc_live||e.desc)+'</div>'+
+    '<div class="dt-app-meta"><code style="font-size:11px">'+esc(e.image)+'</code></div>'+
+    '<div class="dt-app-foot">'+
+      '<button class="dt-btn primary" onclick="install1(\''+esc(e.id)+'\')"><i class="fas fa-bolt"></i> Установить</button>'+
+      '<button class="dt-icon-btn" title="Настроить перед установкой" onclick="installCfg(\''+esc(e.id)+'\')"><i class="fas fa-sliders-h"></i></button>'+
+      (e.homepage?'<a class="dt-icon-btn" href="'+esc(e.homepage)+'" target="_blank" rel="noopener" title="Сайт проекта"><i class="fas fa-external-link-alt"></i></a>':'')+
+    '</div></div>';}
+function markInstalled(){
+  INSTALLED={};
+  for(const i of IM){const k=(i.repo||'').toLowerCase();if(k)INSTALLED[k]=true;}
+  if(currentTab==='top100')renderTop();}
+function topById(id){return TOP_ITEMS.find(e=>e.id===id);}
+function slugName(e){return e.id.replace(/[^a-zA-Z0-9_.-]/g,'-');}
+
+/* ── Установка: один клик и через модалку настроек ── */
+async function install1(id){
+  const e=topById(id);if(!e)return toast('нет в каталоге','err');
+  if(!daemonOn){toast('Сначала запустите демон','err');return;}
+  const body={image:e.image,name:slugName(e),ports:e.ports||'',volumes:e.volumes||'',
+    envs:e.envs||'',restart:e.restart||'unless-stopped',cmd:e.cmd||'',gpus:e.gpus||''};
+  const r=await api('/docker/api/containers/run',{method:'POST',body});
+  if(err(r))return;
+  openTask(r.task,'Установка '+e.name);refresh();}
+async function installCfg(id){
+  const e=topById(id);if(!e)return toast('нет в каталоге','err');
+  const repo=e.repo||(e.image||'').split(':')[0];
+  const r=await api('/docker/api/hub/repo?ref='+encodeURIComponent(repo));
+  const tags=(!r.error&&r.tags&&r.tags.length)?r.tags:[];
+  const curTag=(e.image.includes(':')?e.image.split(':').pop():'latest');
+  const tagHtml=tags.length
+    ?`<select id="cTag" class="dt-in" onchange="applyTag()"><option value="${esc(curTag)}">${esc(curTag)} (пресет)</option>${tags.slice(0,30).map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('')}</select>`
+    :`<input id="cTag" class="dt-in" value="${esc(curTag)}">`;
+  openModal('<i class="fas fa-sliders-h"></i> Установка — '+esc(e.name),
+    `<div class="dt-grid2"><div>
+      <label class="dt-lb">Образ</label><input id="cImage" class="dt-in" value="${esc(e.image)}">
+      <label class="dt-lb">Тег (с Hub)</label>${tagHtml}
+      <label class="dt-lb">Имя контейнера</label><input id="cName" class="dt-in" value="${esc(slugName(e))}">
+      <label class="dt-lb">Restart</label>
+      <select id="cRestart" class="dt-in"><option ${e.restart==='unless-stopped'?'selected':''}>unless-stopped</option><option ${e.restart==='always'?'selected':''}>always</option><option ${e.restart==='no'?'selected':''}>no</option><option ${e.restart==='on-failure'?'selected':''}>on-failure</option></select>
+     </div><div>
+      <label class="dt-lb">Порты (host:container)</label><input id="cPorts" class="dt-in" value="${esc(e.ports||'')}">
+      <label class="dt-lb">Тома</label><textarea id="cVols" class="dt-in">${esc(e.volumes||'')}</textarea>
+      <label class="dt-lb">ENV</label><textarea id="cEnvs" class="dt-in">${esc(e.envs||'')}</textarea>
+      <label class="dt-lb">Аргументы</label><input id="cCmd" class="dt-in" value="${esc(e.cmd||'')}">
+      <label class="dt-lb"><input type="checkbox" id="cGpu" ${e.gpus?'checked':''}> GPU</label>
+     </div></div>
+     ${(!r.error&&r.description)?'<div class="dt-info">'+esc(r.description)+'</div>':''}
+     <div class="dt-row end"><button class="dt-btn primary" onclick="installRun()"><i class="fas fa-bolt"></i> Установить</button></div>`,true);}
+function applyTag(){const sel=$('#cTag');if(!sel||sel.tagName!=='SELECT')return;
+  $('#cImage').value=$('#cImage').value.split(':')[0]+':'+sel.value;}
+async function installRun(){
+  const body={image:$('#cImage').value.trim(),name:$('#cName').value.trim(),
+    ports:$('#cPorts').value.trim(),volumes:$('#cVols').value,envs:$('#cEnvs').value,
+    restart:$('#cRestart').value,cmd:$('#cCmd').value.trim(),
+    gpus:($('#cGpu')&&$('#cGpu').checked)?'all':''};
+  if(!body.image)return toast('образ?','err');
+  hide('#modal');
+  const r=await api('/docker/api/containers/run',{method:'POST',body});
+  if(err(r))return;
+  openTask(r.task,'Установка '+body.image);refresh();}
+
+/* ── Поиск Docker Hub (живой, через модуль) ── */
+async function doHubSearch(){
+  const q=$('#hubQ').value.trim();if(!q)return;
+  const box=$('#hubResults');box.innerHTML=skel(4);
+  const r=await api('/docker/api/hub/search?q='+encodeURIComponent(q));
+  if(r.error){box.innerHTML=empty(r.error,'Поиск не удался');return;}
+  HUB_PAGE=r.page||1;
+  $('#hubCount').textContent=r.count?(r.count.toLocaleString('ru')+' найдено'):'';
+  const L=r.results||[];
+  if(!L.length){box.innerHTML=empty('','Ничего не найдено');return;}
+  box.innerHTML='<div class="dt-grid3">'+L.map(x=>{
+    const name=String(x.name||'');const img=name.includes(':')?name:(name+':latest');
+    return '<div class="dt-app-card" data-ref="'+esc(name)+'">'+
+      '<div class="dt-app-top"><div class="dt-app-ico">'+iconHTML({name:name.split('/').pop(),icon:null})+'</div>'+
+      '<div style="flex:1;min-width:0"><div class="dt-app-name">'+esc(name.split('/').pop())+
+        (x.official?'<span class="dt-badge b"><i class="fas fa-check-circle"></i> Official</span>':'')+'</div>'+
+      '<div class="dt-app-meta"><span class="dt-stars"><i class="fas fa-star"></i>'+fmtN(x.stars)+'</span>'+
+      '<span><i class="fas fa-download"></i>'+fmtN(x.pulls)+'</span></div></div></div>'+
+      '<div class="dt-app-desc">'+esc(x.desc||'—')+'</div>'+
+      '<div class="dt-app-foot">'+
+        '<button class="dt-btn primary" onclick="hubRun(\''+esc(name)+'\')"><i class="fas fa-play"></i> Запустить</button>'+
+        '<button class="dt-icon-btn" title="Скачать образ" onclick="pullRef(\''+esc(img)+'\')"><i class="fas fa-download"></i></button>'+
+      '</div></div>';}).join('')+'</div>';}
+async function hubRun(name){
+  const img=name.includes(':')?name:(name+':latest');
+  const r=await api('/docker/api/hub/repo?ref='+encodeURIComponent(name));
+  const desc=(!r.error&&r.description)||'';
+  openModal('<i class="fas fa-play"></i> Запуск '+esc(name),
+    `<label class="dt-lb">Образ</label><input id="hImage" class="dt-in" value="${esc(img)}">
+     <div class="dt-grid2"><div>
+      <label class="dt-lb">Имя</label><input id="hName" class="dt-in" value="${esc(name.split('/').pop().replace(/[^a-zA-Z0-9_.-]/g,'-'))}">
+      <label class="dt-lb">Restart</label><select id="hRestart" class="dt-in"><option>unless-stopped</option><option>no</option><option>always</option></select>
+     </div><div>
+      <label class="dt-lb">Порты (host:container)</label><input id="hPorts" class="dt-in" placeholder="8080:80">
+      <label class="dt-lb">Тома / ENV</label><textarea id="hVols" class="dt-in" placeholder="data:/data"></textarea>
+      <textarea id="hEnvs" class="dt-in" placeholder="KEY=value" style="margin-top:5px"></textarea>
+     </div></div>
+     ${desc?'<div class="dt-info">'+esc(desc)+'</div>':''}
+     <div class="dt-row end"><button class="dt-btn primary" onclick="hubRunGo()"><i class="fas fa-play"></i> Запустить</button></div>`,true);}
+async function hubRunGo(){
+  const body={image:$('#hImage').value.trim(),name:$('#hName').value.trim(),
+    ports:$('#hPorts').value.trim(),volumes:$('#hVols').value,envs:$('#hEnvs').value,restart:$('#hRestart').value};
+  if(!body.image)return toast('образ?','err');
+  hide('#modal');
+  const r=await api('/docker/api/containers/run',{method:'POST',body});
+  if(err(r))return;openTask(r.task,'Запуск '+body.image);refresh();}
+function pullRef(ref){api('/docker/api/images/pull',{method:'POST',body:{ref}}).then(r=>err(r)||openTask(r.task,'pull '+ref));}
+
+/* ── Дашборд ── */
+async function refreshDashboard(){
+  const s=await api('/docker/api/state');
+  $('#dashIp').innerHTML='💡 Кнопка <b>🔗</b> у контейнера открывает порт через <b>прокси main.py</b> (<code>/docker-port/PORT/</code>) — работает из Windows. Резерв — <b>🌐</b> по WSL IP <code>http://'+(WSL_IP||'—')+':PORT</code> · <button class="dt-btn xs" onclick="netDiag()">🩺 диагностика</button>';
+  if(!s.daemon){$('#dashStats').innerHTML='';$('#dashRunning').innerHTML=empty('демон не запущен','Docker не работает');return;}
+  const [ct,im,nt,vl]=await Promise.all([api('/docker/api/containers'),api('/docker/api/images'),api('/docker/api/networks'),api('/docker/api/volumes')]);
+  CT=ct;IM=im;markInstalled();
+  const run=ct.filter(c=>c.state==='running').length;
+  $('#dashStats').innerHTML=
+    `<div class="dt-stat"><div class="dt-lbl">Контейнеры</div><div class="dt-val">${ct.length}</div><div class="dt-sub">▲ ${run} активных</div><i class="fas fa-box"></i></div>`+
+    `<div class="dt-stat"><div class="dt-lbl">Образы</div><div class="dt-val">${im.length}</div><i class="fas fa-compact-disc"></i></div>`+
+    `<div class="dt-stat"><div class="dt-lbl">Тома</div><div class="dt-val">${vl.length}</div><i class="fas fa-database"></i></div>`+
+    `<div class="dt-stat"><div class="dt-lbl">Сети</div><div class="dt-val">${nt.length}</div><i class="fas fa-project-diagram"></i></div>`;
+  $('#dashRunning').innerHTML=run?ct.filter(c=>c.state==='running').map(c=>
+    `<div class="dt-row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span><span class="dt-dot run"></span><b>${esc(c.name)}</b> <span style="color:var(--text-3);font-size:12px">${esc(c.image)}</span></span>
+      <span><button class="dt-icon-btn" onclick="openTerm('${c.id}')" title="Терминал"><i class="fas fa-terminal"></i></button>
+      <button class="dt-icon-btn" onclick="liveLogs('${c.id}','${esc(c.name)}')" title="Логи"><i class="fas fa-file-alt"></i></button></span></div>`).join(''):empty();
+  const sel=$('#dashCid');sel.innerHTML='<option value="">—</option>'+ct.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  if(!sel.value&&run)sel.value=ct.find(c=>c.state==='running').id;
+  drawChart();}
+async function drawChart(){
+  const cid=$('#dashCid').value,svg=$('#dashChart');if(!cid){svg.innerHTML='';return;}
+  const r=await api('/docker/api/stats/'+cid),pts=(r.history||[]).slice(-60);
+  if(pts.length<2){svg.innerHTML='<text x="10" y="20" fill="#94a3b8" font-size="12">…</text>';return;}
+  const mC=Math.max(10,...pts.map(p=>p.cpu)),mM=Math.max(50,...pts.map(p=>p.memperc)),W=400,H=160,P=14,st=(W-2*P)/(pts.length-1);
+  svg.innerHTML=`<rect width="${W}" height="${H}" fill="var(--bg3)" rx="8"/>`+
+    `<path d="${pts.map((p,i)=>`${i?'L':'M'} ${P+i*st} ${H-P-(p.cpu/mC)*(H-2*P)}`).join(' ')}" stroke="#3b82f6" stroke-width="2" fill="none"/>`+
+    `<path d="${pts.map((p,i)=>`${i?'L':'M'} ${P+i*st} ${H-P-(p.memperc/mM)*(H-2*P)}`).join(' ')}" stroke="#22c55e" stroke-width="2" fill="none"/>`;}
+async function loadEvents(){
+  const e=await api('/docker/api/events?since='+$('#evSince').value);
+  $('#eventsBox').innerHTML=(e&&e.length)?'<table class="dt-table"><tr><th>Время</th><th>Тип</th><th>Действие</th><th>Объект</th></tr>'+
+    e.reverse().map(x=>`<tr><td style="color:var(--text-3)">${new Date(x.time*1000).toLocaleTimeString()}</td>
+      <td><span class="dt-badge gray">${esc(x.type)}</span></td><td><b>${esc(x.status)}</b></td><td>${esc(x.actor)}</td></tr>`).join('')+'</table>':empty();}
+
+/* ── Контейнеры ── */
+function hostPorts(p){return [...String(p||'').matchAll(/:(\d+)->/g)].map(x=>x[1]);}
+function ctOpen(p){if(location.pathname.startsWith('/docker'))window.open('/docker-port/'+p+'/');
+  else window.open('http://localhost:'+p);}
+async function makeDesktopApp(name,p){
+  const r=await api('/docker/api/desktop-app',{method:'POST',body:{name:name,port:p}});
+  if(r&&r.ok){
+    const d=r.desktop||{};
+    if(d.added)toast('🖥 «'+name+' :'+p+'» добавлено на Desktop'+(d.profile?' ('+d.profile+')':''),'ok');
+    else toast('Приложение создано, но иконку на Desktop добавить не удалось','warn');
+  }else toast((r&&r.error)||'не удалось создать приложение','err');}
+function renderContainers(){
+  const q=($('#ctFilter').value||'').toLowerCase(),st=$('#ctState').value;
+  const L=CT.filter(c=>(!st||c.state===st)&&(!q||c.name.toLowerCase().includes(q)||c.image.toLowerCase().includes(q)));
+  if(!L.length){$('#containersBox').innerHTML=empty();return;}
+  $('#containersBox').innerHTML=document.body.classList.contains('dt-list')?ctTable(L):ctGrid(L);}
+const bdCls=s=>s==='running'?'g':s==='paused'?'y':s==='exited'?'r':'gray';
+const dotCls=s=>s==='running'?'run':'stop';
+function ctTable(L){
+  return '<table class="dt-table"><tr><th><input type="checkbox" onchange="document.querySelectorAll(\'.ccb\').forEach(x=>x.checked=this.checked)"></th><th>Имя</th><th>Образ</th><th>Статус</th><th>Порты</th><th>Restart</th><th></th></tr>'+
+    L.map(c=>{const hp=hostPorts(c.ports);
+    return `<tr><td><input type="checkbox" class="ccb" data-id="${c.id}"></td>
+      <td><span class="dt-dot ${dotCls(c.state)}"></span><b>${esc(c.name)}</b></td>
+      <td style="color:var(--text-2,var(--text2))">${esc(c.image)}</td>
+      <td><span class="dt-badge ${bdCls(c.state)}">${c.state}</span> <span style="color:var(--text-3);font-size:12px">${esc(c.status)}</span></td>
+      <td>${esc(c.ports||'—')} ${hp.map(p=>`<button class="dt-btn xs" title="Открыть через прокси" onclick="ctOpen(${p})"><i class="fas fa-external-link-alt"></i> :${p}</button><button class="dt-btn xs" title="Добавить на Desktop" onclick="makeDesktopApp('${esc(c.name)}',${p})"><i class="fas fa-desktop"></i></button><button class="dt-btn xs" title="Открыть по WSL IP" onclick="window.open('http://${WSL_IP}:${p}')"><i class="fas fa-globe"></i></button>`).join('')}</td>
+      <td><span class="dt-badge ${c.restart&&c.restart!=='no'?'b':'gray'}">${esc(c.restart||'no')}</span></td>
+      <td><div class="dt-acts"><button class="dt-icon-btn" onclick="openCt('${c.id}','${esc(c.name)}')"><i class="fas fa-sliders-h"></i></button>
+      <button class="dt-icon-btn" onclick="updateCt('${c.id}','${esc(c.name)}')"><i class="fas fa-arrow-up"></i></button>
+      ${c.state==='running'?`<button class="dt-icon-btn" onclick="openTerm('${c.id}')"><i class="fas fa-terminal"></i></button><button class="dt-icon-btn" onclick="cAct('${c.id}','stop')"><i class="fas fa-pause"></i></button>`:`<button class="dt-icon-btn" onclick="cAct('${c.id}','start')"><i class="fas fa-play"></i></button>`}
+      <button class="dt-icon-btn" onclick="cAct('${c.id}','rm')" style="color:var(--red)"><i class="fas fa-trash"></i></button></div></td></tr>`;}).join('')+'</table>';}
+function ctGrid(L){
+  return '<div class="dt-grid3">'+L.map(c=>{const hp=hostPorts(c.ports);
+    return `<div class="dt-card">
+      <div class="dt-row" style="justify-content:space-between;margin-bottom:8px">
+        <span><span class="dt-dot ${dotCls(c.state)}"></span><b>${esc(c.name)}</b></span>
+        <span class="dt-badge ${bdCls(c.state)}">${c.state}</span></div>
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:6px;word-break:break-all">${esc(c.image)}</div>
+      <div class="dt-row" style="margin-bottom:8px;gap:6px">
+        ${c.restart&&c.restart!=='no'?`<span class="dt-badge b">${esc(c.restart)}</span>`:''}
+        <span style="color:var(--text-3);font-size:11.5px">${esc(c.status)}</span></div>
+      <div style="margin-bottom:8px">
+        ${hp.length?hp.map(p=>`<div class="dt-port-row">
+          <span class="dt-port-label">:${p}</span>
+          <button class="dt-btn primary xs" title="Открыть через прокси main.py" onclick="ctOpen(${p})"><i class="fas fa-external-link-alt"></i> Открыть</button>
+          <button class="dt-btn xs" title="Добавить приложение на Desktop" onclick="makeDesktopApp('${esc(c.name)}',${p})"><i class="fas fa-desktop"></i> На Desktop</button>
+          <button class="dt-btn xs" title="Открыть по WSL IP" onclick="window.open('http://${WSL_IP}:${p}')"><i class="fas fa-globe"></i> WSL IP</button>
+        </div>`).join(''):'<span style="color:var(--text-3);font-size:11.5px">порты не опубликованы</span>'}
+      </div>
+      <div class="dt-acts">
+        <button class="dt-icon-btn" onclick="openCt('${c.id}','${esc(c.name)}')" title="Настройки"><i class="fas fa-sliders-h"></i></button>
+        <button class="dt-icon-btn" onclick="updateCt('${c.id}','${esc(c.name)}')" title="Обновить (pull+recreate)"><i class="fas fa-arrow-up"></i></button>
+        ${c.state==='running'?`<button class="dt-icon-btn" onclick="openTerm('${c.id}')" title="Терминал"><i class="fas fa-terminal"></i></button><button class="dt-icon-btn" onclick="liveLogs('${c.id}','${esc(c.name)}')" title="Логи"><i class="fas fa-file-alt"></i></button><button class="dt-icon-btn" onclick="cAct('${c.id}','stop')" title="Остановить"><i class="fas fa-pause"></i></button>`:`<button class="dt-icon-btn" onclick="cAct('${c.id}','start')" title="Запустить"><i class="fas fa-play"></i></button>`}
+        <button class="dt-icon-btn" onclick="cAct('${c.id}','rm')" title="Удалить" style="color:var(--red)"><i class="fas fa-trash"></i></button>
+      </div></div>`;}).join('')+'</div>';}
+async function cAct(id,a){
+  if(a==='rm'&&!(await confirmDlg('Удалить контейнер?')))return;
+  if(err(await api('/docker/api/containers/action',{method:'POST',body:{id,action:a}})))return;
+  refresh();}
+async function updateCt(id,name){
+  if(!(await confirmDlg('Обновить '+name+'? (pull + recreate)')))return;
+  const r=await api('/docker/api/containers/update',{method:'POST',body:{id}});
+  if(err(r))return;openTask(r.task,'update '+name);}
+async function bulkOp(a){
+  const ids=[...$$('.ccb:checked')].map(x=>x.dataset.id);if(!ids.length)return;
+  if(a==='rm'&&!(await confirmDlg('Удалить выбранные контейнеры ('+ids.length+')?')))return;
+  const r=await api('/docker/api/containers/bulk',{method:'POST',body:{action:a,ids}});
+  if(!err(r))toast('готово: '+r.ok,'ok');refresh();}
+async function openCt(id,name){
+  const r=await api('/docker/api/containers/inspect',{method:'POST',body:{id}});
+  let i={};try{i=JSON.parse(r.out)[0];}catch(e){}
+  const hc=i.HostConfig||{},cfg=i.Config||{};
+  openModal('<i class="fas fa-sliders-h"></i> '+esc(name),
+    `<div class="dt-grid2"><div>
+      <label class="dt-lb">Статус</label><input class="dt-in" value="${esc(i.State?.Status||'')}" readonly>
+      <label class="dt-lb">Образ</label><input class="dt-in" value="${esc(cfg.Image||'')}" readonly>
+      <label class="dt-lb">Лимиты</label><input class="dt-in" value="RAM: ${hc.Memory?Math.round(hc.Memory/1048576)+'m':'—'} · CPU: ${hc.NanoCPUs?(hc.NanoCPUs/1e9):'—'}" readonly></div>
+     <div><label class="dt-lb">ENV</label><textarea class="dt-in" readonly>${esc((cfg.Env||[]).join('\n'))}</textarea></div></div>
+     <div class="dt-row" style="margin-top:10px;flex-wrap:wrap">
+      <button class="dt-btn sm" onclick="recreate('${id}')"><i class="fas fa-pen"></i> Пересоздать</button>
+      <button class="dt-btn sm" onclick="openTerm('${id}')"><i class="fas fa-terminal"></i> Терминал</button>
+      <button class="dt-btn sm" onclick="liveLogs('${id}','${esc(name)}')"><i class="fas fa-file-alt"></i> Логи</button>
+      <button class="dt-btn sm" onclick="openFiles('${id}')"><i class="fas fa-folder-open"></i> Файлы</button>
+      <button class="dt-btn sm" onclick="limitsModal('${id}')"><i class="fas fa-tachometer-alt"></i> Лимиты</button>
+      <button class="dt-btn sm" onclick="showTop('${id}')"><i class="fas fa-list"></i> Процессы</button>
+     </div>`,true);}
+async function recreate(id){
+  const b=await api('/docker/api/containers/prefill',{method:'POST',body:{id}});
+  runImage(b.image,b,id,b.name);}
+function limitsModal(id){openModal('<i class="fas fa-tachometer-alt"></i> Лимиты',
+  `<label class="dt-lb">RAM</label><input id="lmM" class="dt-in" placeholder="512m">
+   <label class="dt-lb">CPU</label><input id="lmC" class="dt-in" placeholder="1.5">
+   <div class="dt-row end"><button class="dt-btn primary" onclick="setLimits('${id}')">OK</button></div>`);}
+async function setLimits(id){
+  if(!err(await api('/docker/api/containers/limits',{method:'POST',body:{id,memory:$('#lmM').value,cpus:$('#lmC').value}})))toast('ок','ok');
+  hide('#modal');}
+async function showTop(id){const r=await api('/docker/api/containers/top',{method:'POST',body:{id}});
+  openModal('<i class="fas fa-list"></i> Процессы','<pre class="dt-logs">'+esc(r.out)+'</pre>',true);}
+
+/* ── Образы ── */
+function renderImages(){
+  const q=($('#imFilter').value||'').toLowerCase();
+  const L=IM.filter(i=>!q||(i.repo+':'+i.tag).toLowerCase().includes(q));
+  if(!L.length){$('#imagesBox').innerHTML=empty();return;}
+  const list=document.body.classList.contains('dt-list');
+  const acts=i=>`<div class="dt-acts"><button class="dt-icon-btn" title="Запустить" onclick="runImage('${esc(i.repo+':'+i.tag)}')"><i class="fas fa-play"></i></button>
+    <button class="dt-icon-btn" title="Сохранить в .tar" onclick="saveImage('${esc(i.repo+':'+i.tag)}')"><i class="fas fa-save"></i></button>
+    <button class="dt-icon-btn" title="Удалить" style="color:var(--red)" onclick="rmImage('${i.id}')"><i class="fas fa-trash"></i></button></div>`;
+  $('#imagesBox').innerHTML=list
+    ?'<table class="dt-table"><tr><th>Образ</th><th>ID</th><th>Размер</th><th></th></tr>'+L.map(i=>
+      `<tr><td><b>${esc(i.repo)}<span style="color:var(--text-3)">:${esc(i.tag)}</span></b></td>
+       <td style="color:var(--text-3)">${i.id.slice(0,12)}</td><td style="color:var(--text-3)">${esc(i.size)}</td>
+       <td>${acts(i)}</td></tr>`).join('')+'</table>'
+    :'<div class="dt-grid3">'+L.map(i=>
+      `<div class="dt-card">
+        <div style="font-weight:700;word-break:break-all">${esc(i.repo)}<span style="color:var(--text-3)">:${esc(i.tag)}</span></div>
+        <div style="font-size:12px;color:var(--text-3);margin:4px 0 8px">💾 ${esc(i.size)} · ${i.id.slice(0,12)}</div>
+        <div class="dt-acts"><button class="dt-btn primary sm" onclick="runImage('${esc(i.repo+':'+i.tag)}')"><i class="fas fa-play"></i> Запустить</button>
+        <button class="dt-btn sm" title="Сохранить образ в .tar" onclick="saveImage('${esc(i.repo+':'+i.tag)}')"><i class="fas fa-download"></i> Сохранить</button>
+        <button class="dt-btn danger sm" title="Удалить образ" onclick="rmImage('${i.id}')"><i class="fas fa-trash"></i> Удалить</button></div>
+      </div>`).join('')+'</div>';}
+async function rmImage(id){if(!(await confirmDlg('Удалить образ?')))return;
+  if(!err(await api('/docker/api/images/remove',{method:'POST',body:{id}})))refresh();}
+function saveImage(rt){
+  openModal('<i class="fas fa-save"></i> Сохранить образ',
+    `<label class="dt-lb">Образ</label><input id="svRef" class="dt-in" value="${esc(rt)}">
+     <label class="dt-lb">Путь .tar</label><input id="svPath" class="dt-in" value="/mnt/c/Users/me/Downloads/${esc(rt.replace(/[\/:]/g,'_'))}.tar">
+     <div class="dt-row end"><button class="dt-btn primary" onclick="doSaveModal()">Сохранить</button></div>`);}
+async function doSaveModal(){
+  const ref=$('#svRef').value.trim(),p=$('#svPath').value.trim();
+  if(!ref||!p)return toast('путь?','err');hide('#modal');
+  const r=await api('/docker/api/images/save',{method:'POST',body:{ref,path:p}});
+  if(!err(r))openTask(r.task,'save');}
+async function uploadImageFile(inp){
+  const f=inp.files&&inp.files[0];
+  if(!f)return;
+  if(!/\.(tar|tar\.gz|tgz)$/i.test(f.name)){toast('Выберите файл .tar','err');inp.value='';return;}
+  const fd=new FormData();
+  fd.append('file',f,f.name);
+  toast('⏳ Загрузка образа '+f.name+'…','ok');
+  try{
+    const r=await fetch('/docker/api/images/upload',{
+      method:'POST',
+      headers:{'X-Token':localStorage.getItem('dpt_token')||''},
+      body:fd
+    });
+    let d={};
+    try{d=await r.json();}catch(e){}
+    if(!r.ok||!d.ok)throw new Error(d.error||('HTTP '+r.status));
+    toast('✅ Образ загружен, распаковываю','ok');
+    openTask(d.task,'load '+f.name);
+  }catch(e){
+    toast('Ошибка загрузки: '+e.message,'err');
+  }finally{
+    inp.value='';
+  }
+}
+
+/* ── Тома / Сети ── */
+async function refreshResources(){
+  const [n,v]=await Promise.all([api('/docker/api/networks'),api('/docker/api/volumes')]);
+  $('#netsBox').innerHTML=(n&&n.length)?'<table class="dt-table"><tr><th>Имя</th><th>Driver</th><th></th></tr>'+n.map(x=>
+    `<tr><td><b>${esc(x.name)}</b></td><td style="color:var(--text-3)">${esc(x.driver)}</td>
+     <td><div class="dt-acts">${['bridge','host','none'].includes(x.name)?'':`<button class="dt-icon-btn" title="Удалить" style="color:var(--red)" onclick="netRemove('${x.id}')"><i class="fas fa-trash"></i></button>`}</div></td></tr>`).join('')+'</table>':empty();
+  $('#volsBox').innerHTML=(v&&v.length)?'<table class="dt-table"><tr><th>Имя</th><th></th></tr>'+v.map(x=>
+    `<tr><td><b>${esc(x.name)}</b></td>
+     <td><div class="dt-acts"><button class="dt-icon-btn" title="Удалить" style="color:var(--red)" onclick="volRemove('${esc(x.name)}')"><i class="fas fa-trash"></i></button></div></td></tr>`).join('')+'</table>':empty();}
+async function netCreate(){const n=await InfinityDialogs.prompt({label:'Имя сети:'});if(!n)return;
+  if(!err(await api('/docker/api/networks/create',{method:'POST',body:{name:n,driver:'bridge'}}))){toast('✅','ok');refreshResources();}}
+async function netRemove(id){if(!(await confirmDlg('Удалить сеть?')))return;
+  if(!err(await api('/docker/api/networks/remove',{method:'POST',body:{id}})))refreshResources();}
+async function volCreate(){const n=await InfinityDialogs.prompt({label:'Имя тома:'});if(!n)return;
+  if(!err(await api('/docker/api/volumes/create',{method:'POST',body:{name:n}}))){toast('✅','ok');refreshResources();}}
+async function volRemove(n){if(!(await confirmDlg('Удалить том '+n+'?')))return;
+  if(!err(await api('/docker/api/volumes/remove',{method:'POST',body:{name:n}})))refreshResources();}
+
+/* ── Стеки ── */
+async function renderStacks(){
+  const s=await api('/docker/api/stacks'),n=Object.keys(s);
+  $('#stacksBox').innerHTML=n.length?n.map(x=>
+    `<div class="dt-card"><div class="dt-row" style="justify-content:space-between">
+      <span><i class="fas fa-layer-group"></i> <b>${esc(x)}</b></span>
+      <span style="color:var(--text-3);font-size:12px">${(s[x].containers||[]).length} ct</span></div>
+      <div class="dt-acts" style="margin-top:8px;justify-content:flex-start">
+        <button class="dt-btn sm" onclick="stackView('${esc(x)}')"><i class="fas fa-eye"></i> Просмотр</button>
+        <button class="dt-btn danger sm" onclick="stackRm('${esc(x)}')"><i class="fas fa-trash"></i> Удалить</button></div></div>`).join(''):empty('','нет стеков');}
+function stackNew(){openModal('<i class="fas fa-layer-group"></i> Новый стек',
+  `<label class="dt-lb">Имя</label><input id="stN" class="dt-in">
+   <label class="dt-lb">Compose YAML</label><textarea id="stY" class="dt-in" style="min-height:200px" placeholder="services:&#10;  web:&#10;    image: nginx:alpine&#10;    ports:&#10;      - '8080:80'"></textarea>
+   <div class="dt-row end"><button class="dt-btn primary" onclick="stackDeploy()"><i class="fas fa-rocket"></i> Деплой</button></div>`,true);}
+async function stackDeploy(){
+  const r=await api('/docker/api/stacks/deploy',{method:'POST',body:{name:$('#stN').value.trim(),yaml:$('#stY').value}});
+  if(err(r))return;hide('#modal');toast('✅ стек','ok');renderStacks();refresh();}
+async function stackRm(n){if(!(await confirmDlg('Удалить стек '+n+'?')))return;
+  if(!err(await api('/docker/api/stacks/remove',{method:'POST',body:{name:n}}))){renderStacks();refresh();}}
+async function stackView(n){const s=await api('/docker/api/stacks');
+  openModal('<i class="fas fa-layer-group"></i> '+esc(n),'<pre class="dt-logs">'+esc(s[n]?s[n].yaml:'')+'</pre>',true);}
+
+/* ── Терминал и логи (WebSocket) ── */
+function wsUrl(q){
+  const tok=(window.HOST&&HOST.name!=='local')?HOST.token:(localStorage.getItem('dpt_token')||'');
+  const p=location.protocol==='https:'?'wss':'ws';
+  return p+'://'+location.host+'/docker/ws?'+q+'&token='+tok;}
+function openTerm(id){
+  if(termWs){try{termWs.close();}catch(e){}}
+  openModal('<i class="fas fa-terminal"></i> Терминал',
+    `<div id="tB" class="dt-logs dt-term"></div>
+     <input id="tI" class="dt-in" placeholder="введите команду…" onkeydown="if(event.key==='Enter')tSend()">`,true);
+  termWs=new WebSocket(wsUrl('cid='+id));
+  termWs.onmessage=e=>{const el=$('#tB');el.textContent+=e.data;el.scrollTop=1e9;};
+  termWs.onclose=()=>{const el=$('#tB');if(el)el.textContent+='\n[соединение закрыто]';};}
+function tSend(){if(termWs&&$('#tI')&&$('#tI').value){termWs.send($('#tI').value+'\n');$('#tI').value='';}}
+function liveLogs(id,name){
+  let ws;
+  openModal('<i class="fas fa-file-alt"></i> Логи '+esc(name),'<div id="lB" class="dt-logs"></div>',true);
+  ws=new WebSocket(wsUrl('logs='+id));
+  ws.onmessage=e=>{const el=$('#lB');if(el){el.textContent+=e.data;el.scrollTop=1e9;}};
+  ws.onerror=()=>{const el=$('#lB');if(el)el.textContent+='\n[ошибка потока]';};}
+
+/* ── Файловый менеджер контейнера ── */
+function openFiles(id){FS={id,path:'/'};
+  openModal('<i class="fas fa-folder-open"></i> Файлы',
+    '<div class="dt-row" id="fB" style="margin-bottom:8px"></div><div id="fL"></div>',true);filesNav('/');}
+async function filesNav(p){FS.path=p;
+  const r=await api('/docker/api/files/list',{method:'POST',body:{id:FS.id,path:p}});
+  if(r.error){$('#fL').innerHTML=empty(r.error);return;}
+  FS.path=r.path;
+  $('#fB').innerHTML=`<code style="font-size:12px">${esc(r.path)}</code>
+    <button class="dt-btn xs" onclick="filesNav('..')">⬆</button>
+    <button class="dt-btn xs" onclick="filesMkdir()">📁+</button>
+    <label class="dt-btn xs" style="cursor:pointer">📤<input type="file" style="display:none" onchange="filesUp(this)"></label>`;
+  $('#fL').innerHTML=r.items.length?'<table class="dt-table">'+r.items.map(it=>
+    `<tr><td>${it.dir?'📁':''} <a href="#" onclick="filesClick('${esc(it.name)}',${it.dir});return false">${esc(it.name)}</a></td>
+     <td><div class="dt-acts">${it.dir?'':`<button class="dt-icon-btn" title="Просмотр" onclick="filesView('${esc(it.name)}')"><i class="fas fa-eye"></i></button>
+     <button class="dt-icon-btn" title="Скачать" onclick="filesDl('${esc(it.name)}')"><i class="fas fa-download"></i></button>`}
+     <button class="dt-icon-btn" title="Удалить" style="color:var(--red)" onclick="filesRm('${esc(it.name)}',${it.dir})"><i class="fas fa-trash"></i></button></div></td></tr>`).join('')+'</table>':empty();}
+function filesClick(n,d){d?filesNav(FS.path+'/'+n):filesView(n);}
+async function filesView(n){const r=await api('/docker/api/files/read',{method:'POST',body:{id:FS.id,path:FS.path+'/'+n}});
+  if(r.error)return toast(r.error,'err');
+  openModal('<i class="fas fa-eye"></i> '+esc(n),'<pre class="dt-logs">'+esc(atob(r.b64))+'</pre>',true);}
+async function filesDl(n){const r=await api('/docker/api/files/read',{method:'POST',body:{id:FS.id,path:FS.path+'/'+n}});
+  if(r.error)return toast(r.error,'err');
+  const a=document.createElement('a');a.href='data:application/octet-stream;base64,'+r.b64;a.download=n;a.click();}
+async function filesUp(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=async()=>{
+    if(!err(await api('/docker/api/files/write',{method:'POST',body:{id:FS.id,path:FS.path+'/'+f.name,b64:rd.result.split(',')[1]}}))){toast('✅','ok');filesNav(FS.path);}};
+  rd.readAsDataURL(f);}
+async function filesRm(n,d){if(!(await confirmDlg('Удалить '+n+'?')))return;
+  await api('/docker/api/files/rm',{method:'POST',body:{id:FS.id,path:FS.path+'/'+n}});filesNav(FS.path);}
+async function filesMkdir(){const n=await InfinityDialogs.prompt({label:'Имя папки:'});if(!n)return;
+  await api('/docker/api/files/mkdir',{method:'POST',body:{id:FS.id,path:FS.path+'/'+n}});filesNav(FS.path);}
+
+/* ── Форма запуска / создания контейнера ── */
+function runImage(img,pre={},rid=null,rname=null){
+  openModal((rid?'<i class="fas fa-pen"></i> Изменить ':'<i class="fas fa-play"></i> Запуск ')+esc(rname||img),
+    `<div class="dt-grid2"><div>
+      <label class="dt-lb">Образ</label><input id="rImage" class="dt-in" value="${esc(img)}">
+      <label class="dt-lb">Имя</label><input id="rName" class="dt-in" value="${esc(pre.name||'')}">
+      <label class="dt-lb">Restart</label>
+      <select id="rRestart" class="dt-in"><option ${pre.restart==='unless-stopped'?'selected':''}>unless-stopped</option><option ${pre.restart==='no'?'selected':''}>no</option><option ${pre.restart==='always'?'selected':''}>always</option></select>
+      <label class="dt-lb">RAM</label><input id="rMem" class="dt-in" value="${esc(pre.memory||'')}" placeholder="512m">
+      <label class="dt-lb">CPU</label><input id="rCpu" class="dt-in" value="${esc(pre.cpus||'')}" placeholder="1.5">
+     </div><div>
+      <label class="dt-lb">Порты</label><input id="rPorts" class="dt-in" value="${esc(pre.ports||'')}">
+      <label class="dt-lb">Тома</label><textarea id="rVols" class="dt-in">${esc(pre.volumes||'')}</textarea>
+      <label class="dt-lb">ENV</label><textarea id="rEnvs" class="dt-in">${esc(pre.envs||'')}</textarea>
+      <label class="dt-lb">Аргументы</label><input id="rCmd" class="dt-in" value="${esc(pre.cmd||'')}">
+      <label class="dt-lb"><input type="checkbox" id="rGpu" ${pre.gpus?'checked':''}> GPU</label>
+     </div></div>
+     <div class="dt-row end"><button class="dt-btn primary" onclick="submitRun(${rid?`'${rid}','${esc(rname)}'`:'null,null'})"><i class="fas fa-play"></i> Запустить</button></div>`,true);}
+function quickRun(){runImage('');}
+async function submitRun(oid,oname){
+  const body={image:$('#rImage').value.trim(),name:$('#rName').value.trim(),
+    ports:$('#rPorts').value.trim(),volumes:$('#rVols').value,envs:$('#rEnvs').value,
+    restart:$('#rRestart').value,cmd:$('#rCmd').value.trim(),
+    memory:$('#rMem').value.trim(),cpus:$('#rCpu').value.trim(),gpus:($('#rGpu')&&$('#rGpu').checked)?'all':''};
+  if(!body.image)return toast('образ?','err');
+  hide('#modal');
+  const r=(oid&&oid!=='null')?await api('/docker/api/containers/recreate',{method:'POST',body:{body,old_id:oid,old_name:oname}})
+    :await api('/docker/api/containers/run',{method:'POST',body});
+  if(err(r))return;openTask(r.task,body.image);refresh();}
+
+/* ── Сборка / команда / registry ── */
+async function doCmd(){const c=$('#cmdRef').value.trim();if(!c)return;
+  const r=await api('/docker/api/parse',{method:'POST',body:{cmd:c}});
+  if(r.type==='pull')pullRef(r.ref);else if(r.type==='run')runImage(r.image||'',r);else toast('?','err');}
+function doBuild(){const tg=$('#bTag').value.trim(),f=$('#bFile').value;if(!tg||!f)return toast('?','err');
+  api('/docker/api/images/build',{method:'POST',body:{tag:tg,dockerfile:f}}).then(r=>err(r)||openTask(r.task,'build'));}
+async function rgLogin(){if(!err(await api('/docker/api/registry/login',{method:'POST',body:{server:$('#rgSrv').value,user:$('#rgUser').value,password:$('#rgPass').value}})))toast('✅','ok');}
+async function rgLogout(){if(!err(await api('/docker/api/registry/logout',{method:'POST',body:{server:$('#rgSrv').value}})))toast('ок','ok');}
+function doLoad(){const p=$('#loadPath').value.trim();if(!p)return;
+  api('/docker/api/images/load',{method:'POST',body:{path:p}}).then(r=>err(r)||openTask(r.task,'load'));}
+
+/* ── Настройки ── */
+async function refreshSettings(){const c=await api('/docker/api/config');
+  $('#cfgIptables').checked=!!c.iptables;$('#cfgProxy').checked=c.userland_proxy!==false;
+  $('#cfgBridgeNone').checked=!!c.bridge_none;$('#cfgAutostartDaemon').checked=!!c.autostart_daemon;
+  $('#cfgAutoCt').checked=c.auto_start_containers!==false;$('#cfgAlerts').checked=c.alerts!==false;
+  $('#cfgDriver').value=c.storage_driver||'';$('#cfgLog').value=c.log_level||'info';
+  $('#cfgExtra').value=c.extra_args||'';$('#cfgPass').value='';tkList();}
+async function saveSettings(restart){const cfg={iptables:$('#cfgIptables').checked,userland_proxy:$('#cfgProxy').checked,
+    bridge_none:$('#cfgBridgeNone').checked,autostart_daemon:$('#cfgAutostartDaemon').checked,
+    auto_start_containers:$('#cfgAutoCt').checked,alerts:$('#cfgAlerts').checked,
+    storage_driver:$('#cfgDriver').value,log_level:$('#cfgLog').value,extra_args:$('#cfgExtra').value};
+  const pw=$('#cfgPass').value;if(pw)cfg.password=pw;
+  if(err(await api('/docker/api/config',{method:'POST',body:cfg})))return;
+  toast('💾','ok');
+  if(restart){await api('/docker/api/daemon/stop',{method:'POST'});
+    const s=await api('/docker/api/daemon/start',{method:'POST'});
+    s.ok?toast('✅','ok'):toast(s.error,'err');}
+  refresh();}
+async function tkCreate(){if(err(await api('/docker/api/tokens',{method:'POST',body:{name:$('#tkName').value||'tok'}})))return;tkList();}
+async function tkList(){const t=await api('/docker/api/tokens');
+  $('#tkList').innerHTML=(t||[]).map(x=>`<div class="dt-row" style="justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">
+    <b>${esc(x.name)}</b> <code style="font-size:12px">${x.token}</code>
+    <span><button class="dt-icon-btn" title="Копировать" onclick="navigator.clipboard.writeText('${x.token}')"><i class="fas fa-copy"></i></button>
+    <button class="dt-icon-btn" title="Удалить" style="color:var(--red)" onclick="tkRm('${x.token}')"><i class="fas fa-trash"></i></button></span></div>`).join('')||empty();}
+async function tkRm(tok){await api('/docker/api/tokens/remove',{method:'POST',body:{token:tok}});tkList();}
+function backupNow(){const p=$('#bkPath').value.trim();if(!p)return toast('путь?','err');
+  api('/docker/api/backup',{method:'POST',body:{path:p,full:$('#bkFull').checked,stop:$('#bkStop').checked}}).then(r=>err(r)||openTask(r.task,'backup'));}
+function restoreNow(){const p=$('#bkPath').value.trim();if(!p)return toast('путь?','err');
+  confirmDlg('Восстановить из backup?').then(ok=>{if(ok)api('/docker/api/restore',{method:'POST',body:{path:p}}).then(r=>err(r)||openTask(r.task,'restore'));});}
+async function showDf(){const e=$('#dfOut');e.style.display='';e.textContent='…';
+  e.textContent=(await api('/docker/api/system/df',{method:'POST'})).out;}
+async function prune(w){if(!(await confirmDlg('Очистить '+w+'?')))return;
+  if(!err(await api('/docker/api/system/prune',{method:'POST',body:{what:w}}))){toast('✅','ok');refresh();}}
+function installIptables(){api('/docker/api/system/iptables',{method:'POST',body:{}}).then(r=>err(r)||openTask(r.task,'iptables'));}
+async function netDiag(){const p=await InfinityDialogs.prompt({label:'Порт для проверки:', value:'8080'});if(!p)return;
+  const r=await api('/docker/api/netdiag?port='+p);
+  openModal('<i class="fas fa-stethoscope"></i> Диагностика сети',
+    `<div class="dt-info"><b>WSL IP:</b> <code>${esc(r.wsl_ip||'—')}</code> · порт ${esc(p)}<br>
+     внутри WSL (localhost): ${r.localhost?'✅':'❌'} · по WSL IP: ${r.wslip?'✅':'❌'}</div>
+     <div style="font-size:12.5px;color:var(--text-2,var(--text2))">
+     ✅ WSL IP → открывай в Windows <code>http://${esc(r.wsl_ip||'—')}:${esc(p)}</code> (кнопка 🌐).<br>
+     ❌ localhost внутри WSL → приложение слушает не 0.0.0.0 → используй network=host.<br>
+     ✅ в WSL, но ❌ в Windows → сломан проброс localhost (netsh portproxy / .wslconfig).</div>`,true);}
+function reqNotif(){if(!('Notification' in window))return toast('не поддерживается','err');
+  Notification.requestPermission().then(p=>toast(p));}
+
+/* ── Задачи (pull/build/backup…) — модалка с логами ── */
+function openTask(id,title){
+  $('#taskTitle').innerHTML='<i class="fas fa-tasks"></i> '+esc(title);
+  $('#taskLogs').textContent='';show('#taskOverlay');
+  clearInterval(taskTimer);
+  taskTimer=setInterval(async()=>{
+    const tt=await api('/docker/api/task/'+id);
+    if(tt&&tt.logs){$('#taskLogs').textContent=tt.logs.join('\n');$('#taskLogs').scrollTop=1e9;}
+    if(tt&&tt.status&&tt.status!=='running'){
+      clearInterval(taskTimer);
+      $('#taskTitle').innerHTML='<i class="fas fa-tasks"></i> '+esc(title)+(tt.status==='done'?' ✅':' ❌');
+      refresh();}},400);}
+function closeTask(){clearInterval(taskTimer);hide('#taskOverlay');}
+
+/* ── Инфо / Логи ── */
+async function refreshInfo(){
+  const s=await api('/docker/api/state'),b=await api('/docker/api/bootlog'),i=await api('/docker/api/info');
+  $('#infoBox').innerHTML=
+    `<div class="dt-info"><b>Daemon:</b> ${s.daemon?'✅ '+esc(s.version):'❌'} · <b>WSL:</b> ${s.wsl?('v'+s.wsl_version):'нет'} · <b>Host:</b> ${esc(s.host)}<br>
+     <b>WSL IP:</b> <code>${esc(s.wsl_ip||'—')}</code> · <b>dockerd:</b> <code>${esc(s.dockerd_version||'—')}</code>
+     ${s.gpu?`<br><b>GPU:</b> <code>${esc(s.gpu)}</code>`:''}<br><b>Data:</b> <code>${esc(s.data_dir)}</code></div>`+
+    (i.Containers!=null?`<div class="dt-info">Containers: ${i.Containers} · Images: ${i.Images} · Driver: ${esc(i.Driver)} · Kernel: <code>${esc(i.KernelVersion||'')}</code> · CPU: ${i.NCPU}</div>`:'')+
+    `<pre class="dt-logs">${esc(b.log||'')}</pre>`;}
+async function refreshLog(){const s=await api('/docker/api/log');
+  $('#daemonLog').textContent=s.log||'';$('#daemonLog').scrollTop=1e9;}
+
+/* ── Автопериодическое обновление ── */
+setInterval(()=>{if($('#taskOverlay').style.display!=='flex')refresh();},7000);
+setInterval(()=>{if(daemonOn&&currentTab==='dashboard')drawChart();},4000);
+
+/* ── Старт ── */
+(async function boot(){
+  // Снести старый service worker движка (v5 кэшировал саму страницу —
+  // после редизайна браузер мог отдать СТАРЫЙ UI из кэша). Новый UI
+  // не регистрирует SW.
+  try{
+    if('serviceWorker' in navigator){
+      const regs=await navigator.serviceWorker.getRegistrations();
+      for(const r of regs){ if(String(r.scope||'').indexOf('/docker')>=0) await r.unregister(); }
+      if(window.caches&&caches.delete) caches.delete('dpu-v5');}}catch(e){}
+  applyLang();
+  await loadHosts();
+  await refresh();
+  await loadTop(false);
+  setTab('top100');
+})();
+</script></body></html>
+

@@ -1,0 +1,5049 @@
+<!DOCTYPE html>
+<html class="pg-page_memory_brain" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Граф заметок — Infinity</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-deep:    #06060f;
+  --bg-mid:     #0d0d1a;
+  --bg-card:    rgba(15, 15, 30, 0.92);
+  /* Поверхности панелей и полей. Раньше они были захардкожены почти
+     чёрным: на светлых темах открывались чёрные ящики, а текст в них —
+     цветом var(--text), то есть тёмным по тёмному. Переменные ниже
+     переопределяются в светлой группе. */
+  --panel-bg:   rgba(8, 8, 18, 0.98);
+  --tooltip-bg: rgba(12, 12, 25, 0.97);
+  --input-bg:   rgba(0, 0, 0, 0.3);
+  --pre-bg:     rgba(0, 0, 0, 0.4);
+  --border:     color-mix(in srgb, var(--accent) 12%, transparent);
+  --border-hi:  color-mix(in srgb, var(--accent) 35%, transparent);
+  --text:       #d4d4e8;
+  --text-dim:   #7878a0;
+  --text-bright:#f0f0ff;
+  --accent:     #a78bfa;
+  --sidebar-w:  420px;
+  --panel-w:    380px;
+  --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ═══ THEME OVERRIDES ═══
+   Раньше страница знала только light и sepia: остальные семь тем из
+   InfinityTheme подставляли сюда тёмный :root, а страница рисовала
+   светлые панели — отсюда белёсые засветки и «артефакты». Ниже палитра
+   для каждой темы, а светлые темы сгруппированы: они отличаются только
+   оттенком, структура поверхностей одинаковая. */
+body.light, body.sepia, body.paper, body.rose {
+  --bg-deep:    #eef1f6;
+  --bg-mid:     #ffffff;
+  --bg-card:    rgba(255, 255, 255, 0.94);
+  --border:     rgba(99, 102, 241, 0.18);
+  --border-hi:  rgba(99, 102, 241, 0.45);
+  --text:       #1f2430;
+  --text-dim:   #6b7280;
+  --text-bright:#0b0e16;
+  --accent:     #6366f1;
+  --panel-bg:   rgba(252, 253, 255, 0.98);
+  --tooltip-bg: rgba(255, 255, 255, 0.98);
+  --input-bg:   rgba(255, 255, 255, 0.78);
+  --pre-bg:     rgba(15, 23, 42, 0.06);
+}
+body.sepia {
+  --bg-deep:    #f1e7d6;
+  --bg-mid:     #fbf3e4;
+  --bg-card:    rgba(255, 250, 240, 0.95);
+  --border:     rgba(180, 130, 70, 0.22);
+  --border-hi:  rgba(180, 130, 70, 0.5);
+  --text:       #4a3b25;
+  --text-dim:   #8a7350;
+  --text-bright:#2e2415;
+  --accent:     #b07a2e;
+}
+body.paper {
+  --bg-deep:    #f6f2e9;
+  --bg-card:    rgba(253, 251, 246, 0.95);
+  --border:     rgba(160, 130, 80, 0.20);
+  --border-hi:  rgba(160, 130, 80, 0.45);
+  --text:       #2c2418;
+  --text-dim:   #7e6f5f;
+  --text-bright:#1c1610;
+  --accent:     #a0522d;
+}
+body.rose {
+  --bg-deep:    #fbeef2;
+  --bg-card:    rgba(255, 250, 251, 0.95);
+  --border:     rgba(190, 90, 130, 0.18);
+  --border-hi:  rgba(190, 90, 130, 0.42);
+  --text:       #3a1f2b;
+  --text-dim:   #8a6572;
+  --text-bright:#2a1420;
+  --accent:     #d6397a;
+}
+
+/* Тёмные темы. Каждая со своим фоном и акцентом, иначе тёмные варианты
+   выглядели одинаково и не совпадали с остальным приложением.
+   body.dark повторяет значения :root выше — он там и есть база, но
+   отдельным блоком видно, что тёмная тема поддержана наравне с остальными. */
+body.dark {
+  --bg-deep: #06060f; --bg-mid: #0d0d1a; --bg-card: rgba(15,15,30,0.92);
+  --border: color-mix(in srgb, var(--accent) 12%, transparent); --border-hi: color-mix(in srgb, var(--accent) 35%, transparent);
+  --text: #d4d4e8; --text-dim: #7878a0; --text-bright: #f0f0ff; --accent: #a78bfa;
+  --panel-bg: rgba(8,8,18,0.98); --tooltip-bg: rgba(12,12,25,0.97);
+  --input-bg: rgba(0,0,0,0.3); --pre-bg: rgba(0,0,0,0.4);
+}
+/* Поверхности тёмных тем раньше оставались на базовых (:root) — панели
+   выглядели сине-серыми на фоне, например, лесной или морской палитры.
+   Теперь у каждой тёмной темы свои --panel-bg/--tooltip-bg/--input-bg. */
+body.midnight {
+  --bg-deep: #08090f; --bg-mid: #0e1018; --bg-card: rgba(14,16,24,0.92);
+  --border: rgba(140,160,255,0.14); --border-hi: rgba(140,160,255,0.4);
+  --text: #dfe3f0; --text-dim: #9aa3bf; --text-bright: #f2f5ff; --accent: #7c8cff;
+  --panel-bg: rgba(10,11,18,0.98); --tooltip-bg: rgba(16,18,28,0.97);
+  --input-bg: rgba(0,0,0,0.32); --pre-bg: rgba(0,0,0,0.42);
+}
+body.forest {
+  --bg-deep: #0f1a14; --bg-mid: #16241c; --bg-card: rgba(22,36,28,0.92);
+  --border: rgba(80,200,120,0.14); --border-hi: rgba(80,200,120,0.4);
+  --text: #c8e0d0; --text-dim: #88b098; --text-bright: #e8f5ee; --accent: #4aa878;
+  --panel-bg: rgba(16,29,22,0.98); --tooltip-bg: rgba(20,34,26,0.97);
+  --input-bg: rgba(0,0,0,0.28); --pre-bg: rgba(0,0,0,0.38);
+}
+body.ocean {
+  --bg-deep: #0a1628; --bg-mid: #102038; --bg-card: rgba(16,32,56,0.92);
+  --border: rgba(100,180,255,0.14); --border-hi: rgba(100,180,255,0.4);
+  --text: #c8dcf0; --text-dim: #8aa8c8; --text-bright: #e8f4ff; --accent: #4aa3df;
+  --panel-bg: rgba(11,25,44,0.98); --tooltip-bg: rgba(15,31,53,0.97);
+  --input-bg: rgba(0,0,0,0.3); --pre-bg: rgba(0,0,0,0.4);
+}
+body.warm {
+  --bg-deep: #1a1410; --bg-mid: #2a1f18; --bg-card: rgba(42,31,24,0.92);
+  --border: rgba(212,165,116,0.14); --border-hi: rgba(212,165,116,0.4);
+  --text: #e8d8c8; --text-dim: #a89888; --text-bright: #fff4e8; --accent: #d4a574;
+  --panel-bg: rgba(31,23,18,0.98); --tooltip-bg: rgba(38,28,22,0.97);
+  --input-bg: rgba(0,0,0,0.26); --pre-bg: rgba(0,0,0,0.36);
+}
+
+/* Поверхности. Раньше были захардкожены под rgba(255,255,255,0.97) и
+   перечислены по одному имени селектора — на тёмных темах панели
+   оставались белыми. Теперь всё рисуется переменными темы. */
+#sidebar, #left-panel, #settings-panel {
+  background: var(--bg-card);
+  border-color: var(--border);
+}
+#hud {
+  background: linear-gradient(180deg, var(--bg-card) 0%, transparent 100%);
+}
+#tooltip, #drag-indicator {
+  background: var(--bg-card);
+  border-color: var(--border-hi);
+  color: var(--text);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+}
+.form-group input,
+.form-group textarea,
+.form-group select,
+.tags-input-wrap,
+.links-input-wrap,
+#search,
+#search-results,
+#legend,
+#controls,
+#rotation-toggle,
+#physics-toggle,
+#settings-toggle,
+#theme-toggle,
+#mode-toggle,
+#add-knowledge-btn,
+.toast {
+  background: var(--bg-card);
+  color: var(--text);
+  border-color: var(--border);
+}
+.form-group select option { background: var(--bg-mid); color: var(--text); }
+#search::placeholder { color: var(--text-dim); }
+#sidebar-content pre { background: rgba(127, 127, 127, 0.12); }
+#sidebar-content code { color: var(--accent); background: rgba(127, 127, 127, 0.12); }
+#sidebar-content strong, #sidebar-content em { color: var(--text-bright); }
+#sidebar-content a { color: var(--accent); }
+
+body {
+  background: var(--bg-deep);
+  overflow: hidden;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══ CANVAS ═══ */
+#canvas-container {
+  position: fixed; inset: 0; z-index: 1;
+  transition: right var(--transition);
+}
+#canvas-container.sidebar-open { right: var(--sidebar-w); }
+#canvas-container.panel-open { left: var(--panel-w); }
+#canvas-container.both-open { right: var(--sidebar-w); left: var(--panel-w); }
+
+/* ═══ 2D CANVAS ═══
+   Второй холст лежит под трёхмерным и показывается вместо него.
+   z-index на единицу ниже, чтобы переключение не требовало перерисовки
+   3D-сцены — достаточно скрыть контейнер. */
+#canvas2d-container {
+  position: fixed; inset: 0; z-index: 1;
+  /* Мягкое свечение акцента поверх фона: плоская заливка выглядела
+     «пустой», особенно на больших мониторах. Цвет берётся из темы. */
+  background:
+    radial-gradient(1100px 720px at 50% 40%,
+      color-mix(in srgb, var(--accent) 9%, transparent), transparent 68%),
+    radial-gradient(760px 520px at 12% 92%,
+      color-mix(in srgb, var(--accent) 5%, transparent), transparent 72%),
+    var(--bg-deep);
+  transition: right var(--transition), opacity 0.25s ease;
+}
+#canvas2d-container canvas { display: block; width: 100%; height: 100%; }
+#canvas2d-container.hidden, #canvas-container.hidden { display: none; }
+#canvas2d-container.sidebar-open { right: var(--sidebar-w); }
+#canvas2d-container.panel-open { left: var(--panel-w); }
+#canvas2d-container.both-open { right: var(--sidebar-w); left: var(--panel-w); }
+
+/* ═══ LOADING ═══ */
+#loading {
+  position: fixed; inset: 0; z-index: 10000;
+  background: var(--bg-deep);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: opacity 0.8s ease;
+}
+#loading.hidden { opacity: 0; pointer-events: none; }
+#loading .icon { font-size: 72px; margin-bottom: 24px; animation: pulse 2s ease-in-out infinite; }
+#loading h2 { font-size: 18px; font-weight: 600; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; margin-bottom: 8px; }
+#loading p { font-size: 13px; color: var(--text-dim); margin-bottom: 28px; }
+#loading .bar { width: 240px; height: 3px; background: color-mix(in srgb, var(--accent) 15%, transparent); border-radius: 3px; overflow: hidden; }
+#loading .bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #60a5fa), color-mix(in srgb, var(--accent) 40%, #34d399)); border-radius: 3px; animation: load 2.5s ease forwards; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+@keyframes load { 0%{width:0%} 100%{width:100%} }
+
+/* ═══ HUD ═══ */
+#hud {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 24px;
+  background: linear-gradient(180deg, var(--bg-card) 0%, transparent 100%);
+  pointer-events: none;
+  transition: right var(--transition), left var(--transition);
+}
+#hud.sidebar-open { right: var(--sidebar-w); }
+#hud.panel-open { left: var(--panel-w); }
+#hud.both-open { right: var(--sidebar-w); left: var(--panel-w); }
+#hud > * { pointer-events: auto; }
+
+#hud-left { display: flex; align-items: center; gap: 16px; }
+#hud h1 {
+  font-size: 20px; font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #60a5fa), color-mix(in srgb, var(--accent) 40%, #34d399));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; letter-spacing: 0.5px;
+}
+/* На светлой подложке пастельный градиент даёт контраст около 2:1 —
+   заголовок почти исчезает. Те же оттенки, но глубже. */
+body.light #hud h1, body.sepia #hud h1, body.paper #hud h1, body.rose #hud h1 {
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #60a5fa), color-mix(in srgb, var(--accent) 40%, #34d399));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+#hud .badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; padding: 3px 8px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  border-radius: 6px; color: var(--accent);
+}
+#stats { display: flex; gap: 20px; font-size: 12px; color: var(--text-dim); }
+#stats .stat-val { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ═══ SEARCH ═══ */
+#search-wrap {
+  position: fixed; top: 62px; right: 20px; z-index: 100;
+  transition: right var(--transition);
+}
+#search-wrap.sidebar-open { right: calc(var(--sidebar-w) + 20px); }
+#search {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 9px 14px 9px 36px;
+  color: var(--text); font-size: 13px; width: 240px;
+  outline: none; backdrop-filter: blur(12px);
+  transition: border-color 0.3s, width 0.3s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23555577' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.656a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: 12px center;
+}
+#search:focus { border-color: var(--border-hi); width: 300px; }
+#search::placeholder { color: #555577; }
+#search-results {
+  position: absolute; top: calc(100% + 6px); right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px; width: 300px; max-height: 400px;
+  overflow-y: auto; backdrop-filter: blur(12px);
+  display: none;
+}
+#search-results.active { display: block; }
+#search-results .result-item {
+  padding: 10px 14px; cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.2s;
+}
+#search-results .result-item:last-child { border-bottom: none; }
+#search-results .result-item:hover { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+#search-results .result-title { font-size: 13px; font-weight: 600; color: var(--text-bright); }
+#search-results .result-section { font-size: 10px; color: var(--text-dim); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ═══ LEGEND ═══ */
+#legend {
+  position: fixed; bottom: 20px; left: 20px; z-index: 100;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 18px;
+  backdrop-filter: blur(12px);
+  transition: left var(--transition);
+}
+#legend.panel-open { left: calc(var(--panel-w) + 20px); }
+#legend h4 { font-size: 10px; color: var(--text-dim); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+#legend .item { display: flex; align-items: center; gap: 8px; margin: 5px 0; font-size: 12px; color: var(--text); cursor: pointer; transition: opacity 0.2s; user-select: none; }
+#legend .item:hover { opacity: 0.7; }
+#legend .item.filtered { opacity: 0.25; }
+#legend .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px currentColor; }
+#legend .count { font-size: 10px; color: var(--text-dim); margin-left: auto; font-variant-numeric: tabular-nums; }
+
+/* ═══ CONTROLS ═══ */
+#controls {
+  position: fixed; bottom: 20px; right: 20px; z-index: 100;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 14px;
+  font-size: 11px; color: var(--text-dim);
+  backdrop-filter: blur(12px);
+  transition: right var(--transition);
+}
+#controls.sidebar-open { right: calc(var(--sidebar-w) + 20px); }
+#controls kbd {
+  background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent);
+  padding: 2px 6px; border-radius: 4px; font-size: 10px; margin: 0 2px;
+  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+/* ═══ TOGGLE BUTTONS ═══ */
+#rotation-toggle, #physics-toggle {
+  position: fixed; z-index: 100;
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s;
+}
+#rotation-toggle { bottom: 60px; right: 20px; }
+#physics-toggle  { bottom: 110px; right: 20px; }
+#rotation-toggle:hover, #physics-toggle:hover {
+  border-color: var(--border-hi);
+  color: var(--text-bright);
+}
+#rotation-toggle.active, #physics-toggle.active {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+#rotation-toggle.paused, #physics-toggle.paused {
+  opacity: 0.5;
+  border-color: rgba(239,68,68,0.3);
+}
+
+/* ═══ TOOLTIP ═══ */
+#tooltip {
+  position: fixed; z-index: 200;
+  background: var(--tooltip-bg);
+  border: 1px solid var(--border-hi);
+  border-radius: 12px; padding: 14px 18px;
+  max-width: 340px; min-width: 180px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 24px color-mix(in srgb, var(--accent) 8%, transparent);
+  display: none; pointer-events: none;
+  transition: opacity 0.15s;
+}
+#tooltip h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--text-bright); }
+#tooltip p { font-size: 12px; line-height: 1.6; color: var(--text-dim); }
+#tooltip .meta { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+#tooltip .tag { display: inline-block; padding: 2px 7px; border-radius: 5px; font-size: 10px; font-weight: 600; }
+#tooltip .click-hint { margin-top: 8px; font-size: 10px; color: var(--accent); opacity: 0.7; font-style: italic; }
+
+/* ═══ SIDEBAR ═══ */
+#sidebar {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: var(--sidebar-w); z-index: 300;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--border);
+  backdrop-filter: blur(24px);
+  transform: translateX(100%);
+  transition: transform var(--transition);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+#sidebar.open { transform: translateX(0); }
+
+#sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+#sidebar-header .section-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; padding: 3px 8px; border-radius: 6px;
+}
+#sidebar-header h2 {
+  font-size: 16px; font-weight: 700; color: var(--text-bright);
+  flex: 1; margin: 0 12px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#sidebar-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+#sidebar-close:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--text-bright); border-color: var(--border-hi); }
+
+#sidebar-meta {
+  padding: 10px 20px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 16px; font-size: 11px; color: var(--text-dim);
+}
+#sidebar-meta span { display: flex; align-items: center; gap: 4px; }
+
+#sidebar-content {
+  flex: 1; overflow-y: auto; padding: 20px;
+  font-size: 14px; line-height: 1.75; color: var(--text);
+  scroll-behavior: smooth;
+}
+#sidebar-content::-webkit-scrollbar { width: 4px; }
+#sidebar-content::-webkit-scrollbar-track { background: transparent; }
+#sidebar-content::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--accent) 20%, transparent); border-radius: 2px; }
+
+#sidebar-content h1 { font-size: 22px; font-weight: 800; color: var(--text-bright); margin: 24px 0 12px; line-height: 1.3; }
+#sidebar-content h2 { font-size: 18px; font-weight: 700; color: var(--text-bright); margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+#sidebar-content h3 { font-size: 15px; font-weight: 600; color: var(--text-bright); margin: 16px 0 8px; }
+#sidebar-content h4 { font-size: 13px; font-weight: 600; color: var(--text); margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+#sidebar-content p { margin: 8px 0; }
+#sidebar-content ul, #sidebar-content ol { margin: 8px 0; padding-left: 22px; }
+#sidebar-content li { margin: 4px 0; }
+#sidebar-content code { background: color-mix(in srgb, var(--accent) 10%, transparent); color: color-mix(in srgb, var(--accent) 82%, white); padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+#sidebar-content pre { background: var(--pre-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin: 12px 0; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+#sidebar-content pre code { background: none; padding: 0; }
+#sidebar-content blockquote { border-left: 3px solid var(--accent); padding-left: 14px; margin: 12px 0; color: var(--text-dim); font-style: italic; }
+#sidebar-content a { color: var(--accent); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+#sidebar-content a:hover { border-bottom-color: var(--accent); }
+#sidebar-content hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+#sidebar-content table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+#sidebar-content th, #sidebar-content td { padding: 8px 12px; border: 1px solid var(--border); text-align: left; }
+#sidebar-content th { background: color-mix(in srgb, var(--accent) 8%, transparent); font-weight: 600; color: var(--text-bright); }
+#sidebar-content strong { color: var(--text-bright); }
+#sidebar-content em { color: #b0b0cc; }
+
+#sidebar-footer { padding: 12px 20px; flex-shrink: 0; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+#sidebar-footer .tag { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 5px; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent); }
+
+/* ═══ LEFT PANEL — Add Knowledge ═══ */
+#left-panel {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: var(--panel-w); z-index: 300;
+  background: var(--panel-bg);
+  border-right: 1px solid var(--border);
+  backdrop-filter: blur(24px);
+  transform: translateX(-100%);
+  transition: transform var(--transition);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+#left-panel.open { transform: translateX(0); }
+
+#panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+#panel-header h2 { font-size: 16px; font-weight: 700; color: var(--text-bright); }
+#panel-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+#panel-close:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--text-bright); border-color: var(--border-hi); }
+
+#panel-content {
+  flex: 1; overflow-y: auto; padding: 20px;
+}
+#panel-content::-webkit-scrollbar { width: 4px; }
+#panel-content::-webkit-scrollbar-track { background: transparent; }
+#panel-content::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--accent) 20%, transparent); border-radius: 2px; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-dim); margin-bottom: 6px;
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+  color: var(--text); font-size: 13px;
+  outline: none; font-family: inherit;
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--border-hi);
+}
+.form-group textarea { min-height: 120px; line-height: 1.6; }
+.form-group select option { background: var(--bg-mid); color: var(--text); }
+
+.tags-input-wrap {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px;
+  min-height: 42px; align-items: center;
+}
+.tags-input-wrap:focus-within { border-color: var(--border-hi); }
+.tags-input-wrap .tag-chip {
+  display: flex; align-items: center; gap: 4px;
+  background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent);
+  padding: 3px 8px; border-radius: 5px;
+  font-size: 11px; font-weight: 600;
+}
+.tags-input-wrap .tag-chip .remove {
+  cursor: pointer; opacity: 0.6; font-size: 14px; line-height: 1;
+}
+.tags-input-wrap .tag-chip .remove:hover { opacity: 1; }
+.tags-input-wrap input {
+  border: none; background: transparent; padding: 3px 4px;
+  color: var(--text); font-size: 13px; outline: none;
+  flex: 1; min-width: 80px;
+}
+
+.links-input-wrap {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px;
+  min-height: 42px; align-items: center;
+}
+.links-input-wrap:focus-within { border-color: var(--border-hi); }
+.links-input-wrap .link-chip {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(96,165,250,0.15); color: #60a5fa;
+  padding: 3px 8px; border-radius: 5px;
+  font-size: 11px; font-weight: 600;
+}
+.links-input-wrap .link-chip .remove {
+  cursor: pointer; opacity: 0.6; font-size: 14px; line-height: 1;
+}
+.links-input-wrap .link-chip .remove:hover { opacity: 1; }
+.links-input-wrap input {
+  border: none; background: transparent; padding: 3px 4px;
+  color: var(--text); font-size: 13px; outline: none;
+  flex: 1; min-width: 80px;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border: none; transition: all 0.2s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #60a5fa));
+  color: #fff;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 30%, transparent); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-secondary {
+  background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.btn-secondary:hover { background: color-mix(in srgb, var(--accent) 15%, transparent); }
+.btn-danger {
+  background: rgba(239,68,68,0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.25);
+}
+.btn-danger:hover {
+  background: rgba(239,68,68,0.2);
+  border-color: rgba(239,68,68,0.4);
+}
+
+#panel-footer {
+  padding: 14px 20px; flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 10px;
+}
+
+/* ═══ ADD KNOWLEDGE BUTTON (floating) ═══ */
+#add-knowledge-btn {
+  position: fixed; bottom: 20px; left: 20px; z-index: 100;
+  width: 48px; height: 48px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #60a5fa));
+  border: none; color: #fff; font-size: 24px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: all 0.3s;
+}
+#add-knowledge-btn:hover { transform: scale(1.08); box-shadow: 0 6px 28px color-mix(in srgb, var(--accent) 40%, transparent); }
+#add-knowledge-btn.hidden { transform: translateX(-100px); opacity: 0; pointer-events: none; }
+
+/* ═══ GROUP HIGHLIGHT OVERLAY ═══ */
+#group-overlay {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 50; pointer-events: none; opacity: 0; transition: opacity 0.5s;
+  text-align: center;
+}
+#group-overlay.visible { opacity: 1; }
+#group-overlay .text {
+  font-size: 14px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--accent);
+  text-shadow: 0 0 30px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+/* ═══ DRAG INDICATOR ═══ */
+#drag-indicator {
+  position: fixed; z-index: 150; pointer-events: none;
+  font-size: 11px; color: var(--accent); opacity: 0;
+  transition: opacity 0.2s;
+  background: var(--bg-card); padding: 4px 10px;
+  border-radius: 6px; border: 1px solid var(--border-hi);
+}
+#drag-indicator.visible { opacity: 1; }
+
+/* ═══ TOAST ═══ */
+#toast-container {
+  position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+  z-index: 500; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 18px;
+  font-size: 13px; color: var(--text);
+  backdrop-filter: blur(12px);
+  animation: toast-in 0.3s ease, toast-out 0.3s ease 2.7s forwards;
+  pointer-events: auto;
+}
+.toast.success { border-color: rgba(52,211,153,0.3); color: #34d399; }
+.toast.error { border-color: rgba(239,68,68,0.3); color: #ef4444; }
+.toast.info { border-color: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--accent); }
+/* На светлых поверхностях неоновые оттенки успеха/ошибки дают контраст
+   около 2:1 — текст тоста почти не читается. Берём тёмные варианты тех же
+   цветов, тогда как на тёмных темах остаются яркие. */
+body.light .toast.success, body.sepia .toast.success,
+body.paper .toast.success, body.rose .toast.success { color: #047857; }
+body.light .toast.error, body.sepia .toast.error,
+body.paper .toast.error, body.rose .toast.error { color: #b91c1c; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toast-out { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 100vw; --panel-w: 100vw; }
+  #search { width: 160px; }
+  #search:focus { width: 200px; }
+  #legend { display: none; }
+  #add-knowledge-btn { bottom: 70px; }
+  #rotation-toggle { bottom: 120px; right: 10px; }
+  #physics-toggle { bottom: 170px; right: 10px; }
+  #settings-toggle { bottom: 220px; right: 10px; }
+}
+
+/* ═══ SETTINGS PANEL ═══ */
+#settings-toggle {
+  position: fixed; z-index: 100;
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s;
+  bottom: 160px; right: 20px;
+}
+#settings-toggle:hover {
+  border-color: var(--border-hi);
+  color: var(--text-bright);
+}
+#settings-toggle.active {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+#theme-toggle {
+  position: fixed; z-index: 100;
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s;
+  bottom: 210px; right: 20px;
+}
+#theme-toggle:hover { border-color: var(--border-hi); color: var(--text-bright); }
+#theme-toggle.active { background: color-mix(in srgb, var(--accent) 15%, transparent); border-color: var(--accent); color: var(--accent); }
+
+/* Кнопка режима. Позиция обязательна: без неё кнопка попадала в обычный
+   поток страницы и оказывалась под шапкой #hud — видимая, но недоступная
+   для клика (шапка перехватывала указатель). Стек кнопок справа:
+   3D — поворот 60, физика 110, настройки 160, тема 210, режим 260. */
+#mode-toggle {
+  position: fixed; z-index: 100;
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s;
+  bottom: 260px; right: 20px;
+}
+#mode-toggle:hover { border-color: var(--border-hi); color: var(--text-bright); }
+
+/* В 2D-режиме кнопки поворота и физики скрыты — они относятся только к
+   трёхмерной сцене. Оставаться на своих местах и образовывать дыру в
+   стеке они не должны, поэтому остальные сдвигаем вниз. */
+body.graph-2d #settings-toggle { bottom: 60px; }
+body.graph-2d #theme-toggle    { bottom: 110px; }
+body.graph-2d #mode-toggle     { bottom: 160px; }
+
+#settings-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 360px; z-index: 350;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--border);
+  backdrop-filter: blur(24px);
+  transform: translateX(100%);
+  transition: transform var(--transition);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+#settings-panel.open { transform: translateX(0); }
+
+#settings-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+#settings-header h2 { font-size: 16px; font-weight: 700; color: var(--text-bright); }
+#settings-close {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+#settings-close:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--text-bright); border-color: var(--border-hi); }
+
+#settings-content {
+  flex: 1; overflow-y: auto; padding: 20px;
+}
+#settings-content::-webkit-scrollbar { width: 4px; }
+#settings-content::-webkit-scrollbar-track { background: transparent; }
+#settings-content::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--accent) 20%, transparent); border-radius: 2px; }
+
+.settings-group {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-group:last-child { border-bottom: none; margin-bottom: 0; }
+.settings-label {
+  display: block; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-dim); margin-bottom: 12px;
+}
+.settings-row {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+}
+.settings-desc { font-size: 13px; color: var(--text); }
+.settings-hint {
+  font-size: 11px; color: var(--text-dim); margin-top: 6px;
+  line-height: 1.5; padding-left: 52px;
+}
+
+/* Toggle switch */
+.toggle-switch {
+  position: relative; display: inline-block;
+  width: 44px; height: 24px; flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.08);
+  border-radius: 24px; transition: 0.3s;
+  border: 1px solid var(--border);
+}
+.toggle-slider:before {
+  position: absolute; content: "";
+  height: 18px; width: 18px;
+  left: 2px; bottom: 2px;
+  background: var(--text-dim);
+  border-radius: 50%; transition: 0.3s;
+}
+.toggle-switch input:checked + .toggle-slider {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  border-color: var(--accent);
+}
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+  background: var(--accent);
+}
+
+/* Legend "All" item */
+#legend .item.all-item {
+  margin-bottom: 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+
+/* Search highlight animation */
+@keyframes nodePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.8); }
+  100% { transform: scale(1); }
+}
+
+/* Search result highlight */
+#search-results .result-item.search-highlight {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  border-left: 3px solid var(--accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SHELL v2 — верхняя панель, навигатор, док управления
+   ---------------------------------------------------------------------------
+   Новые правила идут после старых и перекрывают их по специфичности или
+   порядку. Старые селекторы не удалены: на них завязаны классы, которые
+   выставляет JS (graph-2d, open и т.д.), и удаление сломало бы переключение
+   режимов, если какой-то обработчик остался.
+
+   Раскладка: канвас занимает всё окно, панели лежат поверх него. Раньше
+   открытая карточка заметки сжимала канвас справа, но viewBox оставался
+   размером с окно — граф сплющивался. Теперь 2D-движок получает отступы
+   через setOption('insets') и центрирует граф в свободной области.
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --gx-bar-h: 60px;
+  --gx-nav-w: 276px;
+  --gx-radius: 14px;
+  --gx-shadow: 0 18px 46px rgba(0, 0, 0, 0.34);
+}
+body.light, body.sepia, body.paper, body.rose {
+  --gx-shadow: 0 18px 46px rgba(15, 23, 42, 0.13);
+}
+
+/* ── Верхняя панель ── */
+#hud {
+  height: var(--gx-bar-h);
+  padding: 0 14px;
+  gap: 12px;
+  z-index: 220;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(127, 127, 127, 0.06);
+  pointer-events: auto;
+  transition: none;
+}
+#hud-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#hud-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+.gx-navbtn {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 34px; padding: 0 11px;
+  border-radius: 9px; border: 1px solid var(--border);
+  background: var(--input-bg); color: var(--text);
+  font-size: 12.5px; font-weight: 600; text-decoration: none;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  white-space: nowrap;
+}
+.gx-navbtn i { font-size: 12px; opacity: 0.8; }
+.gx-navbtn:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: var(--border-hi);
+  color: var(--text-bright);
+}
+.gx-sep {
+  width: 1px; height: 22px; margin: 0 4px;
+  background: var(--border);
+}
+.gx-brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.gx-logo {
+  width: 28px; height: 28px; border-radius: 9px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid var(--border);
+}
+#hud h1 {
+  font-size: 15px; font-weight: 700; letter-spacing: 0.2px;
+  color: var(--text-bright);
+  background: none; -webkit-text-fill-color: currentColor;
+  white-space: nowrap;
+}
+#hud .badge {
+  font-size: 9.5px; font-weight: 800; letter-spacing: 1px;
+  padding: 3px 7px; border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  color: var(--accent);
+}
+
+/* Поиск — по центру панели, а не отдельным плавающим блоком */
+#search-wrap {
+  position: relative; top: auto; right: auto; left: auto;
+  flex: 1 1 260px; max-width: 420px; margin: 0 6px;
+}
+#search {
+  width: 100%; height: 36px;
+  border-radius: 10px; font-size: 13px;
+  padding: 0 12px 0 36px;
+}
+#search:focus {
+  width: 100%;
+  border-color: var(--border-hi);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+#search-results {
+  top: calc(100% + 8px); left: 0; right: auto;
+  width: 100%; max-height: 62vh;
+  box-shadow: var(--gx-shadow);
+  z-index: 250;
+}
+
+#stats { display: flex; align-items: center; gap: 6px; }
+#stats .stat {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  height: 30px; padding: 0 9px; border-radius: 8px;
+  background: var(--input-bg); border: 1px solid var(--border);
+  font-size: 10.5px; color: var(--text-dim); white-space: nowrap;
+}
+#stats .stat-val { font-size: 12px; }
+#stats .stat-lbl { letter-spacing: 0.2px; }
+
+/* Фильтр группировки: папки и теги либо смысловые темы laya. */
+#hud .gx-groupmode {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 34px; padding: 0 10px; border-radius: 9px;
+  background: var(--input-bg); border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 11.5px;
+}
+#hud .gx-groupmode > i { font-size: 12px; color: var(--accent); }
+#hud .gx-groupmode select {
+  background: transparent; border: 0; outline: none;
+  color: var(--text-bright); font: inherit; cursor: pointer;
+  max-width: 150px;
+}
+#hud .gx-groupmode select option { background: var(--bg2); color: var(--text); }
+#hud .gx-groupmode.is-semantic { border-color: color-mix(in srgb, #60a5fa 55%, var(--border)); }
+@media (max-width: 900px) { #hud .gx-groupmode { display: none; } }
+
+/* Кнопки панели. Старые id остались — на них висят обработчики. */
+#hud #mode-toggle,
+#hud #theme-toggle,
+#hud #settings-toggle,
+#hud #help-toggle {
+  position: static; bottom: auto; right: auto;
+  width: 34px; height: 34px; border-radius: 9px;
+  font-size: 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+#hud #mode-toggle:hover,
+#hud #theme-toggle:hover,
+#hud #settings-toggle:hover,
+#hud #help-toggle:hover { border-color: var(--border-hi); color: var(--text-bright); }
+#hud #help-toggle.active { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+#hud #settings-toggle.active { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+
+/* «Новая заметка» — главное действие панели */
+#hud #add-knowledge-btn {
+  position: static; bottom: auto; left: auto;
+  width: auto; height: 34px; padding: 0 13px;
+  border-radius: 9px; font-size: 12.5px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 7px;
+  box-shadow: none;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #60a5fa));
+}
+#hud #add-knowledge-btn i { font-size: 11px; }
+#hud #add-knowledge-btn:hover { transform: none; box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 32%, transparent); }
+#hud #add-knowledge-btn.hidden { transform: none; opacity: 0; pointer-events: none; }
+
+/* ── Навигатор слева ── */
+#legend {
+  position: fixed; top: var(--gx-bar-h); bottom: 0; left: 0;
+  width: var(--gx-nav-w);
+  border-radius: 0; border: none; border-right: 1px solid var(--border);
+  background: var(--panel-bg);
+  padding: 0;
+  display: flex; flex-direction: column;
+  backdrop-filter: blur(20px);
+  z-index: 150;
+  transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 0s;
+}
+/* Свёрнутый навигатор уезжает за край экрана, но остаётся в DOM: без
+   visibility он продолжал ловить клики за границей окна, а скринридеры
+   читали скрытое меню. Задержка visibility нужна, чтобы слайд был виден. */
+body.gx-nav-closed #legend {
+  transform: translateX(-100%);
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 0s linear 0.24s;
+}
+
+.gx-nav-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.gx-nav-title {
+  font-size: 11px; font-weight: 800; letter-spacing: 1.3px;
+  text-transform: uppercase; color: var(--text);
+}
+.gx-nav-sub { font-size: 10.5px; color: var(--text-dim); margin-top: 2px; }
+.gx-nav-body { flex: 1; overflow-y: auto; padding: 10px 10px 18px; }
+.gx-nav-body::-webkit-scrollbar { width: 4px; }
+.gx-nav-body::-webkit-scrollbar-thumb { background: rgba(127,127,127,0.25); border-radius: 2px; }
+.gx-nav-foot {
+  flex-shrink: 0; padding: 10px 12px;
+  border-top: 1px solid var(--border);
+}
+.gx-iconbtn {
+  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-dim); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; transition: all 0.18s;
+}
+.gx-iconbtn:hover { color: var(--text-bright); border-color: var(--border-hi); background: rgba(127,127,127,0.08); }
+.gx-ghost-btn {
+  width: 100%; height: 32px; border-radius: 8px;
+  background: transparent; border: 1px dashed var(--border);
+  color: var(--text-dim); font-size: 11.5px; font-weight: 600;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  transition: all 0.18s;
+}
+.gx-ghost-btn:hover { color: var(--text); border-color: var(--border-hi); background: rgba(127,127,127,0.06); }
+
+.gx-nav-reopen {
+  position: fixed; top: calc(var(--gx-bar-h) + 12px); left: 12px;
+  z-index: 140; height: 34px; padding: 0 12px;
+  border-radius: 9px; border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  display: none; align-items: center; gap: 7px;
+  backdrop-filter: blur(14px);
+  box-shadow: var(--gx-shadow);
+}
+body.gx-nav-closed .gx-nav-reopen { display: inline-flex; }
+.gx-nav-reopen:hover { border-color: var(--border-hi); color: var(--text-bright); }
+
+/* Секции и пункты внутри навигатора */
+#legend .gx-sec { margin-bottom: 14px; }
+#legend .gx-sec:last-child { margin-bottom: 0; }
+#legend .gx-sec-title {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 10px; font-weight: 800; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--text-dim);
+  padding: 4px 9px 6px;
+}
+#legend .gx-sec-hint {
+  font-size: 9.5px; font-weight: 500; letter-spacing: 0.2px;
+  text-transform: none; color: var(--text-dim); opacity: 0.75;
+}
+#legend .item {
+  display: flex; align-items: center; gap: 9px;
+  margin: 1px 0; padding: 7px 9px;
+  border-radius: 8px; font-size: 12.5px; color: var(--text);
+  cursor: pointer; user-select: none;
+  transition: background 0.16s, opacity 0.16s;
+}
+#legend .item:hover { background: rgba(127, 127, 127, 0.09); opacity: 1; }
+#legend .item.filtered { opacity: 0.32; }
+#legend .item.off { opacity: 0.4; }
+#legend .item.off .dot { box-shadow: none; }
+#legend .item .dot { width: 9px; height: 9px; box-shadow: 0 0 6px currentColor; }
+#legend .item .lbl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#legend .item .count {
+  margin-left: auto; font-size: 10px; font-variant-numeric: tabular-nums;
+  color: var(--text-dim); padding: 1px 6px; border-radius: 999px;
+  background: var(--input-bg); border: 1px solid var(--border);
+}
+#legend .item.all-item {
+  margin: 0 0 4px; padding: 8px 9px;
+  border: 1px solid var(--border); background: var(--input-bg);
+  font-weight: 600;
+}
+#legend .item.all-item.filtered { opacity: 0.6; }
+#legend .item .lt-eye { font-size: 10px; color: var(--text-dim); opacity: 0.6; }
+
+/* ── Док управления справа ── */
+#gx-dock {
+  position: fixed; right: 16px; bottom: 16px; z-index: 160;
+  display: flex; flex-direction: column; gap: 6px; padding: 7px;
+  border-radius: var(--gx-radius);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--gx-shadow);
+}
+#gx-dock button {
+  position: static; bottom: auto; right: auto;
+  width: 36px; height: 36px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid transparent;
+  color: var(--text-dim); font-size: 14px; cursor: pointer;
+  transition: all 0.18s;
+}
+#gx-dock button:hover { background: rgba(127,127,127,0.1); color: var(--text-bright); }
+#gx-dock button.active { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); border-color: var(--border); }
+#gx-dock button.paused { opacity: 0.45; }
+#gx-dock .gx-dock-sep { height: 1px; margin: 2px 4px; background: var(--border); }
+body:not(.graph-2d) #gx-dock .gx-zoom-only,
+body:not(.graph-2d) #gx-dock .gx-2d-only { display: none; }
+
+/* ── Подсказки по управлению ── */
+#controls {
+  left: 50%; right: auto; bottom: 14px; transform: translateX(-50%);
+  padding: 6px 14px; border-radius: 999px;
+  font-size: 10.5px; white-space: nowrap;
+  opacity: 0.9; border-color: var(--border);
+}
+#controls .gx-kbd-sep { opacity: 0.4; margin: 0 5px; }
+body.gx-sidebar-open #controls { opacity: 0; pointer-events: none; }
+
+/* ── Карточка заметки справа ── */
+#sidebar {
+  top: var(--gx-bar-h);
+  width: 404px;
+  border-radius: var(--gx-radius) 0 0 var(--gx-radius);
+  border-top: 1px solid var(--border);
+  box-shadow: var(--gx-shadow);
+}
+#sidebar-header {
+  display: block; padding: 14px 18px 12px;
+}
+.gx-sb-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#sidebar-header h2 {
+  margin: 9px 0 0; font-size: 18px; line-height: 1.3;
+  white-space: normal; overflow: visible; text-overflow: clip;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+#sidebar-meta {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 10px 18px 12px;
+}
+#sidebar-meta span {
+  display: inline-flex; align-items: center; gap: 5px;
+  max-width: 100%; padding: 4px 9px;
+  border-radius: 7px; background: var(--input-bg);
+  border: 1px solid var(--border);
+  font-size: 10.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#sidebar-content { padding: 16px 18px 22px; font-size: 13.5px; }
+#sidebar-edit-actions { display: flex; padding: 10px 18px 14px; gap: 7px; flex-wrap: wrap; }
+#sidebar-edit-actions .btn { font-size: 12px; padding: 8px 12px; min-width: 0; }
+
+/* Группа: список заметок внутри */
+.gx-member-list { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+.gx-member {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 10px; border-radius: 9px;
+  background: var(--input-bg); border: 1px solid var(--border);
+  color: var(--text); font-size: 12.5px; cursor: pointer;
+  transition: all 0.16s; text-align: left; width: 100%;
+}
+.gx-member:hover { border-color: var(--border-hi); background: rgba(127,127,127,0.07); }
+.gx-member .gx-member-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.gx-member .gx-member-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gx-member .gx-member-meta { font-size: 10px; color: var(--text-dim); flex-shrink: 0; }
+.gx-empty { font-size: 12.5px; color: var(--text-dim); padding: 14px 2px; line-height: 1.6; }
+
+/* ── Панели «Новая заметка» и «Настройки» ── */
+#left-panel {
+  top: var(--gx-bar-h);
+  width: 384px;
+  border-radius: 0 var(--gx-radius) var(--gx-radius) 0;
+  border-top: 1px solid var(--border);
+  box-shadow: var(--gx-shadow);
+}
+#settings-panel {
+  top: var(--gx-bar-h);
+  width: 344px;
+  border-radius: var(--gx-radius) 0 0 var(--gx-radius);
+  border-top: 1px solid var(--border);
+  box-shadow: var(--gx-shadow);
+}
+#settings-content { padding: 14px; }
+#settings-content .settings-group {
+  padding: 14px; margin-bottom: 10px;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--input-bg);
+}
+#settings-content .settings-group:last-child { border-bottom: 1px solid var(--border); margin-bottom: 0; }
+.settings-label { margin-bottom: 10px; }
+.settings-hint { padding-left: 0; }
+.toggle-slider { background: rgba(127, 127, 127, 0.18); }
+#left-panel .form-group input,
+#left-panel .form-group textarea,
+#left-panel .form-group select { background: var(--bg-mid); }
+
+/* ── Адаптив ── */
+@media (max-width: 1100px) {
+  #stats .stat:nth-child(3), #stats .stat:nth-child(4) { display: none; }
+}
+@media (max-width: 860px) {
+  .gx-navbtn span { display: none; }
+  .gx-navbtn { padding: 0 9px; }
+  #hud .gx-brand h1 { display: none; }
+  #stats { display: none; }
+  #hud #add-knowledge-btn span { display: none; }
+  #hud #add-knowledge-btn { padding: 0 10px; }
+  #search-wrap { max-width: none; }
+}
+@media (max-width: 768px) {
+  /* На телефоне навигатор — выдвижная панель поверх графа, а не нулевая
+     колонка: раньше он просто скрывался (display:none) вместе с кнопкой
+     открытия, и фильтры по папкам/связям были недоступны совсем. */
+  #legend {
+    width: min(86vw, 340px);
+    z-index: 240;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
+  }
+  #gx-nav-open { left: 10px; top: calc(var(--gx-bar-h) + 10px); }
+  #controls { display: none; }
+  #gx-dock { bottom: 12px; right: 10px; }
+  #sidebar, #settings-panel { width: 100vw; border-radius: 0; }
+  #left-panel { width: 100vw; border-radius: 0; }
+}
+
+/* ── Плавающие панели: путь и горячие клавиши ── */
+.gx-float-panel {
+  position: fixed; z-index: 260;
+  top: calc(var(--gx-bar-h) + 14px);
+  left: 50%; transform: translateX(-50%);
+  width: min(460px, calc(100vw - 24px));
+  border-radius: var(--gx-radius);
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--gx-shadow);
+  backdrop-filter: blur(22px);
+  display: none;
+}
+.gx-float-panel.open { display: block; animation: gxFloatIn 0.18s ease; }
+@keyframes gxFloatIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px) }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0) }
+}
+.gx-fp-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 700; color: var(--text-bright);
+}
+.gx-fp-head > span { display: inline-flex; align-items: center; gap: 8px; }
+.gx-fp-head i { color: var(--accent); font-size: 12px; }
+.gx-fp-body { padding: 12px 14px 14px; }
+.gx-fp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gx-fp-row label {
+  display: flex; flex-direction: column; gap: 5px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px;
+  text-transform: uppercase; color: var(--text-dim);
+}
+.gx-fp-row select {
+  height: 34px; width: 100%;
+  padding: 0 9px; border-radius: 9px;
+  background: var(--input-bg); color: var(--text);
+  border: 1px solid var(--border); outline: none;
+  font-size: 12.5px; font-family: inherit;
+}
+.gx-fp-row select:focus { border-color: var(--border-hi) }
+.gx-fp-actions { display: flex; gap: 8px; margin-top: 10px; }
+.gx-primary-btn {
+  flex: 1 1 auto; height: 34px; border-radius: 9px; border: none;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #60a5fa));
+  color: #fff; font-size: 12.5px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  transition: filter 0.18s;
+}
+.gx-primary-btn:hover { filter: brightness(1.08) }
+.gx-ghost-btn2 {
+  height: 34px; padding: 0 12px; border-radius: 9px;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-dim); font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.gx-ghost-btn2:hover { color: var(--text); border-color: var(--border-hi) }
+.gx-fp-result {
+  margin-top: 10px; font-size: 11.5px; color: var(--text-dim);
+  min-height: 16px;
+}
+.gx-fp-result.ok { color: var(--accent) }
+.gx-fp-result.err { color: #ef4444 }
+.gx-fp-chain {
+  margin-top: 8px; display: flex; flex-direction: column; gap: 3px;
+  max-height: 190px; overflow-y: auto;
+}
+.gx-fp-chain button {
+  text-align: left; padding: 6px 9px; border-radius: 8px;
+  background: var(--input-bg); border: 1px solid var(--border);
+  color: var(--text); font-size: 12px; cursor: pointer;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gx-fp-chain button:hover { border-color: var(--border-hi); color: var(--text-bright) }
+.gx-fp-chain .gx-chain-step {
+  font-size: 10px; color: var(--text-dim); margin-right: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.gx-keys { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 16px; }
+.gx-keys div { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--text); }
+.gx-keys kbd {
+  padding: 2px 7px; border-radius: 6px; font-size: 10.5px;
+  background: var(--input-bg); border: 1px solid var(--border);
+  color: var(--accent); font-family: inherit;
+}
+.gx-keys .full { grid-column: 1 / -1 }
+@media (max-width: 560px) {
+  .gx-fp-row, .gx-keys { grid-template-columns: 1fr }
+}
+</style>
+<script src="/static/js/i18n.js"></script>
+<!-- 2D-движок графа. Подключается обычным скриптом (не module), потому
+     что использует window.Graph2D, а не export-ы. -->
+<script src="/static/js/notes_graph_2d.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="icon"><i class="fa-solid fa-diagram-project"></i></div>
+  <h2>Граф заметок</h2>
+  <p>Загрузка графа заметок…</p>
+  <div class="bar"><div class="bar-fill"></div></div>
+</div>
+
+<!-- 3D Canvas -->
+<div id="canvas-container"></div>
+
+<!-- 2D Canvas: режим по умолчанию. Плоский граф читается лучше (подписи
+     всегда развёрнуты, рёбра не проходят сквозь узлы) и не зависит от
+     WebGL: на машинах без аппаратного ускорения 3D просто не открывался. -->
+<div id="canvas2d-container"></div>
+
+<!-- Top bar -->
+<header id="hud">
+  <div id="hud-left">
+    <a class="gx-navbtn" href="/" title="На главную"><i class="fa-solid fa-house"></i><span>Главная</span></a>
+    <a class="gx-navbtn" href="/notes" title="Вернуться к заметкам"><i class="fa-solid fa-note-sticky"></i><span>Заметки</span></a>
+    <span class="gx-sep"></span>
+    <div class="gx-brand">
+      <span class="gx-logo"><i class="fa-solid fa-diagram-project"></i></span>
+      <h1>Граф заметок</h1>
+      <span class="badge" id="mode-badge">2D</span>
+    </div>
+  </div>
+
+  <div id="search-wrap">
+    <input type="text" id="search" placeholder="Поиск заметок, тегов…" autocomplete="off">
+    <div id="search-results"></div>
+  </div>
+
+  <div id="hud-right">
+    <label class="gx-groupmode" id="group-mode-wrap" title="Как группировать заметки в графе">
+      <i class="fa-solid fa-layer-group"></i>
+      <select id="group-mode" aria-label="Группировка графа">
+        <option value="folder">Папки и теги</option>
+        <option value="semantic">По смыслу (Laya)</option>
+        <option value="all">Всё сразу</option>
+      </select>
+    </label>
+    <div id="stats">
+      <div class="stat"><span class="stat-val" id="stat-nodes">0</span><span class="stat-lbl">заметок</span></div>
+      <div class="stat"><span class="stat-val" id="stat-links">0</span><span class="stat-lbl">связей</span></div>
+      <div class="stat"><span class="stat-val" id="stat-words">0</span><span class="stat-lbl">слов</span></div>
+      <div class="stat"><span class="stat-val" id="stat-groups">0</span><span class="stat-lbl">групп</span></div>
+    </div>
+    <button id="add-knowledge-btn" title="Новая заметка"><i class="fa-solid fa-plus"></i><span>Заметка</span></button>
+    <button id="help-toggle" title="Горячие клавиши (?)"><i class="fa-solid fa-keyboard"></i></button>
+    <button id="mode-toggle" title="Переключить 2D / 3D"><i class="fa-solid fa-cube"></i></button>
+    <button id="theme-toggle" title="Сменить тему"><i class="fa-solid fa-moon"></i></button>
+    <button id="settings-toggle" title="Настройки"><i class="fa-solid fa-gear"></i></button>
+  </div>
+</header>
+
+<!-- Navigator -->
+<aside id="legend" aria-label="Навигатор по графу">
+  <div class="gx-nav-head">
+    <div>
+      <div class="gx-nav-title">Навигатор</div>
+      <div class="gx-nav-sub" id="gx-nav-sub">Папки, теги и связи</div>
+    </div>
+    <button id="gx-nav-close" class="gx-iconbtn" title="Свернуть панель"><i class="fa-solid fa-angles-left"></i></button>
+  </div>
+  <div class="gx-nav-body">
+    <div id="legend-items"></div>
+  </div>
+  <div class="gx-nav-foot">
+    <button class="gx-ghost-btn" id="gx-reset-filters"><i class="fa-solid fa-filter-circle-xmark"></i> Сбросить фильтры</button>
+  </div>
+</aside>
+<button id="gx-nav-open" class="gx-nav-reopen" title="Открыть навигатор">
+  <i class="fa-solid fa-bars-staggered"></i><span>Навигатор</span>
+</button>
+
+<!-- Controls hint -->
+<div id="controls">
+  <kbd>Перетаскивание</kbd> узел<span class="gx-kbd-sep">·</span>
+  <kbd>Колесо</kbd> масштаб<span class="gx-kbd-sep">·</span>
+  <kbd>Клик</kbd> карточка<span class="gx-kbd-sep">·</span>
+  <kbd>ПКМ</kbd> заметка<span class="gx-kbd-sep">·</span>
+  <kbd>Esc</kbd> закрыть
+</div>
+
+<!-- Floating dock -->
+<div id="gx-dock">
+  <button id="zoom-in" class="gx-zoom-only" title="Приблизить"><i class="fa-solid fa-plus"></i></button>
+  <button id="zoom-out" class="gx-zoom-only" title="Отдалить"><i class="fa-solid fa-minus"></i></button>
+  <button id="g2d-fit" class="gx-zoom-only" title="Вписать граф"><i class="fa-solid fa-expand"></i></button>
+  <button id="g2d-reheat" class="gx-zoom-only" title="Пересчитать раскладку"><i class="fa-solid fa-arrows-rotate"></i></button>
+  <span class="gx-dock-sep"></span>
+  <button id="gx-path-btn" class="gx-2d-only" title="Найти путь между заметками (P)"><i class="fa-solid fa-route"></i></button>
+  <button id="gx-shot-btn" class="gx-2d-only" title="Скачать PNG (E)"><i class="fa-solid fa-camera"></i></button>
+  <span class="gx-dock-sep"></span>
+  <button id="rotation-toggle" title="Автоповорот"><i class="fa-solid fa-rotate"></i></button>
+  <button id="physics-toggle" title="Физика"><i class="fa-solid fa-circle-nodes"></i></button>
+</div>
+
+<!-- Settings Panel -->
+<div id="settings-panel">
+  <div id="settings-header">
+    <h2><i class="fa-solid fa-sliders" style="margin-right:7px"></i>Настройки графа</h2>
+    <button id="settings-close" title="Close"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div id="settings-content">
+    <div class="settings-group">
+      <label class="settings-label">Отображение</label>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-show-labels" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Подписи узлов (3D)</span>
+      </div>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-unresolved">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Битые ссылки (не созданные заметки)</span>
+      </div>
+    </div>
+    <div class="settings-group">
+      <label class="settings-label">3D-сцена</label>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-auto-rotate" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Автоповорот</span>
+      </div>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="setting-physics" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Физика (силовая раскладка)</span>
+      </div>
+    </div>
+    <div class="settings-group">
+      <label class="settings-label">2D режим</label>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="g2d-show-groups" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Показывать группы (папки и теги)</span>
+      </div>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="g2d-show-labels" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Подписи узлов (2D)</span>
+      </div>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="g2d-only-connected">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Только связанные (без изолированных)</span>
+      </div>
+      <div class="settings-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="g2d-force-layout" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="settings-desc">Силовая раскладка (иначе древовидная)</span>
+      </div>
+      <p class="settings-hint">Группы — это узлы папок и тегов. Кнопки «Вписать» и «Пересчитать» — в доке справа внизу.</p>
+    </div>
+    <div class="settings-group">
+      <label class="settings-label">Смысловые группы (laya)</label>
+      <button class="btn btn-secondary" id="btn-semantic-rebuild" style="width:100%;justify-content:center;">
+        <i class="fa-solid fa-wand-magic-sparkles" style="margin-right:6px"></i>
+        Пересчитать смысловые темы
+      </button>
+      <p class="settings-hint" id="semantic-status">Проверяю статус…</p>
+    </div>
+    <div class="settings-group">
+      <label class="settings-label">Действия</label>
+      <button class="btn btn-secondary" id="btn-regenerate" style="width:100%;justify-content:center;"><i class="fa-solid fa-rotate" style="margin-right:6px"></i>
+        Обновить граф
+      </button>
+      <p class="settings-hint" id="regenerate-status"></p>
+    </div>
+  </div>
+</div>
+
+<!-- Path finder -->
+<div id="gx-path" class="gx-float-panel" role="dialog" aria-label="Путь между заметками">
+  <div class="gx-fp-head">
+    <span><i class="fa-solid fa-route"></i> Путь между заметками</span>
+    <button id="gx-path-close" class="gx-iconbtn" title="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="gx-fp-body">
+    <div class="gx-fp-row">
+      <label>Откуда<select id="gx-path-from"></select></label>
+      <label>Куда<select id="gx-path-to"></select></label>
+    </div>
+    <div class="gx-fp-actions">
+      <button id="gx-path-run" class="gx-primary-btn"><i class="fa-solid fa-route"></i> Найти путь</button>
+      <button id="gx-path-clear" class="gx-ghost-btn2">Сбросить</button>
+    </div>
+    <div id="gx-path-result" class="gx-fp-result"></div>
+    <div id="gx-path-chain" class="gx-fp-chain"></div>
+  </div>
+</div>
+
+<!-- Keyboard help -->
+<div id="gx-help" class="gx-float-panel" role="dialog" aria-label="Горячие клавиши">
+  <div class="gx-fp-head">
+    <span><i class="fa-solid fa-keyboard"></i> Горячие клавиши</span>
+    <button id="gx-help-close" class="gx-iconbtn" title="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="gx-fp-body">
+    <div class="gx-keys">
+      <div><span>Поиск по заметкам</span><kbd>/</kbd></div>
+      <div><span>Вписать граф</span><kbd>F</kbd></div>
+      <div><span>Путь между заметками</span><kbd>P</kbd></div>
+      <div><span>Скачать PNG</span><kbd>E</kbd></div>
+      <div><span>Подписи узлов</span><kbd>L</kbd></div>
+      <div><span>Группы папок и тегов</span><kbd>G</kbd></div>
+      <div><span>Режим 2D / 3D</span><kbd>2</kbd> <kbd>3</kbd></div>
+      <div><span>Закрыть панели</span><kbd>Esc</kbd></div>
+      <div class="full"><span>Эта подсказка</span><kbd>?</kbd></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div id="tooltip">
+  <h3 id="tt-title"></h3>
+  <p id="tt-desc"></p>
+  <div class="meta" id="tt-meta"></div>
+  <div class="click-hint">Left click → sidebar · Right click → full note</div>
+</div>
+
+<!-- Drag indicator -->
+<div id="drag-indicator">Dragging…</div>
+
+<!-- Group overlay -->
+<div id="group-overlay">
+  <span class="text" id="sl-text"></span>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div id="sidebar-header">
+    <div class="gx-sb-top">
+      <span class="section-badge" id="sb-badge"></span>
+      <button id="sidebar-close" title="Закрыть (Esc)" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <h2 id="sb-title"></h2>
+  </div>
+  <div id="sidebar-meta">
+    <span id="sb-words"></span>
+    <span id="sb-modified"></span>
+    <span id="sb-filepath"></span>
+  </div>
+  <div id="sidebar-content"></div>
+  <div id="sidebar-footer" style="display:none">
+    <div id="sb-tags"></div>
+  </div>
+   <!-- Load to Notes / Load to AI DB buttons removed -->
+  <div id="sidebar-edit-actions" style="display:none;padding:8px 18px 14px;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);">
+    <button class="btn btn-primary" id="sb-btn-open" style="flex:1;justify-content:center;font-size:12px;"><i class="fa-solid fa-arrow-up-right-from-square"></i> Открыть</button>
+    <button class="btn btn-secondary" id="sb-btn-edit" style="flex:1;justify-content:center;font-size:12px;"><i class="fa-solid fa-pen"></i> Редактировать</button>
+    <button class="btn btn-danger" id="sb-btn-delete" style="flex:1;justify-content:center;font-size:12px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.25);"><i class="fa-solid fa-trash"></i> Удалить</button>
+  </div>
+</div>
+
+<!-- Left Panel — Add Knowledge -->
+<div id="left-panel">
+  <div id="panel-header">
+    <h2><i class="fa-solid fa-plus" style="margin-right:7px"></i>Новая заметка</h2>
+    <button id="panel-close" title="Закрыть" aria-label="Закрыть"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div id="panel-content">
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" id="form-title" placeholder="e.g. Patterns — New Pattern">
+    </div>
+    <div class="form-group">
+      <label>Папка</label>
+      <select id="form-section">
+        <option value="inbox">inbox</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Content (Markdown)</label>
+      <textarea id="form-content" placeholder="Write knowledge in Markdown...
+
+Use [[Node Title]] to create links to other nodes.
+Use #tag to add tags."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Tags (Enter to add)</label>
+      <div class="tags-input-wrap" id="tags-wrap">
+        <input type="text" id="form-tags-input" placeholder="Type tag…">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Links to other nodes (Enter to add)</label>
+      <div class="links-input-wrap" id="links-wrap">
+        <input type="text" id="form-links-input" placeholder="Type node title…">
+      </div>
+    </div>
+  </div>
+  <div id="panel-footer">
+    <button class="btn btn-primary" id="btn-save-node">
+      <i class="fa-solid fa-floppy-disk" style="margin-right:6px"></i>Сохранить
+    </button>
+    <button class="btn btn-secondary" id="btn-clear-form">
+      Clear
+    </button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     THREE.JS — Full 3D Brain Visualization with Force-Directed Graph
+     ═══════════════════════════════════════════════════════════════ -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "/static/three/three.module.js",
+    "three/addons/": "/static/three/addons/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+/* ═══════════════════════════════════════════════════════════════
+   CONFIG
+   ═══════════════════════════════════════════════════════════════ */
+const CONFIG = {
+  nodeBaseSize:     0.35,
+  nodeSizeMult:     0.28,
+  linkOpacity:      0.18,
+  pulseCount:       60,
+  particleCount:    600,
+  particleSize:     0.06,
+  autoRotateSpeed:  0.15,
+  cameraDistance:   42,
+  bloomStrength:    0.7,
+  bloomRadius:      0.4,
+  bloomThreshold:   0.85,
+  // Force-directed
+  repulsion:        80,
+  attraction:       0.005,
+  damping:          0.92,
+  centerGravity:    0.01,
+  maxVelocity:      2,
+  groupSpread:      8,
+};
+
+const SECTION_COLORS = {
+  PATTERNS:     { color: '#a78bfa', hex: 0xa78bfa, label: 'Patterns' },
+  PROJECT:      { color: '#60a5fa', hex: 0x60a5fa, label: 'Project Logic' },
+  LESSONS:      { color: '#34d399', hex: 0x34d399, label: 'Lessons Learned' },
+  FACTS:        { color: '#fbbf24', hex: 0xfbbf24, label: 'Holographic' },
+  HOLIDAYS:     { color: '#f472b6', hex: 0xf472b6, label: 'Holidays' },
+  GENERAL:      { color: '#818cf8', hex: 0x818cf8, label: 'General' },
+  NOTES:        { color: '#22d3ee', hex: 0x22d3ee, label: 'Notes' },
+  AI_KNOWLEDGE: { color: '#f97316', hex: 0xf97316, label: 'AI Knowledge' },
+  PERSONAL:     { color: '#fb923c', hex: 0xfb923c, label: 'Personal' },
+};
+
+const LINK_TYPE_COLORS = {
+  wiki:       '#a78bfa',
+  tag:        '#34d399',
+  folder:     '#818cf8',
+  tag_pair:   '#fbbf24',
+  unresolved: '#ef4444',
+  semantic:   '#60a5fa',
+  // Оставлены для совместимости: эти типы сервер не присылает,
+  // но на них ссылается код памяти brain.
+  explicit:   '#ffffff',
+  tags:       '#fbbf24',
+  mention:    '#60a5fa',
+  section:    '#818cf8',
+  backlink:   '#f472b6',
+};
+
+const LINK_TYPE_LABELS = {
+  wiki:       'Ссылка [[]]',
+  folder:     'Папка',
+  tag:        'Тег',
+  tag_pair:   'Общий тег',
+  unresolved: 'Битая ссылка',
+  semantic:   'Смысловая',
+  explicit:   'Явная',
+  tags:       'Теги',
+  mention:    'Упоминание',
+  section:    'Раздел',
+  backlink:   'Обратная',
+};
+
+/* ═══ NOTES INTEGRATION HELPERS ═══ */
+let NOTES_FOLDERS = ['inbox'];
+
+const FALLBACK_SECTION = { color: '#818cf8', hex: 0x818cf8, label: 'Заметки' };
+
+function getSectionInfo(section) {
+  if (section && graphData && graphData.sections && graphData.sections[section]) {
+    const s = graphData.sections[section];
+    const hex = parseInt((s.color || '#818cf8').replace('#', '0x'));
+    return { color: s.color || '#818cf8', hex: hex, label: s.label || section };
+  }
+  /* Раньше здесь стояло `return getSectionInfo(section)` — на неизвестной
+     секции (папка без заметок, тег, узел-группа) функция вызывала сама
+     себя и роняла страницу на RangeError. Отдаём запасной цвет. */
+  return { ...FALLBACK_SECTION, label: section || FALLBACK_SECTION.label };
+}
+
+/* Цвет узла по его kind: у групп он свой, у неразрешённых ссылок — красный.
+   Раньше цвет брался только из папки, поэтому узлы-теги и неразрешённые
+   ссылки красились тем же, что и папка, и были неотличимы. */
+function nodeColor(nodeData) {
+  if (!nodeData) return FALLBACK_SECTION.color;
+  if (nodeData.kind === 'unresolved') return nodeData.color || '#ef4444';
+  if (nodeData.kind === 'group') {
+    return nodeData.color || (nodeData.group_kind === 'tag' ? '#34d399' : '#818cf8');
+  }
+  const sec = getSectionInfo(nodeData.section);
+  return nodeData.color || sec.color;
+}
+
+async function loadFolders() {
+  try {
+    const res = await fetch('/api/notes/folders');
+    const data = await res.json();
+    let folders = [];
+    if (Array.isArray(data)) folders = data;
+    else if (data && Array.isArray(data.folders)) folders = data.folders;
+    else if (data && Array.isArray(data.tree)) folders = data.tree.map(f => (f && f.name) ? f.name : f);
+    folders = folders.filter(f => f && f !== 'all' && !f.startsWith('_') && !f.startsWith('.'));
+    if (!folders.includes('inbox')) folders.unshift('inbox');
+    NOTES_FOLDERS = folders;
+    const sel = document.getElementById('form-section');
+    if (sel) {
+      const cur = sel.value || 'inbox';
+      sel.innerHTML = folders.map(f => `<option value="${f}">${f}</option>`).join('');
+      sel.value = folders.includes(cur) ? cur : folders[0];
+    }
+  } catch (e) { /* keep defaults */ }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   2D / 3D MODE
+   -----------------------------------------------------------------------
+   2D — режим по умолчанию: читается лучше, не требует WebGL.
+   3D — то, что было раньше, остаётся доступным кнопкой.
+
+   Переключение не трогает данные: оба движка получают один и тот же
+   ответ /api/notes/graph. Скрывается только контейнер, поэтому при
+   возврате в 3D сцена остаётся в памяти и не пересчитывается заново.
+   ═══════════════════════════════════════════════════════════════ */
+const LS_MODE = 'notes_graph_mode';
+let graphMode = (localStorage.getItem(LS_MODE) === '3d') ? '3d' : '2d';
+
+/* Битая ссылка ([[Цель]] без заметки) — служебный узел. По умолчанию не
+   показываем: на живом графе красные «призраки» и пунктирные рёбра
+   засоряют картину. Включить можно в настройках. */
+const LS_UNRESOLVED = 'notes_graph_show_unresolved';
+function showUnresolved() {
+  try { return localStorage.getItem(LS_UNRESOLVED) === '1'; } catch (e) { return false; }
+}
+
+/* ── Группировка: папки и теги или смысловые темы laya ─────────────────
+   Смысловые группы приходят готовыми узлами в /api/notes/graph, но фильтр
+   оставляет на сцене только выбранный слой: иначе папка и смысловая тема
+   одновременно тянут одну заметку в два кластера. */
+const LS_GROUP_MODE = 'notes_graph_group_mode';
+let groupMode = 'folder';
+try {
+  const saved = localStorage.getItem(LS_GROUP_MODE);
+  if (saved === 'semantic' || saved === 'all' || saved === 'folder') groupMode = saved;
+} catch (e) { /* приватный режим */ }
+
+function isSemanticNode(n) {
+  return n && (n.group_kind === 'semantic' || String(n.id || '').indexOf('semantic:') === 0);
+}
+function isFolderTagNode(n) {
+  return n && (n.group_kind === 'folder' || n.group_kind === 'tag' ||
+    /^(folder|tag):/.test(String(n.id || '')));
+}
+
+function filterGraphForMode(data) {
+  if (!data) return data;
+  const drop = new Set();
+  if (groupMode !== 'all') {
+    for (const n of (data.nodes || [])) {
+      if (groupMode === 'semantic' && isFolderTagNode(n)) drop.add(n.id);
+      else if (groupMode === 'folder' && isSemanticNode(n)) drop.add(n.id);
+    }
+  }
+  if (drop.size || groupMode === 'semantic') {
+    data.nodes = (data.nodes || []).filter(n => !drop.has(n.id));
+    data.links = (data.links || []).filter(l => {
+      if (drop.has(l.source) || drop.has(l.target)) return false;
+      const type = l.type || l.linkType;
+      /* «Общий тег» — тоже разметка тегами, в смысловом слое он лишний. */
+      if (groupMode === 'semantic' && type === 'tag_pair') return false;
+      return true;
+    });
+  }
+  if (data.stats) {
+    /* «Групп» в шапке — то, что реально видно на сцене: в смысловом слое
+       это темы laya, в слое папок — папки и теги, в «Всё сразу» — обе. */
+    data.stats.total_links = data.links.length;
+    data.stats.groups = data.nodes.filter(
+      n => n.kind === 'group' && n.group_kind !== 'unresolved').length;
+    data.stats.semantic_groups = data.nodes.filter(isSemanticNode).length;
+  }
+  return data;
+}
+
+function updateGroupModeUi() {
+  const sel = document.getElementById('group-mode');
+  if (sel) sel.value = groupMode;
+  const wrap = document.getElementById('group-mode-wrap');
+  if (wrap) wrap.classList.toggle('is-semantic', groupMode === 'semantic');
+  const sub = document.getElementById('gx-nav-sub');
+  if (sub) sub.textContent = groupMode === 'semantic'
+    ? 'Смысловые темы laya и связи' : 'Папки, теги и связи';
+}
+
+async function fetchSemanticStatus() {
+  try {
+    const r = await fetch('/api/notes/semantic/status', { cache: 'no-store' });
+    return await r.json();
+  } catch (e) { return { error: e.message }; }
+}
+
+function setSemanticHint(text) {
+  const el = document.getElementById('semantic-status');
+  if (el) el.textContent = text || '';
+}
+
+function describeSemantic(st) {
+  if (!st || st.error) return 'Статус недоступен';
+  if (!st.feature) return 'Выключено: включите «Смысловые группы в графе» в админке (laya).';
+  if (!st.ready) return 'Ещё не считалось — нажмите «Пересчитать».';
+  const when = st.generated ? new Date(st.generated * 1000).toLocaleString('ru') : '';
+  if (st.stale) return 'Кэш устарел: заметки изменились. Нажмите «Пересчитать». ' + when;
+  return 'Тем: ' + (st.groups || []).length + ' · заметок: ' + (st.assigned || 0) +
+    (when ? ' · ' + when : '');
+}
+
+async function ensureSemanticReady(force) {
+  const st = await fetchSemanticStatus();
+  if (!st.feature) {
+    setSemanticHint(describeSemantic(st));
+    toast('Смысловая группировка выключена в настройках laya', 'warning');
+    return false;
+  }
+  if (st.fresh && !force) {
+    setSemanticHint(describeSemantic(st));
+    return true;
+  }
+  setSemanticHint('Laya считает смысловые темы…');
+  toast('Laya считает смысловые темы…', 'info');
+  try {
+    const r = await fetch('/api/notes/semantic/rebuild', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ force: !!force }),
+    });
+    const d = await r.json();
+    if (d.error) {
+      setSemanticHint(describeSemantic(d));
+      toast(d.error, 'error');
+      return false;
+    }
+    setSemanticHint(describeSemantic(d));
+    toast('Смысловые группы: ' + (d.groups || []).length, 'success');
+    return true;
+  } catch (e) {
+    setSemanticHint('Ошибка: ' + e.message);
+    toast('Ошибка расчёта: ' + e.message, 'error');
+    return false;
+  }
+}
+
+async function setGroupMode(mode) {
+  if (mode !== 'folder' && mode !== 'semantic' && mode !== 'all') mode = 'folder';
+  groupMode = mode;
+  try { localStorage.setItem(LS_GROUP_MODE, mode); } catch (e) { /* приватный режим */ }
+  updateGroupModeUi();
+  if (mode === 'semantic') await ensureSemanticReady(false);
+  await loadGraphData();
+}
+
+async function rebuildSemanticGroups() {
+  const ok = await ensureSemanticReady(true);
+  if (ok) {
+    if (groupMode !== 'semantic') await setGroupMode('semantic');
+    else await loadGraphData();
+  }
+}
+
+const groupModeSelect = document.getElementById('group-mode');
+if (groupModeSelect) {
+  groupModeSelect.addEventListener('change', e => setGroupMode(e.target.value));
+}
+const semanticRebuildBtn = document.getElementById('btn-semantic-rebuild');
+if (semanticRebuildBtn) {
+  semanticRebuildBtn.addEventListener('click', rebuildSemanticGroups);
+}
+
+function applyMode() {
+  const c3 = document.getElementById('canvas-container');
+  const c2 = document.getElementById('canvas2d-container');
+  const badge = document.getElementById('mode-badge');
+  const btn = document.getElementById('mode-toggle');
+  const rot = document.getElementById('rotation-toggle');
+  const phys = document.getElementById('physics-toggle');
+
+  const is2d = graphMode === '2d';
+  if (c3) c3.classList.toggle('hidden', is2d);
+  if (c2) c2.classList.toggle('hidden', !is2d);
+  /* Класс на <body> нужен, чтобы сдвинуть стек кнопок: скрытые в 2D
+     поворот и физика оставили бы в нём дыру. */
+  document.body.classList.toggle('graph-2d', is2d);
+  if (badge) badge.textContent = is2d ? '2D' : '3D';
+  if (btn) btn.innerHTML = is2d
+    ? '<i class="fa-solid fa-cube"></i>' : '<i class="fa-solid fa-diagram-project"></i>';
+  if (btn) btn.title = is2d ? 'Переключить на 3D' : 'Переключить на 2D';
+
+  // Вращение и физика — только про 3D. В 2D их прячем, чтобы кнопки
+  // не выглядели рабочими, а ничего не делали.
+  if (rot) rot.style.display = is2d ? 'none' : '';
+  if (phys) phys.style.display = is2d ? 'none' : '';
+
+  if (is2d) {
+    if (typeof window.Graph2D !== 'undefined') {
+      /* Ссылку на openSidebar берём лениво (стрелка), потому что сама
+         openSidebar объявлена ниже по файлу и на момент applyMode()
+         уже существует — но полагаться на порядок не стоит. */
+      window.Graph2D.init({
+        onOpen: (data) => openSidebar(data),
+        onCreate: (target, nodeId) => createFromUnresolved(target),
+        /* Подсказка при наведении — та же функция, что и в 3D. Без неё
+           в 2D узлы молчали: подписи показывались только на самих узлах,
+           а чем является узел (папка, тег, битая ссылка) было непонятно. */
+        onHover: (nd, ev) => {
+          if (!nd) return hideTooltip();
+          if (ev && ev.clientX != null) showTooltip(nd.data, ev.clientX, ev.clientY);
+        },
+      });
+      if (graphData) window.Graph2D.setData(graphData);
+      window.Graph2D.applyTheme();
+      /* Фильтры и отступы переживают переключение режимов: иначе после
+         возврата из 3D выбранная папка и скрытые типы связей терялись. */
+      window.Graph2D.setOption('sectionFilter', activeSectionFilter || '');
+      window.Graph2D.setOption('hiddenLinkTypes', Array.from(hiddenLinkTypes));
+      syncGraphInsets();
+    }
+  } else if (typeof updatePhysics === 'function') {
+    updatePhysics();
+    applyLinkTypeVisibility();
+  }
+}
+
+function toggleMode() {
+  graphMode = graphMode === '2d' ? '3d' : '2d';
+  try { localStorage.setItem(LS_MODE, graphMode); } catch (e) { /* приватный режим */ }
+  applyMode();
+}
+
+document.getElementById('mode-toggle').addEventListener('click', toggleMode);
+
+/* Клик по неразрешённой ссылке создаёт заметку — как в Obsidian.
+   Ссылка [[Цель]] без заметки это не ошибка, а заготовка. */
+async function createFromUnresolved(target) {
+  const title = String(target || '').trim();
+  if (!title) return;
+  try {
+    const r = await fetch('/api/notes/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, content: '# ' + title + '\n\n', folder: 'inbox' }),
+    });
+    const d = await r.json();
+    if (d.error || !d.id) return;
+    toast('Заметка «' + title + '» создана', 'success');
+    await loadGraphData();
+    if (typeof window.Graph2D !== 'undefined') window.Graph2D.focusNode(d.id);
+  } catch (e) { /* сеть — не повод падать */ }
+}
+
+/* Открытие сайдбара поручаем существующей openSidebar (она объявлена ниже
+   и умеет и заметку, и группу). Своей обёртки не делаем: function-декларации
+   перекрываются целиком, и обёртка превратилась бы в рекурсивный вызов. */
+
+/* ═══════════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════════ */
+let graphData = null;
+let nodeObjects = new Map();   // id → { mesh, glow, label, data, velocity, force }
+let linkLines = [];
+let linkPulses = [];
+let particles = null;
+let hoveredNode = null;
+let focusedNode = null;
+let sidebarOpen = false;
+let panelOpen = false;
+let activeSectionFilter = null;
+let isDragging = false;
+let dragNode = null;
+let dragPlane = new THREE.Plane();
+let dragOffset = new THREE.Vector3();
+let forceRunning = true;
+
+const raycaster = new THREE.Raycaster();
+raycaster.params.Points.threshold = 0.5;
+const mouse = new THREE.Vector2();
+const mouse3D = new THREE.Vector3();
+
+// Form state
+let formTags = [];
+let formLinks = [];
+
+/* ═══════════════════════════════════════════════════════════════
+   SCENE SETUP
+   ═══════════════════════════════════════════════════════════════ */
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x06060f, 0.01);
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+camera.position.set(0, 12, CONFIG.cameraDistance);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.3;
+document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+// Post-processing
+const composer = new EffectComposer(renderer);
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  CONFIG.bloomStrength, CONFIG.bloomRadius, CONFIG.bloomThreshold
+);
+composer.addPass(bloomPass);
+
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.autoRotate = true;
+controls.autoRotateSpeed = CONFIG.autoRotateSpeed;
+controls.minDistance = 8;
+controls.maxDistance = 120;
+
+// Lights
+const ambientLight = new THREE.AmbientLight(0x334466, 0.6);
+scene.add(ambientLight);
+const pointLight = new THREE.PointLight(0xa78bfa, 1.5, 100);
+pointLight.position.set(0, 20, 20);
+scene.add(pointLight);
+
+/* ═══════════════════════════════════════════════════════════════
+   PARTICLES
+   ═══════════════════════════════════════════════════════════════ */
+/* Детерминированный «шум» по индексу: при смене темы частицы
+   перекрашиваются, и случайные значения давали бы мерцание. */
+function particleRand(i, seed) {
+  return Math.abs(Math.sin(i * 12.9898 + seed * 78.233) * 43758.5453) % 1;
+}
+
+/* Пыль вокруг графа красится в оттенок акцента активной темы: раньше
+   здесь был жёстко зашит фиолетово-синий HSL, и на лесной, морской или
+   тёплой теме фоновая пыль выбивалась из палитры. */
+function paintParticleColors() {
+  if (!particles) return;
+  const accent = cssVarColor('--accent', '#a78bfa');
+  const hue = accent.getHSL({}).h;
+  const attr = particles.geometry.getAttribute('color');
+  const c = new THREE.Color();
+  for (let i = 0; i < attr.count; i++) {
+    const h = (hue + (particleRand(i, 1) - 0.35) * 0.18 + 1) % 1;
+    c.setHSL(h, 0.42 + particleRand(i, 2) * 0.32, 0.34 + particleRand(i, 3) * 0.3);
+    attr.setXYZ(i, c.r, c.g, c.b);
+  }
+  attr.needsUpdate = true;
+}
+
+function createParticles() {
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(CONFIG.particleCount * 3);
+  const colors = new Float32Array(CONFIG.particleCount * 3);
+
+  for (let i = 0; i < CONFIG.particleCount; i++) {
+    positions[i * 3]     = (Math.random() - 0.5) * 120;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 120;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 120;
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+  const material = new THREE.PointsMaterial({
+    size: CONFIG.particleSize,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.5,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  particles = new THREE.Points(geometry, material);
+  paintParticleColors();
+  scene.add(particles);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NODE CREATION — with group-aware positioning
+   ═══════════════════════════════════════════════════════════════ */
+function createNode(nodeData, index, total, groupCenter, groupRadius) {
+  const kind = nodeData.kind || 'note';
+  const isGroup = kind === 'group';
+  const isUnresolved = kind === 'unresolved';
+  const color = new THREE.Color(nodeColor(nodeData));
+  /* Группа крупнее одиночной заметки, но не «шаром на пол-экрана»:
+     прежний рост до 2.7 радиуса превращал inbox на 44 заметки в
+     центральное пятно. Теперь размер растёт как корень из количества. */
+  const baseSize = isGroup ? 0.7 : CONFIG.nodeBaseSize;
+  const size = isGroup
+    ? baseSize + Math.min(0.9, Math.sqrt(nodeData.count || 2) * 0.14)
+    : baseSize + (nodeData.size || 1) * CONFIG.nodeSizeMult;
+
+  let pos;
+  if (groupCenter) {
+    // Grouped node — place near group center with some randomness
+    const phi = Math.acos(1 - 2 * (index + 0.5) / total);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * index;
+    const r = groupRadius * (0.3 + Math.random() * 0.7);
+    pos = new THREE.Vector3(
+      groupCenter.x + r * Math.sin(phi) * Math.cos(theta) * 0.5,
+      groupCenter.y + r * Math.sin(phi) * Math.sin(theta) * 0.5,
+      groupCenter.z + r * Math.cos(phi) * 0.5
+    );
+  } else {
+    // Isolated node — place far from center, spread around edges
+    const angle = (index / total) * Math.PI * 2 + Math.random() * 0.5;
+    const radius = 25 + Math.random() * 15;
+    pos = new THREE.Vector3(
+      Math.cos(angle) * radius,
+      (Math.random() - 0.5) * 20,
+      Math.sin(angle) * radius
+    );
+  }
+
+  // Node sphere. Группы рисуем менее «телесными»: они фон, а не объекты.
+  const geometry = isGroup
+    ? new THREE.IcosahedronGeometry(size, 1)
+    : new THREE.SphereGeometry(size, 24, 24);
+  const material = new THREE.MeshStandardMaterial({
+    color: color,
+    emissive: color,
+    emissiveIntensity: isGroup ? 0.12 : 0.4,
+    metalness: isGroup ? 0 : 0.3,
+    roughness: isGroup ? 0.9 : 0.5,
+    transparent: true,
+    // Неразрешённая ссылка — «призрак»: заметки ещё нет, поэтому узел
+    // наполовину прозрачный и красный.
+    opacity: isUnresolved ? 0.55 : (isGroup ? 0.28 : 0.9),
+    // Папки/теги — сетка-оболочка кластера, а не плотный шар в центре.
+    wireframe: isGroup,
+    flatShading: isGroup,
+  });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.copy(pos);
+  mesh.userData = { nodeId: nodeData.id, type: 'node', kind };
+  scene.add(mesh);
+
+  // Glow ring
+  const ringGeo = new THREE.RingGeometry(size * (isGroup ? 1.12 : 1.3), size * (isGroup ? 1.38 : 1.8), 32);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: color,
+    transparent: true,
+    opacity: isGroup ? 0.22 : 0.15,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.position.copy(pos);
+  scene.add(ring);
+
+  // Outer glow
+  const glowGeo = new THREE.SphereGeometry(size * (isGroup ? 1.65 : 2), 16, 16);
+  const glowMat = new THREE.MeshBasicMaterial({
+    color: color,
+    transparent: true,
+    opacity: isGroup ? 0.035 : 0.06,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const glow = new THREE.Mesh(glowGeo, glowMat);
+  glow.position.copy(pos);
+  scene.add(glow);
+
+  return {
+    id: nodeData.id,
+    data: nodeData,
+    mesh, ring, glow,
+    position: pos.clone(),
+    velocity: new THREE.Vector3(),
+    force: new THREE.Vector3(),
+    color: color,
+    size: size,
+    kind: kind,
+    dragged: false,
+    groupCenter: groupCenter || null,
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LINK CREATION
+   ═══════════════════════════════════════════════════════════════ */
+function createLink(sourceId, targetId, weight, linkType) {
+  const source = nodeObjects.get(sourceId);
+  const target = nodeObjects.get(targetId);
+  if (!source || !target) return null;
+
+  const points = [];
+  const mid = source.position.clone().add(target.position).multiplyScalar(0.5);
+  mid.y += 1.5; // arc upward
+
+  const curve = new THREE.QuadraticBezierCurve3(
+    source.position.clone(),
+    mid,
+    target.position.clone()
+  );
+  const curvePoints = curve.getPoints(20);
+  points.push(...curvePoints);
+
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+  // Color by link type
+  const linkColor = LINK_TYPE_COLORS[linkType] || LINK_TYPE_COLORS.semantic;
+  const avgColor = new THREE.Color(linkColor);
+  const opacity = Math.min(CONFIG.linkOpacity + weight * 0.04, 0.5);
+
+  const material = new THREE.LineBasicMaterial({
+    color: avgColor,
+    transparent: true,
+    opacity: opacity,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  const line = new THREE.Line(geometry, material);
+  line.userData = { sourceId, targetId, weight, linkType };
+  scene.add(line);
+
+  return { line, sourceId, targetId, weight, linkType, curve };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PULSES along links
+   ═══════════════════════════════════════════════════════════════ */
+function createPulses() {
+  const pulseGeo = new THREE.SphereGeometry(0.08, 8, 8);
+
+  for (let i = 0; i < CONFIG.pulseCount; i++) {
+    const linkIdx = Math.floor(Math.random() * linkLines.length);
+    if (linkIdx >= linkLines.length) continue;
+    const link = linkLines[linkIdx];
+
+    /* Цвет импульса берём из узла-источника. Раньше здесь стояло
+       getSectionInfo(link.sourceId && nodeObjects.get(link.sourceId)?.data?.section)
+       — выражение с && внутри вызова. Если источник не найден, в функцию
+       уходил false, и для ЛЮБОГО неизвестного значения начиналась
+       бесконечная рекурсия (см. исправление в getSectionInfo). */
+    const srcNode = nodeObjects.get(link.sourceId);
+    const pulseColor = srcNode
+      ? new THREE.Color(nodeColor(srcNode.data))
+      : new THREE.Color(LINK_TYPE_COLORS[link.linkType] || '#818cf8');
+    const pulseMat = new THREE.MeshBasicMaterial({
+      color: pulseColor,
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+
+    const pulse = new THREE.Mesh(pulseGeo, pulseMat);
+    pulse.userData = {
+      linkIndex: linkIdx,
+      t: Math.random(),
+      speed: 0.003 + Math.random() * 0.005,
+    };
+    scene.add(pulse);
+    linkPulses.push(pulse);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FORCE-DIRECTED LAYOUT
+   ═══════════════════════════════════════════════════════════════ */
+function computeForces() {
+  const nodes = Array.from(nodeObjects.values());
+
+  // Reset forces
+  for (const node of nodes) {
+    node.force.set(0, 0, 0);
+  }
+
+  // Repulsion between all nodes
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i];
+      const b = nodes[j];
+      const diff = a.position.clone().sub(b.position);
+      const dist = diff.length();
+      if (dist < 0.1) continue;
+
+      const force = CONFIG.repulsion / (dist * dist);
+      const dir = diff.normalize();
+      a.force.add(dir.multiplyScalar(force));
+      b.force.sub(dir.multiplyScalar(force));
+    }
+  }
+
+  // Attraction along links
+  for (const link of linkLines) {
+    const source = nodeObjects.get(link.sourceId);
+    const target = nodeObjects.get(link.targetId);
+    if (!source || !target) continue;
+
+    const diff = target.position.clone().sub(source.position);
+    const dist = diff.length();
+    const idealDist = 6 + (3 - link.weight) * 1.5;
+    const force = (dist - idealDist) * CONFIG.attraction * link.weight;
+
+    const dir = diff.normalize();
+    if (!source.dragged) source.force.add(dir.multiplyScalar(force));
+    if (!target.dragged) target.force.sub(dir.multiplyScalar(force));
+  }
+
+  // Center gravity
+  for (const node of nodes) {
+    const toCenter = node.position.clone().negate();
+    node.force.add(toCenter.multiplyScalar(CONFIG.centerGravity));
+  }
+
+  // Section grouping — attract same-section nodes toward section center
+  const sectionCenters = {};
+  for (const node of nodes) {
+    const sec = node.data.section;
+    if (!sectionCenters[sec]) {
+      const secKeys = Object.keys(SECTION_COLORS);
+      const secIdx = secKeys.indexOf(sec);
+      const secAngle = (secIdx / secKeys.length) * Math.PI * 2;
+      sectionCenters[sec] = new THREE.Vector3(
+        Math.cos(secAngle) * CONFIG.groupSpread,
+        0,
+        Math.sin(secAngle) * CONFIG.groupSpread
+      );
+    }
+    const toSecCenter = sectionCenters[sec].clone().sub(node.position);
+    node.force.add(toSecCenter.multiplyScalar(0.003));
+  }
+}
+
+function updatePhysics() {
+  if (!forceRunning) return;
+
+  computeForces();
+
+  for (const node of nodeObjects.values()) {
+    if (node.dragged) continue;
+
+    // Apply damping
+    node.velocity.add(node.force);
+    node.velocity.multiplyScalar(CONFIG.damping);
+
+    // Clamp velocity
+    if (node.velocity.length() > CONFIG.maxVelocity) {
+      node.velocity.normalize().multiplyScalar(CONFIG.maxVelocity);
+    }
+
+    // Update position
+    node.position.add(node.velocity);
+
+    // Update meshes
+    node.mesh.position.copy(node.position);
+    node.ring.position.copy(node.position);
+    node.glow.position.copy(node.position);
+  }
+
+  // Update link lines
+  for (const link of linkLines) {
+    const source = nodeObjects.get(link.sourceId);
+    const target = nodeObjects.get(link.targetId);
+    if (!source || !target) continue;
+
+    const mid = source.position.clone().add(target.position).multiplyScalar(0.5);
+    mid.y += 1.5;
+
+    const curve = new THREE.QuadraticBezierCurve3(
+      source.position.clone(),
+      mid,
+      target.position.clone()
+    );
+    const points = curve.getPoints(20);
+    link.line.geometry.setFromPoints(points);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GRAPH BUILDING — with group detection & isolated nodes
+   ═══════════════════════════════════════════════════════════════ */
+function buildGraph(data) {
+  graphData = data;
+  nodeObjects.clear();
+  linkLines.forEach(l => scene.remove(l.line));
+  linkLines = [];
+  linkPulses.forEach(p => scene.remove(p));
+  linkPulses = [];
+
+  /* 2D-движок получает те же данные. Он независим от сцены three.js,
+     поэтому вызывается и когда активен 3D — тогда он просто прогреется
+     заранее и переключение будет мгновенным. */
+  if (typeof window.Graph2D !== 'undefined' && graphMode === '2d') {
+    window.Graph2D.setData(data);
+  }
+
+  const nodes = data.nodes;
+  const links = data.links;
+
+  // ── Step 1: Detect groups via Union-Find ──
+  const parent = {};
+  nodes.forEach(n => parent[n.id] = n.id);
+  function find(x) { while (parent[x] !== x) x = parent[x]; return x; }
+  function union(a, b) { const ra = find(a), rb = find(b); if (ra !== rb) parent[ra] = rb; }
+
+  links.forEach(link => union(link.source, link.target));
+
+  // Group nodes by their root
+  const groups = {};
+  const isolated = [];
+  nodes.forEach(n => {
+    const root = find(n.id);
+    if (!groups[root]) groups[root] = [];
+    groups[root].push(n);
+  });
+  // Separate: groups with >1 node vs isolated
+  const realGroups = {};
+  for (const [root, members] of Object.entries(groups)) {
+    if (members.length > 1) realGroups[root] = members;
+    else isolated.push(members[0]);
+  }
+
+  // ── Step 2: Position groups in a circle ──
+  const groupKeys = Object.keys(realGroups);
+  const groupCenters = {};
+  groupKeys.forEach((root, idx) => {
+    const angle = (idx / groupKeys.length) * Math.PI * 2;
+    const radius = 12 + groupKeys.length * 1.5;
+    groupCenters[root] = new THREE.Vector3(
+      Math.cos(angle) * radius,
+      (Math.random() - 0.5) * 6,
+      Math.sin(angle) * radius
+    );
+  });
+
+  // ── Step 3: Create nodes ──
+  let nodeIdx = 0;
+  // Grouped nodes
+  for (const [root, members] of Object.entries(realGroups)) {
+    const center = groupCenters[root];
+    const groupRadius = Math.max(4, 2 + members.length * 0.8);
+    members.forEach((nodeData, i) => {
+      const node = createNode(nodeData, i, members.length, center, groupRadius);
+      nodeObjects.set(nodeData.id, node);
+      nodeIdx++;
+    });
+  }
+  // Isolated nodes — spread around edges
+  isolated.forEach((nodeData, i) => {
+    const node = createNode(nodeData, i, isolated.length, null, 0);
+    nodeObjects.set(nodeData.id, node);
+    nodeIdx++;
+  });
+
+  // ── Step 4: Create links ──
+  links.forEach(link => {
+    const lineObj = createLink(link.source, link.target, link.weight, link.linkType || 'semantic');
+    if (lineObj) linkLines.push(lineObj);
+  });
+
+  // Create pulses
+  createPulses();
+
+  // Update stats
+  updateStats(data.stats);
+  if (typeof updateGraphStats2D === 'function') updateGraphStats2D(data.stats);
+
+  // Build legend with link type info
+  buildLegend(data.sections);
+
+  // Build search index
+  buildSearchIndex(nodes);
+
+  // Log groups
+  console.log(`Groups: ${groupKeys.length} clusters, ${isolated.length} isolated nodes`);
+}
+
+// ── Update Stats Display ──
+function updateStats(stats) {
+  /* Вызовы без аргумента остались в коде добавления/удаления узла.
+     Раньше функция читала graphData сама, теперь принимает параметр —
+     без этого фолбэк-ветки молча не обновляли счётчики. */
+  stats = stats || (graphData && graphData.stats);
+  if (!stats) return;
+  const set = (id, v) => {
+    const e = document.getElementById(id);
+    if (e) e.textContent = v;
+  };
+  set('stat-nodes', stats.total_nodes);
+  set('stat-links', stats.total_links);
+  set('stat-words', stats.total_words || 0);
+  set('stat-groups', stats.groups || 0);
+}
+
+function updateGraphStats2D(stats) {
+  updateStats(stats);
+}
+
+/* Настройки 2D-режима. Кнопки те же, что и у 3D, но часть из них
+   бессмысленна в плоском графе — поэтому панель разделена. */
+function bindGraph2DSettings() {
+  const wire = (id, key, persist) => {
+    const e = document.getElementById(id);
+    if (!e) return;
+    e.addEventListener('change', () => {
+      if (typeof window.Graph2D !== 'undefined') window.Graph2D.setOption(key, e.checked);
+      if (persist) { try { localStorage.setItem(persist, e.checked ? '1' : '0'); } catch (err) {} }
+    });
+  };
+  wire('g2d-show-groups', 'showGroups', 'g2d_showGroups');
+  wire('g2d-show-labels', 'showLabels', 'g2d_showLabels');
+  wire('g2d-only-connected', 'onlyConnected');
+
+  const reheat = document.getElementById('g2d-reheat');
+  if (reheat) reheat.addEventListener('click', () => {
+    if (typeof window.Graph2D !== 'undefined') window.Graph2D.reheat();
+  });
+  const fitBtn = document.getElementById('g2d-fit');
+  if (fitBtn) fitBtn.addEventListener('click', () => {
+    if (typeof window.Graph2D !== 'undefined') window.Graph2D.fit();
+  });
+
+  // Восстанавливаем сохранённые значения: настройки вида настраивают один раз.
+  const restore = (id, key, storageKey) => {
+    const e = document.getElementById(id);
+    if (!e) return;
+    let v = null;
+    try { v = localStorage.getItem(storageKey); } catch (err) {}
+    if (v !== null) e.checked = v === '1';
+    if (typeof window.Graph2D !== 'undefined') window.Graph2D.setOption(key, e.checked);
+  };
+  restore('g2d-show-groups', 'showGroups', 'g2d_showGroups');
+  restore('g2d-show-labels', 'showLabels', 'g2d_showLabels');
+
+  const fl = document.getElementById('g2d-force-layout');
+  if (fl) {
+    let saved = null;
+    try { saved = localStorage.getItem('g2d_layout'); } catch (err) {}
+    fl.checked = saved !== 'tree';
+    fl.addEventListener('change', () => {
+      try { localStorage.setItem('g2d_layout', fl.checked ? 'force' : 'tree'); } catch (err) {}
+      if (typeof window.Graph2D !== 'undefined') {
+        window.Graph2D.setOption('mode', fl.checked ? 'force' : 'tree');
+      }
+    });
+    if (typeof window.Graph2D !== 'undefined') {
+      window.Graph2D.setOption('mode', fl.checked ? 'force' : 'tree');
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LEGEND — sections + link types
+   ═══════════════════════════════════════════════════════════════ */
+function legendColor(hex) {
+  return (window.Graph2D && window.Graph2D.displayColor)
+    ? window.Graph2D.displayColor(hex) : hex;
+}
+
+function legendLinkColor(type) {
+  return (window.Graph2D && window.Graph2D.linkColor)
+    ? window.Graph2D.linkColor(type)
+    : (LINK_TYPE_COLORS[type] || LINK_TYPE_COLORS.semantic);
+}
+
+/* Фильтр типов связей. Живёт на уровне страницы: 2D-движку он уходит
+   через setOption, трёхмерным линиям — напрямую в line.visible. */
+const hiddenLinkTypes = new Set();
+
+function buildLegend(sections) {
+  const container = document.getElementById('legend-items');
+  container.innerHTML = '';
+  if (!graphData) return;
+
+  const nodes = graphData.nodes || [];
+  const links = graphData.links || [];
+  const notes = nodes.filter(n => n.kind === 'note');
+  const tagGroups = nodes
+    .filter(n => n.kind === 'group' && n.group_kind === 'tag')
+    .sort((a, b) => (b.count || 0) - (a.count || 0));
+  const folderNodes = nodes.filter(n => n.kind === 'group' && n.group_kind === 'folder');
+  const semanticGroups = nodes
+    .filter(n => n.kind === 'group' && n.group_kind === 'semantic')
+    .sort((a, b) => (b.count || 0) - (a.count || 0));
+  sections = sections || {};
+
+  const navSub = document.getElementById('gx-nav-sub');
+  if (navSub) {
+    if (groupMode === 'semantic') {
+      navSub.textContent =
+        `${semanticGroups.length} смысловых тем · ${notes.length} заметок · ${links.length} связей`;
+    } else if (groupMode === 'all') {
+      navSub.textContent =
+        `${folderNodes.length} папок · ${tagGroups.length} тегов · ${semanticGroups.length} тем · ${links.length} связей`;
+    } else {
+      navSub.textContent =
+        `${Object.keys(sections).length} папок · ${tagGroups.length} тегов · ${links.length} связей`;
+    }
+  }
+
+  const addSection = (title, hint) => {
+    const sec = document.createElement('div');
+    sec.className = 'gx-sec';
+    const h = document.createElement('div');
+    h.className = 'gx-sec-title';
+    h.innerHTML = `<span>${escapeHtml(title)}</span>` +
+      (hint ? `<span class="gx-sec-hint">${escapeHtml(hint)}</span>` : '');
+    sec.appendChild(h);
+    container.appendChild(sec);
+    return sec;
+  };
+
+  const addItem = (parent, cls, html) => {
+    const el = document.createElement('div');
+    el.className = 'item' + (cls ? ' ' + cls : '');
+    el.innerHTML = html;
+    parent.appendChild(el);
+    return el;
+  };
+
+  const dot = (color) => `<span class="dot" style="background:${color};color:${color}"></span>`;
+
+  /* ── Обзор ── */
+  const overview = addSection('Обзор');
+  const allItem = addItem(overview, 'all-item',
+    `${dot('var(--text-dim)')}<span class="lbl">Все заметки</span>` +
+    `<span class="count">${notes.length}</span>`);
+  allItem.title = 'Показать весь граф';
+  allItem.addEventListener('click', () => {
+    activeSectionFilter = null;
+    showAllNodes();
+    hideGroupOverlay();
+    refreshLegendFilterState();
+    closeNavOnMobile();
+  });
+
+  /* ── Хабы ── Самые связанные заметки: с них удобно начинать обход,
+     когда в графе десятки узлов и глаз не знает, за что зацепиться. */
+  const degree = new Map();
+  for (const l of links) {
+    if (l.type === 'unresolved' || l.linkType === 'unresolved') continue;
+    degree.set(l.source, (degree.get(l.source) || 0) + 1);
+    degree.set(l.target, (degree.get(l.target) || 0) + 1);
+  }
+  const hubs = notes
+    .map(n => ({ node: n, deg: degree.get(n.id) || 0 }))
+    .filter(x => x.deg > 0)
+    .sort((a, b) => b.deg - a.deg)
+    .slice(0, 5);
+  if (hubs.length) {
+    const hubSec = addSection('Хабы', 'самые связанные');
+    for (const { node, deg } of hubs) {
+      const info = getSectionInfo(node.section);
+      const el = addItem(hubSec, '',
+        `${dot(legendColor(node.color || info.color))}` +
+        `<span class="lbl">${escapeHtml(node.title)}</span>` +
+        `<span class="count">${deg}</span>`);
+      el.title = 'Открыть заметку и подсветить её на графе';
+      el.addEventListener('click', () => {
+        if (graphMode === '2d' && typeof window.Graph2D !== 'undefined') {
+          window.Graph2D.focusNode(node.id);
+        } else {
+          focusOnNode(node.id);
+        }
+        const nd = nodeObjects.get(node.id);
+        if (nd) openSidebar(nd.data);
+        closeNavOnMobile();
+      });
+    }
+  }
+
+  /* ── Папки ── */
+  if (folderNodes.length) {
+    const folders = addSection('Папки', 'клик — фильтр');
+    for (const [key, sec] of Object.entries(sections)) {
+      const info = getSectionInfo(key);
+      const nodeCount = sec.nodes?.length || 0;
+      const color = legendColor(info.color);
+      const el = addItem(folders, '',
+        `${dot(color)}<span class="lbl">${escapeHtml(info.label)}</span>` +
+        `<span class="count">${nodeCount}</span>`);
+      el.dataset.section = key;
+      el.title = 'Показать только эту папку';
+      el.classList.toggle('filtered', !!activeSectionFilter && activeSectionFilter !== key);
+      el.addEventListener('click', () => toggleSectionFilter(key));
+    }
+  }
+
+  /* ── Теги ── Тег с одной заметкой сервер в граф не пускает, поэтому
+     здесь только реальные кластеры. Клик ведёт к узлу тега. */
+  if (tagGroups.length) {
+    const tags = addSection('Теги', 'клик — показать');
+    for (const g of tagGroups.slice(0, 10)) {
+      const color = legendColor(g.color || '#34d399');
+      const el = addItem(tags, '',
+        `${dot(color)}<span class="lbl">${escapeHtml(g.title)}</span>` +
+        `<span class="count">${g.count || 0}</span>`);
+      el.title = 'Перейти к узлу тега';
+      el.addEventListener('click', () => {
+        if (graphMode === '2d' && typeof window.Graph2D !== 'undefined') {
+          window.Graph2D.focusNode(g.id);
+          closeNavOnMobile();
+          return;
+        }
+        const nd = nodeObjects.get(g.id);
+        if (nd) { focusOnNode(g.id); openSidebar(nd.data); closeNavOnMobile(); }
+      });
+    }
+  }
+
+  /* ── По смыслу ── Темы laya: тот же принцип, что у тегов, но кластер
+     собран классификатором, а не разметкой. */
+  if (semanticGroups.length) {
+    const themes = addSection('По смыслу', 'laya · клик — показать');
+    for (const g of semanticGroups) {
+      const color = legendColor(g.color || '#60a5fa');
+      const el = addItem(themes, '',
+        `${dot(color)}<span class="lbl">${escapeHtml(g.title)}</span>` +
+        `<span class="count">${g.count || 0}</span>`);
+      el.title = 'Перейти к смысловой теме';
+      el.addEventListener('click', () => {
+        if (graphMode === '2d' && typeof window.Graph2D !== 'undefined') {
+          window.Graph2D.focusNode(g.id);
+          closeNavOnMobile();
+          return;
+        }
+        const nd = nodeObjects.get(g.id);
+        if (nd) { focusOnNode(g.id); openSidebar(nd.data); closeNavOnMobile(); }
+      });
+    }
+  }
+
+  /* ── Связи ── Реальные типы рёбер. Клик скрывает тип целиком: на большом
+     графе «общий тег» превращается в паутину, и без фильтра не читается. */
+  const present = new Map();
+  for (const l of links) {
+    const t = l.type || l.linkType || 'semantic';
+    present.set(t, (present.get(t) || 0) + 1);
+  }
+  if (present.size) {
+    const linkSec = addSection('Связи', 'клик — скрыть');
+    const LEGEND_LINKS = [
+      ['wiki',       'Ссылка [[]]'],
+      ['folder',     'Папка → заметка'],
+      ['tag',        'Тег → заметка'],
+      ['tag_pair',   'Общий тег'],
+      ['unresolved', 'Битая ссылка'],
+      ['semantic',   'Смысловая'],
+    ];
+    for (const [type, label] of LEGEND_LINKS) {
+      if (!present.has(type)) continue;
+      const lc = legendLinkColor(type);
+      const el = addItem(linkSec, 'link-type',
+        `${dot(lc)}<span class="lbl">${escapeHtml(label)}</span>` +
+        `<span class="count">${present.get(type)}</span>`);
+      el.dataset.linkType = type;
+      el.title = 'Скрыть или показать этот тип связи';
+      el.classList.toggle('off', hiddenLinkTypes.has(type));
+      el.addEventListener('click', () => toggleLinkType(type, el));
+    }
+  }
+
+  /* ── Не создано ── Клик открывает карточку: там кнопка создания заметки. */
+  const unresolvedKeys = Object.keys(graphData.unresolved || {});
+  if (unresolvedKeys.length) {
+    const un = addSection('Не создано · ' + unresolvedKeys.length, 'клик — открыть');
+    const uc = legendLinkColor('unresolved');
+    for (const k of unresolvedKeys.slice(0, 12)) {
+      const el = addItem(un, '',
+        `${dot(uc)}<span class="lbl" style="color:${uc}">${escapeHtml(k)}</span>` +
+        `<span class="count">${graphData.unresolved[k].length}</span>`);
+      el.title = 'Куда ссылаются — и создание заметки';
+      el.addEventListener('click', () => {
+        if (graphMode === '2d' && typeof window.Graph2D !== 'undefined') {
+          window.Graph2D.focusNode('unresolved:' + k);
+        }
+        const nd = nodeObjects.get('unresolved:' + k);
+        if (nd) { focusedNode = nd.id; focusOnNode(nd.id); openSidebar(nd.data); }
+        else if (graphMode === '2d' && graphData) {
+          const data = (graphData.nodes || []).find(n => n.id === 'unresolved:' + k);
+          if (data) openSidebar(data);
+        }
+      });
+    }
+  }
+}
+
+/* Пересчитать затемнение пунктов папок после смены фильтра. */
+function refreshLegendFilterState() {
+  document.querySelectorAll('#legend .item[data-section]').forEach(el => {
+    el.classList.toggle('filtered', !!activeSectionFilter && el.dataset.section !== activeSectionFilter);
+  });
+  const all = document.querySelector('#legend .all-item');
+  if (all) all.classList.toggle('filtered', !!activeSectionFilter);
+}
+
+function toggleLinkType(type, el) {
+  if (hiddenLinkTypes.has(type)) hiddenLinkTypes.delete(type);
+  else hiddenLinkTypes.add(type);
+  if (el) el.classList.toggle('off', hiddenLinkTypes.has(type));
+  applyLinkTypeVisibility();
+}
+
+/* Скрытие типов в 3D. Заодно уважает выбранную папку: иначе фильтр
+   связей возвращал линии, которые спрятал фильтр папок. */
+function applyLinkTypeVisibility() {
+  if (graphMode === '2d') {
+    if (typeof window.Graph2D !== 'undefined') {
+      window.Graph2D.setOption('hiddenLinkTypes', Array.from(hiddenLinkTypes));
+    }
+    return;
+  }
+  for (const link of linkLines) {
+    let vis = !hiddenLinkTypes.has(link.linkType);
+    if (vis && activeSectionFilter) {
+      const s = nodeObjects.get(link.sourceId);
+      const t = nodeObjects.get(link.targetId);
+      vis = !!(s && t && s.data.section === activeSectionFilter && t.data.section === activeSectionFilter);
+    }
+    link.line.visible = vis;
+  }
+}
+
+function toggleSectionFilter(section) {
+  if (activeSectionFilter === section) {
+    activeSectionFilter = null;
+    showAllNodes();
+    hideGroupOverlay();
+  } else {
+    activeSectionFilter = section;
+    filterBySection(section);
+    showGroupOverlay(section);
+  }
+  refreshLegendFilterState();
+  closeNavOnMobile();
+}
+
+function showAllNodes() {
+  for (const node of nodeObjects.values()) {
+    node.mesh.visible = true;
+    node.ring.visible = true;
+    node.glow.visible = true;
+  }
+  if (graphMode === '2d' && typeof window.Graph2D !== 'undefined') {
+    window.Graph2D.setOption('sectionFilter', '');
+  }
+  applyLinkTypeVisibility();
+}
+
+function filterBySection(section) {
+  if (graphMode === '2d') {
+    if (typeof window.Graph2D !== 'undefined') {
+      window.Graph2D.setOption('sectionFilter', section);
+      /* Кадр подождёт: узлы уже расставлены, а вписывание сразу после
+         фильтра показывает именно отфильтрованную часть. */
+      requestAnimationFrame(() => window.Graph2D.fit());
+    }
+    return;
+  }
+  for (const node of nodeObjects.values()) {
+    const match = node.data.section === section;
+    node.mesh.visible = match;
+    node.ring.visible = match;
+    node.glow.visible = match;
+  }
+  applyLinkTypeVisibility();
+}
+
+function showGroupOverlay(section) {
+  const sec = getSectionInfo(section);
+  const overlay = document.getElementById('group-overlay');
+  document.getElementById('sl-text').textContent = sec.label;
+  overlay.classList.add('visible');
+  setTimeout(() => overlay.classList.remove('visible'), 2000);
+}
+
+function hideGroupOverlay() {
+  document.getElementById('group-overlay').classList.remove('visible');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SEARCH
+   ═══════════════════════════════════════════════════════════════ */
+let searchIndex = [];
+
+function buildSearchIndex(nodes) {
+  searchIndex = nodes.map(n => ({
+    id: n.id,
+    title: n.title,
+    section: n.section,
+    description: n.description,
+    tags: n.tags || [],
+  }));
+}
+
+const searchInput = document.getElementById('search');
+const searchResults = document.getElementById('search-results');
+
+searchInput.addEventListener('input', () => {
+  const query = searchInput.value.toLowerCase().trim();
+  if (query.length < 2) {
+    searchResults.classList.remove('active');
+    if (graphMode === '2d' && typeof window.Graph2D !== 'undefined') {
+      window.Graph2D.setOption('filterText', '');
+    }
+    return;
+  }
+
+  const matches = searchIndex.filter(n =>
+    n.title.toLowerCase().includes(query) ||
+    n.description.toLowerCase().includes(query) ||
+    n.tags.some(t => t.includes(query))
+  ).slice(0, 10);
+
+  if (matches.length === 0) {
+    searchResults.classList.remove('active');
+    return;
+  }
+
+  searchResults.innerHTML = matches.map(n => {
+    const sec = getSectionInfo(n.section);
+    // Highlight matching text in title
+    const titleLower = n.title.toLowerCase();
+    const idx = titleLower.indexOf(query);
+    let displayTitle = n.title;
+    if (idx >= 0) {
+      displayTitle = n.title.slice(0, idx) + 
+        `<mark style="background:color-mix(in srgb, var(--accent) 30%, transparent);color:var(--text-bright);border-radius:2px;padding:0 2px;">${n.title.slice(idx, idx + query.length)}</mark>` +
+        n.title.slice(idx + query.length);
+    }
+    return `<div class="result-item" data-id="${n.id}">
+      <div class="result-title">${displayTitle}</div>
+      <div class="result-section">${sec.label}</div>
+    </div>`;
+  }).join('');
+
+  searchResults.classList.add('active');
+
+  /* В 2D-режиме тот же запрос подсвечивает узел на плоском графе:
+     выбранное подсвечивается, остальное приглушается. */
+  if (graphMode === '2d' && typeof window.Graph2D !== 'undefined') {
+    window.Graph2D.setOption('filterText', query);
+  }
+
+  // Click handler
+  searchResults.querySelectorAll('.result-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const nodeId = el.dataset.id;
+      if (graphMode === '2d') {
+        if (typeof window.Graph2D !== 'undefined') {
+          window.Graph2D.setOption('filterText', '');
+          window.Graph2D.focusNode(nodeId);
+        }
+        const nd2 = nodeObjects.get(nodeId);
+        if (nd2) openSidebar(nd2.data);
+        searchResults.classList.remove('active');
+        searchInput.value = '';
+        return;
+      }
+      const node = nodeObjects.get(nodeId);
+      if (node) {
+        // Open sidebar + focus camera
+        focusedNode = nodeId;
+        openSidebar(node.data);
+        focusOnNode(nodeId);
+        // Highlight the node visually
+        highlightNode(nodeId);
+      }
+      searchResults.classList.remove('active');
+      searchInput.value = '';
+    });
+  });
+});
+
+
+searchInput.addEventListener('blur', () => {
+  setTimeout(() => searchResults.classList.remove('active'), 200);
+});
+
+function focusOnNode(nodeId) {
+  const node = nodeObjects.get(nodeId);
+  if (!node) return;
+
+  controls.autoRotate = false;
+  const targetPos = node.position.clone().add(new THREE.Vector3(0, 5, 15));
+  camera.position.lerp(targetPos, 0.05);
+  controls.target.lerp(node.position, 0.05);
+
+  // Highlight animation: pulse the node
+  const originalScale = node.mesh.scale.clone();
+  const ringOriginalScale = node.ring.scale.clone();
+  
+  // Quick pulse animation
+  let pulsePhase = 0;
+  const pulseInterval = setInterval(() => {
+    pulsePhase += 0.15;
+    const scale = 1 + Math.sin(pulsePhase) * 0.4;
+    if (pulsePhase < Math.PI * 4) {
+      node.mesh.scale.setScalar(scale);
+      node.ring.scale.set(scale, scale, 1);
+      node.glow.scale.setScalar(scale * 1.2);
+    } else {
+      clearInterval(pulseInterval);
+      node.mesh.scale.copy(originalScale);
+      node.ring.scale.copy(ringOriginalScale);
+      node.glow.scale.setScalar(1);
+    }
+  }, 50);
+
+  // Also highlight in legend
+  document.querySelectorAll('#legend .item').forEach(el => {
+    if (el.dataset.section === node.data.section) {
+      el.style.transition = 'opacity 0.3s';
+      el.style.opacity = '1';
+    }
+  });
+}
+
+// ── Node highlight ring (persistent glow when found via search) ──
+let highlightedNodeId = null;
+let highlightRing = null;
+
+function highlightNode(nodeId) {
+  // Remove previous highlight
+  if (highlightRing) {
+    scene.remove(highlightRing);
+    highlightRing.geometry.dispose();
+    highlightRing.material.dispose();
+    highlightRing = null;
+  }
+  highlightedNodeId = null;
+
+  const node = nodeObjects.get(nodeId);
+  if (!node) return;
+
+  highlightedNodeId = nodeId;
+
+  // Create a pulsing outer ring
+  const ringGeo = new THREE.RingGeometry(node.size * 2.5, node.size * 3.2, 32);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0xfbbf24,
+    transparent: true,
+    opacity: 0.6,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  highlightRing = new THREE.Mesh(ringGeo, ringMat);
+  highlightRing.position.copy(node.position);
+  scene.add(highlightRing);
+}
+
+function clearNodeHighlight() {
+  if (highlightRing) {
+    scene.remove(highlightRing);
+    highlightRing.geometry.dispose();
+    highlightRing.material.dispose();
+    highlightRing = null;
+  }
+  highlightedNodeId = null;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOOLTIP & SIDEBAR
+   ═══════════════════════════════════════════════════════════════ */
+const tooltip = document.getElementById('tooltip');
+
+function showTooltip(nodeData, screenX, screenY) {
+  const sec = getSectionInfo(nodeData.section);
+  document.getElementById('tt-title').textContent = nodeData.title;
+  document.getElementById('tt-desc').textContent = nodeData.description || '';
+  document.getElementById('tt-meta').innerHTML = `
+    <span class="tag" style="background:${sec.color}22; color:${sec.color}">${sec.label}</span>
+    <span class="tag" style="background:color-mix(in srgb, var(--accent) 10%, transparent); color:var(--accent)">${nodeData.word_count || 0} words</span>
+  `;
+
+  tooltip.style.display = 'block';
+  tooltip.style.left = (screenX + 16) + 'px';
+  tooltip.style.top = (screenY - 10) + 'px';
+
+  // Keep in viewport
+  const rect = tooltip.getBoundingClientRect();
+  if (rect.right > window.innerWidth) tooltip.style.left = (screenX - rect.width - 16) + 'px';
+  if (rect.bottom > window.innerHeight) tooltip.style.top = (screenY - rect.height + 10) + 'px';
+}
+
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
+
+// Sidebar
+const sidebar = document.getElementById('sidebar');
+let currentSidebarNode = null; // Track current node for action buttons
+
+function openSidebar(nodeData) {
+  currentSidebarNode = nodeData; // Store for action buttons
+  const sec = getSectionInfo(nodeData.section);
+  const isGroup = nodeData.kind === 'group';
+  const isUnresolved = nodeData.kind === 'unresolved';
+
+  const badge = document.getElementById('sb-badge');
+  badge.textContent = sec.label;
+  badge.style.background = sec.color + '22';
+  badge.style.color = sec.color;
+  badge.style.border = `1px solid ${sec.color}44`;
+
+  const wordsEl = document.getElementById('sb-words');
+  const modEl = document.getElementById('sb-modified');
+  const pathEl = document.getElementById('sb-filepath');
+
+  document.getElementById('sb-title').textContent = nodeData.title;
+  if (isGroup) {
+    wordsEl.textContent = `${nodeData.count || (nodeData.members || []).length} заметок`;
+    modEl.style.display = 'none';
+    pathEl.textContent = nodeData.group_kind === 'tag' ? 'Тег' : 'Папка';
+  } else if (isUnresolved) {
+    wordsEl.textContent = `${nodeData.count || (nodeData.sources || []).length} ссылок`;
+    modEl.style.display = 'none';
+    pathEl.textContent = nodeData.target || nodeData.title;
+  } else {
+    wordsEl.textContent = `${nodeData.word_count || 0} слов`;
+    modEl.style.display = '';
+    modEl.textContent = nodeData.modified ? nodeData.modified.slice(0, 10) : '—';
+    pathEl.textContent = nodeData.filepath || nodeData.filename || '';
+  }
+
+  /* Группа и битая ссылка — не заметки: markdown-рендер им не подходит.
+     Вместо пустого содержимого показываем то, из чего они состоят:
+     списки заметок с переходом по клику. */
+  const contentEl = document.getElementById('sidebar-content');
+  const byId = new Map(((graphData && graphData.nodes) || []).map(n => [n.id, n]));
+  const memberRow = (id) => {
+    const m = byId.get(id);
+    if (!m) return '';
+    const c = legendColor(m.color || '#818cf8');
+    return `<button class="gx-member" data-node-id="${escapeHtml(id)}">
+      <span class="gx-member-dot" style="background:${c}"></span>
+      <span class="gx-member-title">${escapeHtml(m.title)}</span>
+      <span class="gx-member-meta">${m.word_count || 0} сл.</span>
+    </button>`;
+  };
+
+  if (isGroup) {
+    const ids = nodeData.members || [];
+    contentEl.innerHTML =
+      `<p class="gx-empty">${nodeData.group_kind === 'tag'
+        ? 'Заметки с этим тегом:'
+        : 'Заметки в этой папке:'}</p>` +
+      `<div class="gx-member-list">${ids.map(memberRow).join('')}</div>`;
+  } else if (isUnresolved) {
+    const ids = nodeData.sources || [];
+    contentEl.innerHTML =
+      `<p class="gx-empty">Заметка «${escapeHtml(nodeData.target || nodeData.title)}» ещё не создана.
+        На неё ссылаются:</p>` +
+      `<div class="gx-member-list">${ids.map(memberRow).join('')}</div>` +
+      `<button class="btn btn-primary" id="sb-btn-create" style="width:100%;justify-content:center;margin-top:14px;font-size:12.5px;">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Создать заметку
+      </button>`;
+  } else {
+    contentEl.innerHTML = renderMarkdown(nodeData.content || '');
+  }
+
+  /* Клик по участнику: подсветить узел на графе и открыть его карточку. */
+  contentEl.querySelectorAll('.gx-member').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.nodeId;
+      const m = byId.get(id);
+      if (!m) return;
+      if (graphMode === '2d' && typeof window.Graph2D !== 'undefined') {
+        window.Graph2D.focusNode(id);
+      } else {
+        focusOnNode(id);
+      }
+      openSidebar(m);
+    });
+  });
+  const createBtn = document.getElementById('sb-btn-create');
+  if (createBtn) {
+    createBtn.addEventListener('click', () => {
+      createFromUnresolved(nodeData.target || nodeData.title);
+    });
+  }
+
+  // Tags
+  const tagsContainer = document.getElementById('sb-tags');
+  const footer = document.getElementById('sidebar-footer');
+  if (nodeData.tags && nodeData.tags.length > 0) {
+    footer.style.display = 'flex';
+    tagsContainer.innerHTML = nodeData.tags.map(t =>
+      `<span class="tag">#${t}</span>`
+    ).join('');
+  } else {
+    footer.style.display = 'none';
+  }
+
+  // Show action buttons (only for nodes that are NOT already in notes/ai-knowledge)
+  const actionsEl = document.getElementById('sidebar-actions');
+  const editActionsEl = document.getElementById('sidebar-edit-actions');
+  const isInApiSection = nodeData.section === 'NOTES' || nodeData.section === 'AI_KNOWLEDGE';
+  if (actionsEl) {
+    actionsEl.style.display = isInApiSection ? 'none' : 'flex';
+  }
+  /* Правка и удаление — только у заметки. У группы нет ни файла, ни
+     markdown: прежний код показывал кнопки всем узлам, и «Редактировать»
+     на папке открывала пустую форму. */
+  if (editActionsEl) {
+    editActionsEl.style.display = nodeData.kind === 'note' || !nodeData.kind ? 'flex' : 'none';
+  }
+
+  sidebar.classList.add('open');
+  sidebarOpen = true;
+  updateLayoutClasses();
+}
+
+function closeSidebar() {
+  sidebar.classList.remove('open');
+  sidebarOpen = false;
+  focusedNode = null;
+  currentSidebarNode = null;
+  clearNodeHighlight();
+  // Hide action panels
+  const actionsEl = document.getElementById('sidebar-actions');
+  const editActionsEl = document.getElementById('sidebar-edit-actions');
+  if (actionsEl) actionsEl.style.display = 'none';
+  if (editActionsEl) editActionsEl.style.display = 'none';
+  updateLayoutClasses();
+}
+
+document.getElementById('sidebar-close').addEventListener('click', closeSidebar);
+
+// (Load to Notes / Load to AI DB handlers removed for notes integration)
+
+// ── Sidebar: открыть заметку в полноценном редакторе ──
+document.getElementById('sb-btn-open').addEventListener('click', () => {
+  if (!currentSidebarNode) return;
+  if (currentSidebarNode.kind && currentSidebarNode.kind !== 'note') return;
+  window.location.href = '/notes/edit?id=' + encodeURIComponent(currentSidebarNode.id);
+});
+
+// ── Sidebar: Edit Node ──
+document.getElementById('sb-btn-edit').addEventListener('click', () => {
+  if (!currentSidebarNode) return;
+  const node = currentSidebarNode;
+  
+  // Replace sidebar content with an edit form
+  const contentEl = document.getElementById('sidebar-content');
+  const originalContent = node.content || '';
+  
+  contentEl.innerHTML = `
+    <div style="padding:4px 0">
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Title</label>
+        <input type="text" id="edit-title" value="${escapeHtml(node.title)}" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;">
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Section</label>
+        <select id="edit-section" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;">
+          ${NOTES_FOLDERS.map(k => `<option value="${k}" ${k === node.section ? 'selected' : ''}>${k}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Tags (comma separated)</label>
+        <input type="text" id="edit-tags" value="${(node.tags || []).join(', ')}" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;outline:none;">
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Content (Markdown)</label>
+        <textarea id="edit-content" style="width:100%;min-height:300px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-size:13px;line-height:1.6;resize:vertical;font-family:'JetBrains Mono','Fira Code',monospace;outline:none;">${escapeHtml(originalContent)}</textarea>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-primary" id="edit-save-btn" style="flex:1;justify-content:center"><i class="fa-solid fa-floppy-disk"></i> Сохранить</button>
+        <button class="btn btn-secondary" id="edit-cancel-btn" style="flex:1;justify-content:center"><i class="fa-solid fa-xmark"></i> Отмена</button>
+      </div>
+    </div>
+  `;
+  
+  // Hide action buttons while editing
+  document.getElementById('sidebar-actions').style.display = 'none';
+  document.getElementById('sidebar-edit-actions').style.display = 'none';
+  
+  // Cancel button — restore original content
+  document.getElementById('edit-cancel-btn').addEventListener('click', () => {
+    openSidebar(node); // Re-open with original data
+  });
+  
+  // Save button
+  document.getElementById('edit-save-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('edit-save-btn');
+    btn.disabled = true;
+    btn.textContent = 'Сохранение...';
+    
+    const newTitle = document.getElementById('edit-title').value.trim();
+    const newSection = document.getElementById('edit-section').value;
+    const newTags = document.getElementById('edit-tags').value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+    const newContent = document.getElementById('edit-content').value;
+    
+    if (!newTitle) {
+      toast('Укажите заголовок', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Сохранить';
+      return;
+    }
+    
+    try {
+      const res = await fetch('/api/notes/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: node.id,
+          title: newTitle,
+          folder: newSection,
+          tags: newTags,
+          content: newContent,
+        })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        toast(`Сохранено: ${newTitle}`, 'success');
+        // Update current node data
+        node.title = newTitle;
+        node.section = newSection;
+        node.tags = newTags;
+        node.content = newContent;
+        // Re-open sidebar with updated data
+        setTimeout(() => openSidebar(node), 500);
+      } else {
+        toast(`Ошибка: ${data.error}`, 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Сохранить';
+      }
+    } catch (err) {
+      toast(`Не удалось: ${err.message}`, 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Сохранить';
+    }
+  });
+});
+
+// ── Sidebar: Delete Node ──
+document.getElementById('sb-btn-delete').addEventListener('click', async () => {
+  if (!currentSidebarNode) return;
+  const node = currentSidebarNode;
+  
+  // Confirm deletion
+  const confirmed = confirm(`Удалить заметку "${node.title}"?\n\nФайл: ${node.filepath || node.filename}\n\nЭто действие необратимо!`);
+  if (!confirmed) return;
+  
+  try {
+    const res = await fetch('/api/notes/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: node.id,
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      toast(`Удалено: ${node.title}`, 'success');
+      closeSidebar();
+      // Remove node from graph visually
+      removeNodeFromGraph(node.id);
+    } else {
+      toast(`Ошибка: ${data.error}`, 'error');
+    }
+  } catch (err) {
+    toast(`Не удалось: ${err.message}`, 'error');
+  }
+});
+
+// Helper: escape HTML for form values
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// Helper: remove node from graph after deletion
+function removeNodeFromGraph(nodeId) {
+  // Remove from nodeObjects
+  const obj = nodeObjects.get(nodeId);
+  if (obj) {
+    scene.remove(obj.mesh);
+    scene.remove(obj.ring);
+    scene.remove(obj.glow);
+    if (obj.label) scene.remove(obj.label);
+    nodeObjects.delete(nodeId);
+  }
+  // Remove connected links
+  for (let i = linkLines.length - 1; i >= 0; i--) {
+    const link = linkLines[i];
+    if (link.sourceId === nodeId || link.targetId === nodeId) {
+      scene.remove(link.line);
+      linkLines.splice(i, 1);
+    }
+  }
+  // Remove from graphData
+  if (graphData) {
+    graphData.nodes = graphData.nodes.filter(n => n.id !== nodeId);
+    graphData.links = graphData.links.filter(l => l.source !== nodeId && l.target !== nodeId);
+    graphData.stats.total_nodes = graphData.nodes.length;
+    graphData.stats.total_links = graphData.links.length;
+  }
+  // Update stats display
+  updateStats();
+  // Clear highlight if it was the deleted node
+  if (highlightedNodeId === nodeId) {
+    highlightedNodeId = null;
+    if (highlightRing) highlightRing.visible = false;
+  }
+}
+
+// Simple markdown renderer
+function renderMarkdown(md) {
+  let html = md
+    // Escape HTML
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    // Code blocks
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // Headers
+    .replace(/^####\s+(.+)$/gm, '<h4>$1</h4>')
+    .replace(/^###\s+(.+)$/gm, '<h3>$1</h3>')
+    .replace(/^##\s+(.+)$/gm, '<h2>$1</h2>')
+    .replace(/^#\s+(.+)$/gm, '<h1>$1</h1>')
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Italic
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // Links [[...]]
+    .replace(/\[\[(.+?)\]\]/g, '<a href="#" class="wiki-link" data-title="$1">$1</a>')
+    // Links [text](url)
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>')
+    // Blockquotes
+    .replace(/^&gt;\s+(.+)$/gm, '<blockquote>$1</blockquote>')
+    // Horizontal rule
+    .replace(/^---$/gm, '<hr>')
+    // Lists
+    .replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>')
+    .replace(/^(\d+)\.\s+(.+)$/gm, '<li>$2</li>')
+    // Paragraphs
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+
+  // Wrap in paragraphs
+  html = '<p>' + html + '</p>';
+
+  // Fix list grouping
+  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+
+  return html;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LEFT PANEL — Add Knowledge
+   ═══════════════════════════════════════════════════════════════ */
+const leftPanel = document.getElementById('left-panel');
+const addBtn = document.getElementById('add-knowledge-btn');
+
+addBtn.addEventListener('click', () => {
+  leftPanel.classList.add('open');
+  panelOpen = true;
+  addBtn.classList.add('hidden');
+  updateLayoutClasses();
+});
+
+document.getElementById('panel-close').addEventListener('click', () => {
+  leftPanel.classList.remove('open');
+  panelOpen = false;
+  addBtn.classList.remove('hidden');
+  updateLayoutClasses();
+});
+
+// Tags input
+const tagsInput = document.getElementById('form-tags-input');
+const tagsWrap = document.getElementById('tags-wrap');
+
+tagsInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const tag = tagsInput.value.trim().toLowerCase().replace(/[^a-zа-яё0-9_-]/g, '');
+    if (tag && !formTags.includes(tag)) {
+      formTags.push(tag);
+      renderTags();
+    }
+    tagsInput.value = '';
+  }
+});
+
+function renderTags() {
+  const chips = formTags.map(t =>
+    `<span class="tag-chip">#${t}<span class="remove" data-tag="${t}">×</span></span>`
+  ).join('');
+  tagsWrap.innerHTML = chips + '<input type="text" id="form-tags-input" placeholder="Type tag…">';
+  tagsWrap.querySelector('#form-tags-input').addEventListener('keydown', tagsInput._handler || (e => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const tag = e.target.value.trim().toLowerCase().replace(/[^a-zа-яё0-9_-]/g, '');
+      if (tag && !formTags.includes(tag)) { formTags.push(tag); renderTags(); }
+      e.target.value = '';
+    }
+  }));
+  tagsWrap.querySelectorAll('.remove').forEach(el => {
+    el.addEventListener('click', () => {
+      formTags = formTags.filter(t => t !== el.dataset.tag);
+      renderTags();
+    });
+  });
+}
+
+// Links input
+const linksInput = document.getElementById('form-links-input');
+const linksWrap = document.getElementById('links-wrap');
+
+function initLinksInput() {
+  const input = linksWrap.querySelector('input');
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const link = e.target.value.trim();
+      if (link && !formLinks.includes(link)) {
+        formLinks.push(link);
+        renderLinks();
+      }
+      e.target.value = '';
+    }
+  });
+}
+
+function renderLinks() {
+  const chips = formLinks.map(l =>
+    `<span class="link-chip">[[${l}]]<span class="remove" data-link="${l}">×</span></span>`
+  ).join('');
+  linksWrap.innerHTML = chips + '<input type="text" id="form-links-input" placeholder="Type node title…">';
+  initLinksInput();
+  linksWrap.querySelectorAll('.remove').forEach(el => {
+    el.addEventListener('click', () => {
+      formLinks = formLinks.filter(l => l !== el.dataset.link);
+      renderLinks();
+    });
+  });
+}
+initLinksInput();
+
+// Clear form
+document.getElementById('btn-clear-form').addEventListener('click', () => {
+  document.getElementById('form-title').value = '';
+  document.getElementById('form-content').value = '';
+  document.getElementById('form-section').value = 'inbox';
+  formTags = [];
+  formLinks = [];
+  renderTags();
+  renderLinks();
+});
+
+// Save node
+document.getElementById('btn-save-node').addEventListener('click', saveNewNode);
+
+let isSaving = false;
+
+function saveNewNode() {
+  if (isSaving) return; // Prevent double-submit
+  isSaving = true;
+
+  const btn = document.getElementById('btn-save-node');
+  btn.disabled = true;
+  btn.textContent = 'Сохранение…';
+
+  const title = document.getElementById('form-title').value.trim();
+  const content = document.getElementById('form-content').value.trim();
+  const folder = document.getElementById('form-section').value || 'inbox';
+
+  if (!title) {
+    toast('Введите название', 'error');
+    isSaving = false;
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Сохранить';
+    return;
+  }
+  if (!content) {
+    toast('Введите содержимое', 'error');
+    isSaving = false;
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Сохранить';
+    return;
+  }
+
+  // Embed wiki-links so the graph picks them up on reload
+  let finalContent = content;
+  if (formLinks.length > 0) {
+    finalContent += '\n\n## Связи\n' + formLinks.map(l => `- [[${l}]]`).join('\n');
+  }
+
+  fetch('/api/notes/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: title,
+      content: finalContent,
+      folder: folder,
+      tags: formTags,
+    }),
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Server save failed');
+    return res.json();
+  })
+  .then(() => {
+    toast('Заметка сохранена', 'success');
+    document.getElementById('btn-clear-form').click();
+    loadGraphData();
+  })
+  .catch(err => {
+    console.error('Save failed:', err);
+    toast('Ошибка сохранения', 'error');
+  })
+  .finally(() => {
+    isSaving = false;
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Сохранить';
+  });
+}
+
+function addNodeClientSide(title, content, section, tags, links) {
+  const nodeId = 'custom_' + Date.now().toString(36);
+  const nodeData = {
+    id: nodeId,
+    title,
+    description: content.slice(0, 200),
+    content,
+    section,
+    filename: title.replace(/\s+/g, '-') + '.md',
+    filepath: 'custom/' + title.replace(/\s+/g, '-') + '.md',
+    subheadings: [],
+    tags,
+    links,
+    size: 1,
+    word_count: content.split(/\s+/).length,
+    char_count: content.length,
+    modified: new Date().toISOString(),
+  };
+
+  // Add to graph data
+  graphData.nodes.push(nodeData);
+  graphData.stats.total_nodes++;
+  graphData.stats.total_words += nodeData.word_count;
+
+  // Create 3D node
+  const node = createNode(nodeData, graphData.nodes.length - 1, graphData.nodes.length);
+  nodeObjects.set(nodeId, node);
+
+  // Create links
+  links.forEach(linkTitle => {
+    const targetNode = graphData.nodes.find(n => n.title.toLowerCase() === linkTitle.toLowerCase());
+    if (targetNode) {
+      const linkObj = createLink(nodeId, targetNode.id, 2);
+      if (linkObj) linkLines.push(linkObj);
+      graphData.links.push({ source: nodeId, target: targetNode.id, weight: 2 });
+      graphData.stats.total_links++;
+    }
+  });
+
+  // Update stats
+  document.getElementById('stat-nodes').textContent = graphData.stats.total_nodes;
+  document.getElementById('stat-links').textContent = graphData.stats.total_links;
+  document.getElementById('stat-words').textContent = graphData.stats.total_words;
+
+  // Rebuild search
+  buildSearchIndex(graphData.nodes);
+
+  toast('Заметка добавлена', 'success');
+
+  // Focus on new node
+  focusOnNode(nodeId);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOAST
+   ═══════════════════════════════════════════════════════════════ */
+function toast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = message;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LAYOUT CLASSES
+   ---------------------------------------------------------------------------
+   Канвас больше не сжимается под панелями: 3D-рендерер всё равно рисовал
+   на весь window, и сдвинутый контейнер просто обрезал картинку. Панели
+   лежат поверх, а 2D-движку передаются отступы — он центрирует граф в
+   свободной области при «Вписать» и переходе к узлу.
+   ═══════════════════════════════════════════════════════════════ */
+function updateLayoutClasses() {
+  document.body.classList.toggle('gx-sidebar-open', !!sidebarOpen);
+  document.body.classList.toggle('gx-panel-open', !!panelOpen);
+  syncGraphInsets();
+}
+
+/* Ширины повторяют CSS: навигатор 276, панель новой заметки 384,
+   карточка заметки 404. Верхняя панель 60 плюс воздух. */
+function syncGraphInsets() {
+  if (typeof window.Graph2D === 'undefined') return;
+  const navClosed = document.body.classList.contains('gx-nav-closed');
+  const nav = (navClosed || window.innerWidth <= 768) ? 0 : 276;
+  const left = Math.max(nav, panelOpen ? 384 : 0);
+  const right = sidebarOpen ? 404 : 0;
+  window.Graph2D.setOption('insets', { left, right, top: 72, bottom: 56 });
+}
+
+/* ── Навигатор: свернуть / развернуть ── */
+const NAV_KEY = 'notes_graph_nav_open';
+function setNavOpen(open) {
+  document.body.classList.toggle('gx-nav-closed', !open);
+  try { localStorage.setItem(NAV_KEY, open ? '1' : '0'); } catch (e) { /* приватный режим */ }
+  syncGraphInsets();
+}
+(function restoreNav() {
+  let v = null;
+  try { v = localStorage.getItem(NAV_KEY); } catch (e) { /* приватный режим */ }
+  /* На телефоне панель по умолчанию закрыта: открытая, она закрывает
+     собой весь граф при первом заходе. Выбор пользователя важнее. */
+  if (v === null) v = window.innerWidth <= 768 ? '0' : '1';
+  document.body.classList.toggle('gx-nav-closed', v === '0');
+})();
+/* На узком экране панель перекрывает граф, поэтому после выбора фильтра
+   её надо убрать — иначе результат фильтра не виден. */
+function closeNavOnMobile() {
+  if (window.innerWidth <= 768) setNavOpen(false);
+}
+document.getElementById('gx-nav-close').addEventListener('click', () => setNavOpen(false));
+document.getElementById('gx-nav-open').addEventListener('click', () => setNavOpen(true));
+
+/* ── Док: масштаб и раскладка (только 2D) ── */
+function graph2dZoom(factor) {
+  if (graphMode === '2d' && typeof window.Graph2D !== 'undefined') {
+    window.Graph2D.zoomBy(factor);
+  }
+}
+document.getElementById('zoom-in').addEventListener('click', () => graph2dZoom(1.25));
+document.getElementById('zoom-out').addEventListener('click', () => graph2dZoom(1 / 1.25));
+
+/* ── Сброс всех фильтров ── */
+function resetGraphFilters() {
+  activeSectionFilter = null;
+  document.querySelectorAll('#legend .item').forEach(el => el.classList.remove('filtered'));
+  if (typeof window.Graph2D !== 'undefined') {
+    window.Graph2D.setOption('sectionFilter', '');
+    window.Graph2D.setOption('filterText', '');
+  }
+  const input = document.getElementById('search');
+  if (input) input.value = '';
+  document.getElementById('search-results').classList.remove('active');
+  showAllNodes();
+  hideGroupOverlay();
+  toast('Фильтры сброшены', 'info');
+}
+document.getElementById('gx-reset-filters').addEventListener('click', resetGraphFilters);
+
+/* ═══════════════════════════════════════════════════════════════
+   DRAG INTERACTION
+   ═══════════════════════════════════════════════════════════════ */
+const dragIndicator = document.getElementById('drag-indicator');
+
+// Click-vs-drag detection state
+let pointerDownTime = 0;
+let pointerDownPos = { x: 0, y: 0 };
+let pointerDownNode = null;
+const CLICK_THRESHOLD_MS = 300;
+const CLICK_THRESHOLD_PX = 10;
+
+renderer.domElement.addEventListener('pointerdown', onPointerDown);
+renderer.domElement.addEventListener('pointermove', onPointerMove);
+renderer.domElement.addEventListener('pointerup', onPointerUp);
+renderer.domElement.addEventListener('pointerleave', onPointerUp);
+
+function onPointerDown(event) {
+  updateMouse(event);
+  raycaster.setFromCamera(mouse, camera);
+
+  const nodeMeshes = Array.from(nodeObjects.values()).map(n => n.mesh);
+  const intersects = raycaster.intersectObjects(nodeMeshes);
+
+  if (intersects.length > 0) {
+    const nodeId = intersects[0].object.userData.nodeId;
+    const node = nodeObjects.get(nodeId);
+    if (!node) return;
+
+    // Record click start for click-vs-drag detection
+    pointerDownTime = Date.now();
+    pointerDownPos = { x: event.clientX, y: event.clientY };
+    pointerDownNode = node;
+
+    // Don't start drag yet — wait for pointermove to exceed threshold
+  }
+}
+
+function onPointerMove(event) {
+  updateMouse(event);
+
+  // Check if we should start dragging (threshold exceeded)
+  if (pointerDownNode && !isDragging) {
+    const dx = event.clientX - pointerDownPos.x;
+    const dy = event.clientY - pointerDownPos.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist > CLICK_THRESHOLD_PX) {
+      // Start drag
+      isDragging = true;
+      dragNode = pointerDownNode;
+      dragNode.dragged = true;
+      controls.autoRotate = false;
+
+      // Create drag plane facing camera
+      const cameraDir = new THREE.Vector3();
+      camera.getWorldDirection(cameraDir);
+      dragPlane.setFromNormalAndCoplanarPoint(cameraDir.negate(), dragNode.position);
+
+      // Calculate offset
+      raycaster.setFromCamera(mouse, camera);
+      const intersection = new THREE.Vector3();
+      raycaster.ray.intersectPlane(dragPlane, intersection);
+      dragOffset.copy(dragNode.position).sub(intersection);
+
+      controls.enabled = false;
+      dragIndicator.classList.add('visible');
+      dragIndicator.textContent = `Dragging: ${dragNode.data.title}`;
+    }
+  }
+
+  if (isDragging && dragNode) {
+    raycaster.setFromCamera(mouse, camera);
+    const intersection = new THREE.Vector3();
+    if (raycaster.ray.intersectPlane(dragPlane, intersection)) {
+      const newPos = intersection.add(dragOffset);
+      dragNode.position.copy(newPos);
+      dragNode.mesh.position.copy(newPos);
+      dragNode.ring.position.copy(newPos);
+      dragNode.glow.position.copy(newPos);
+      dragNode.velocity.set(0, 0, 0);
+
+      // Update links in real-time
+      for (const link of linkLines) {
+        if (link.sourceId === dragNode.id || link.targetId === dragNode.id) {
+          const source = nodeObjects.get(link.sourceId);
+          const target = nodeObjects.get(link.targetId);
+          if (source && target) {
+            const mid = source.position.clone().add(target.position).multiplyScalar(0.5);
+            mid.y += 1.5;
+            const curve = new THREE.QuadraticBezierCurve3(
+              source.position.clone(), mid, target.position.clone()
+            );
+            link.line.geometry.setFromPoints(curve.getPoints(20));
+          }
+        }
+      }
+
+      // Update drag indicator position
+      const screenPos = dragNode.position.clone().project(camera);
+      const sx = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+      const sy = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
+      dragIndicator.style.left = (sx + 20) + 'px';
+      dragIndicator.style.top = (sy - 10) + 'px';
+    }
+    return;
+  }
+
+  // Hover detection
+  raycaster.setFromCamera(mouse, camera);
+  const nodeMeshes = Array.from(nodeObjects.values()).map(n => n.mesh);
+  const intersects = raycaster.intersectObjects(nodeMeshes);
+
+  if (intersects.length > 0) {
+    const nodeId = intersects[0].object.userData.nodeId;
+    const node = nodeObjects.get(nodeId);
+    if (node && hoveredNode !== nodeId) {
+      hoveredNode = nodeId;
+      showTooltip(node.data, event.clientX, event.clientY);
+      renderer.domElement.style.cursor = 'pointer';
+    } else if (node) {
+      // Update tooltip position
+      showTooltip(node.data, event.clientX, event.clientY);
+    }
+  } else {
+    if (hoveredNode) {
+      hoveredNode = null;
+      hideTooltip();
+      renderer.domElement.style.cursor = 'default';
+    }
+  }
+}
+
+function onPointerUp(event) {
+  // Handle click (not drag)
+  if (pointerDownNode && !isDragging) {
+    const elapsed = Date.now() - pointerDownTime;
+    const dx = event.clientX - pointerDownPos.x;
+    const dy = event.clientY - pointerDownPos.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (elapsed < CLICK_THRESHOLD_MS && dist < CLICK_THRESHOLD_PX) {
+      // This was a click!
+      const node = pointerDownNode;
+      if (event.button === 2) {
+        // Right click — open full note in new tab
+        openFullNote(node.data);
+      } else {
+        // Left click — open sidebar
+        focusedNode = node.id;
+        openSidebar(node.data);
+      }
+    }
+  }
+
+  // Reset drag state
+  if (isDragging && dragNode) {
+    isDragging = false;
+    dragNode.dragged = false;
+    dragNode = null;
+    controls.enabled = true;
+    dragIndicator.classList.remove('visible');
+
+    // Resume auto-rotate after a delay
+    setTimeout(() => {
+      if (!isDragging) controls.autoRotate = true;
+    }, 3000);
+  }
+
+  // Reset click detection
+  pointerDownNode = null;
+}
+
+// Right-click context menu prevention + handling
+renderer.domElement.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  // Trigger right-click logic
+  if (hoveredNode) {
+    const node = nodeObjects.get(hoveredNode);
+    if (node) openFullNote(node.data);
+  }
+});
+
+function openFullNote(nodeData) {
+  // Build a standalone HTML page for the note
+  const sec = getSectionInfo(nodeData.section);
+  const cs = getComputedStyle(document.body);
+  const theme = {
+    bg: (cs.getPropertyValue('--bg-deep') || '#06060f').trim(),
+    card: (cs.getPropertyValue('--bg-mid') || '#0d0d1a').trim(),
+    fg: (cs.getPropertyValue('--text') || '#d4d4e8').trim(),
+    dim: (cs.getPropertyValue('--text-dim') || '#7878a0').trim(),
+    bright: (cs.getPropertyValue('--text-bright') || '#f0f0ff').trim(),
+    accent: (cs.getPropertyValue('--accent') || '#a78bfa').trim(),
+  };
+  const html = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${nodeData.title} — OWL Memory Brain</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: ${theme.bg};
+    color: ${theme.fg};
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.8;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  .header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 24px; padding-bottom: 16px;
+    border-bottom: 1px solid color-mix(in srgb, ${theme.accent} 15%, transparent);
+  }
+  .section-badge {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 4px 10px; border-radius: 6px;
+    background: ${sec.color}22; color: ${sec.color};
+    border: 1px solid ${sec.color}44;
+  }
+  h1 { font-size: 28px; font-weight: 800; color: ${theme.bright}; margin: 16px 0; line-height: 1.3; }
+  h2 { font-size: 20px; font-weight: 700; color: ${theme.bright}; margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 1px solid color-mix(in srgb, ${theme.accent} 12%, transparent); }
+  h3 { font-size: 16px; font-weight: 600; color: ${theme.fg}; margin: 20px 0 8px; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 8px 0; padding-left: 24px; }
+  li { margin: 4px 0; }
+  code { background: color-mix(in srgb, ${theme.accent} 10%, transparent); color: color-mix(in srgb, ${theme.accent} 82%, white); padding: 2px 6px; border-radius: 4px; font-size: 14px; font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+  pre { background: ${theme.card}; border: 1px solid color-mix(in srgb, ${theme.accent} 12%, transparent); border-radius: 8px; padding: 16px; margin: 12px 0; overflow-x: auto; font-size: 14px; line-height: 1.6; }
+  pre code { background: none; padding: 0; }
+  blockquote { border-left: 3px solid ${sec.color}; padding-left: 16px; margin: 12px 0; color: ${theme.dim}; font-style: italic; }
+  a { color: ${theme.accent}; text-decoration: none; border-bottom: 1px solid color-mix(in srgb, ${theme.accent} 30%, transparent); }
+  a:hover { border-bottom-color: ${theme.accent}; }
+  hr { border: none; border-top: 1px solid color-mix(in srgb, ${theme.accent} 12%, transparent); margin: 24px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { padding: 8px 12px; border: 1px solid color-mix(in srgb, ${theme.accent} 12%, transparent); text-align: left; }
+  th { background: color-mix(in srgb, ${theme.accent} 8%, transparent); font-weight: 600; }
+  .meta { display: flex; gap: 16px; font-size: 12px; color: ${theme.dim}; margin: 12px 0 24px; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
+  .tag { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; background: color-mix(in srgb, ${theme.accent} 10%, transparent); color: ${theme.accent}; }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 8px;
+    background: color-mix(in srgb, ${theme.accent} 10%, transparent); color: ${theme.accent};
+    border: 1px solid color-mix(in srgb, ${theme.accent} 20%, transparent);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    text-decoration: none; margin-bottom: 20px;
+  }
+  .back-btn:hover { background: color-mix(in srgb, ${theme.accent} 15%, transparent); }
+</style>
+<script src="/static/js/i18n.js">' + '<' + '/script>
+</head>
+<body>
+<a href="javascript:window.close()" class="back-btn">← Назад к графу</a>
+<div class="header">
+  <span class="section-badge">${sec.label}</span>
+  <span style="font-size:12px;color:#7878a0">${nodeData.word_count || 0} words · ${nodeData.modified ? nodeData.modified.slice(0,10) : ''}</span>
+</div>
+<h1>${nodeData.title}</h1>
+<div class="meta">
+  <span>${nodeData.filepath || nodeData.filename || ''}</span>
+  <span>${nodeData.modified ? nodeData.modified.slice(0,10) : '—'}</span>
+</div>
+${nodeData.tags && nodeData.tags.length > 0 ? `<div class="tags">${nodeData.tags.map(t => `<span class="tag">#${t}</span>`).join('')}</div>` : ''}
+<hr>
+${renderMarkdown(nodeData.content || '')}
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+}
+
+function updateMouse(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KEYBOARD
+   ═══════════════════════════════════════════════════════════════ */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (sidebarOpen) closeSidebar();
+    if (panelOpen) {
+      leftPanel.classList.remove('open');
+      panelOpen = false;
+      addBtn.classList.remove('hidden');
+      updateLayoutClasses();
+    }
+  }
+  if (e.key === 'k' && e.ctrlKey) {
+    e.preventDefault();
+    searchInput.focus();
+  }
+  if (e.key === 'r') {
+    toggleRotation();
+  }
+  if (e.key === 'p') {
+    togglePhysics();
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   TOGGLE BUTTONS (Rotation + Physics)
+   ═══════════════════════════════════════════════════════════════ */
+function toggleRotation() {
+  controls.autoRotate = !controls.autoRotate;
+  const btn = document.getElementById('rotation-toggle');
+  if (controls.autoRotate) {
+    btn.classList.remove('paused');
+    btn.classList.add('active');
+    btn.innerHTML = '<i class="fa-solid fa-rotate"></i>';
+    toast('Автоповорот включён', 'info');
+  } else {
+    btn.classList.add('paused');
+    btn.classList.remove('active');
+    btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    toast('Автоповорот приостановлен', 'info');
+  }
+}
+
+function togglePhysics() {
+  forceRunning = !forceRunning;
+  const btn = document.getElementById('physics-toggle');
+  if (forceRunning) {
+    btn.classList.remove('paused');
+    btn.classList.add('active');
+    btn.innerHTML = '<i class="fa-solid fa-bolt"></i>';
+    toast('Физика включена', 'info');
+  } else {
+    btn.classList.add('paused');
+    btn.classList.remove('active');
+    btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    toast('Физика приостановлена', 'info');
+  }
+}
+
+document.getElementById('rotation-toggle').addEventListener('click', toggleRotation);
+document.getElementById('physics-toggle').addEventListener('click', togglePhysics);
+
+// Set initial active state
+document.getElementById('rotation-toggle').classList.add('active');
+document.getElementById('physics-toggle').classList.add('active');
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS PANEL
+   ═══════════════════════════════════════════════════════════════ */
+const settingsPanel = document.getElementById('settings-panel');
+const settingsToggle = document.getElementById('settings-toggle');
+
+// ── localStorage helpers ──
+const SETTINGS_KEY = 'owl-brain-settings';
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+function saveSettings(s) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+}
+
+// ── Apply saved settings on load ──
+const savedSettings = loadSettings();
+if (savedSettings.showLabels !== undefined) document.getElementById('setting-show-labels').checked = !!savedSettings.showLabels;
+if (savedSettings.autoRotate !== undefined) {
+  document.getElementById('setting-auto-rotate').checked = !!savedSettings.autoRotate;
+  controls.autoRotate = !!savedSettings.autoRotate;
+}
+if (savedSettings.physics !== undefined) {
+  document.getElementById('setting-physics').checked = !!savedSettings.physics;
+  forceRunning = !!savedSettings.physics;
+}
+
+// ── Toggle settings panel ──
+settingsToggle.addEventListener('click', () => {
+  const isOpen = settingsPanel.classList.contains('open');
+  if (isOpen) {
+    settingsPanel.classList.remove('open');
+    settingsToggle.classList.remove('active');
+    if (sidebarOpen) document.getElementById('sidebar').classList.remove('open');
+  } else {
+    settingsPanel.classList.add('open');
+    settingsToggle.classList.add('active');
+  }
+});
+document.getElementById('settings-close').addEventListener('click', () => {
+  settingsPanel.classList.remove('open');
+  settingsToggle.classList.remove('active');
+});
+
+// (setting-skip-api removed)
+
+// ── Setting: Show Labels ──
+document.getElementById('setting-show-labels').addEventListener('change', (e) => {
+  const s = loadSettings();
+  s.showLabels = e.target.checked;
+  saveSettings(s);
+  // Toggle node label visibility
+  for (const node of nodeObjects.values()) {
+    if (node.labelSprite) node.labelSprite.visible = e.target.checked;
+  }
+  toast(e.target.checked ? 'Подписи включены' : 'Подписи выключены', 'info');
+});
+
+/* ── Setting: битые ссылки ──
+   По умолчанию выключено. Включение перезагружает данные: фильтр живёт
+   на уровне страницы, чтобы одинаково работать в 2D и 3D. */
+const unresolvedChk = document.getElementById('setting-unresolved');
+if (unresolvedChk) {
+  unresolvedChk.checked = showUnresolved();
+  unresolvedChk.addEventListener('change', (e) => {
+    try { localStorage.setItem(LS_UNRESOLVED, e.target.checked ? '1' : '0'); } catch (err) {}
+    toast(e.target.checked ? 'Битые ссылки показаны' : 'Битые ссылки скрыты', 'info');
+    loadGraphData();
+  });
+}
+
+// ── Setting: Auto-Rotate ──
+document.getElementById('setting-auto-rotate').addEventListener('change', (e) => {
+  const s = loadSettings();
+  s.autoRotate = e.target.checked;
+  saveSettings(s);
+  controls.autoRotate = e.target.checked;
+  const rotBtn = document.getElementById('rotation-toggle');
+  if (e.target.checked) {
+    rotBtn.classList.remove('paused');
+    rotBtn.classList.add('active');
+    rotBtn.innerHTML = '<i class="fa-solid fa-rotate"></i>';
+  } else {
+    rotBtn.classList.add('paused');
+    rotBtn.classList.remove('active');
+    rotBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+  }
+});
+
+// ── Setting: Physics ──
+document.getElementById('setting-physics').addEventListener('change', (e) => {
+  const s = loadSettings();
+  s.physics = e.target.checked;
+  saveSettings(s);
+  forceRunning = e.target.checked;
+  const physBtn = document.getElementById('physics-toggle');
+  if (e.target.checked) {
+    physBtn.classList.remove('paused');
+    physBtn.classList.add('active');
+    physBtn.innerHTML = '<i class="fa-solid fa-bolt"></i>';
+  } else {
+    physBtn.classList.add('paused');
+    physBtn.classList.remove('active');
+    physBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+  }
+});
+
+// ── Regenerate Graph button (reload from notes) ──
+document.getElementById('btn-regenerate').addEventListener('click', async () => {
+  const statusEl = document.getElementById('regenerate-status');
+  statusEl.textContent = 'Обновление...';
+  try {
+    await loadGraphData();
+    statusEl.textContent = 'Граф обновлён';
+    toast('Граф обновлён из заметок', 'success');
+  } catch (err) {
+    statusEl.textContent = `Ошибка: ${err.message}`;
+    toast(`Обновление не удалось: ${err.message}`, 'error');
+  }
+  setTimeout(() => { statusEl.textContent = ''; }, 5000);
+});
+
+// (btn-load-notes / btn-load-ai removed for notes integration)
+
+// (setting-include-ai removed)
+
+// (setting-sync-enabled removed)
+
+// (setting-sync-target removed)
+
+// (btn-sync-now / btn-sync-status removed for notes integration)
+
+/* ═══════════════════════════════════════════════════════════════
+   WINDOW RESIZE
+   ═══════════════════════════════════════════════════════════════ */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+  // 2D-движок сам подхватит размер через свой обработчик resize.
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   LOAD DATA — Full rebuild on each call
+   ═══════════════════════════════════════════════════════════════ */
+async function loadGraphData(retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      const response = await fetch('/api/notes/graph?_=' + Date.now(), { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      let data = await response.json();
+
+      if (!data.nodes || !data.links) throw new Error('Invalid graph data: missing nodes/links');
+
+      /* Без опции выкидываем узлы неразрешённых ссылок вместе с их рёбрами
+         до раскладки — иначе 2D/3D тратят физику на невидимые узлы, а
+         счётчик связей в шапке не совпадает с картинкой. */
+      if (!showUnresolved()) {
+        const broken = new Set(
+          data.nodes.filter(n => n.kind === 'unresolved').map(n => n.id)
+        );
+        if (broken.size) {
+          data.nodes = data.nodes.filter(n => !broken.has(n.id));
+          data.links = data.links.filter(l =>
+            !broken.has(l.source) && !broken.has(l.target) &&
+            l.type !== 'unresolved' && l.linkType !== 'unresolved');
+          data.unresolved = {};
+          if (data.stats) data.stats.total_links = data.links.length;
+        }
+      }
+
+      /* Слой группировки: папки+теги либо смысловые темы laya. Фильтр
+         применяется до раскладки, чтобы каждый движок (2D и 3D) получил
+         уже готовый набор узлов. */
+      data = filterGraphForMode(data);
+
+      // Normalize link fields for the renderer
+      data.links.forEach(l => {
+        if (!l.linkType) l.linkType = (l.type === 'tag') ? 'tag' : 'wiki';
+        if (l.weight == null) l.weight = 1;
+      });
+
+      // Full cleanup: remove all existing objects
+      for (const node of nodeObjects.values()) {
+        scene.remove(node.mesh);
+        scene.remove(node.ring);
+        scene.remove(node.glow);
+        node.mesh.geometry.dispose();
+        node.mesh.material.dispose();
+        node.ring.geometry.dispose();
+        node.ring.material.dispose();
+        node.glow.geometry.dispose();
+        node.glow.material.dispose();
+      }
+      for (const link of linkLines) {
+        scene.remove(link.line);
+        link.line.geometry.dispose();
+        link.line.material.dispose();
+      }
+      for (const pulse of linkPulses) {
+        scene.remove(pulse);
+        pulse.geometry.dispose();
+        pulse.material.dispose();
+      }
+      if (particles) {
+        scene.remove(particles);
+        particles.geometry.dispose();
+        particles.material.dispose();
+      }
+      nodeObjects.clear();
+      linkLines = [];
+      linkPulses = [];
+      particles = null;
+      hoveredNode = null;
+      focusedNode = null;
+
+      // Rebuild from scratch
+      buildGraph(data);
+      createParticles();
+      applyThemeToScene();
+
+      // Hide loading
+      setTimeout(() => {
+        document.getElementById('loading').classList.add('hidden');
+      }, 300);
+
+      console.log(`Graph loaded: ${data.nodes.length} nodes, ${data.links.length} links`);
+      return; // Success
+    } catch (err) {
+      console.warn(`Load attempt ${attempt}/${retries} failed:`, err.message);
+      if (attempt === retries) {
+        console.error('Failed to load graph after all retries:', err);
+        document.getElementById('loading').innerHTML = `
+          <div class="icon"><i class="fa-solid fa-diagram-project"></i></div>
+          <h2>Граф пока пуст</h2>
+          <p>${err.message}</p>
+          <p style="margin-top:12px;font-size:12px;opacity:.7">
+            Граф строится по .md-файлам в каталоге <b>wikimemory</b>.<br>
+            Положите туда заметки — и связи появятся сами.<br>
+            Либо задайте другой каталог через INFINITY_WIKI_MEMORY_DIR.
+          </p>
+        `;
+      } else {
+        await new Promise(r => setTimeout(r, 1000 * attempt)); // Exponential backoff
+      }
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATION LOOP
+   ═══════════════════════════════════════════════════════════════ */
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  /* В 2D-режиме сцену three.js рисуть незачем: контейнер скрыт, а цикл
+     всё равно крутился и заставлял GPU работать вхолостую. Физику тоже
+     останавливаем — иначе узлы 3D продолжают «кипеть» под скрытым холстом
+     и жгут батарею. */
+  if (graphMode !== '3d') return;
+
+  const time = clock.getElapsedTime();
+
+  // Update physics
+  updatePhysics();
+
+  // Rotate node rings
+  for (const node of nodeObjects.values()) {
+    node.ring.lookAt(camera.position);
+    node.glow.lookAt(camera.position);
+
+    // Pulse effect
+    const pulse = 1 + Math.sin(time * 2 + node.position.x) * 0.05;
+    node.ring.scale.set(pulse, pulse, 1);
+  }
+
+  // Animate pulses along links
+  for (const pulse of linkPulses) {
+    if (pulse.userData.linkIndex >= linkLines.length) continue;
+    const link = linkLines[pulse.userData.linkIndex];
+    if (!link || !link.line.visible) {
+      pulse.visible = false;
+      continue;
+    }
+    pulse.visible = true;
+    pulse.userData.t += pulse.userData.speed;
+    if (pulse.userData.t > 1) pulse.userData.t = 0;
+
+    const source = nodeObjects.get(link.sourceId);
+    const target = nodeObjects.get(link.targetId);
+    if (!source || !target) continue;
+
+    const mid = source.position.clone().add(target.position).multiplyScalar(0.5);
+    mid.y += 1.5;
+    const curve = new THREE.QuadraticBezierCurve3(
+      source.position.clone(), mid, target.position.clone()
+    );
+    const pos = curve.getPoint(pulse.userData.t);
+    pulse.position.copy(pos);
+  }
+
+  // Rotate particles
+  if (particles) {
+    particles.rotation.y = time * 0.01;
+    particles.rotation.x = time * 0.005;
+  }
+
+  // Animate highlight ring
+  if (highlightRing && highlightedNodeId) {
+    const node = nodeObjects.get(highlightedNodeId);
+    if (node) {
+      highlightRing.position.copy(node.position);
+      highlightRing.lookAt(camera.position);
+      // Pulse opacity
+      highlightRing.material.opacity = 0.3 + Math.sin(time * 4) * 0.3;
+      // Slow rotation
+      highlightRing.rotation.z = time * 0.5;
+    }
+  }
+
+  controls.update();
+  composer.render();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   THEME
+   -----------------------------------------------------------------------
+   Раньше страница жила своей темой: getTheme() писала в localStorage самостоятельно,
+   applyTheme() делала body.classList.remove('light','sepia') и знала про
+   две темы из девяти, а по умолчанию считала тёмной. Итог был ровно тот,
+   что и видели: выбиралась тема «Полночь» или «Лес» — страница считали
+   светлой, сцена оставалась тёмной (чёрный фон, аддитивное смешивание,
+   эмиссия 0.4) и поверх светлых панелей появлялись засветы.
+
+   Теперь единственный источник темы — window.InfinityTheme, тот же,
+   что на остальных страницах. isLight() определяется по фактической
+   яркости фона, а не по списку из двух имён.
+   ═══════════════════════════════════════════════════════════════ */
+const LS_THEME = 'infinity_theme';
+
+/* Тёмные темы перечислены явно. isLight() нельзя вычислять «по классу»:
+   список из двух имён и был причиной засветов на остальных семи темах. */
+const DARK_THEMES = ['dark', 'midnight', 'forest', 'ocean', 'warm'];
+
+function themeEngine() {
+  return (typeof window !== 'undefined' && window.InfinityTheme) ? window.InfinityTheme : null;
+}
+
+function getTheme() {
+  const eng = themeEngine();
+  if (eng && typeof eng.get === 'function') {
+    try { return eng.get(); } catch (e) { /* фолбэк ниже */ }
+  }
+  const v = localStorage.getItem(LS_THEME);
+  return v || 'light';
+}
+
+function setTheme(t) {
+  const eng = themeEngine();
+  if (eng && typeof eng.set === 'function') {
+    eng.set(t);            // он сам сохранит и разошлёт остальным вкладкам
+  } else {
+    localStorage.setItem(LS_THEME, t);
+  }
+  applyTheme();
+}
+
+function isLight() {
+  const t = getTheme();
+  if (t === 'sepia' || t === 'paper' || t === 'rose') return true;
+  return !DARK_THEMES.includes(t);
+}
+
+/* Яркость фактического фона страницы. Светлее порога — считаем светлой
+   темой и снимаем свечение. Считаем через getComputedStyle, потому что
+   --bg-deep выставляется самой страницей и может отличаться от палитры. */
+function bgIsLight() {
+  const el = document.body;
+  if (!el) return true;
+  const str = getComputedStyle(el).backgroundColor || '';
+  const m = str.match(/rgba?\(([^)]+)\)/);
+  if (!m) return true;
+  const parts = m[1].split(',').map(s => parseFloat(s));
+  const r = parts[0] || 0, g = parts[1] || 0, b = parts[2] || 0;
+  const a = parts.length > 3 ? parts[3] : 1;
+  if (a === 0) return true;                       // прозрачный фон — рисует канвас
+  // Воспринимаемая яркость по ITU-R BT.601
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6;
+}
+
+/* Цвет из CSS-переменной темы в THREE.Color. Нужен для акцента, тумана и
+   пыли: значения --accent/--bg-deep меняются вместе с темой, а сцена
+   раньше держала фиолетово-синие константы. */
+function cssVarColor(name, fallback) {
+  const v = (getComputedStyle(document.body).getPropertyValue(name) || '').trim();
+  const c = new THREE.Color();
+  try { c.setStyle(v || fallback); } catch (e) { c.set(fallback); }
+  return c;
+}
+
+function applyThemeToScene() {
+  const light = bgIsLight();
+
+  /* Фон сцены берём из вычисленного цвета страницы, а не из захардкоженных
+     констант: раньше светлая сцена ставила 0xccd3e0, а страница рисовала
+     #e9edf4, и по краям оставалась заметная рамка другого оттенка. */
+  const css = getComputedStyle(document.body).backgroundColor;
+  const parsed = parseCssColor(css);
+  if (light) renderer.setClearColor(parsed, 1);
+  else renderer.setClearColor(0x000000, 0);
+
+  /* Свет сцены — в акценте темы. На лесной/морской/тёплой палитре
+     фиолетовый источник света давал грязный оттенок на узлах. */
+  const accent = cssVarColor('--accent', '#a78bfa');
+  pointLight.color.copy(accent);
+  ambientLight.color.set(light ? 0xffffff : 0x334466);
+
+  /* Главная причина засветов. На светлом фоне аддитивное смешивание
+     физически неверно: цвет складывается с ярким фоном и уходит в белое.
+     Переключаем на обычное смешивание и приглушаем прозрачность. */
+  const blend = light ? THREE.NormalBlending : THREE.AdditiveBlending;
+
+  /* UnrealBloomPass на светлой теме — главный источник засветок:
+     светлые панели и свечения проходят порог 0.85 и раздуваются в
+     белёсые пятна поверх всего экрана. Выключаем целиком. */
+  bloomPass.enabled = !light;
+
+  /* Тон-маппинг с экспозицией 1.3 дополнительно выбеливал картинку. */
+  renderer.toneMappingExposure = light ? 1.0 : 1.3;
+
+  linkLines.forEach(l => {
+    if (!l.line || !l.line.material) return;
+    const m = l.line.material;
+    m.opacity = light ? 0.55 : Math.min(CONFIG.linkOpacity + (l.weight || 1) * 0.04, 0.5);
+    m.blending = blend;
+    /* Исходный цвет запоминаем один раз: повторный lerp накапливался бы
+       при каждом переключении темы и со временем съел бы насыщенность */
+    if (!m.userData.baseColor) m.userData.baseColor = m.color.clone();
+    m.color.copy(m.userData.baseColor);
+    if (light) m.color.lerp(new THREE.Color(0x1f2430), 0.35);
+    m.needsUpdate = true;
+  });
+  nodeObjects.forEach(n => {
+    const isGroup = n.kind === 'group';
+    [n.ring, n.glow].forEach(m => {
+      if (!m || !m.material) return;
+      /* кольцо и ореол на светлом фоне почти не видны — держим их в тени.
+         У групп они ещё тише: оболочка кластера не должна спорить с
+         заметками за внимание. */
+      m.material.opacity = light
+        ? (isGroup ? (m === n.ring ? 0.16 : 0.03) : (m === n.ring ? 0.18 : 0.07))
+        : (isGroup ? (m === n.ring ? 0.22 : 0.035) : (m === n.ring ? 0.15 : 0.06));
+      m.material.blending = blend;
+      m.needsUpdate = true;
+    });
+    if (n.mesh && n.mesh.material) {
+      const mat = n.mesh.material;
+      if (!mat.userData.baseColor)    mat.userData.baseColor = mat.color.clone();
+      if (!mat.userData.baseEmissive) mat.userData.baseEmissive = mat.emissive.clone();
+      mat.color.copy(mat.userData.baseColor);
+      mat.emissive.copy(mat.userData.baseEmissive);
+      /* эмиссия на светлом фоне съедает объём узла — почти гасим её */
+      mat.emissiveIntensity = isGroup ? (light ? 0.04 : 0.12) : (light ? 0.08 : 0.4);
+      if (light) {
+        mat.color.lerp(new THREE.Color(0x1f2430), 0.25);
+        mat.emissive.lerp(new THREE.Color(0x1f2430), 0.25);
+      }
+      mat.needsUpdate = true;
+    }
+  });
+  if (particles && particles.material) {
+    particles.material.opacity = light ? 0.25 : 0.6;
+    particles.material.blending = blend;
+    particles.material.needsUpdate = true;
+    paintParticleColors();
+  }
+  linkPulses.forEach(p => {
+    if (p && p.material) {
+      p.material.blending = blend;
+      p.material.opacity = light ? 0.55 : 0.7;
+      p.material.needsUpdate = true;
+    }
+  });
+  if (highlightRing && highlightRing.material) {
+    highlightRing.material.blending = blend;
+    highlightRing.material.needsUpdate = true;
+  }
+  /* Туман в цвет фона активной темы: фиксированный 0x06060f на светлых и
+     цветных палитрах давал заметную дымку другого оттенка. */
+  if (scene.fog) scene.fog.color.set(parsed);
+
+  /* 2D-движок оформляет подписи и обводки по цветам темы. Он объявлен в
+   своём файле внутри IIFE, поэтому в глобальной области виден только
+   объект Graph2D — прямой вызова функции оттуда нет. */
+if (typeof window.Graph2D !== 'undefined') window.Graph2D.applyTheme();
+}
+
+function parseCssColor(str) {
+  const m = String(str || '').match(/rgba?\(([^)]+)\)/);
+  if (!m) return 0xffffff;
+  const p = m[1].split(',').map(s => parseFloat(s));
+  const r = Math.round(p[0] || 0), g = Math.round(p[1] || 0), b = Math.round(p[2] || 0);
+  return (r << 16) | (g << 8) | b;
+}
+
+function applyTheme() {
+  /* Классы темы ставит theme.js. Мы только перерисовываем сцену и
+     поправляем иконку кнопки — свой remove('light','sepia') здесь стоял
+     и стирал тему, выбранную в остальном приложении. */
+  const t = getTheme();
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.innerHTML = isLight() ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+  applyThemeToScene();
+  /* Цвета точек легенды зависят от темы так же, как цвета рёбер графа.
+     Пересобираем её после смены темы, иначе на светлом фоне остаются
+     пастельные точки, не совпадающие с линиями на графе. */
+  if (graphData && graphData.sections) {
+    buildLegend(graphData.sections);
+    refreshLegendFilterState();
+  }
+}
+
+/* Переключение темы из графа идёт через общий движок: Ctrl/кнопка меняет
+   тему везде, а не только на этой странице. */
+function cycleTheme() {
+  const all = ['light', 'dark', 'sepia', 'midnight', 'forest', 'ocean', 'rose', 'warm', 'paper'];
+  const cur = getTheme();
+  const i = all.indexOf(cur);
+  setTheme(all[(i + 1) % all.length]);
+}
+
+document.getElementById('theme-toggle').addEventListener('click', cycleTheme);
+
+/* Реакция на смену темы в другой вкладке / другим окном Electron. */
+(function subscribeTheme() {
+  const eng = themeEngine();
+  if (eng && typeof eng.onChange === 'function') {
+    eng.onChange(() => applyTheme());
+  } else {
+    window.addEventListener('storage', e => {
+      if (e.key === LS_THEME || e.key === null) applyTheme();
+    });
+  }
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   ИНСТРУМЕНТЫ ГРАФА: путь, PNG, горячие клавиши
+   -----------------------------------------------------------------------
+   Надстройка над уже готовой страницей: не переопределяет существующие
+   обработчики, а добавляет свои панели и слушатели. Path использует
+   Graph2D.setPath/fitTo — подсветка живёт в 2D-движке, поэтому режим
+   3D при запросе пути переключается на 2D.
+   ═══════════════════════════════════════════════════════════════ */
+(function initGraphTools() {
+  const byId = id => document.getElementById(id);
+  const pathPanel = byId('gx-path');
+  const helpPanel = byId('gx-help');
+  const fromSel = byId('gx-path-from');
+  const toSel = byId('gx-path-to');
+  const resEl = byId('gx-path-result');
+  const chainEl = byId('gx-path-chain');
+
+  function isStructural(n) {
+    return !!n && (n.kind === 'group' || /^(folder|tag):/.test(String(n.id)));
+  }
+  function titleOf(n) {
+    return (n && (n.title || n.label || n.name)) || (n ? String(n.id) : '');
+  }
+  function plural(n, one, few, many) {
+    const a = Math.abs(n) % 100, b = a % 10;
+    if (a > 10 && a < 20) return many;
+    if (b > 1 && b < 5) return few;
+    if (b === 1) return one;
+    return many;
+  }
+
+  /* ── Список заметок для двух селектов ── */
+  function refreshOptions() {
+    if (!graphData || !Array.isArray(graphData.nodes)) return;
+    const list = graphData.nodes
+      .filter(n => !isStructural(n) && n.kind !== 'unresolved')
+      .sort((a, b) => titleOf(a).localeCompare(titleOf(b), 'ru'));
+    const html = list.map(n =>
+      `<option value="${escapeHtml(String(n.id))}">${escapeHtml(titleOf(n))}</option>`).join('');
+    const keepFrom = fromSel.value, keepTo = toSel.value;
+    const hadFrom = !!keepFrom, hadTo = !!keepTo;
+    fromSel.innerHTML = html;
+    toSel.innerHTML = html;
+    /* После innerHTML селект сам встаёт на первый пункт, поэтому «Куда»
+       без явного выбора дублировало «Откуда». Ставим разные значения. */
+    fromSel.selectedIndex = 0;
+    toSel.selectedIndex = list.length > 1 ? 1 : 0;
+    if (hadFrom) fromSel.value = keepFrom;
+    if (hadTo) toSel.value = keepTo;
+    const run = byId('gx-path-run');
+    if (run) run.disabled = list.length < 2;
+  }
+
+  /* ── BFS по связям без структурных узлов (папки/теги) ──
+     Через папку «путь» находился бы между любыми двумя заметками одной
+     папки, хотя прямой связи между ними нет. */
+  function findPath(a, b) {
+    if (!a || !b) return null;
+    const nodes = (graphData && graphData.nodes) || [];
+    const map = new Map(nodes.map(n => [String(n.id), n]));
+    const adj = new Map();
+    const add = (x, y) => {
+      if (!adj.has(x)) adj.set(x, []);
+      adj.get(x).push(y);
+    };
+    for (const l of ((graphData && graphData.links) || [])) {
+      const s = String(l.source), t = String(l.target);
+      const ns = map.get(s), nt = map.get(t);
+      if (!ns || !nt) continue;
+      if (isStructural(ns) || isStructural(nt)) continue;
+      if (ns.kind === 'unresolved' || nt.kind === 'unresolved') continue;
+      add(s, t); add(t, s);
+    }
+    if (!adj.has(a)) return null;
+    const prev = new Map([[a, null]]);
+    const queue = [a];
+    for (let i = 0; i < queue.length; i++) {
+      const cur = queue[i];
+      if (cur === b) break;
+      for (const nx of (adj.get(cur) || [])) {
+        if (!prev.has(nx)) { prev.set(nx, cur); queue.push(nx); }
+      }
+    }
+    if (!prev.has(b)) return null;
+    const ids = [];
+    for (let cur = b; cur != null; cur = prev.get(cur)) ids.push(cur);
+    return ids.reverse();
+  }
+
+  function clearPathView(keepPanel) {
+    if (typeof window.Graph2D !== 'undefined') window.Graph2D.clearPath();
+    resEl.className = 'gx-fp-result';
+    resEl.textContent = '';
+    chainEl.innerHTML = '';
+    if (!keepPanel) byId('gx-path-btn').classList.remove('active');
+  }
+
+  function showPath(ids) {
+    chainEl.innerHTML = '';
+    if (!ids) {
+      clearPathView(true);
+      resEl.className = 'gx-fp-result err';
+      resEl.textContent = 'Путь не найден: у этих заметок нет цепочки общих связей.';
+      return;
+    }
+    const steps = ids.length - 1;
+    resEl.className = 'gx-fp-result ok';
+    resEl.textContent = steps === 0
+      ? 'Выбрана одна и та же заметка.'
+      : `Путь: ${steps} ${plural(steps, 'шаг', 'шага', 'шагов')} · ${ids.length} ${plural(ids.length, 'заметка', 'заметки', 'заметок')}`;
+    const map = new Map(((graphData && graphData.nodes) || []).map(n => [String(n.id), n]));
+    ids.forEach((id, i) => {
+      const n = map.get(String(id));
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = `<span class="gx-chain-step">${i + 1}</span>${escapeHtml(titleOf(n))}`;
+      b.title = titleOf(n);
+      b.addEventListener('click', () => { if (n) openSidebar(n); });
+      chainEl.appendChild(b);
+    });
+    if (typeof window.Graph2D !== 'undefined') {
+      window.Graph2D.setPath(ids, ids.slice(0, -1).map((id, i) => [id, ids[i + 1]]));
+      window.Graph2D.fitTo(ids);
+    }
+  }
+
+  function openPathPanel() {
+    if (graphMode !== '2d') toggleMode();
+    closeHelp();
+    refreshOptions();
+    pathPanel.classList.add('open');
+    byId('gx-path-btn').classList.add('active');
+    fromSel.focus();
+  }
+  function closePathPanel() {
+    pathPanel.classList.remove('open');
+    byId('gx-path-btn').classList.remove('active');
+  }
+  function closeHelp() {
+    helpPanel.classList.remove('open');
+    byId('help-toggle').classList.remove('active');
+  }
+  function toggleHelp() {
+    const open = !helpPanel.classList.contains('open');
+    closePathPanel();
+    helpPanel.classList.toggle('open', open);
+    byId('help-toggle').classList.toggle('active', open);
+  }
+
+  /* ── PNG: рисуем SVG-слой в canvas и отдаём файл ── */
+  function exportPng() {
+    if (graphMode !== '2d') { toast('PNG доступен в 2D-режиме', 'info'); return; }
+    const svg = document.querySelector('#canvas2d-container svg');
+    if (!svg) { toast('Граф ещё не готов', 'info'); return; }
+    try {
+      const rect = svg.getBoundingClientRect();
+      const w = Math.max(1, Math.round(rect.width));
+      const h = Math.max(1, Math.round(rect.height));
+      const clone = svg.cloneNode(true);
+      clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      clone.setAttribute('width', w);
+      clone.setAttribute('height', h);
+      clone.style.fontFamily = getComputedStyle(document.body).fontFamily;
+      const bg = getComputedStyle(byId('canvas2d-container')).backgroundColor ||
+        getComputedStyle(document.body).getPropertyValue('--bg-deep').trim() || '#0b0b12';
+      const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bgRect.setAttribute('x', 0);
+      bgRect.setAttribute('y', 0);
+      bgRect.setAttribute('width', w);
+      bgRect.setAttribute('height', h);
+      bgRect.setAttribute('fill', bg);
+      clone.insertBefore(bgRect, clone.firstChild);
+      const xml = new XMLSerializer().serializeToString(clone);
+      const img = new Image();
+      img.onload = () => {
+        const scale = 2;
+        const c = document.createElement('canvas');
+        c.width = w * scale;
+        c.height = h * scale;
+        const ctx = c.getContext('2d');
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0);
+        c.toBlob(blob => {
+          if (!blob) { toast('Не удалось собрать PNG', 'error'); return; }
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'notes-graph-' + new Date().toISOString().slice(0, 10) + '.png';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+          toast('PNG сохранён', 'success');
+        }, 'image/png');
+      };
+      img.onerror = () => toast('Не удалось собрать PNG', 'error');
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+    } catch (e) {
+      toast('Ошибка экспорта: ' + e.message, 'error');
+    }
+  }
+
+  /* ── Обработчики ── */
+  byId('gx-path-btn').addEventListener('click', () => {
+    if (pathPanel.classList.contains('open')) closePathPanel();
+    else openPathPanel();
+  });
+  byId('gx-path-close').addEventListener('click', closePathPanel);
+  byId('gx-shot-btn').addEventListener('click', exportPng);
+  byId('help-toggle').addEventListener('click', toggleHelp);
+  byId('gx-help-close').addEventListener('click', closeHelp);
+  byId('gx-path-run').addEventListener('click', () => showPath(findPath(fromSel.value, toSel.value)));
+  byId('gx-path-clear').addEventListener('click', () => clearPathView(false));
+  byId('mode-toggle').addEventListener('click', closePathPanel);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      let had = false;
+      if (pathPanel.classList.contains('open')) { closePathPanel(); had = true; }
+      if (helpPanel.classList.contains('open')) { closeHelp(); had = true; }
+      if (had) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      return;
+    }
+    const t = e.target;
+    const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' ||
+      t.tagName === 'SELECT' || t.isContentEditable);
+    if (typing || e.ctrlKey || e.metaKey || e.altKey) return;
+    switch (String(e.key).toLowerCase()) {
+      case '?':
+        e.preventDefault(); toggleHelp(); break;
+      case '/': {
+        e.preventDefault();
+        const s = byId('search');
+        if (s) s.focus();
+        break;
+      }
+      case 'f':
+        if (typeof window.Graph2D !== 'undefined') window.Graph2D.fit();
+        break;
+      case 'p':
+        e.preventDefault();
+        if (pathPanel.classList.contains('open')) closePathPanel(); else openPathPanel();
+        break;
+      case 'e':
+        exportPng(); break;
+      case 'l': {
+        const cb = byId('g2d-show-labels');
+        if (cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }
+        break;
+      }
+      case 'g': {
+        const cb = byId('g2d-show-groups');
+        if (cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }
+        break;
+      }
+      case '2':
+        if (graphMode !== '2d') toggleMode();
+        break;
+      case '3':
+        if (graphMode !== '3d') toggleMode();
+        break;
+    }
+  });
+})();
+
+// Start
+loadFolders();
+applyTheme();
+bindGraph2DSettings();
+applyMode();
+updateGroupModeUi();
+(async () => {
+  /* Статус нужен в любом режиме — чтобы панель настроек сразу показывала,
+     посчитан кэш или устарел. Сам расчёт запускается только для смыслового
+     слоя: граф не должен ждать laya в режиме папок. */
+  const st = await fetchSemanticStatus();
+  setSemanticHint(describeSemantic(st));
+  if (groupMode === 'semantic' && st.feature) {
+    await ensureSemanticReady(false);
+  }
+  await loadGraphData();
+})();
+animate();
+</script>
+</body>
+</html>

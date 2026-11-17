@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html class="pg-notes-nt" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Заметки</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/fonts/google-fonts.css">
+<style>
+/* ============================================================================
+   NOTION-STYLE DESIGN SYSTEM FOR NOTES  (page_notes_nt.html)
+   Тёплые нейтральные тона, hairline-границы, один насыщенный акцент.
+   Живёт только на этой странице — legacy page_notes.html не затронут.
+   ============================================================================ */
+:root{
+  --nt-bg:#ffffff;
+  --nt-sb:#f7f6f3;
+  --nt-sb-2:#f1f0ed;
+  --nt-hover:rgba(55,53,47,.06);
+  --nt-active:rgba(55,53,47,.09);
+  --nt-border:#e9e9e7;
+  --nt-border-2:#dcdcda;
+  --nt-text:#37352f;
+  --nt-text-2:#787066;
+  --nt-text-3:#9b9a97;
+  --nt-blue:#0075de;
+  --nt-blue-2:#0067c9;
+  --nt-blue-soft:rgba(0,117,222,.08);
+  --nt-red:#e03e3e;
+  --nt-amber:#cb7b37;
+  --nt-green:#0f7b6c;
+  --nt-r:4px;
+  --nt-r-md:6px;
+  --nt-pill:9999px;
+  --nt-tr:120ms cubic-bezier(.4,0,.2,1);
+  --nt-font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --nt-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --nt-w1:250px;
+  --nt-w2:340px;
+}
+/* Тёмная тема. theme.js не добавляет класс dark на body (dark — базовое
+   состояние), а ставит data-theme на <html> — поэтому селектор по data-theme. */
+[data-theme="dark"] body, body.dark{ --nt-bg:#191919; --nt-sb:#202020; --nt-sb-2:#252525;
+  --nt-hover:rgba(255,255,255,.055); --nt-active:rgba(255,255,255,.09);
+  --nt-border:#2f2f2f; --nt-border-2:#3d3d3d;
+  --nt-text:#e9e9e7; --nt-text-2:#9b9a97; --nt-text-3:#6f6f6c;
+  --nt-blue:#529cca; --nt-blue-2:#3f8ec4; --nt-blue-soft:rgba(82,156,202,.14);
+  --nt-red:#ff7369; --nt-amber:#e0a366; --nt-green:#4dab9a; }
+[data-theme="midnight"] body, body.midnight{ --nt-bg:#0e0e10; --nt-sb:#161618; --nt-sb-2:#1c1c1f; }
+[data-theme="sepia"] body, [data-theme="paper"] body,
+[data-theme="rose"] body, [data-theme="ocean"] body,
+[data-theme="forest"] body, [data-theme="warm"] body{
+  --nt-sb:#f6f3ee; --nt-sb-2:#efeae2; --nt-text:#3f3a33; }
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:var(--nt-font); background:var(--nt-bg); color:var(--nt-text);
+  font-size:15px; line-height:1.55; overflow:hidden;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+::selection{background:var(--nt-blue-soft)}
+a{color:var(--nt-blue);text-decoration:none}
+a:hover{text-decoration:underline}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(55,53,47,.16);border-radius:var(--nt-pill);
+  border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:rgba(55,53,47,.28);background-clip:padding-box}
+*{scrollbar-width:thin;scrollbar-color:rgba(55,53,47,.2) transparent}
+
+/* ============ КАРКАС: колонки с перетаскиваемыми разделителями ============ */
+.nt-app{display:flex;height:100vh;width:100%;overflow:hidden}
+.nt-sidebar{
+  width:var(--nt-w1); flex:0 0 auto; background:var(--nt-sb);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.nt-main{flex:1;display:flex;min-width:0;overflow:hidden}
+.nt-sp{flex:0 0 auto; width:1px; background:var(--nt-border);
+  position:relative; cursor:col-resize; user-select:none}
+.nt-sp::after{content:''; position:absolute; inset:0 -3px; z-index:5}
+.nt-sp:hover, .nt-sp.drag{background:var(--nt-blue)}
+<style>
+/* ============ САЙДБАР ============ */
+.nt-side-head{padding:10px 10px 6px;flex:0 0 auto}
+.nt-row{display:flex;align-items:center;gap:6px}
+.nt-brand{
+  display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--nt-r);
+  font-weight:600;font-size:14px;cursor:pointer;flex:1;min-width:0;
+  transition:background var(--nt-tr);font-family:inherit;
+  border:none;color:var(--nt-text);text-align:left;
+}
+.nt-brand:hover{background:var(--nt-hover)}
+.nt-brand span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nt-logo{
+  width:22px;height:22px;border-radius:var(--nt-r);flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--nt-blue);color:#fff;font-size:11px;font-weight:700;
+}
+.nt-sb-scroll{flex:1;overflow-y:auto;padding:2px 8px 8px}
+.nt-sb-btn{
+  display:flex;align-items:center;gap:8px;width:100%;padding:5px 8px;
+  border:none;background:transparent;color:var(--nt-text);border-radius:var(--nt-r);
+  font-size:14px;font-family:inherit;cursor:pointer;text-align:left;
+  transition:background var(--nt-tr);
+}
+.nt-sb-btn:hover{background:var(--nt-hover)}
+.nt-sb-btn.on{background:var(--nt-active);font-weight:500}
+.nt-sb-btn i{width:16px;text-align:center;font-size:13px;color:var(--nt-text-2);flex:0 0 auto}
+.nt-sb-btn.on i{color:var(--nt-text)}
+.nt-sb-btn .lbl{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nt-sb-btn .cnt{font-size:11px;color:var(--nt-text-3);font-variant-numeric:tabular-nums}
+.nt-sb-sec{
+  padding:14px 8px 4px;font-size:11px;font-weight:500;color:var(--nt-text-3);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nt-sb-sec button{
+  border:none;background:transparent;color:var(--nt-text-3);cursor:pointer;
+  width:20px;height:20px;border-radius:var(--nt-r);display:none;
+  align-items:center;justify-content:center;font-size:11px;font-family:inherit;
+}
+.nt-sb-sec:hover button{display:flex}
+.nt-sb-sec button:hover{background:var(--nt-active);color:var(--nt-text)}
+.nt-folder{display:flex;align-items:center}
+.nt-tw{
+  width:16px;height:26px;flex:0 0 auto;border:none;background:transparent;
+  color:var(--nt-text-3);cursor:pointer;font-size:9px;display:flex;
+  align-items:center:justify-content:center;border-radius:3px;
+}
+.nt-tw:hover{background:var(--nt-hover)}
+.nt-tw i{transition:transform var(--nt-tr)}
+.nt-folder.open .nt-tw i{transform:rotate(90deg)}
+.nt-kids{display:none;padding-left:14px}
+.nt-kids.open{display:block}
+.nt-side-foot{flex:0 0 auto;padding:6px 8px 10px;border-top:1px solid var(--nt-border)}
+
+/* ============ КНОПКИ / ПОЛЯ ============ */
+.nt-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:5px 10px;border-radius:var(--nt-r);border:1px solid transparent;
+  background:transparent;color:var(--nt-text-2);font-size:13px;
+  font-family:inherit;cursor:pointer;white-space:nowrap;
+  transition:background var(--nt-tr),color var(--nt-tr);
+}
+.nt-btn:hover{background:var(--nt-hover);color:var(--nt-text)}
+.nt-btn.on{background:var(--nt-active);color:var(--nt-text)}
+.nt-btn.primary{background:var(--nt-blue);color:#fff;font-weight:500}
+.nt-btn.primary:hover{background:var(--nt-blue-2);color:#fff}
+.nt-btn.icon{padding:5px 7px}
+.nt-btn:disabled{opacity:.4;cursor:default}
+.nt-input{
+  width:100%;padding:7px 10px;border-radius:var(--nt-r);
+  border:1px solid var(--nt-border);background:var(--nt-bg);color:var(--nt-text);
+  font-size:14px;font-family:inherit;outline:none;
+  transition:border-color var(--nt-tr),box-shadow var(--nt-tr);
+}
+.nt-input:focus{border-color:var(--nt-blue);box-shadow:0 0 0 2px var(--nt-blue-soft)}
+.nt-pill{
+  display:inline-flex;align-items:center;gap:4px;padding:1px 8px;
+  border-radius:var(--nt-pill);background:var(--nt-sb-2);color:var(--nt-text-2);
+  font-size:11.5px;font-weight:500;white-space:nowrap;
+}
+.nt-pill.b{background:var(--nt-blue-soft);color:var(--nt-blue)}
+<style>
+/* ============ ПАНЕЛЬ СПИСКА ============ */
+.nt-list{
+  width:var(--nt-w2); flex:0 0 auto; display:flex; flex-direction:column;
+  overflow:hidden; background:var(--nt-bg);
+}
+.nt-list-head{flex:0 0 auto;padding:14px 16px 0}
+.nt-list-title{
+  font-size:15px;font-weight:600;margin-bottom:8px;
+  display:flex;align-items:center;gap:8px;
+}
+.nt-list-title .n{color:var(--nt-text-3);font-weight:400;font-size:13px}
+.nt-list-tools{display:flex;align-items:center;gap:2px;padding-bottom:8px}
+.nt-list-scroll{flex:1;overflow-y:auto;padding:0 8px 20px}
+.nt-view{
+  display:flex;align-items:flex-start;gap:8px;width:100%;padding:7px 8px 7px 10px;
+  border-radius:var(--nt-r);cursor:pointer;border:none;background:transparent;
+  color:var(--nt-text);font-family:inherit;text-align:left;
+  transition:background var(--nt-tr);position:relative;
+}
+.nt-view:hover{background:var(--nt-hover)}
+.nt-view.on{background:var(--nt-active)}
+.nt-view:focus-visible{outline:2px solid var(--nt-blue);outline-offset:-2px}
+/* иконка заметки — тонкая стрелка документа, как в Notion.
+   Заливка квадратом с буквами выглядела слишком тяжело */
+.nt-view-ic{
+  width:16px;flex:0 0 16px;align-self:flex-start;margin-top:3px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--nt-text-3);font-size:12px;
+}
+.nt-view.on .nt-view-ic{color:var(--nt-blue)}
+.nt-view-b{flex:1;min-width:0;display:block}
+.nt-view-t{
+  display:block;font-size:14px;font-weight:500;line-height:1.35;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.nt-view.on .nt-view-t{font-weight:600}
+.nt-view-s{
+  display:block;font-size:12.5px;color:var(--nt-text-3);margin-top:1px;line-height:1.4;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+/* активная строка получает тонкую метку слева — как полоса выделения */
+.nt-view::before{
+  content:'';position:absolute;left:0;top:6px;bottom:6px;width:2px;
+  border-radius:var(--nt-pill);background:var(--nt-blue);
+  opacity:0;transition:opacity var(--nt-tr);
+}
+.nt-view.on::before{opacity:1}
+.nt-view-acts{display:flex;gap:1px;opacity:0;transition:opacity var(--nt-tr);flex:0 0 auto}
+.nt-view:hover .nt-view-acts{opacity:1}
+.nt-view-acts button{
+  width:24px;height:24px;border:none;background:transparent;color:var(--nt-text-3);
+  border-radius:var(--nt-r);cursor:pointer;font-size:11px;display:flex;
+  align-items:center;justify-content:center;font-family:inherit;
+}
+.nt-view-acts button:hover{background:var(--nt-bg);color:var(--nt-text)}
+
+/* ============ ПРЕВЬЮ (правая панель) ============ */
+.nt-preview{
+  flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;
+  background:var(--nt-bg);
+}
+.nt-pv-head{
+  flex:0 0 auto;padding:12px 20px;border-bottom:1px solid var(--nt-border);
+  display:flex;align-items:center;gap:8px;min-height:52px;
+}
+.nt-pv-crumb{
+  font-size:13px;color:var(--nt-text-2);display:flex;align-items:center;gap:6px;
+  min-width:0;flex:1;
+}
+.nt-pv-crumb b{color:var(--nt-text);font-weight:500;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.nt-pv-body{flex:1;overflow-y:auto;padding:40px 8% 120px}
+.nt-pv-empty{
+  height:100%;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;color:var(--nt-text-3);gap:10px;text-align:center;
+}
+.nt-pv-empty .ic{font-size:34px;opacity:.35}
+.nt-pv-empty .t{font-size:15px;font-weight:600;color:var(--nt-text-2)}
+.nt-pv-empty .s{font-size:13px;max-width:320px;line-height:1.6}
+.nt-pv-empty kbd{
+  font-family:var(--nt-mono);font-size:11px;padding:1px 5px;border-radius:3px;
+  background:var(--nt-sb-2);color:var(--nt-text-2);
+}
+
+/* обложка + заголовок заметки */
+.nt-cover{
+  width:100%;height:150px;object-fit:cover;border-radius:var(--nt-r-md);
+  margin-bottom:18px;border:1px solid var(--nt-border);
+}
+/* Notion держит заголовок заметки ~30px — 38px выглядел как баннер */
+.nt-pv-h1{
+  font-size:30px;font-weight:700;line-height:1.25;letter-spacing:-.021em;
+  margin-bottom:8px;outline:none;word-break:break-word;border-radius:var(--nt-r);
+}
+.nt-pv-h1:hover{background:var(--nt-hover)}
+.nt-pv-h1:focus{background:var(--nt-hover);box-shadow:0 0 0 2px var(--nt-blue-soft)}
+.nt-pv-h1:empty::before{content:'Без названия';color:var(--nt-text-3)}
+/* мета-строка — тонкая линия снизу, как разделитель блоков в Notion */
+.nt-pv-meta{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  font-size:12.5px;color:var(--nt-text-3);margin-bottom:24px;
+  padding-bottom:12px;border-bottom:1px solid var(--nt-border);
+}
+.nt-pv-tags{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.nt-tag-x{cursor:pointer;opacity:.55;font-size:10px}
+.nt-tag-x:hover{opacity:1}
+
+/* ============ ПУСТЫЕ СОСТОЯНИЯ ============ */
+.nt-empty{padding:40px 20px;text-align:center;color:var(--nt-text-3);font-size:13px;line-height:1.7}
+.nt-empty .ic{font-size:28px;opacity:.35;display:block;margin-bottom:8px}
+<style>
+/* ============ MARKDOWN (Notion-типографика) ============ */
+.nt-md{font-size:16px;line-height:1.7;max-width:760px}
+.nt-md h1{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:30px 0 10px}
+.nt-md h2{font-size:23px;font-weight:700;letter-spacing:-.016em;margin:26px 0 8px}
+.nt-md h3{font-size:19px;font-weight:600;letter-spacing:-.01em;margin:22px 0 6px}
+.nt-md h1:first-child,.nt-md h2:first-child,.nt-md h3:first-child{margin-top:0}
+.nt-md p{margin:0 0 14px}
+.nt-md ul,.nt-md ol{margin:0 0 14px;padding-left:26px}
+.nt-md li{margin:3px 0}
+.nt-md li input[type=checkbox]{margin-right:7px;accent-color:var(--nt-blue)}
+.nt-md blockquote{
+  margin:0 0 14px;padding:2px 0 2px 16px;border-left:3px solid var(--nt-border-2);
+  color:var(--nt-text-2);
+}
+.nt-md code{
+  font-family:var(--nt-mono);font-size:.87em;padding:2px 5px;border-radius:3px;
+  background:var(--nt-sb-2);color:#c7254e;
+}
+[data-theme="dark"] body .nt-md code,
+[data-theme="midnight"] body .nt-md code,
+body.dark .nt-md code{color:#eb5757}
+.nt-md pre{
+  background:var(--nt-sb);border:1px solid var(--nt-border);border-radius:var(--nt-r-md);
+  padding:14px 16px;overflow-x:auto;margin:0 0 14px;
+}
+.nt-md pre code{background:transparent;padding:0;color:var(--nt-text);font-size:13.5px}
+.nt-md hr{border:none;border-top:1px solid var(--nt-border);margin:22px 0}
+.nt-md img{max-width:100%;border-radius:var(--nt-r-md);margin:6px 0}
+.nt-md table{border-collapse:collapse;width:100%;margin:0 0 14px;font-size:14.5px}
+.nt-md th,.nt-md td{border:1px solid var(--nt-border);padding:7px 10px;text-align:left}
+.nt-md th{background:var(--nt-sb);font-weight:600}
+.nt-md .wl{
+  color:var(--nt-blue);cursor:pointer;border-bottom:1px solid transparent;
+}
+.nt-md .wl:hover{border-bottom-color:var(--nt-blue)}
+.nt-md .tk{color:var(--nt-blue);font-weight:500}
+.nt-md .callout{
+  display:flex;gap:10px;padding:12px 14px;border-radius:var(--nt-r-md);
+  background:var(--nt-sb);margin:0 0 14px;
+}
+
+/* ============ ВСПЛЫВАЮЩЕЕ МЕНЮ ============ */
+.nt-menu{
+  position:fixed;z-index:900;min-width:212px;padding:5px;
+  background:var(--nt-bg);border:1px solid var(--nt-border);
+  border-radius:var(--nt-r-md);box-shadow:0 4px 18px rgba(15,15,15,.12),0 0 0 .5px rgba(0,0,0,.04);
+  display:none;
+}
+.nt-menu.open{display:block}
+.nt-mi{
+  display:flex;align-items:center;gap:9px;width:100%;padding:6px 9px;
+  border:none;background:transparent;border-radius:var(--nt-r);cursor:pointer;
+  font-size:14px;color:var(--nt-text);font-family:inherit;text-align:left;
+}
+.nt-mi:hover{background:var(--nt-hover)}
+.nt-mi i{width:15px;text-align:center;font-size:12.5px;color:var(--nt-text-2);flex:0 0 auto}
+.nt-mi.danger{color:var(--nt-red)}
+.nt-mi.danger i{color:var(--nt-red)}
+.nt-mi .kb{margin-left:auto;font-size:11px;color:var(--nt-text-3);
+  font-family:var(--nt-mono);padding-left:14px}
+.nt-msep{height:1px;background:var(--nt-border);margin:5px 0}
+.nt-mlbl{padding:6px 9px 4px;font-size:11px;font-weight:600;color:var(--nt-text-3)}
+.nt-mf{padding:4px 5px 6px}
+.nt-mf .nt-input{font-size:13px}
+
+/* ============ МОДАЛКА / ТОСТ ============ */
+.nt-modal-bg{
+  position:fixed;inset:0;z-index:1000;background:rgba(15,15,15,.35);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.nt-modal-bg.open{display:flex}
+.nt-modal{
+  background:var(--nt-bg);border-radius:var(--nt-r-md);box-shadow:0 12px 48px rgba(0,0,0,.2);
+  width:100%;max-width:440px;overflow:hidden;
+  animation:ntPop .12s cubic-bezier(.4,0,.2,1);
+}
+.nt-modal.wide{max-width:620px}
+@keyframes ntPop{from{opacity:0;transform:translateY(-6px) scale(.99)}to{opacity:1;transform:none}}
+.nt-modal-h{padding:18px 22px 0}
+.nt-modal-t{font-size:17px;font-weight:600;margin-bottom:6px}
+.nt-modal-d{font-size:13.5px;color:var(--nt-text-2);line-height:1.6}
+.nt-modal-b{padding:18px 22px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.nt-toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+  z-index:1100;display:flex;flex-direction:column;gap:7px;align-items:center;pointer-events:none}
+.nt-toast{
+  padding:8px 15px;border-radius:var(--nt-r);background:var(--nt-text);color:var(--nt-bg);
+  font-size:13.5px;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:ntPop .12s;
+}
+.nt-toast.err{background:var(--nt-red);color:#fff}
+.nt-toast.ok{background:var(--nt-green);color:#fff}
+
+/* ============ КОМАНДНАЯ ПАЛИТРА ============ */
+.nt-cp{
+  position:fixed;inset:0;z-index:1200;background:rgba(15,15,15,.3);
+  display:none;align-items:flex-start;justify-content:center;padding:14vh 20px 20px;
+}
+.nt-cp.open{display:flex}
+.nt-cp-box{
+  background:var(--nt-bg);border-radius:var(--nt-r-md);width:100%;max-width:560px;
+  box-shadow:0 12px 48px rgba(0,0,0,.22);overflow:hidden;
+  display:flex;flex-direction:column;max-height:60vh;
+}
+.nt-cp-in{
+  display:flex;align-items:center;gap:10px;padding:14px 16px;
+  border-bottom:1px solid var(--nt-border);flex:0 0 auto;
+}
+.nt-cp-in input{
+  flex:1;border:none;outline:none;background:transparent;font-size:16px;
+  color:var(--nt-text);font-family:inherit;padding:0;min-height:auto;
+}
+.nt-cp-in input:focus{box-shadow:none;border:none}
+.nt-cp-list{flex:1;overflow-y:auto;padding:6px}
+.nt-cp-i{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--nt-r);
+  cursor:pointer;font-size:14px;
+}
+.nt-cp-i.on{background:var(--nt-active)}
+.nt-cp-i i{width:16px;text-align:center;color:var(--nt-text-2);font-size:13px}
+.nt-cp-i .kb{margin-left:auto;font-size:11px;color:var(--nt-text-3);font-family:var(--nt-mono)}
+.nt-cp-h{padding:8px 10px 4px;font-size:11px;font-weight:600;color:var(--nt-text-3)}
+
+/* ============ АДАПТИВ ============ */
+@media (max-width:1240px){
+  /* узкое окно — предпросмотр становится основной панелью,
+     иначе колонка схлопывается в нечитаемую полосу */
+  .nt-pv-body{padding:32px 7% 100px}
+  .nt-pv-h1{font-size:27px}
+}
+@media (max-width:1040px){
+  .nt-md{max-width:none}
+}
+@media (max-width:900px){
+  .nt-list{position:absolute;right:0;top:0;bottom:0;z-index:40;
+    box-shadow:-4px 0 20px rgba(0,0,0,.1)}
+  .nt-pv-h1{font-size:25px}
+  .nt-pv-body{padding:24px 22px 100px}
+  .nt-list-head{padding:12px 12px 0}
+}
+@media (max-width:640px){
+  .nt-sidebar{position:absolute;left:0;top:0;bottom:0;z-index:50;
+    box-shadow:4px 0 20px rgba(0,0,0,.12)}
+  .nt-view-acts{opacity:1}  /* на тач-устройствах hover не срабатывает */
+}
+</style>
+<link rel="stylesheet" href="/static/css/mobile.css">
+<script src="/static/js/mobile.js" defer></script>
+</head>
+<body>
+<div class="nt-app">
+
+  <!-- ======================= ПАНЕЛЬ 1: НАВИГАЦИЯ ======================= -->
+  <aside class="nt-sidebar" id="sidebar">
+    <div class="nt-side-head">
+      <div class="nt-row">
+        <button class="nt-brand" onclick="goNotesHome()">
+          <span class="nt-logo">И</span>
+          <span>Заметки</span>
+        </button>
+        <button class="nt-btn icon" onclick="ntNewNote()" title="Новая заметка (Ctrl+Shift+N)">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </div>
+      <button class="nt-sb-btn" onclick="ntOpenPalette()" title="Поиск и команды (Ctrl+K)">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span class="lbl" style="color:var(--nt-text-3)">Поиск и команды</span>
+        <span class="kb" style="font-size:11px;color:var(--nt-text-3);font-family:var(--nt-mono)">⌃K</span>
+      </button>
+    </div>
+
+    <div class="nt-sb-scroll">
+      <div id="ntQuick"></div>
+
+      <div class="nt-sb-sec">
+        <span>Папки</span>
+        <button onclick="ntNewFolder()" title="Новая папка"><i class="fa-solid fa-plus"></i></button>
+      </div>
+      <div id="ntFolders"></div>
+
+      <div class="nt-sb-sec">
+        <span>Теги</span>
+        <button onclick="ntShowAllTags()" title="Все теги"><i class="fa-solid fa-grip"></i></button>
+      </div>
+      <div id="ntTags"></div>
+
+      <div class="nt-sb-sec">
+        <span>Перейти</span>
+      </div>
+      <a class="nt-sb-btn" href="/notes/graph"><i class="fa-solid fa-diagram-project"></i><span class="lbl">Граф связей</span></a>
+      <a class="nt-sb-btn" href="/workspace"><i class="fa-solid fa-table-cells"></i><span class="lbl">Рабочее пространство</span></a>
+    </div>
+
+    <div class="nt-side-foot">
+      <div class="nt-row">
+        <button class="nt-btn icon" onclick="ntCycleTheme()" title="Сменить тему">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button class="nt-btn icon" onclick="ntSettings()" title="Настройки шаблона">
+          <i class="fa-solid fa-sliders"></i>
+        </button>
+        <div style="flex:1"></div>
+        <a class="nt-btn icon" href="/" title="Главная"><i class="fa-solid fa-house"></i></a>
+      </div>
+    </div>
+  </aside>
+
+  <div class="nt-sp" id="sp1" title="Потяните, чтобы изменить ширину (двойной клик — сброс)"></div>
+  <div class="nt-main">
+    <!-- ======================= ПАНЕЛЬ 2: СПИСОК ======================= -->
+    <section class="nt-list" id="listPanel">
+      <div class="nt-list-head">
+        <div class="nt-list-title">
+          <span id="viewTitle">Все заметки</span>
+          <span class="n" id="viewCount"></span>
+        </div>
+        <div class="nt-row" style="margin-bottom:8px">
+          <input class="nt-input" id="searchInput" placeholder="Поиск по заметкам"
+                 oninput="ntSearch(this.value)" style="flex:1">
+        </div>
+        <div class="nt-list-tools">
+          <button class="nt-btn" onclick="ntSetSort('date')" id="sortDate" title="По дате">
+            <i class="fa-regular fa-clock"></i><span>Дата</span>
+          </button>
+          <button class="nt-btn" onclick="ntSetSort('title')" id="sortTitle" title="По названию">
+            <i class="fa-solid fa-arrow-down-a-z"></i><span>Название</span>
+          </button>
+          <div style="flex:1"></div>
+          <button class="nt-btn icon on" id="btnPv" onclick="ntTogglePreview()"
+                  title="Показать/скрыть панель предпросмотра (Ctrl+\)">
+            <i class="fa-solid fa-columns"></i>
+          </button>
+        </div>
+      </div>
+      <div class="nt-list-scroll" id="listScroll"></div>
+    </section>
+
+    <div class="nt-sp" id="sp2" title="Потяните, чтобы изменить ширину (двойной клик — сброс)"></div>
+    <!-- ======================= ПАНЕЛЬ 3: ПРЕДПРОСМОТР ======================= -->
+    <section class="nt-preview" id="pvPanel">
+      <div class="nt-pv-head">
+        <div class="nt-pv-crumb" id="pvCrumb"></div>
+        <button class="nt-btn" onclick="ntOpenInEditor()" id="pvEditBtn"
+                title="Открыть в полноценном редакторе (Ctrl+Enter)">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        </button>
+        <button class="nt-btn icon" onclick="ntNoteMenu(event, noteId)"
+                title="Ещё"><i class="fa-solid fa-ellipsis"></i></button>
+      </div>
+      <div class="nt-pv-body" id="pvBody">
+        <div class="nt-pv-empty">
+          <i class="fa-regular fa-file-lines ic"></i>
+          <div class="t">Выберите заметку</div>
+          <div class="s">
+            Откройте заметку в списке или нажмите
+            <kbd>↑</kbd> <kbd>↓</kbd> для навигации
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- всплывающее меню -->
+<div class="nt-menu" id="menu"></div>
+
+<!-- модалка подтверждения -->
+<div class="nt-modal-bg" id="modalBg" onclick="if(event.target===this)ntCloseModal()">
+  <div class="nt-modal" id="modalBox"></div>
+</div>
+
+<!-- командная палитра -->
+<div class="nt-cp" id="palette" onclick="if(event.target===this)ntClosePalette()">
+  <div class="nt-cp-box">
+    <div class="nt-cp-in">
+      <i class="fa-solid fa-magnifying-glass" style="color:var(--nt-text-3)"></i>
+      <input id="cpInput" placeholder="Поиск заметок или введите команду..."
+             oninput="ntPaletteFilter(this.value)" autocomplete="off">
+    </div>
+    <div class="nt-cp-list" id="cpList"></div>
+  </div>
+</div>
+
+<div class="nt-toasts" id="toasts"></div>
+
+<script>
+// ============================================================================
+// NOTION-STYLE NOTES — client
+// Работает поверх существующего API: /api/notes/* ничего не меняет.
+// ============================================================================
+'use strict';
+
+let notes = [];          // текущий отфильтрованный список
+let allNotesCache = [];  // всё, что загрузили
+let folders = [];
+let tagsAll = [];
+let currentFolder = 'all';
+let currentTag = '';
+let currentSort = localStorage.getItem('nt_sort') || 'date';
+let noteId = null;       // выбранная заметка
+let currentNote = null;  // полные данные выбранной заметки
+let query = '';
+let cpIndex = 0;
+let cpItems = [];
+
+const $ = id => document.getElementById(id);
+
+function esc(t){
+  return String(t == null ? '' : t).replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+}
+
+function fmtDate(ts){
+  if(!ts) return '';
+  const d = new Date(ts * 1000);
+  const now = new Date();
+  const diff = (now - d) / 1000;
+  if(diff < 60)    return 'только что';
+  if(diff < 3600)  return Math.floor(diff/60) + ' мин назад';
+  if(diff < 86400) return Math.floor(diff/3600) + ' ч назад';
+  if(diff < 172800) return 'вчера';
+  const sameYear = d.getFullYear() === now.getFullYear();
+  return d.toLocaleDateString('ru-RU', sameYear
+    ? {day:'numeric', month:'short'}
+    : {day:'numeric', month:'short', year:'numeric'});
+}
+
+function toast(msg, kind){
+  const el = document.createElement('div');
+  el.className = 'nt-toast' + (kind ? ' ' + kind : '');
+  el.textContent = msg;
+  $('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 2600);
+}
+
+async function api(url, opts){
+  const r = await fetch(url, opts);
+  const txt = await r.text();
+  let d;
+  try { d = JSON.parse(txt); } catch(e){ throw new Error('Сервер вернул не JSON: ' + txt.slice(0,120)); }
+  if(d && d.error) throw new Error(d.error);
+  return d;
+}
+</script>
+<script>
+// ---------- модалка подтверждения / ввода ----------
+function ntModal({title, text, input, value, okText, danger}){
+  return new Promise(resolve => {
+    $('modalBox').innerHTML = `
+      <div class="nt-modal-h">
+        <div class="nt-modal-t">${esc(title)}</div>
+        ${text ? `<div class="nt-modal-d">${esc(text)}</div>` : ''}
+      </div>
+      <div class="nt-modal-b">
+        <button class="nt-btn" id="mCancel">Отмена</button>
+        <button class="nt-btn ${danger ? '' : 'primary'}" id="mOk"
+          ${danger ? 'style="background:var(--nt-red);color:#fff"' : ''}>${esc(okText || 'ОК')}</button>
+      </div>
+      ${input ? `<div style="padding:14px 22px 0"><input class="nt-input" id="mInput"
+           value="${esc(value||'')}" placeholder="${esc(input)}" onkeydown="
+           if(event.key==='Enter')document.getElementById('mOk').click()"></div>` : ''}
+    `;
+    $('modalBg').classList.add('open');
+    const done = v => {
+      $('modalBg').classList.remove('open');
+      document.removeEventListener('keydown', onKey, true);
+      resolve(v);
+    };
+    const onKey = e => {
+      if(e.key === 'Escape'){ e.stopPropagation(); done(null); }
+    };
+    document.addEventListener('keydown', onKey, true);
+    if(input){
+      setTimeout(() => { const i = $('mInput'); i.focus(); i.select(); }, 40);
+      $('mOk').onclick = () => done($('mInput').value.trim() || null);
+      $('mCancel').onclick = () => done(null);
+    } else {
+      $('mOk').onclick = () => done(true);
+      $('mCancel').onclick = () => done(null);
+      setTimeout(() => $('mOk').focus(), 40);
+    }
+  });
+}
+function ntCloseModal(){ $('modalBg').classList.remove('open'); }
+
+// ---------- тема ----------
+// theme.js уже умеет применять тему для всех страниц (правит класс body
+// и data-theme, сохраняет в localStorage). Своя реализация продублировала
+// его логику и могла разойтись с ним — обращаемся к общему API.
+function ntCycleTheme(){
+  const list = ['light','dark','sepia','paper','ocean','forest','rose','warm','midnight'];
+  const cur = localStorage.getItem('infinity_theme') || 'light';
+  const next = list[(list.indexOf(cur) + 1) % list.length];
+  if (window.InfinityTheme && typeof window.InfinityTheme.set === 'function') {
+    window.InfinityTheme.set(next);
+  } else {
+    document.body.className = next === 'light' ? '' : next;
+    localStorage.setItem('infinity_theme', next);
+    document.documentElement.setAttribute('data-theme', next);
+  }
+  toast('Тема: ' + next);
+}
+function goNotesHome(){ location.href = '/notes'; }
+
+// ---------- перетаскиваемые разделители ----------
+function ntInitSplitters(){
+  const cfg = [
+    { el:'sp1', css:'--nt-w1', min:180, max:420, def:250, key:'nt_w1' },
+    { el:'sp2', css:'--nt-w2', min:220, max:600, def:340, key:'nt_w2' },
+  ];
+  cfg.forEach(c => {
+    const sp = $(c.el);
+    if(!sp) return;
+    const saved = localStorage.getItem(c.key);
+    if(saved) document.documentElement.style.setProperty(c.css, saved + 'px');
+    sp.addEventListener('dblclick', () => {
+      document.documentElement.style.setProperty(c.css, c.def + 'px');
+      localStorage.setItem(c.key, c.def);
+    });
+    sp.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startW = parseInt(getComputedStyle(document.documentElement)
+                      .getPropertyValue(c.css)) || c.def;
+      sp.classList.add('drag');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      const move = ev => {
+        const w = Math.max(c.min, Math.min(c.max, startW + ev.clientX - startX));
+        document.documentElement.style.setProperty(c.css, w + 'px');
+      };
+      const up = () => {
+        sp.classList.remove('drag');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+        const w = parseInt(getComputedStyle(document.documentElement)
+                     .getPropertyValue(c.css)) || c.def;
+        localStorage.setItem(c.key, w);
+      };
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    });
+  });
+}
+</script>
+<script>
+// ---------- загрузка данных ----------
+async function ntLoadFolders(){
+  try { folders = await api('/api/notes/folders'); }
+  catch(e){ folders = []; }
+  ntRenderFolders();
+}
+async function ntLoadTags(){
+  try {
+    const d = await api('/api/notes/tags');
+    tagsAll = Array.isArray(d) ? d : (d.tags || []);
+  } catch(e){ tagsAll = []; }
+  ntRenderTags();
+}
+async function ntLoadNotes(){
+  const box = $('listScroll');
+  box.innerHTML = '<div class="nt-empty"><i class="fa-solid fa-spinner fa-spin ic"></i>Загрузка…</div>';
+  try {
+    const q = currentFolder === 'all' ? '' : currentFolder;
+    const d = await api('/api/notes/list?folder=' + encodeURIComponent(q) + '&sort=' + currentSort);
+    // эндпоинт отдаёт {"articles": [...]} — принимаем и массив, и обёртку
+    allNotesCache = Array.isArray(d) ? d
+      : (d.articles || d.notes || d.items || []);
+    if(!Array.isArray(allNotesCache)) allNotesCache = [];
+  } catch(e){
+    box.innerHTML = `<div class="nt-empty"><i class="fa-solid fa-triangle-exclamation ic"></i>
+      Не удалось загрузить: ${esc(e.message)}</div>`;
+    return;
+  }
+  ntApplyFilter();
+}
+
+function ntApplyFilter(){
+  let list = allNotesCache.slice();
+  if(currentTag){
+    list = list.filter(n => (n.tags || []).includes(currentTag));
+  }
+  if(query){
+    const q = query.toLowerCase();
+    list = list.filter(n =>
+      (n.title || '').toLowerCase().includes(q) ||
+      (n.content || '').toLowerCase().includes(q) ||
+      (n.tags || []).some(t => String(t).toLowerCase().includes(q))
+    );
+  }
+  if(currentSort === 'title'){
+    list.sort((a,b) => (a.title||'').localeCompare(b.title||'', 'ru'));
+  } else {
+    list.sort((a,b) => (b.updated||0) - (a.updated||0));
+  }
+  notes = list;
+  ntRenderList();
+  ntRenderQuick();
+}
+
+// ---------- боковая панель ----------
+function ntRenderQuick(){
+  const el = $('ntQuick');
+  if(!el) return;
+  const total = allNotesCache.length;
+  el.innerHTML = `
+    <button class="nt-sb-btn ${currentFolder==='all'&&!currentTag?'on':''}"
+            onclick="ntGoFolder('all')">
+      <i class="fa-regular fa-file-lines"></i>
+      <span class="lbl">Все заметки</span>
+      <span class="cnt">${total}</span>
+    </button>
+    <button class="nt-sb-btn" onclick="ntGoFolder('inbox')">
+      <i class="fa-regular fa-inbox"></i>
+      <span class="lbl">Входящие</span>
+    </button>
+  `;
+}
+
+function ntRenderFolders(){
+  const el = $('ntFolders');
+  if(!el) return;
+  const list = folderList();
+  if(!list.length){
+    el.innerHTML = '<div style="padding:6px 8px;color:var(--nt-text-3);font-size:12.5px">Папок пока нет</div>';
+    return;
+  }
+  el.innerHTML = list.map(f => `
+    <div class="nt-folder">
+      <button class="nt-tw" style="visibility:hidden"><i class="fa-solid fa-chevron-right"></i></button>
+      <button class="nt-sb-btn ${currentFolder===f.name&&!currentTag?'on':''}"
+              onclick="ntGoFolder('${esc(f.name)}')">
+        <i class="fa-regular fa-folder fi"></i>
+        <span class="lbl">${esc(f.name)}</span>
+      </button>
+    </div>
+  `).join('');
+}
+
+/* /api/notes/folders отдаёт {"folders": ["inbox", ...]} — имена строками.
+   Раньше эта страница рисовала иконку «папка-дерево»; здесь плоский список. */
+function folderList(){
+  let raw = folders;
+  if(raw && !Array.isArray(raw)) raw = raw.folders || raw.nodes || [];
+  if(!Array.isArray(raw)) return [];
+  return raw
+    .map(f => typeof f === 'string' ? { name:f } : { name:(f && (f.name || f.title)) || '' })
+    .filter(f => f.name && f.name !== 'all' && f.name.charAt(0) !== '_')
+    .map(f => ({ name:f.name }));
+}
+
+function ntRenderTags(){
+  const el = $('ntTags');
+  if(!el) return;
+  const list = Array.isArray(tagsAll) ? tagsAll : [];
+  if(!list.length){ el.innerHTML = ''; return; }
+  el.innerHTML = list.slice(0, 40).map(t => {
+    const name = typeof t === 'string' ? t : (t.name || t.tag || '');
+    return `<button class="nt-sb-btn ${currentTag===name?'on':''}"
+      onclick="ntGoTag('${esc(name)}')">
+      <i class="fa-solid fa-hashtag" style="font-size:11px"></i>
+      <span class="lbl">${esc(name)}</span>
+    </button>`;
+  }).join('');
+}
+</script>
+<script>
+// ---------- список заметок ----------
+function ntRenderList(){
+  const box = $('listScroll');
+  $('viewCount').textContent = notes.length ? notes.length : '';
+  if(!notes.length){
+    box.innerHTML = `<div class="nt-empty">
+      <i class="fa-regular fa-file-lines ic"></i>
+      ${query ? 'Ничего не найдено' : 'Здесь пока пусто'}<br>
+      <span style="font-size:12px">Нажмите Ctrl+N, чтобы создать заметку</span>
+    </div>`;
+    return;
+  }
+  box.innerHTML = notes.map(n => {
+    const title = n.title && n.title.trim() ? n.title : 'Без названия';
+    const preview = (n.content || '').replace(/[#*`>\[\]$|-]/g, '').trim().slice(0, 90);
+    const tags = (n.tags || []).slice(0, 2);
+    return `
+    <div class="nt-view ${n.id===noteId?'on':''}" data-id="${esc(n.id)}"
+         role="button" tabindex="0"
+         onclick="ntSelect('${esc(n.id)}')"
+         onkeydown="if(event.key==='Enter')ntSelect('${esc(n.id)}')">
+      <span class="nt-view-ic"><i class="fa-regular fa-file-lines"></i></span>
+      <span class="nt-view-b">
+        <span class="nt-view-t">${esc(title)}</span>
+        <span class="nt-view-s">${preview ? esc(preview) : '<i>пусто</i>'}</span>
+      </span>
+      <span class="nt-view-acts">
+        ${tags.length ? `<span class="nt-pill">#${esc(tags[0])}</span>` : ''}
+        <button title="Открыть в редакторе" onclick="event.stopPropagation();ntOpenInEditor('${esc(n.id)}')">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        </button>
+        <button title="Ещё" onclick="event.stopPropagation();ntNoteMenu(event,'${esc(n.id)}')">
+          <i class="fa-solid fa-ellipsis"></i>
+        </button>
+      </span>
+    </div>`;
+  }).join('');
+}
+
+// ---------- markdown → HTML ----------
+function ntMd(src){
+  if(!src) return '';
+  const blocks = [];
+  // вырезаем блоки кода, чтобы не форматировать их содержимое
+  let text = String(src).replace(/```([\s\S]*?)```/g, (m, code) => {
+    blocks.push(code.replace(/^\w*\n/, ''));
+    return '\u0000CODE' + (blocks.length - 1) + '\u0000';
+  });
+
+  text = esc(text);
+
+  // заголовки
+  text = text.replace(/^### (.+)$/gm, '<h3>$1</h3>')
+             .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+             .replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // inline-код
+  text = text.replace(/`([^`\n]+)`/g, (m,c) => '<code>' + c + '</code>');
+
+  // картинки и ссылки
+  text = text.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g,
+    '<img src="$2" alt="$1" loading="lazy">')
+             .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+  // wiki-ссылки [[Название]]
+  text = text.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
+    '<span class="wl" data-wl="$1">$2$1</span>');
+
+  // теги #тег
+  text = text.replace(/(^|\s)#([\wа-яА-ЯёЁ_]+)/g,
+    '$1<span class="tk">#$2</span>');
+
+  // callout "> [!note]"
+  text = text.replace(/^&gt; \[!(\w+)\]\s*(.*)$/gm,
+    (m, kind, body) => '<div class="callout"><i class="fa-solid fa-circle-info"></i><div>' + body + '</div></div>');
+
+  // блоки цитат
+  text = text.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>')
+             .replace(/(<blockquote>[\s\S]*?<\/blockquote>\n?)+/g, m => m);
+
+  // списки
+  text = text.replace(/^- \[ \] (.+)$/gm, '<li><input type="checkbox" disabled> $1</li>')
+             .replace(/^- \[x\] (.+)$/gm, '<li><input type="checkbox" checked disabled> $1</li>')
+             .replace(/^[-\*] (.+)$/gm, '<li>$1</li>')
+             .replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  text = text.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => '<ul>' + m + '</ul>');
+
+  // горизонтальная линия
+  text = text.replace(/^---+$/gm, '<hr>');
+
+  // абзацы
+  text = text.split(/\n{2,}/).map(p => {
+    const t = p.trim();
+    if(!t) return '';
+    if(/^<(h\d|ul|ol|blockquote|hr|pre|div|table)/.test(t)) return t;
+    return '<p>' + t.replace(/\n/g, '<br>') + '</p>';
+  }).join('\n');
+
+  // возвращаем блоки кода
+  text = text.replace(/\u0000CODE(\d+)\u0000/g, (m, i) =>
+    '<pre><code>' + esc(blocks[+i]) + '</code></pre>');
+
+  // таблицы
+  text = text.replace(/((?:^\|.*\|$\n?)+)/gm, tbl => {
+    const rows = tbl.trim().split('\n').filter(Boolean);
+    if(rows.length < 2) return tbl;
+    const cells = r => r.split('|').slice(1, -1).map(c => c.trim());
+    const head = cells(rows[0]);
+    const body = rows.slice(2).map(cells);
+    return '<table><thead><tr>' + head.map(h => '<th>' + h + '</th>').join('') +
+      '</tr></thead><tbody>' + body.map(r =>
+        '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('') +
+      '</tbody></table>';
+  });
+
+  return text;
+}
+</script>
+<script>
+// ---------- выбор и предпросмотр ----------
+async function ntSelect(id){
+  noteId = id;
+  ntRenderList();
+  const body = $('pvBody');
+  body.innerHTML = '<div class="nt-empty"><i class="fa-solid fa-spinner fa-spin ic"></i>Открываю…</div>';
+  let n;
+  try { n = await api('/api/notes/get?id=' + encodeURIComponent(id)); }
+  catch(e){
+    body.innerHTML = `<div class="nt-empty">
+      <i class="fa-solid fa-triangle-exclamation ic"></i>${esc(e.message)}</div>`;
+    return;
+  }
+  if(!n || !n.id){
+    body.innerHTML = '<div class="nt-empty"><i class="fa-regular fa-file-lines ic"></i>Заметка не найдена</div>';
+    return;
+  }
+  currentNote = n;
+  ntRenderPreview(n);
+  const row = document.querySelector(`.nt-view[data-id="${CSS.escape(id)}"]`);
+  if(row) row.scrollIntoView({block:'nearest'});
+}
+
+function ntRenderPreview(n){
+  const cover = n.image
+    ? `<img class="nt-cover" src="${esc(n.image)}" alt="" onerror="this.remove()">` : '';
+  const tags = (n.tags || []).map(t =>
+    `<span class="nt-pill">#${esc(t)}<span class="nt-tag-x" onclick="ntRemoveTag('${esc(n.id)}','${esc(t)}')">
+      <i class="fa-solid fa-xmark"></i></span></span>`).join('');
+
+  $('pvCrumb').innerHTML = `
+    <i class="fa-regular fa-folder" style="font-size:12px"></i>
+    <span>${esc(n.folder || 'inbox')}</span>
+    <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--nt-text-3)"></i>
+    <b>${esc(n.title || 'Без названия')}</b>`;
+
+  $('pvBody').innerHTML = `
+    ${cover}
+    <h1 class="nt-pv-h1" contenteditable="true" spellcheck="false"
+        onblur="ntRenameInline(this.textContent,'${esc(n.id)}')">${esc(n.title || '')}</h1>
+    <div class="nt-pv-meta">
+      <span><i class="fa-regular fa-clock" style="margin-right:5px"></i>${esc(fmtDate(n.updated))}</span>
+      <span>${(n.content || '').length} симв.</span>
+      <div class="nt-pv-tags">${tags}</div>
+    </div>
+    <div class="nt-md" id="pvMd">${ntMd(n.content) || '<p style="color:var(--nt-text-3)">Пустая заметка</p>'}</div>
+  `;
+  $('pvBody').scrollTop = 0;
+
+  // клик по [[ссылке]] ищет заметку по названию
+  $('pvMd').querySelectorAll('.wl').forEach(el => {
+    el.onclick = () => ntOpenWiki(el.dataset.wl);
+  });
+}
+
+async function ntOpenWiki(title){
+  const found = allNotesCache.find(n => (n.title || '').toLowerCase() === String(title).toLowerCase());
+  if(found){ ntSelect(found.id); return; }
+  // иначе ищем по всем заметкам через поиск
+  try {
+    const d = await api('/api/notes/search?q=' + encodeURIComponent(title));
+    const r = (d.results || [])[0];
+    if(r) { ntSelect(r.id); return; }
+  } catch(e){ /* игнорируем */ }
+  toast('Заметка «' + title + '» не найдена', 'err');
+}
+
+async function ntRenameInline(title, id){
+  const t = (title || '').trim();
+  const cur = (currentNote && currentNote.title) || '';
+  if(t === cur) return;
+  try {
+    await api('/api/notes/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        id, title: t || 'Без названия',
+        content: currentNote.content || '',
+        folder: currentNote.folder || 'inbox',
+        tags: currentNote.tags || [],
+        created: currentNote.created,
+      })
+    });
+    toast('Сохранено', 'ok');
+    currentNote.title = t;
+    ntLoadNotes();
+  } catch(e){ toast('Ошибка: ' + e.message, 'err'); }
+}
+
+async function ntRemoveTag(id, tag){
+  const n = currentNote;
+  if(!n) return;
+  n.tags = (n.tags || []).filter(t => t !== tag);
+  try {
+    await api('/api/notes/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        id, title: n.title, content: n.content, folder: n.folder,
+        tags: n.tags, created: n.created,
+      })
+    });
+    ntRenderPreview(n);
+    ntLoadNotes(); ntLoadTags();
+  } catch(e){ toast('Ошибка: ' + e.message, 'err'); }
+}
+
+function ntOpenInEditor(id){
+  const target = id || noteId;
+  if(!target){ toast('Сначала выберите заметку', 'err'); return; }
+  location.href = '/notes/edit?id=' + encodeURIComponent(target) + '&tpl=nt';
+}
+
+// ---------- переключение панелей / вида ----------
+function ntTogglePreview(){
+  const pv = $('pvPanel'), sp2 = $('sp2'), btn = $('btnPv');
+  const hidden = pv.style.display === 'none';
+  pv.style.display = hidden ? '' : 'none';
+  sp2.style.display = hidden ? '' : 'none';
+  btn.classList.toggle('on', hidden);
+  localStorage.setItem('nt_pv', hidden ? '1' : '0');
+}
+function ntSetSort(s){
+  currentSort = s;
+  localStorage.setItem('nt_sort', s);
+  $('sortDate').classList.toggle('on', s === 'date');
+  $('sortTitle').classList.toggle('on', s === 'title');
+  ntLoadNotes();
+}
+function ntGoFolder(f){
+  currentFolder = f; currentTag = '';
+  $('viewTitle').textContent = f === 'all' ? 'Все заметки'
+    : (f === 'inbox' ? 'Входящие' : f);
+  ntRenderFolders(); ntRenderTags();
+  ntLoadNotes();
+}
+function ntGoTag(t){
+  currentTag = (currentTag === t) ? '' : t;
+  currentFolder = 'all';
+  $('viewTitle').textContent = currentTag ? '#' + currentTag : 'Все заметки';
+  ntRenderFolders(); ntRenderTags();
+  ntLoadNotes();
+}
+function ntShowAllTags(){
+  const names = (Array.isArray(tagsAll) ? tagsAll : [])
+    .map(t => typeof t === 'string' ? t : (t.name || t.tag)).filter(Boolean);
+  if(!names.length){ toast('Тегов пока нет'); return; }
+  ntGoFolder('all');
+  currentTag = '';
+  $('searchInput').value = '';
+  query = '';
+  ntApplyFilter();
+  toast('Тегов: ' + names.length);
+}
+function ntSearch(v){
+  query = v.trim();
+  ntApplyFilter();
+}
+</script>
+<script>
+// ---------- операции с заметками ----------
+async function ntNewNote(){
+  try {
+    const d = await api('/api/notes/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        title:'Без названия', content:'', folder: currentFolder === 'all' ? 'inbox' : currentFolder,
+        tags: currentTag ? [currentTag] : [],
+      })
+    });
+    toast('Заметка создана', 'ok');
+    await ntLoadNotes();
+    if(d && d.id) ntSelect(d.id);
+  } catch(e){ toast('Ошибка: ' + e.message, 'err'); }
+}
+
+async function ntNewFolder(){
+  const name = await ntModal({
+    title:'Новая папка', input:'Название папки', okText:'Создать'
+  });
+  if(!name) return;
+  try {
+    await api('/api/notes/create-folder', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name })
+    });
+    await ntLoadFolders();
+    toast('Папка «' + name + '» создана', 'ok');
+  } catch(e){ toast('Ошибка: ' + e.message, 'err'); }
+}
+
+async function ntDeleteNote(id){
+  id = id || noteId;
+  if(!id) return;
+  const n = notes.find(x => x.id === id);
+  const title = n ? (n.title || 'Без названия') : 'эту заметку';
+  const ok = await ntModal({
+    title:'Удалить заметку?',
+    text:'Заметка «' + title + '» будет удалена безвозвратно.',
+    okText:'Удалить', danger:true
+  });
+  if(!ok) return;
+  try {
+    await api('/api/notes/delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ id })
+    });
+    toast('Удалено');
+    if(noteId === id){
+      noteId = null; currentNote = null;
+      $('pvBody').innerHTML = `<div class="nt-pv-empty">
+        <i class="fa-regular fa-file-lines ic"></i>
+        <div class="t">Заметка удалена</div>
+        <div class="s">Выберите другую заметку в списке</div></div>`;
+      $('pvCrumb').innerHTML = '';
+    }
+    ntLoadNotes();
+  } catch(e){ toast('Ошибка: ' + e.message, 'err'); }
+}
+
+async function ntDuplicateNote(id){
+  id = id || noteId;
+  const n = currentNote && currentNote.id === id
+    ? currentNote
+    : await api('/api/notes/get?id=' + encodeURIComponent(id));
+  try {
+    const d = await api('/api/notes/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        title:(n.title || 'Без названия') + ' (копия)',
+        content: n.content || '', folder: n.folder || 'inbox', tags: n.tags || []
+      })
+    });
+    toast('Создана копия', 'ok');
+    ntLoadNotes();
+    if(d && d.id) ntSelect(d.id);
+  } catch(e){ toast('Ошибка: ' + e.message, 'err'); }
+}
+
+async function ntMoveNote(id, folder){
+  id = id || noteId;
+  const n = currentNote && currentNote.id === id ? currentNote
+    : await api('/api/notes/get?id=' + encodeURIComponent(id));
+  try {
+    await api('/api/notes/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        id, title: n.title, content: n.content,
+        folder: folder, tags: n.tags || [], created: n.created
+      })
+    });
+    toast('Перемещено в «' + folder + '»', 'ok');
+    await Promise.all([ntLoadNotes(), ntLoadFolders()]);
+    ntSelect(id);
+  } catch(e){ toast('Ошибка: ' + e.message, 'err'); }
+}
+
+async function ntExportNote(id){
+  id = id || noteId;
+  if(!id) return;
+  const n = currentNote && currentNote.id === id ? currentNote
+    : await api('/api/notes/get?id=' + encodeURIComponent(id));
+  const md = '# ' + (n.title || 'Без названия') + '\n\n' + (n.content || '');
+  const blob = new Blob([md], {type:'text/markdown;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (n.title || 'note').replace(/[\\/:*?"<>|]/g, '_') + '.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Файл скачан', 'ok');
+}
+</script>
+<script>
+// ---------- контекстное меню ----------
+function ntCloseMenu(){ $('menu').classList.remove('open'); }
+
+function ntNoteMenu(ev, id){
+  ev.stopPropagation();
+  ev.preventDefault();
+  id = id || noteId;
+  if(!id){ toast('Заметка не выбрана', 'err'); return; }
+
+  const list = folderList();
+  const menu = $('menu');
+
+  menu.innerHTML = `
+    <button class="nt-mi" data-a="open"><i class="fa-solid fa-pen"></i>Открыть в редакторе</button>
+    <button class="nt-mi" data-a="dup"><i class="fa-regular fa-copy"></i>Создать копию</button>
+    <button class="nt-mi" data-a="rename"><i class="fa-solid fa-text"></i>Переименовать</button>
+    <div class="nt-msep"></div>
+    <div class="nt-mlbl">Переместить в</div>
+    <div class="nt-mf" style="max-height:190px;overflow-y:auto">
+      ${list.length ? list.map(f => `<button class="nt-mi" data-move="${esc(f.name)}">
+        <i class="fa-regular fa-folder"></i>${esc(f.name)}</button>`).join('')
+        : '<div style="padding:6px 9px;color:var(--nt-text-3);font-size:12.5px">Папок нет</div>'}
+    </div>
+    <div class="nt-msep"></div>
+    <button class="nt-mi" data-a="export"><i class="fa-solid fa-download"></i>Скачать .md</button>
+    <button class="nt-mi danger" data-a="del"><i class="fa-solid fa-trash"></i>Удалить</button>
+  `;
+
+  // позиционируем у курсора, но не за пределами экрана
+  const r = menu.getBoundingClientRect();
+  let x = ev.clientX, y = ev.clientY;
+  if(x + r.width > window.innerWidth - 8)  x = window.innerWidth - r.width - 8;
+  if(y + r.height > window.innerHeight - 8) y = Math.max(8, ev.clientY - r.height);
+  menu.style.left = Math.max(8, x) + 'px';
+  menu.style.top  = Math.max(8, y) + 'px';
+  menu.classList.add('open');
+
+  menu.querySelectorAll('.nt-mi').forEach(btn => {
+    btn.onclick = async () => {
+      ntCloseMenu();
+      const moveTo = btn.dataset.move;
+      if(moveTo){ ntMoveNote(id, moveTo); return; }
+      switch(btn.dataset.a){
+        case 'open':   ntOpenInEditor(id); break;
+        case 'dup':    ntDuplicateNote(id); break;
+        case 'export': ntExportNote(id); break;
+        case 'del':    ntDeleteNote(id); break;
+        case 'rename': {
+          const n = await api('/api/notes/get?id=' + encodeURIComponent(id));
+          const t = await ntModal({
+            title:'Переименовать', input:'Название',
+            value: n.title || '', okText:'Сохранить'
+          });
+          if(t){ currentNote = n; ntRenameInline(t, id); }
+          break;
+        }
+      }
+    };
+  });
+}
+
+// ---------- настройки вида ----------
+function ntSettings(){
+  const menu = $('menu');
+  menu.innerHTML = `
+    <div class="nt-mlbl">Шаблон заметок</div>
+    <button class="nt-mi" data-a="tpl-classic">
+      <i class="fa-solid fa-grip"></i>Классический
+      <span class="kb">текущий</span>
+    </button>
+    <div class="nt-msep"></div>
+    <div class="nt-mlbl">Панели</div>
+    <button class="nt-mi" data-a="pv"><i class="fa-solid fa-columns"></i>
+      Предпросмотр: <span style="color:var(--nt-text-3)">${$('pvPanel').style.display === 'none' ? 'выкл' : 'вкл'}</span></button>
+    <button class="nt-mi" data-a="reset"><i class="fa-solid fa-rotate-left"></i>Сбросить ширину панелей</button>
+    <div class="nt-msep"></div>
+    <a class="nt-mi" href="/settings#ui"><i class="fa-solid fa-gear"></i>Все настройки</a>
+  `;
+  const r = menu.getBoundingClientRect();
+  menu.style.left = '16px';
+  menu.style.top  = Math.max(8, window.innerHeight - r.height - 60) + 'px';
+  menu.classList.add('open');
+  menu.querySelectorAll('.nt-mi').forEach(b => {
+    b.onclick = () => {
+      ntCloseMenu();
+      if(b.dataset.a === 'pv') ntTogglePreview();
+      if(b.dataset.a === 'reset'){
+        localStorage.removeItem('nt_w1'); localStorage.removeItem('nt_w2');
+        document.documentElement.style.removeProperty('--nt-w1');
+        document.documentElement.style.removeProperty('--nt-w2');
+        toast('Ширина панелей сброшена');
+      }
+    };
+  });
+}
+</script>
+<script>
+// ---------- командная палитра ----------
+const NT_COMMANDS = [
+  { ic:'fa-plus',            name:'Новая заметка',        kb:'⌃⇧N', run:() => ntNewNote() },
+  { ic:'fa-folder-plus',     name:'Новая папка',          kb:'',     run:() => ntNewFolder() },
+  { ic:'fa-columns',         name:'Переключить предпросмотр', kb:'⌃\\', run:() => ntTogglePreview() },
+  { ic:'fa-pen',             name:'Открыть в редакторе',  kb:'⏎',   run:() => ntOpenInEditor() },
+  { ic:'fa-regular fa-copy', name:'Создать копию',        kb:'',     run:() => ntDuplicateNote() },
+  { ic:'fa-download',        name:'Скачать .md',          kb:'',     run:() => ntExportNote() },
+  { ic:'fa-trash',           name:'Удалить заметку',      kb:'',     run:() => ntDeleteNote() },
+  { ic:'fa-diagram-project', name:'Граф связей',          kb:'',     run:() => location.href = '/notes/graph' },
+  { ic:'fa-table-cells',     name:'Рабочее пространство',kb:'',     run:() => location.href = '/workspace' },
+  { ic:'fa-clock-rotate-left',name:'Классический шаблон', kb:'',     run:() => location.href = '/notes?force=classic' },
+  { ic:'fa-gear',            name:'Настройки',            kb:'',     run:() => location.href = '/settings#ui' },
+];
+
+function ntOpenPalette(){
+  $('palette').classList.add('open');
+  cpIndex = 0;
+  const inp = $('cpInput');
+  inp.value = '';
+  ntPaletteFilter('');
+  setTimeout(() => inp.focus(), 40);
+}
+function ntClosePalette(){
+  $('palette').classList.remove('open');
+}
+
+function ntPaletteFilter(q){
+  q = (q || '').trim().toLowerCase();
+  const box = $('cpList');
+  cpItems = [];
+
+  if(q){
+    NT_COMMANDS.filter(c => c.name.toLowerCase().includes(q)).forEach(c => {
+      cpItems.push({ html:`<i class="fa-solid ${c.ic}"></i>${esc(c.name)}
+        ${c.kb ? `<span class="kb">${esc(c.kb)}</span>` : ''}`, run:c.run });
+    });
+    allNotesCache.filter(n => (n.title||'').toLowerCase().includes(q)
+      || (n.content||'').toLowerCase().includes(q)).slice(0, 12).forEach(n => {
+      cpItems.push({ html:`<i class="fa-regular fa-file-lines"></i>${esc(n.title || 'Без названия')}`, run:() => ntSelect(n.id) });
+    });
+  } else {
+    NT_COMMANDS.forEach(c => cpItems.push({
+      html:`<i class="fa-solid ${c.ic}"></i>${esc(c.name)}
+        ${c.kb ? `<span class="kb">${esc(c.kb)}</span>` : ''}`, run:c.run }));
+  }
+
+  if(!cpItems.length){
+    box.innerHTML = '<div class="nt-empty" style="padding:26px">Ничего не найдено</div>';
+    return;
+  }
+  box.innerHTML = cpItems.map((it, i) =>
+    `<div class="nt-cp-i ${i===0?'on':''}" data-i="${i}">${it.html}</div>`).join('');
+  box.querySelectorAll('.nt-cp-i').forEach(el => {
+    el.onclick = () => ntCpRun(+el.dataset.i);
+  });
+}
+
+function ntCpRun(i){
+  const it = cpItems[i];
+  if(!it) return;
+  ntClosePalette();
+  it.run();
+}
+
+function ntCpMove(d){
+  if(!cpItems.length) return;
+  cpIndex = Math.max(0, Math.min(cpItems.length - 1, cpIndex + d));
+  document.querySelectorAll('.nt-cp-i').forEach((el, i) =>
+    el.classList.toggle('on', i === cpIndex));
+  const on = document.querySelector('.nt-cp-i.on');
+  if(on) on.scrollIntoView({block:'nearest'});
+}
+</script>
+<script>
+// ---------- горячие клавиши ----------
+document.addEventListener('keydown', e => {
+  const mod = e.ctrlKey || e.metaKey;
+  const inField = /^(INPUT|TEXTAREA)$/.test((e.target.tagName || '')) || e.target.isContentEditable;
+
+  // палитра открыта — обрабатываем отдельно
+  if($('palette').classList.contains('open')){
+    if(e.key === 'ArrowDown'){ e.preventDefault(); ntCpMove(1);  return; }
+    if(e.key === 'ArrowUp'){   e.preventDefault(); ntCpMove(-1); return; }
+    if(e.key === 'Enter'){     e.preventDefault(); ntCpRun(cpIndex); return; }
+    if(e.key === 'Escape'){    e.preventDefault(); ntClosePalette(); return; }
+    return;
+  }
+
+  if(e.key === 'Escape'){
+    if($('modalBg').classList.contains('open')){ ntCloseModal(); return; }
+    if($('menu').classList.contains('open')){       ntCloseMenu();   return; }
+  }
+
+  if(mod && e.shiftKey && (e.key === 'K' || e.key === 'к' || e.key === 'К')){
+    e.preventDefault(); ntOpenPalette(); return;
+  }
+  if(mod && !e.shiftKey && (e.key === 'k' || e.key === 'л' || e.key === 'К')){
+    e.preventDefault(); ntOpenPalette(); return;
+  }
+  if(mod && e.shiftKey && (e.key === 'N' || e.key === 'Т' || e.key === 'т')){
+    e.preventDefault(); ntNewNote(); return;
+  }
+  if(mod && e.key === '\\'){ e.preventDefault(); ntTogglePreview(); return; }
+
+  // в поле ввода оставляем стандартное поведение, кроме навигации по списку
+  if(inField) return;
+
+  if(mod && e.key === 'Enter'){ e.preventDefault(); ntOpenInEditor(); return; }
+
+  if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    if(!notes.length) return;
+    e.preventDefault();
+    const i = notes.findIndex(n => n.id === noteId);
+    const next = e.key === 'ArrowDown'
+      ? Math.min(notes.length - 1, i + 1)
+      : Math.max(0, (i === -1 ? 1 : i) - 1);
+    ntSelect(notes[next].id);
+    return;
+  }
+  if(e.key === 'Enter' && noteId){ e.preventDefault(); ntOpenInEditor(); }
+});
+
+// клик мимо меню — закрыть
+document.addEventListener('click', e => {
+  if(!e.target.closest('#menu')) ntCloseMenu();
+});
+
+// ---------- старт ----------
+(async function init(){
+  ntInitSplitters();
+
+  $('sortDate').classList.toggle('on', currentSort === 'date');
+  $('sortTitle').classList.toggle('on', currentSort === 'title');
+
+  if(localStorage.getItem('nt_pv') === '0') ntTogglePreview();
+
+  const P = new URLSearchParams(location.search);
+  if(P.get('force') === 'classic'){
+    toast('Открыт классический шаблон');
+  }
+
+  await Promise.all([ntLoadFolders(), ntLoadTags()]);
+  await ntLoadNotes();
+
+  const want = P.get('id');
+  if(want && notes.some(n => n.id === want)) ntSelect(want);
+  else if(notes.length) ntSelect(notes[0].id);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html class="pg-notes-nt-edit" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Редактор заметки</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/fonts/google-fonts.css">
+<style>
+/* ============================================================================
+   NOTION-STYLE EDITOR (page_notes_edit_nt.html)
+   Три режима: Письмо / Сплит / Превью + режим фокусировки.
+   ============================================================================ */
+:root{
+  --nt-bg:#ffffff; --nt-sb:#f7f6f3; --nt-sb-2:#f1f0ed;
+  --nt-hover:rgba(55,53,47,.06); --nt-active:rgba(55,53,47,.09);
+  --nt-border:#e9e9e7; --nt-border-2:#dcdcda;
+  --nt-text:#37352f; --nt-text-2:#787066; --nt-text-3:#9b9a97;
+  --nt-blue:#0075de; --nt-blue-2:#0067c9; --nt-blue-soft:rgba(0,117,222,.08);
+  --nt-red:#e03e3e; --nt-amber:#cb7b37; --nt-green:#0f7b6c;
+  --nt-r:4px; --nt-r-md:6px; --nt-pill:9999px;
+  --nt-tr:120ms cubic-bezier(.4,0,.2,1);
+  --nt-font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --nt-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --nt-topH:45px;
+}
+/* Тёмная тема. theme.js не добавляет класс dark на body (dark — базовое
+   состояние), а ставит data-theme на <html> — поэтому селектор по data-theme. */
+[data-theme="dark"] body, body.dark{ --nt-bg:#191919; --nt-sb:#202020; --nt-sb-2:#252525;
+  --nt-hover:rgba(255,255,255,.055); --nt-active:rgba(255,255,255,.09);
+  --nt-border:#2f2f2f; --nt-border-2:#3d3d3d;
+  --nt-text:#e9e9e7; --nt-text-2:#9b9a97; --nt-text-3:#6f6f6c;
+  --nt-blue:#529cca; --nt-blue-2:#3f8ec4; --nt-blue-soft:rgba(82,156,202,.14);
+  --nt-red:#ff7369; --nt-amber:#e0a366; --nt-green:#4dab9a; }
+[data-theme="midnight"] body, body.midnight{ --nt-bg:#0e0e10; --nt-sb:#161618; --nt-sb-2:#1c1c1f; }
+[data-theme="sepia"] body, [data-theme="paper"] body,
+[data-theme="rose"] body, [data-theme="ocean"] body,
+[data-theme="forest"] body, [data-theme="warm"] body{
+  --nt-sb:#f6f3ee; --nt-sb-2:#efeae2; --nt-text:#3f3a33; }
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:var(--nt-font);background:var(--nt-bg);color:var(--nt-text);
+  font-size:15px;line-height:1.55;overflow:hidden;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+::selection{background:var(--nt-blue-soft)}
+a{color:var(--nt-blue);text-decoration:none}
+a:hover{text-decoration:underline}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(55,53,47,.16);border-radius:var(--nt-pill);
+  border:2px solid transparent;background-clip:padding-box}
+*{scrollbar-width:thin;scrollbar-color:rgba(55,53,47,.2) transparent}
+
+.nt-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:5px 10px;border-radius:var(--nt-r);border:1px solid transparent;
+  background:transparent;color:var(--nt-text-2);font-size:13px;
+  font-family:inherit;cursor:pointer;white-space:nowrap;
+  transition:background var(--nt-tr),color var(--nt-tr);
+}
+.nt-btn:hover{background:var(--nt-hover);color:var(--nt-text)}
+.nt-btn.on{background:var(--nt-active);color:var(--nt-text)}
+.nt-btn.primary{background:var(--nt-blue);color:#fff;font-weight:500}
+.nt-btn.primary:hover{background:var(--nt-blue-2);color:#fff}
+.nt-btn.icon{padding:5px 7px}
+.nt-input{
+  width:100%;padding:7px 10px;border-radius:var(--nt-r);
+  border:1px solid var(--nt-border);background:var(--nt-bg);color:var(--nt-text);
+  font-size:14px;font-family:inherit;outline:none;
+}
+.nt-input:focus{border-color:var(--nt-blue);box-shadow:0 0 0 2px var(--nt-blue-soft)}
+.nt-pill{
+  display:inline-flex;align-items:center;gap:4px;padding:1px 8px;
+  border-radius:var(--nt-pill);background:var(--nt-sb-2);color:var(--nt-text-2);
+  font-size:11.5px;font-weight:500;
+}
+.nt-pill.b{background:var(--nt-blue-soft);color:var(--nt-blue)}
+<style>
+/* ============ ВЕРХНЯЯ ПАНЕЛЬ ============ */
+.nt-top{
+  position:fixed;top:0;left:0;right:0;height:var(--nt-topH);z-index:100;
+  display:flex;align-items:center;gap:6px;padding:0 12px;
+  background:var(--nt-bg);border-bottom:1px solid var(--nt-border);
+}
+.nt-top-sp{flex:1}
+.nt-dirty{width:7px;height:7px;border-radius:50%;background:var(--nt-amber);
+  display:none;flex:0 0 auto}
+.nt-dirty.on{display:block}
+.nt-saved{font-size:12px;color:var(--nt-text-3);display:none}
+.nt-saved.on{display:block}
+.nt-sep{width:1px;height:20px;background:var(--nt-border);flex:0 0 auto}
+
+/* ============ РАБОЧАЯ ОБЛАСТЬ ============ */
+.nt-work{
+  position:fixed;top:var(--nt-topH);left:0;right:0;bottom:0;
+  display:flex;overflow:hidden;
+}
+.nt-pane{flex:1;min-width:0;overflow-y:auto;position:relative}
+.nt-pane.hide{display:none}
+.nt-sp{flex:0 0 auto;width:1px;background:var(--nt-border);position:relative;
+  cursor:col-resize;user-select:none}
+.nt-sp::after{content:'';position:absolute;inset:0 -3px;z-index:5}
+.nt-sp:hover,.nt-sp.drag{background:var(--nt-blue)}
+.nt-sp.hide{display:none}
+
+.nt-col{max-width:760px;margin:0 auto;padding:48px 40px 45vh}
+.nt-col.wide{max-width:1100px}
+
+/* заголовок заметки */
+.nt-title{
+  width:100%;border:none;outline:none;background:transparent;color:var(--nt-text);
+  font-family:inherit;font-size:30px;font-weight:700;line-height:1.25;
+  letter-spacing:-.021em;padding:0;margin-bottom:8px;resize:none;overflow:hidden;
+}
+.nt-title::placeholder{color:var(--nt-text-3)}
+.nt-meta{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  font-size:12.5px;color:var(--nt-text-3);padding-bottom:14px;
+  border-bottom:1px solid var(--nt-border);margin-bottom:22px;
+}
+.nt-tag{
+  display:inline-flex;align-items:center;gap:5px;padding:2px 9px;
+  border-radius:var(--nt-pill);background:var(--nt-sb-2);color:var(--nt-text-2);
+  font-size:12px;font-weight:500;
+}
+.nt-tag button{border:none;background:transparent;color:inherit;cursor:pointer;
+  font-size:10px;opacity:.55;padding:0;font-family:inherit}
+.nt-tag button:hover{opacity:1}
+.nt-tag-add{
+  border:none;background:transparent;color:var(--nt-text-3);cursor:pointer;
+  font-size:12px;padding:2px 9px;border-radius:var(--nt-pill);
+  border:1px dashed var(--nt-border-2);font-family:inherit;
+}
+.nt-tag-add:hover{background:var(--nt-hover);color:var(--nt-text)}
+
+/* текст редактора: без рамки — чистый холст */
+.nt-body{
+  width:100%;border:none;outline:none;background:transparent;color:var(--nt-text);
+  font-family:inherit;font-size:16px;line-height:1.75;
+  padding:0;margin:0;resize:none;overflow:hidden;display:block;min-height:60vh;
+}
+.nt-body::placeholder{color:var(--nt-text-3)}
+
+/* подложка для подсветки в коллаборации */
+.nt-under{
+  position:absolute;inset:0;pointer-events:none;overflow:hidden;
+  font-size:16px;line-height:1.75;padding:0;color:transparent;z-index:0;
+  white-space:pre-wrap;word-break:break-word;
+}
+.nt-collab .nt-body{color:transparent;caret-color:var(--nt-text);
+  position:relative;z-index:1}
+.nt-collab .nt-under{color:var(--nt-text)}
+<style>
+/* ============ ПРЕВЬЮ ============ */
+.nt-md{font-size:16px;line-height:1.7}
+.nt-md h1{font-size:30px;font-weight:700;letter-spacing:-.02em;margin:30px 0 10px}
+.nt-md h2{font-size:23px;font-weight:700;letter-spacing:-.016em;margin:26px 0 8px}
+.nt-md h3{font-size:19px;font-weight:600;letter-spacing:-.01em;margin:22px 0 6px}
+.nt-md h1:first-child,.nt-md h2:first-child,.nt-md h3:first-child{margin-top:0}
+.nt-md p{margin:0 0 14px}
+.nt-md ul{margin:0 0 14px;padding-left:26px}
+.nt-md li{margin:3px 0}
+.nt-md li input[type=checkbox]{margin-right:7px;accent-color:var(--nt-blue)}
+.nt-md blockquote{margin:0 0 14px;padding:2px 0 2px 16px;
+  border-left:3px solid var(--nt-border-2);color:var(--nt-text-2)}
+.nt-md code{font-family:var(--nt-mono);font-size:.87em;padding:2px 5px;
+  border-radius:3px;background:var(--nt-sb-2);color:#c7254e}
+[data-theme="dark"] body .nt-md code,
+[data-theme="midnight"] body .nt-md code,
+body.dark .nt-md code{color:#eb5757}
+.nt-md pre{background:var(--nt-sb);border:1px solid var(--nt-border);
+  border-radius:var(--nt-r-md);padding:14px 16px;overflow-x:auto;margin:0 0 14px}
+.nt-md pre code{background:transparent;padding:0;color:var(--nt-text);font-size:13.5px}
+.nt-md hr{border:none;border-top:1px solid var(--nt-border);margin:22px 0}
+.nt-md img{max-width:100%;border-radius:var(--nt-r-md)}
+.nt-md table{border-collapse:collapse;width:100%;margin:0 0 14px;font-size:14.5px}
+.nt-md th,.nt-md td{border:1px solid var(--nt-border);padding:7px 10px;text-align:left}
+.nt-md th{background:var(--nt-sb);font-weight:600}
+.nt-md .wl{color:var(--nt-blue);cursor:pointer;border-bottom:1px solid transparent}
+.nt-md .wl:hover{border-bottom-color:var(--nt-blue)}
+.nt-md .tk{color:var(--nt-blue);font-weight:500}
+.nt-md .callout{display:flex;gap:10px;padding:12px 14px;
+  border-radius:var(--nt-r-md);background:var(--nt-sb);margin:0 0 14px}
+
+/* ============ ВСПЛЫВАЮЩЕЕ ФОРМАТИРОВАНИЕ ============ */
+.nt-fmt{
+  position:fixed;z-index:400;display:none;gap:1px;padding:4px;
+  background:var(--nt-bg);border:1px solid var(--nt-border);
+  border-radius:var(--nt-r-md);box-shadow:0 4px 18px rgba(15,15,15,.13);
+}
+.nt-fmt.open{display:flex}
+.nt-fmt button{
+  width:28px;height:28px;border:none;background:transparent;color:var(--nt-text-2);
+  border-radius:3px;cursor:pointer;font-size:13px;display:flex;
+  align-items:center;justify-content:center;font-family:inherit;
+}
+.nt-fmt button:hover{background:var(--nt-hover);color:var(--nt-text)}
+
+/* ============ РЕЖИМ ФОКУСИРОВКИ ============ */
+/* Скрываем интерфейс через display:none — иначе элементы остаются
+   в порядке Tab-порядка и продолжают ловить фокус с клавиатуры. */
+body.nt-focus .nt-top{ display:none }
+body.nt-focus .nt-sp{ display:none }
+body.nt-focus .nt-fmt{ display:none !important }
+body.nt-focus .nt-meta{ display:none }
+body.nt-focus .nt-work{ top:0 }
+body.nt-focus .nt-col{ max-width:720px; padding:12vh 32px 45vh }
+body.nt-focus .nt-title{ font-size:40px; margin-bottom:22px }
+body.nt-focus .nt-body{ font-size:17px; line-height:1.85 }
+/* едва заметная линия только при фокусе — как в «чистом» редакторе */
+body.nt-focus .nt-title{
+  border-bottom:1px solid transparent; padding-bottom:10px;
+  transition:border-color var(--nt-tr);
+}
+body.nt-focus .nt-title:focus{ border-bottom-color:var(--nt-border) }
+/* тонкая подсказка у краёв экрана, не перехватывает клики */
+.nt-hint{
+  position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
+  z-index:150;display:flex;gap:6px;opacity:0;pointer-events:none;
+  transition:opacity var(--nt-tr);
+}
+body.nt-focus:hover .nt-hint{opacity:.35}
+body.nt-focus .nt-hint{opacity:0}
+.nt-hint button{
+  padding:4px 9px;border-radius:var(--nt-pill);border:1px solid var(--nt-border);
+  background:var(--nt-bg);color:var(--nt-text-3);font-size:11.5px;
+  cursor:pointer;font-family:inherit;
+}
+.nt-hint button:hover{opacity:1;color:var(--nt-text)}
+/* статус сохранения внутри фокус-режима: иначе в чистом виде
+   не видно, что изменения ещё не записаны */
+.nt-focus-status{
+  padding:4px 9px;border-radius:var(--nt-pill);
+  background:var(--nt-sb-2);color:var(--nt-text-3);font-size:11.5px;
+  display:none;align-items:center;gap:5px;
+}
+body.nt-focus .nt-focus-status.on{display:inline-flex}
+.nt-focus-status::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--nt-amber);
+}
+.nt-focus-status.saved::before{background:var(--nt-green)}
+
+/* фокус + печать */
+@media print{
+  body.nt-focus .nt-title,body.nt-focus .nt-body{ color:#000 !important }
+  .nt-top,.nt-hint,.nt-sp,.nt-pane.hide{ display:none !important }
+}
+</style>
+<link rel="stylesheet" href="/static/css/mobile.css">
+<script src="/static/js/mobile.js" defer></script>
+</head>
+<body>
+<div class="nt-menu" id="menu"></div>
+<div class="nt-modal-bg" id="modalBg" onclick="if(event.target===this)ntCloseModal()">
+  <div class="nt-modal" id="modalBox"></div>
+</div>
+<div class="nt-toasts" id="toasts"></div>
+
+<!-- ============ ВЕРХНЯЯ ПАНЕЛЬ ============ -->
+<div class="nt-top">
+  <a class="nt-btn icon" id="backBtn" title="К списку (Ctrl+S — сохранить)">
+    <i class="fa-solid fa-arrow-left"></i>
+  </a>
+  <div class="nt-dirty" id="dirtyDot" title="Есть несохранённые изменения"></div>
+  <span class="nt-saved" id="savedTip">Сохранено</span>
+  <div class="nt-top-sp"></div>
+
+  <!-- выбор режима отображения -->
+  <button class="nt-btn icon" data-mode="write" id="mWrite"
+          title="Только текст (Ctrl+1)"><i class="fa-solid fa-pen"></i></button>
+  <button class="nt-btn icon" data-mode="split" id="mSplit"
+          title="Текст и предпросмотр (Ctrl+2)"><i class="fa-solid fa-columns"></i></button>
+  <button class="nt-btn icon" data-mode="preview" id="mPreview"
+          title="Только предпросмотр (Ctrl+3)"><i class="fa-solid fa-eye"></i></button>
+  <div class="nt-sep"></div>
+  <button class="nt-btn icon" id="undoBtn" onclick="ntUndo()" title="Отменить (Ctrl+Z)">
+    <i class="fa-solid fa-rotate-left"></i>
+  </button>
+  <button class="nt-btn icon" id="redoBtn" onclick="ntRedo()" title="Вернуть (Ctrl+Shift+Z)">
+    <i class="fa-solid fa-rotate-right"></i>
+  </button>
+  <div class="nt-sep"></div>
+  <button class="nt-btn icon" id="focusBtn"
+          title="Режим фокусировки — убирает интерфейс (Ctrl+Shift+F)">
+    <i class="fa-solid fa-expand"></i>
+  </button>
+  <div class="nt-sep"></div>
+  <select class="nt-input" id="folderSel" title="Переместить в папку"
+          style="width:auto;padding:4px 8px;font-size:12.5px"></select>
+  <button class="nt-btn primary" id="saveBtn" title="Сохранить (Ctrl+S)">
+    <i class="fa-solid fa-check"></i>
+  </button>
+  <button class="nt-btn icon" onclick="ntOpenMenu(event)" title="Ещё">
+    <i class="fa-solid fa-ellipsis"></i>
+  </button>
+</div>
+
+<!-- подсказка в режиме фокусировки (pointer-events:none) -->
+<div class="nt-hint">
+  <span class="nt-focus-status" id="focusStatus"></span>
+  <button onclick="ntToggleFocus()">Выйти из фокуса (Esc)</button>
+</div>
+
+<!-- ============ РАБОЧАЯ ОБЛАСТЬ ============ -->
+<div class="nt-work">
+
+  <!-- ПАНЕЛЬ ПИСЬМА -->
+  <div class="nt-pane" id="writePane">
+    <div class="nt-col">
+      <textarea class="nt-title" id="title" rows="1" placeholder="Без названия"
+                spellcheck="false" oninput="ntAutoGrow(this);ntMarkDirty()"
+                onkeydown="if(event.key==='Enter'){event.preventDefault();$('body').focus();}"></textarea>
+      <div class="nt-meta" id="metaRow">
+        <span id="metaTime"></span>
+        <span id="metaWords"></span>
+        <span id="metaChars"></span>
+        <span id="metaTags" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"></span>
+      </div>
+      <div style="position:relative">
+        <div class="nt-under" id="underLayer" aria-hidden="true"></div>
+        <textarea class="nt-body" id="body" spellcheck="false"
+          placeholder="Начните писать…&#10;&#10;Поддерживается Markdown, [[ссылки]], #теги, - [ ] задачи."
+          oninput="ntOnInput()" onkeydown="ntBodyKeys(event)"
+          onscroll="ntSyncUnder()" onblur="ntHideFmt()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="nt-sp" id="edSp" title="Потяните, чтобы изменить ширину (двойной клик — сброс)"></div>
+
+  <!-- ПАНЕЛЬ ПРЕВЬЮ -->
+  <div class="nt-pane hide" id="previewPane">
+    <div class="nt-col">
+      <div class="nt-md" id="previewMd"></div>
+    </div>
+  </div>
+</div>
+
+<!-- всплывающее форматирование -->
+<div class="nt-fmt" id="fmtBar">
+  <button onclick="ntWrap('**','**')" title="Жирный (Ctrl+B)"><b>Ж</b></button>
+  <button onclick="ntWrap('*','*')" title="Курсив (Ctrl+I)"><i style="font-family:Georgia">К</i></button>
+  <button onclick="ntLine('# ')" title="Заголовок 1" style="font-weight:700">H1</button>
+  <button onclick="ntLine('- ')" title="Список"><i class="fa-solid fa-list-ul"></i></button>
+  <button onclick="ntLine('- [ ] ')" title="Задача"><i class="fa-regular fa-square-check"></i></button>
+  <button onclick="ntWrap('`','`')" title="Код"><i class="fa-solid fa-code"></i></button>
+  <button onclick="ntWrap('[[','')" title="Ссылка на заметку"><i class="fa-solid fa-link"></i></button>
+  <button onclick="ntWrap('> ','')" title="Цитата"><i class="fa-solid fa-quote-right"></i></button>
+</div>
+<script>
+/* ============================================================================
+   NOTION-STYLE EDITOR — client
+   ============================================================================ */
+'use strict';
+
+let noteId = null;
+let note = { id:null, title:'', content:'', folder:'inbox', tags:[], created:0, updated:0 };
+let folders = [];
+let mode = localStorage.getItem('nt_ed_mode')
+  || (window.innerWidth >= 1100 ? 'split' : 'write');
+let dirty = false;
+let saveTimer = null;
+let previewTimer = null;
+
+const $ = id => document.getElementById(id);
+
+function esc(t){
+  return String(t == null ? '' : t).replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+}
+function toast(msg, kind){
+  const el = document.createElement('div');
+  el.className = 'nt-toast' + (kind ? ' ' + kind : '');
+  el.textContent = msg;
+  $('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 2600);
+}
+async function api(url, opts){
+  const r = await fetch(url, opts);
+  const t = await r.text();
+  let d;
+  try{ d = JSON.parse(t); } catch(e){ throw new Error('Сервер вернул не JSON: ' + t.slice(0,120)); }
+  if(d && d.error) throw new Error(d.error);
+  return d;
+}
+function fmtDate(ts){
+  if(!ts) return '';
+  return new Date(ts * 1000).toLocaleString('ru-RU', {
+    day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+  });
+}
+function ntModal({title, text, input, value, okText, danger}){
+  return new Promise(resolve => {
+    $('modalBox').innerHTML = `
+      <div class="nt-modal-h">
+        <div class="nt-modal-t">${esc(title)}</div>
+        ${text ? `<div class="nt-modal-d">${esc(text)}</div>` : ''}
+      </div>
+      ${input ? `<div style="padding:14px 22px 0"><input class="nt-input" id="mInput"
+           value="${esc(value||'')}" placeholder="${esc(input)}"></div>` : ''}
+      <div class="nt-modal-b">
+        <button class="nt-btn" id="mCancel">Отмена</button>
+        <button class="nt-btn ${danger ? '' : 'primary'}" id="mOk"
+          ${danger ? 'style="background:var(--nt-red);color:#fff"' : ''}>${esc(okText || 'ОК')}</button>
+      </div>`;
+    $('modalBg').classList.add('open');
+    const done = v => {
+      $('modalBg').classList.remove('open');
+      document.removeEventListener('keydown', onKey, true);
+      resolve(v);
+    };
+    const onKey = e => {
+      if(e.key === 'Escape'){ e.stopPropagation(); done(null); }
+      if(e.key === 'Enter' && input){ e.stopPropagation(); done($('mInput').value.trim() || null); }
+    };
+    document.addEventListener('keydown', onKey, true);
+    $('mOk').onclick = () => done(input ? ($('mInput').value.trim() || null) : true);
+    $('mCancel').onclick = () => done(null);
+    if(input) setTimeout(() => { $('mInput').focus(); $('mInput').select(); }, 40);
+    else setTimeout(() => $('mOk').focus(), 40);
+  });
+}
+function ntCloseModal(){ $('modalBg').classList.remove('open'); }
+
+// ---------- загрузка ----------
+async function ntLoad(){
+  const P = new URLSearchParams(location.search);
+  noteId = P.get('id');
+
+  try {
+    if(noteId){
+      const n = await api('/api/notes/get?id=' + encodeURIComponent(noteId));
+      if(n && n.id) note = n;
+      else noteId = null;
+    }
+  } catch(e){ toast('Не удалось загрузить: ' + e.message, 'err'); }
+
+  $('title').value = note.title || '';
+  $('body').value  = note.content || '';
+  ntAutoGrow($('title'));
+  ntAutoGrow($('body'));
+  ntRenderMeta();
+  ntRenderTags();
+  await ntLoadFolders();
+  ntSetMode(mode, true);
+  ntRenderPreview();
+  ntUpdateStats();
+
+  if(noteId) $('backBtn').href = '/notes';
+  else $('backBtn').href = '/notes';
+}
+
+async function ntLoadFolders(){
+  try{
+    const d = await api('/api/notes/folders');
+    let raw = Array.isArray(d) ? d : (d.folders || d.nodes || []);
+    // сервисные каталоги (_ai_answers, _attachments и т.п.) папками не считаем
+    folders = (Array.isArray(raw) ? raw : [])
+      .map(f => typeof f === 'string' ? f : ((f && (f.name || f.title)) || ''))
+      .filter(n => n && n !== 'all' && n.charAt(0) !== '_');
+  } catch(e){ folders = []; }
+  const sel = $('folderSel');
+  sel.innerHTML = ['inbox', ...folders]
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .map(f => `<option value="${esc(f)}" ${f === (note.folder || 'inbox') ? 'selected' : ''}
+      >${esc(f === 'inbox' ? 'Входящие' : f)}</option>`).join('');
+}
+
+function ntRenderMeta(){
+  $('metaTime').textContent = note.updated ? 'Изменено ' + fmtDate(note.updated) : 'Новая заметка';
+}
+function ntRenderTags(){
+  $('metaTags').innerHTML = (note.tags || []).map(t =>
+    `<span class="nt-tag">#${esc(t)}
+      <button onclick="ntDelTag('${esc(t)}')"><i class="fa-solid fa-xmark"></i></button>
+    </span>`).join('') +
+    `<button class="nt-tag-add" onclick="ntAddTag()"><i class="fa-solid fa-plus"></i></button>`;
+}
+</script>
+<script>
+/* ---------- РЕЖИМЫ ОТОБРАЖЕНИЯ ---------- */
+function ntSetMode(m, silent){
+  mode = m;
+  localStorage.setItem('nt_ed_mode', m);
+  const w = $('writePane'), p = $('previewPane'), sp = $('edSp');
+  w.classList.toggle('hide', m === 'preview');
+  p.classList.toggle('hide', m === 'write');
+  sp.classList.toggle('hide', m !== 'split');
+  $('mWrite').classList.toggle('on', m === 'write');
+  $('mSplit').classList.toggle('on', m === 'split');
+  $('mPreview').classList.toggle('on', m === 'preview');
+  // в режиме превью панель письма не нужна — освобождаем ширину
+  p.querySelector('.nt-col').classList.toggle('wide', m === 'preview');
+  if(m !== 'write') ntRenderPreview();
+  if(!silent && m === 'write') $('body').focus();
+}
+function ntCycleMode(){
+  const order = ['write','split','preview'];
+  ntSetMode(order[(order.indexOf(mode) + 1) % 3]);
+}
+
+/* ---------- РЕЖИМ ФОКУСИРОВКИ ---------- */
+function ntToggleFocus(){
+  const on = document.body.classList.toggle('nt-focus');
+  localStorage.setItem('nt_focus', on ? '1' : '0');
+  $('focusBtn').classList.toggle('on', on);
+  if(on){
+    // при входе в фокус — сразу в текст, иначе пользователь теряет позицию
+    setTimeout(() => $('body').focus(), 30);
+  }
+}
+function ntIsFocus(){
+  return document.body.classList.contains('nt-focus');
+}
+
+/* ---------- разделитель панелей ---------- */
+function ntInitSplitter(){
+  const sp = $('edSp');
+  if(!sp) return;
+  const DEF = 0.5;   // доля ширины левой панели
+  let saved = parseFloat(localStorage.getItem('nt_ed_split'));
+  const apply = f => {
+    const total = $('writePane').parentElement.clientWidth;
+    $('writePane').style.flex = '0 0 ' + Math.round(total * f) + 'px';
+    $('previewPane').style.flex = '1';
+  };
+  if(saved > 0.15 && saved < 0.85) apply(saved);
+  else apply(DEF);
+
+  sp.addEventListener('dblclick', () => {
+    localStorage.removeItem('nt_ed_split');
+    $('writePane').style.flex = '';
+    $('previewPane').style.flex = '';
+  });
+  sp.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const work = $('writePane').parentElement;
+    const total = work.clientWidth;
+    const startX = e.clientX;
+    const startW = $('writePane').getBoundingClientRect().width;
+    sp.classList.add('drag');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    const move = ev => {
+      const w = Math.max(320, Math.min(total - 320, startW + ev.clientX - startX));
+      apply(w / total);
+    };
+    const up = () => {
+      sp.classList.remove('drag');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+      localStorage.setItem('nt_ed_split',
+        ($('writePane').getBoundingClientRect().width / total).toFixed(3));
+    };
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  });
+  // при изменении размера окна держим разумные пропорции
+  const work = $('writePane').parentElement;
+  window.addEventListener('resize', () => {
+    const total = work.clientWidth;
+    const w = $('writePane').getBoundingClientRect().width;
+    if(total && w / total > 0.15 && w / total < 0.85) apply(w / total);
+  });
+}
+
+/* ---------- авторазмер textarea ---------- */
+function ntAutoGrow(el){
+  if(!el) return;
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight + 2) + 'px';
+}
+function ntSyncUnder(){
+  const u = $('underLayer'), b = $('body');
+  if(u) u.scrollTop = b.scrollTop;
+}
+</script>
+<script>
+/* ---------- ввод и автосохранение ---------- */
+function ntOnInput(){
+  const b = $('body');
+  ntAutoGrow(b);
+  ntMarkDirty();
+  ntUpdateStats();
+  // предпросмотр обновляем с задержкой: MathJax/Plotly на каждый символ
+  // тормозят ввод в сплит-режиме
+  if(mode !== 'write'){
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(ntRenderPreview, 250);
+  }
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => ntSave(true), 2000);
+}
+function ntUpdateStats(){
+  const t = $('body').value;
+  const words = t.trim() ? t.trim().split(/\s+/).length : 0;
+  $('metaWords').textContent = words + ' слов';
+  $('metaChars').textContent = t.length + ' симв.';
+}
+function ntUpdateUndoBtns(){
+  const u = $('undoBtn'), r = $('redoBtn');
+  if(u) u.style.opacity = undoStack.length ? '' : '.35';
+  if(r) r.style.opacity = redoStack.length ? '' : '.35';
+}
+function ntFocusStatus(state, text){
+  const el = $('focusStatus');
+  if(!el) return;
+  el.classList.toggle('on', state !== 'off');
+  el.classList.toggle('saved', state === 'saved');
+  el.textContent = text || '';
+}
+function ntMarkDirty(){
+  ntFocusStatus('dirty', 'не сохранено');
+  if(dirty) return;
+  dirty = true;
+  $('dirtyDot').classList.add('on');
+  $('savedTip').classList.remove('on');
+}
+function ntMarkClean(){
+  dirty = false;
+  $('dirtyDot').classList.remove('on');
+  $('savedTip').classList.add('on');
+  ntFocusStatus('saved', 'сохранено');
+  setTimeout(() => {
+    if(!dirty) $('savedTip').classList.remove('on');
+    if(!dirty) ntFocusStatus('off');
+  }, 1600);
+}
+
+async function ntSave(silent){
+  if(!dirty && silent) return;
+  clearTimeout(saveTimer);
+  note.title   = $('title').value.trim();
+  note.content = $('body').value;
+  note.folder  = $('folderSel').value || 'inbox';
+  // теги из текста добавляем к явным, не теряя существующие
+  const inline = (note.content.match(/(?:^|\s)#([a-zA-Zа-яА-Я0-9_]+)/g) || [])
+    .map(s => s.trim().slice(1));
+  note.tags = [...new Set([...(note.tags || []), ...inline])];
+  try{
+    const d = await api('/api/notes/save', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        id: note.id || undefined,
+        title: note.title || 'Без названия',
+        content: note.content,
+        folder: note.folder,
+        tags: note.tags,
+        created: note.created || undefined,
+      })
+    });
+    if(d && d.id){
+      const wasNew = !note.id;
+      note.id = d.id;
+      noteId = d.id;
+      if(wasNew) history.replaceState(null, '', '?id=' + encodeURIComponent(d.id));
+      note.updated = Math.floor(Date.now() / 1000);
+      ntRenderMeta();
+      ntRenderTags();
+    }
+    ntMarkClean();
+    if(!silent) toast('Сохранено', 'ok');
+  } catch(e){
+    toast('Ошибка сохранения: ' + e.message, 'err');
+  }
+}
+
+async function ntAddTag(){
+  const t = await ntModal({title:'Добавить тег', input:'Название тега', okText:'Добавить'});
+  if(!t) return;
+  const clean = t.replace(/^#/,'').trim();
+  if(!clean) return;
+  note.tags = [...new Set([...(note.tags || []), clean])];
+  ntRenderTags();
+  ntMarkDirty();
+}
+function ntDelTag(t){
+  note.tags = (note.tags || []).filter(x => x !== t);
+  ntRenderTags();
+  ntMarkDirty();
+}
+
+function ntBodyKeys(e){
+  const mod = e.ctrlKey || e.metaKey;
+  if(mod && e.key === 'b'){ e.preventDefault(); ntWrap('**','**'); return; }
+  if(mod && e.key === 'i'){ e.preventDefault(); ntWrap('*','*'); return; }
+  // всплывающее форматирование по выделению
+  if(!e.shiftKey && !mod) setTimeout(ntShowFmt, 5);
+}
+
+/* ---------- форматирование ---------- */
+/* ---------- ФОРМАТИРОВАНИЕ С ОТКАТОМ ---------- */
+/* Ctrl+Z после вставки **жирного** отменял всю операцию целиком и
+   «съедал» набранный текст. Держим собственную историю: снимок до/после. */
+let undoStack = [];
+let redoStack = [];
+const UNDO_MAX = 200;
+
+function ntSnapshot(){
+  return {
+    body: $('body').value,
+    title: $('title').value,
+    sel: $('body').selectionStart,
+    selEnd: $('body').selectionEnd,
+  };
+}
+function ntPushUndo(before){
+  undoStack.push(before);
+  if(undoStack.length > UNDO_MAX) undoStack.shift();
+  redoStack.length = 0;
+  ntUpdateUndoBtns();
+}
+function ntRestore(st){
+  $('body').value  = st.body;
+  $('title').value = st.title;
+  $('body').selectionStart = st.sel;
+  $('body').selectionEnd   = st.selEnd;
+  ntAutoGrow($('body'));
+  ntAutoGrow($('title'));
+  ntMarkDirty();
+  ntUpdateStats();
+  if(mode !== 'write'){ clearTimeout(previewTimer); previewTimer = setTimeout(ntRenderPreview, 120); }
+}
+function ntUndo(){
+  if(!undoStack.length) return;
+  const cur = ntSnapshot();
+  const st = undoStack.pop();
+  redoStack.push(cur);
+  ntRestore(st);
+  ntUpdateUndoBtns();
+}
+function ntRedo(){
+  if(!redoStack.length) return;
+  const cur = ntSnapshot();
+  const st = redoStack.pop();
+  undoStack.push(cur);
+  ntRestore(st);
+  ntUpdateUndoBtns();
+}
+
+function ntWrap(before, after){
+  const b = $('body');
+  const prev = ntSnapshot();
+  const s = b.selectionStart, e = b.selectionEnd;
+  const sel = b.value.slice(s, e);
+  after = after === undefined ? before : after;
+  b.value = b.value.slice(0, s) + before + sel + after + b.value.slice(e);
+  b.selectionStart = s + before.length;
+  b.selectionEnd = s + before.length + sel.length;
+  ntPushUndo(prev);
+  b.focus();
+  ntAutoGrow(b);
+  ntOnInput();
+}
+function ntLine(prefix){
+  const b = $('body');
+  const prev = ntSnapshot();
+  const s = b.selectionStart;
+  const ls = b.value.lastIndexOf('\n', s - 1) + 1;
+  b.value = b.value.slice(0, ls) + prefix + b.value.slice(ls);
+  b.selectionStart = b.selectionEnd = s + prefix.length;
+  ntPushUndo(prev);
+  b.focus();
+  ntAutoGrow(b);
+  ntOnInput();
+}
+function ntShowFmt(){
+  if(ntIsFocus()) return;
+  const b = $('body');
+  if(b.selectionStart === b.selectionEnd) return ntHideFmt();
+  const box = b.getBoundingClientRect();
+  const bar = $('fmtBar');
+  bar.classList.add('open');
+  const r = bar.getBoundingClientRect();
+  let x = box.left + (b.selectionStart / Math.max(1, b.value.length)) * box.width;
+  x = Math.max(8, Math.min(window.innerWidth - r.width - 8, x - r.width / 2));
+  bar.style.left = x + 'px';
+  bar.style.top = (box.top + Math.min(28, b.scrollHeight * 0.15) - r.height - 8) + 'px';
+}
+function ntHideFmt(){
+  setTimeout(() => {
+    if(document.activeElement && document.activeElement.closest('#fmtBar')) return;
+    $('fmtBar').classList.remove('open');
+  }, 120);
+}
+</script>
+<script>
+/* ---------- markdown → HTML ---------- */
+function ntMd(src){
+  if(!src) return '';
+  const blocks = [];
+  let text = String(src).replace(/```([\s\S]*?)```/g, (m, code) => {
+    blocks.push(code.replace(/^\w*\n/, ''));
+    return '\u0000CODE' + (blocks.length - 1) + '\u0000';
+  });
+  text = esc(text);
+
+  text = text.replace(/^### (.+)$/gm, '<h3>$1</h3>')
+             .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+             .replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+  // задачи — раньше списков, иначе «- [ ]» съедается маркером
+  text = text.replace(/^- \[ \] (.+)$/gm, '<li><input type="checkbox" disabled> $1</li>')
+             .replace(/^- \[x\] (.+)$/gm, '<li><input type="checkbox" checked disabled> $1</li>');
+  text = text.replace(/^&gt; \[!(\w+)\]\s*(.*)$/gm,
+    '<div class="callout"><i class="fa-solid fa-circle-info"></i><div>$2</div></div>');
+  text = text.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>')
+             .replace(/^[-\*] (.+)$/gm, '<li>$1</li>')
+             .replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  text = text.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => '<ul>' + m + '</ul>');
+
+  text = text.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img src="$2" alt="$1" loading="lazy">')
+             .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+             .replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, '<span class="wl" data-wl="$1">$2$1</span>')
+             .replace(/(^|\s)#([\wа-яА-ЯёЁ_]+)/g, '$1<span class="tk">#$2</span>')
+             .replace(/^---+$/gm, '<hr>');
+
+  text = text.split(/\n{2,}/).map(p => {
+    const t = p.trim();
+    if(!t) return '';
+    if(/^<(h\d|ul|ol|blockquote|hr|pre|div|table)/.test(t)) return t;
+    return '<p>' + t.replace(/\n/g, '<br>') + '</p>';
+  }).join('\n');
+
+  text = text.replace(/\u0000CODE(\d+)\u0000/g, (m, i) =>
+    '<pre><code>' + esc(blocks[+i]) + '</code></pre>');
+
+  text = text.replace(/((?:^\|.*\|$\n?)+)/gm, tbl => {
+    const rows = tbl.trim().split('\n').filter(Boolean);
+    if(rows.length < 2) return tbl;
+    const cells = r => r.split('|').slice(1, -1).map(c => c.trim());
+    const head = cells(rows[0]);
+    const body = rows.slice(2).map(cells);
+    return '<table><thead><tr>' + head.map(h => '<th>' + h + '</th>').join('') +
+      '</tr></thead><tbody>' + body.map(r =>
+        '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('') +
+      '</tbody></table>';
+  });
+  return text;
+}
+
+function ntRenderPreview(){
+  const el = $('previewMd');
+  const src = $('body').value;
+  const html = ntMd(src);
+  // не трогаем DOM, если текст не изменился — иначе ломается выделение
+  if(el.dataset.src === src) return;
+  el.dataset.src = src;
+  el.innerHTML = html || '<p style="color:var(--nt-text-3)">Пусто</p>';
+  if(window.MathJax && window.MathJax.typesetPromise){
+    try{ MathJax.typesetPromise([el]).catch(() => {}); } catch(e){}
+  }
+}
+</script>
+<script>
+/* ---------- меню ---------- */
+function ntCloseMenu(){ $('menu').classList.remove('open'); }
+function ntOpenMenu(ev){
+  ev.stopPropagation();
+  const m = $('menu');
+  m.innerHTML = `
+    <button class="nt-mi" data-a="focus"><i class="fa-solid fa-expand"></i>
+      Режим фокусировки <span class="kb">⌃⇧F</span></button>
+    <button class="nt-mi" data-a="cycle"><i class="fa-solid fa-repeat"></i>
+      Сменить вид <span class="kb">⌃⇧V</span></button>
+    <div class="nt-msep"></div>
+    <div class="nt-mlbl">Вид</div>
+    <button class="nt-mi" data-m="write"><i class="fa-solid fa-pen"></i>Только текст</button>
+    <button class="nt-mi" data-m="split"><i class="fa-solid fa-columns"></i>Текст + предпросмотр</button>
+    <button class="nt-mi" data-m="preview"><i class="fa-solid fa-eye"></i>Только предпросмотр</button>
+    <div class="nt-msep"></div>
+    <button class="nt-mi" data-a="print"><i class="fa-solid fa-print"></i>Печать / PDF</button>
+    <button class="nt-mi" data-a="classic"><i class="fa-solid fa-clock-rotate-left"></i>Классический редактор</button>
+    <div class="nt-msep"></div>
+    <button class="nt-mi danger" data-a="del"><i class="fa-solid fa-trash"></i>Удалить заметку</button>`;
+  const r = m.getBoundingClientRect();
+  m.style.left = Math.max(8, ev.clientX - r.width - 8) + 'px';
+  m.style.top  = Math.max(8, ev.clientY - r.height - 8) + 'px';
+  m.classList.add('open');
+  m.querySelectorAll('.nt-mi').forEach(b => {
+    b.onclick = () => {
+      ntCloseMenu();
+      if(b.dataset.m){ ntSetMode(b.dataset.m); return; }
+      switch(b.dataset.a){
+        case 'focus':  ntToggleFocus(); break;
+        case 'cycle':  ntCycleMode(); break;
+        case 'print':  ntPrintNote(); break;
+        case 'classic': location.href = noteId
+          ? '/notes/edit?id=' + encodeURIComponent(noteId) : '/notes/edit'; break;
+        case 'del':    ntDelete(); break;
+      }
+    };
+  });
+}
+
+function ntPrintNote(){
+  const wasFocus = ntIsFocus();
+  if(!wasFocus) document.body.classList.add('nt-focus');
+  const restore = mode;
+  ntSetMode('preview');
+  setTimeout(() => { window.print(); }, 60);
+  setTimeout(() => {
+    ntSetMode(restore);
+    if(!wasFocus) document.body.classList.remove('nt-focus');
+  }, 400);
+}
+
+async function ntDelete(){
+  if(!note.id){ toast('Заметка ещё не сохранена', 'err'); return; }
+  const ok = await ntModal({
+    title:'Удалить заметку?',
+    text:'Заметка «' + (note.title || 'Без названия') + '» будет удалена безвозвратно.',
+    okText:'Удалить', danger:true
+  });
+  if(!ok) return;
+  try{
+    await api('/api/notes/delete', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ id: note.id })
+    });
+    toast('Удалено');
+    location.href = '/notes';
+  } catch(e){ toast('Ошибка: ' + e.message, 'err'); }
+}
+
+/* ---------- горячие клавиши ---------- */
+document.addEventListener('keydown', e => {
+  const mod = e.ctrlKey || e.metaKey;
+
+  if(e.key === 'Escape'){
+    if($('modalBg').classList.contains('open')){ ntCloseModal(); return; }
+    if($('menu').classList.contains('open')){ ntCloseMenu(); return; }
+    // Esc в фокусе — выход из фокуса
+    if(ntIsFocus()){ ntToggleFocus(); return; }
+  }
+
+  if(mod && e.key === 's'){ e.preventDefault(); ntSave(false); return; }
+  // собственный откат: нативный Ctrl+Z отменял вставку форматирования целиком
+  if(mod && !e.shiftKey && (e.key === 'z' || e.key === 'я' || e.key === 'Я')){
+    if(undoStack.length){ e.preventDefault(); ntUndo(); }
+    return;
+  }
+  if(mod && (e.key === 'y' || e.key === 'н' || e.key === 'Н')){
+    if(redoStack.length){ e.preventDefault(); ntRedo(); }
+    return;
+  }
+  if(mod && e.shiftKey && (e.key === 'z' || e.key === 'я' || e.key === 'Я')){
+    if(redoStack.length){ e.preventDefault(); ntRedo(); }
+    return;
+  }
+  if(mod && e.shiftKey && (e.key === 'f' || e.key === 'а' || e.key === 'А')){
+    e.preventDefault(); ntToggleFocus(); return;
+  }
+  if(mod && e.shiftKey && (e.key === 'v' || e.key === 'м' || e.key === 'М')){
+    e.preventDefault(); ntCycleMode(); return;
+  }
+  if(mod && !e.shiftKey && e.key === '1'){ e.preventDefault(); ntSetMode('write'); return; }
+  if(mod && !e.shiftKey && e.key === '2'){ e.preventDefault(); ntSetMode('split'); return; }
+  if(mod && !e.shiftKey && e.key === '3'){ e.preventDefault(); ntSetMode('preview'); return; }
+  if(mod && e.key === '\\'){ e.preventDefault(); ntCycleMode(); return; }
+});
+document.addEventListener('click', e => {
+  if(!e.target.closest('#menu')) ntCloseMenu();
+});
+// предупреждение о несохранённых изменениях при закрытии вкладки
+window.addEventListener('beforeunload', e => {
+  if(dirty){ e.preventDefault(); e.returnValue = ''; }
+});
+
+/* ---------- старт ---------- */
+(async function init(){
+  if(localStorage.getItem('nt_focus') === '1'){
+    document.body.classList.add('nt-focus');
+    $('focusBtn').classList.add('on');
+  }
+  ntInitSplitter();
+  $('saveBtn').onclick = () => ntSave(false);
+  $('folderSel').onchange = () => ntMarkDirty();
+  $('mWrite').onclick   = () => ntSetMode('write');
+  $('mSplit').onclick   = () => ntSetMode('split');
+  $('mPreview').onclick = () => ntSetMode('preview');
+  $('focusBtn').onclick = ntToggleFocus;
+  $('backBtn').onclick = async e => {
+    e.preventDefault();
+    if(dirty) await ntSave(true);
+    location.href = '/notes';
+  };
+  window.addEventListener('resize', () => { ntAutoGrow($('body')); });
+  await ntLoad();
+})();
+</script>
+</body>
+</html>

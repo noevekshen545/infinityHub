@@ -1,0 +1,56 @@
+/* ============================================================================
+   Панель управления окном для обёртки Electron (desktop/).
+   ----------------------------------------------------------------------------
+   Разметку скрипт добавляет как .win-btns с кнопками .wb — те же классы и
+   тот же дизайн, что встроены в шаблон главной (page_index_v2.html),
+   чтобы кнопки выглядели одинаково везде. В браузере панели нет: скрипт
+   ничего не рисует, если нет window.electronAPI.
+   ========================================================================== */
+
+/* Полоса перетаскивания: в frameless-окне системной рамки нет, поэтому
+   перетаскивание окна мышью работает только по этому участку. */
+html.electron-mode body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 30px;
+  -webkit-app-region: drag;
+  z-index: 2147482999;
+}
+
+html.electron-mode { scrollbar-gutter: stable; }
+
+.win-btns {
+  position: fixed;
+  top: 0; right: 0;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  -webkit-app-region: no-drag;
+}
+.win-btns[hidden] { display: none; }
+
+.wb {
+  width: 34px;
+  height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-2, #5a6472);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background .12s, color .12s;
+  -webkit-app-region: no-drag;
+}
+.wb svg { width: 12px; height: 12px; display: block; pointer-events: none; }
+.wb:hover  { background: var(--bg3, #f1f3f6); color: var(--text, #1a1f26); }
+.wb:active { background: var(--bg4, #e7eaef); }
+.wb-close:hover { background: #e5484d; color: #fff; }
+.wb:focus-visible { outline: 2px solid var(--accent, #3b6ef5); outline-offset: 1px; }
+
+/* Содержимое страницы не должно заезжать под полосу перетаскивания */
+html.electron-mode body { padding-top: 30px; }

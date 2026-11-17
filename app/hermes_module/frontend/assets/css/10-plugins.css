@@ -1,0 +1,108 @@
+/* 10-plugins.css — Плагины */
+/* ---------- плагины: сетка карточек ----------
+   Раньше карточки шли в столбик (margin-bottom) и занимали всю ширину.
+   Теперь это сетка: колонки подстраиваются под ширину панели, поэтому
+   auto-fit + minmax — на узком экране сетка сама схлопнется в одну колонку,
+   и отдельный медиазапрос не нужен. */
+#pluginList{display:grid;gap:9px;grid-template-columns:repeat(auto-fill,minmax(268px,1fr))}
+.plugcard{background:var(--surface-2);border:1px solid var(--border);border-radius:13px;
+  padding:13px 14px 11px;transition:var(--t);
+  /* Карточка в сетке: растягиваемся по высоте всей строки, чтобы соседи
+     по сетке не разъезжались разной высоты. */
+  display:flex;flex-direction:column;min-width:0}
+/* Обёртка для пустого состояния: сетка не должна ломать его раскладку */
+#pluginList>.empty,#pluginList>.plughint{grid-column:1/-1}
+.plugcard:hover{border-color:var(--border-2);box-shadow:var(--sh-1)}
+.plugcard.err{border-color:var(--err);background:var(--err-soft)}
+.plugcard .pc-top{display:flex;align-items:center;gap:11px}
+.plugcard .pi{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;
+  background:var(--accent-soft);color:var(--accent);font-size:14px;flex:none}
+.plugcard.off .pi{background:var(--surface-3);color:var(--text-3)}
+.plugcard.err .pi{background:var(--err-soft);color:var(--err)}
+.plugcard .pt{flex:1;min-width:0}
+.plugcard .pt b{display:block;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Описание занимает свободное место: карточки в сетке разной длины, и без
+   этого кнопки внизу оказываются на разной высоте. */
+.plugcard .pt small{display:block;font-size:11.2px;color:var(--text-3);line-height:1.5;margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.plugcard .pc-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:10px 0 0 47px}
+.plugcard .ver{font-size:9.5px;color:var(--text-3);background:var(--surface-3);border-radius:5px;padding:2px 6px}
+.plugcard .chip i{font-size:9.5px}
+.plugcard .pc-err{margin:9px 0 0 47px;font-size:11px;color:var(--err);font-family:var(--mono);
+  background:var(--surface);border-radius:7px;padding:6px 9px;word-break:break-word}
+/* Кнопки прижаты к низу карточки (margin-top:auto), а не следуют за
+   содержимым: так они выстраиваются в одну линию по всему ряду сетки. */
+.plugcard .pc-act{display:flex;align-items:center;gap:6px;margin:auto 0 0 47px;
+  padding-top:10px;border-top:1px solid var(--border)}
+.plugcard .pc-act .toggle{margin-right:auto}
+.plugdir{display:flex;align-items:center;gap:9px;background:var(--surface-2);border:1px solid var(--border);
+  border-radius:10px;padding:9px 12px;flex-wrap:wrap}
+.plugdir>i{color:var(--accent);font-size:13px;flex:none}
+.plugdir code{flex:1;min-width:0;font-family:var(--mono);font-size:11px;color:var(--text-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plughint{font-size:11.2px;color:var(--text-3);line-height:1.65;margin:10px 0 0}
+
+/* Окно подтверждения нового плагина (ручной режим) */
+#plugAskPrev{font-family:var(--mono);font-size:11px;line-height:1.6;background:var(--code-bg,var(--surface-3));
+  color:var(--text-2);border-radius:9px;padding:11px 13px;max-height:210px;overflow:auto;
+  white-space:pre-wrap;word-break:break-word;border:1px solid var(--border)}
+
+/* Перехватчики сообщений: метки языка скрипта рядом со строкой команды. */
+.chip.tiny{font-size:9.5px;padding:1px 6px;border-radius:20px;line-height:1.6;font-weight:600}
+.chip.tiny.js{background:rgba(245,197,66,.18);color:#e0a92b}
+.chip.tiny.py{background:rgba(66,150,245,.16);color:#3d8ae8}
+
+/* ---------- субагенты ----------
+   Дерево работы субагента рисуется внутри карточки delegate_task (тот же
+   .tool-call-body, но вложенной разметкой) и — для веток, у которых карточки
+   уже нет, — в отдельном блоке #subPin. Отступ вложенности задаёт класс .dN. */
+#subPinBody{padding:0}
+.sub-tree{display:flex;flex-direction:column;gap:6px;margin-top:9px}
+.sub-tree .sub-tree{margin-top:7px;margin-left:13px;padding-left:11px;
+  border-left:1px dashed var(--border)}
+.sub-node{border:1px solid var(--border);border-radius:9px;padding:7px 9px;
+  background:var(--surface-2)}
+.sub-node.run{border-color:var(--accent);background:var(--accent-soft)}
+.sub-node.err{border-color:var(--err);background:var(--err-soft)}
+.sub-hd{display:flex;align-items:flex-start;gap:8px;cursor:pointer;user-select:none}
+.sub-hd .si{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;flex:none;
+  background:var(--accent-soft);color:var(--accent);font-size:10px}
+.sub-node.err .si{background:var(--err-soft);color:var(--err)}
+.sub-node.wait .si{background:var(--surface-3);color:var(--text-3)}
+.sub-hd .st{flex:1;min-width:0}
+.sub-hd .st b{display:block;font-size:11.5px;font-weight:600;line-height:1.45;word-break:break-word}
+.sub-hd .st small{display:block;font-size:10px;color:var(--text-3);line-height:1.5;margin-top:2px}
+.sub-chev{font-size:9px;color:var(--text-3);flex:none;margin-top:5px;transition:transform .15s}
+.sub-chev.on{transform:rotate(180deg)}
+/* Статусы ветки: .badge знает done/running/error, здесь свои имена */
+.sub-hd .badge.run{background:var(--accent-soft);color:var(--accent)}
+.sub-hd .badge.ok{background:var(--ok-soft);color:var(--ok)}
+.sub-hd .badge.err{background:var(--err-soft);color:var(--err)}
+.sub-body{margin-top:7px;padding-left:32px}
+.sub-body .lbl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:3px}
+/* Рассуждения ребёнка — поток, поэтому показываем его свёрнутым блоком */
+.sub-think{display:flex;gap:7px;align-items:flex-start;margin-bottom:6px}
+.sub-think>i{font-size:10px;color:var(--text-3);margin-top:3px}
+.sub-think>div{flex:1;min-width:0}
+.sub-think pre{font-family:var(--mono);font-size:10px;line-height:1.5;color:var(--text-2);
+  background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 7px;
+  margin:0;max-height:150px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+/* Собственные вызовы инструментов ребёнка — компактной строкой, не карточкой:
+   их может быть несколько десятков и каждый занимать экран не должен. */
+.sub-tools{display:flex;flex-direction:column;gap:2px;margin:6px 0}
+.sub-tool{display:flex;align-items:baseline;gap:6px;font-size:10.5px;line-height:1.6;
+  padding:2px 0;color:var(--text-2)}
+.sub-tool>i{font-size:9.5px;color:var(--text-3);flex:none}
+.sub-tool .n{font-family:var(--mono);flex:none}
+.sub-tool .pv{color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.sub-tool.run .n{color:var(--accent)}
+.sub-text,.sub-out{margin-top:6px;font-size:11px;line-height:1.6;color:var(--text-2);
+  background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 8px;
+  word-break:break-word}
+.sub-text>div:not(.lbl),.sub-out>div:not(.lbl){white-space:pre-wrap}
+.sub-text p,.sub-out p{margin:0 0 5px}
+.sub-text p:last-child,.sub-out p:last-child{margin-bottom:0}
+.sub-out.err{border-color:var(--err);color:var(--err)}
+
+.burger{display:none}

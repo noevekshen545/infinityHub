@@ -1,0 +1,4395 @@
+<!DOCTYPE html>
+<!-- Превью-шаблон заметок «Focus».
+     Полная копия page_notes.html: все функции страницы сохранены.
+     Оформление: /static/css/notes_skin_focus.css, переключатель шаблонов:
+     /static/js/notes_skin_common.js. Основной шаблон не изменён. -->
+
+<html class="pg-page_notes" lang="ru" data-notes-skin="focus">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Заметки — Focus (превью)</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/fonts/google-fonts.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box }
+
+:root {
+  --bg: #fafbfc;
+  --bg2: #ffffff;
+  --bg3: #f3f4f6;
+  --bg4: #e5e7eb;
+  --border: rgba(0, 0, 0, 0.06);
+  --border2: rgba(0, 0, 0, 0.1);
+  --text: #111827;
+  --text2: #4b5563;
+  --text3: #9ca3af;
+  --accent: #4f46e5;
+  --accent2: #4338ca;
+  --accent-glow: rgba(79, 70, 229, 0.15);
+  --accent-light: rgba(79, 70, 229, 0.1);
+  --link: #4338ca;
+  --card: rgba(255, 255, 255, 0.8);
+  --hover: rgba(0, 0, 0, 0.03);
+  --red: #dc2626;
+  --red-light: rgba(220, 38, 38, 0.08);
+  --green: #059669;
+  --green-light: rgba(5, 150, 105, 0.08);
+  --yellow: #d97706;
+  --yellow-light: rgba(217, 119, 6, 0.08);
+  --purple: #7c3aed;
+  --purple-light: rgba(124, 58, 237, 0.08);
+  --blue: #2563eb;
+  --orange: #ea580c;
+  --orange-light: rgba(234, 88, 12, 0.08);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 40px rgba(79, 70, 229, 0.1);
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --tr: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --glass: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --font-main: 'Inter', 'SF Pro Display', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --scrollbar-track: #f1f3f5;
+  --scrollbar-thumb: #c9cdd4;
+  --scrollbar-thumb-hover: #a8adb6;
+}
+
+body.dark {
+  --bg: #0f1419;
+  --bg2: #151b23;
+  --bg3: #1c242f;
+  --bg4: #232d3a;
+  --border: rgba(255, 255, 255, 0.08);
+  --border2: rgba(255, 255, 255, 0.12);
+  --text: #e4e8ef;
+  --text2: #a0aec0;
+  --text3: #6b7280;
+  --accent: #6366f1;
+  --accent2: #4f46e5;
+  --accent-glow: rgba(99, 102, 241, 0.25);
+  --accent-light: rgba(99, 102, 241, 0.15);
+  --link: #818cf8;
+  --card: rgba(21, 27, 35, 0.7);
+  --hover: rgba(255, 255, 255, 0.05);
+  --red: #ef4444;
+  --red-light: rgba(239, 68, 68, 0.1);
+  --green: #10b981;
+  --green-light: rgba(16, 185, 129, 0.1);
+  --yellow: #f59e0b;
+  --yellow-light: rgba(245, 158, 11, 0.1);
+  --purple: #a855f7;
+  --purple-light: rgba(168, 85, 247, 0.1);
+  --blue: #3b82f6;
+  --orange: #f97316;
+  --orange-light: rgba(249, 115, 22, 0.1);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+  --glass: rgba(21, 27, 35, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --scrollbar-track: #1a2029;
+  --scrollbar-thumb: #3a4556;
+  --scrollbar-thumb-hover: #4f5c73;
+}
+
+body.sepia {
+  --bg: #f5f0e8;
+  --bg2: #ede5d8;
+  --bg3: #e2d8c9;
+  --bg4: #d4c9b5;
+  --border: rgba(91, 70, 54, 0.1);
+  --border2: rgba(91, 70, 54, 0.15);
+  --text: #3d2f21;
+  --text2: #5c4a3a;
+  --text3: #8b7560;
+  --accent: #8b5e3c;
+  --accent2: #6d4a2e;
+  --accent-glow: rgba(139, 94, 60, 0.2);
+  --accent-light: rgba(139, 94, 60, 0.1);
+  --link: #6d4a2e;
+  --card: rgba(237, 229, 216, 0.8);
+  --hover: rgba(91, 70, 54, 0.05);
+  --red: #9b2c2c;
+  --red-light: rgba(155, 44, 44, 0.08);
+  --green: #276749;
+  --green-light: rgba(39, 103, 73, 0.08);
+  --yellow: #975a16;
+  --yellow-light: rgba(151, 90, 22, 0.08);
+  --purple: #553c9a;
+  --purple-light: rgba(85, 60, 154, 0.08);
+  --blue: #2c5282;
+  --orange: #c05621;
+  --orange-light: rgba(192, 86, 33, 0.08);
+  --shadow-sm: 0 2px 8px rgba(91, 70, 54, 0.06);
+  --shadow: 0 4px 20px rgba(91, 70, 54, 0.08);
+  --shadow-lg: 0 8px 40px rgba(91, 70, 54, 0.1);
+  --glass: rgba(237, 229, 216, 0.7);
+  --glass-border: rgba(91, 70, 54, 0.12);
+  --scrollbar-track: #e8dfc2;
+  --scrollbar-thumb: #c9be9e;
+  --scrollbar-thumb-hover: #a89888;
+}
+
+body {
+  font-family: var(--font-main);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  transition: background 0.3s, color 0.3s;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -20%, var(--accent-glow), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(168, 85, 247, 0.05), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+::selection { background: var(--accent); color: #fff }
+a { color: var(--accent); text-decoration: none; transition: var(--tr) }
+a:hover { color: var(--link) }
+
+/* === КРАСИВЫЕ SCROLLBARS === */
+::-webkit-scrollbar { width: 10px; height: 10px }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); border-radius: 5px }
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 5px;
+  border: 2px solid var(--scrollbar-track);
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover) }
+::-webkit-scrollbar-thumb:active { background: var(--accent) }
+::-webkit-scrollbar-corner { background: var(--scrollbar-track) }
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.icon { display: inline-flex; align-items: center; justify-content: center; font-size: 14px; width: 18px; text-align: center }
+.icon-sm { font-size: 12px; width: 14px }
+.icon-lg { font-size: 18px; width: 22px }
+
+/* === SIDEBAR === */
+.sidebar {
+  width: 280px;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-right: 1px solid var(--glass-border);
+  padding: 0;
+  flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: var(--tr);
+  z-index: 10;
+}
+
+.sidebar-header {
+  padding: 20px 18px 14px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-light), transparent);
+}
+
+.sidebar-header h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.01em;
+}
+
+.sidebar-header h2 i {
+  font-size: 20px;
+  color: var(--accent);
+}
+
+.sidebar-nav {
+  padding: 12px 10px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sidebar-section { margin-bottom: 8px }
+
+.sidebar-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 10px 12px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.folder {
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 3px;
+  transition: var(--tr);
+  color: var(--text2);
+  font-weight: 500;
+  position: relative;
+  border: 1px solid transparent;
+}
+
+.folder:hover {
+  background: var(--hover);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.folder.on {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.folder .icon {
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.folder .cnt {
+  font-size: 10px;
+  margin-left: auto;
+  background: var(--bg3);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  min-width: 24px;
+  text-align: center;
+}
+
+.folder.on .cnt {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.folder .folder-acts {
+  margin-left: auto;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.folder:hover .folder-acts { opacity: 1 }
+
+.sidebar .ne-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 10px 4px;
+}
+
+.sidebar .ne-actions .btn {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: var(--tr);
+}
+
+.sidebar .ne-actions .btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.sidebar .ne-actions .btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.sidebar .ne-actions .btn.primary:hover {
+  color: #fff;
+}
+
+.ne-root-drop {
+  margin: 4px 0 8px;
+  padding: 8px 10px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--tr);
+}
+
+.ne-root-drop.drag-over {
+  border-color: var(--green);
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.folder.drag-over {
+  border-color: var(--green) !important;
+  background: var(--green-light) !important;
+}
+
+.folder.dragging,
+.sidebar .ne-note-item.dragging {
+  opacity: 0.45;
+}
+
+.folder-notes {
+  margin: 8px 0 4px;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+
+.folder-notes .fn-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 4px 10px 6px;
+}
+
+.folder-notes .ne-note-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text2);
+  transition: var(--tr);
+}
+
+.folder-notes .ne-note-item:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.folder-notes .ne-note-item .icon {
+  color: var(--accent);
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.folder-notes .ne-note-item .fn-note-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-footer {
+  padding: 8px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg3);
+}
+
+/* Одна кнопка на всю ширину вместо четырёх ссылок: нажатие раскрывает
+   панель разделов над кнопкой. */
+.sidebar-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg2);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--tr);
+}
+
+.sidebar-menu-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.sidebar-menu-btn .icon {
+  color: var(--accent);
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+}
+
+.sidebar-menu-btn > span { flex: 1; text-align: left }
+
+.sidebar-menu-btn .sf-caret {
+  font-size: 10px;
+  color: var(--text3);
+  transition: transform 0.2s ease;
+}
+
+.sidebar-menu-btn[aria-expanded="true"] .sf-caret { transform: rotate(180deg) }
+
+.sidebar-menu-panel {
+  display: none;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sidebar-menu-panel.open {
+  display: flex;
+  animation: foldersBodyIn 0.18s ease;
+}
+
+.nav-link {
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text2);
+  transition: var(--tr);
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.nav-link:hover {
+  background: var(--hover);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.nav-link .icon {
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+  color: var(--accent);
+}
+
+.nav-link.highlight {
+  background: linear-gradient(135deg, var(--accent-light), transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* === MAIN CONTENT === */
+.main {
+  flex: 1;
+  padding: 16px 32px 32px;
+  overflow-y: auto;
+  max-width: 1200px;
+  position: relative;
+  z-index: 1;
+}
+
+/* === TOPBAR В СТИЛЕ ZIM (FLOATING GLASS) === */
+.top-bar {
+  position: sticky;
+  top: 8px;
+  z-index: 50;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow);
+}
+
+.top-bar h1 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.02em;
+  min-width: 200px;
+}
+
+.top-bar h1 i { color: var(--accent) }
+
+.top-bar h1 span {
+  color: var(--text3);
+  font-weight: 500;
+  font-size: 12px;
+  background: var(--bg3);
+  padding: 3px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.top-bar .back-link {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: var(--tr);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+  font-family: inherit;
+}
+
+.top-bar .back-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+  color: #fff;
+}
+
+.top-bar .sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin: 0 2px;
+}
+
+.top-bar .btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: var(--tr);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+
+.top-bar .btn:hover {
+  background: var(--bg4);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.top-bar .btn.on {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.top-bar .btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.top-bar .btn.primary:hover {
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.top-bar .btn .icon { font-size: 13px }
+
+.top-bar .btn-icon {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  transition: var(--tr);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top-bar .btn-icon:hover {
+  background: var(--bg4);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* === SEARCH BAR === */
+.search-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 11px 14px 11px 42px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: var(--tr);
+  font-family: inherit;
+}
+
+.search-bar input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+  background: var(--bg3);
+}
+
+.search-bar::before {
+  content: '\f002';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--text3);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.search-bar input::placeholder { color: var(--text3) }
+
+/* === TOOLBAR === */
+.toolbar-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.chip {
+  padding: 7px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text2);
+  transition: var(--tr);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.chip.on {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.chip i { font-size: 11px }
+
+/* Кнопки вида. Опасные (корзина) подкрашены, чтобы «Очистить корзину»
+   не выглядело тем же, что и «Архив». */
+.chip-danger { color: var(--red, #dc2626); border-color: var(--red-light, rgba(220,38,38,.15)); }
+.chip-danger:hover { background: var(--red-light, rgba(220,38,38,.08)); color: var(--red, #dc2626); }
+.chip-danger.on {
+  background: linear-gradient(135deg, var(--red, #dc2626), var(--red, #dc2626));
+  border-color: transparent;
+  color: #fff;
+}
+
+/* Метки на карточке: избранное, закрепление, признак архива/корзины. */
+.card-badges {
+  position: absolute; top: 10px; right: 10px;
+  display: flex; gap: 4px; align-items: center;
+  z-index: 2;
+}
+.card-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 6px;
+  background: var(--bg3); color: var(--text3);
+  font-size: 11px;
+  border: 1px solid var(--border);
+}
+.card-badge.star-on { color: #f59e0b; background: var(--bg3); }
+.card-badge.pin-on { color: var(--accent); }
+.card-badge.archived { color: var(--text3); }
+.card.is-trashed { opacity: .65; }
+.card.is-trashed .title { text-decoration: line-through; }
+
+/* Действие над карточкой появляется при наведении, как в Obsidian: одна
+   кнопка «⋯», а не семь — рядом с ними не оставалось места ни у метастроки,
+   ни у превью. Меню собирается в showCardMenu поверх страницы. */
+.card-actions {
+  position: absolute; bottom: 10px; right: 10px;
+  display: flex; gap: 4px;
+  opacity: 0; transition: opacity .18s ease;
+  z-index: 3;
+}
+.card:hover .card-actions, .card-actions.open { opacity: 1; }
+.card-act {
+  width: 26px; height: 26px; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg2); color: var(--text2);
+  border: 1px solid var(--border); cursor: pointer;
+  font-size: 11px;
+}
+.card-act:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+.card-act.danger:hover { background: var(--red-light); color: var(--red); border-color: var(--red); }
+.card .meta { padding-right: 34px; }
+.context-menu button.danger:hover { background: var(--red-light); color: var(--red) }
+.context-menu button.danger:hover i { color: var(--red) }
+
+/* Модальные окна шаблонов и дня. */
+.nm-modal-back {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,.45); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+}
+.nm-modal {
+  width: 520px; max-width: calc(100vw - 32px); max-height: 82vh; overflow: auto;
+  background: var(--card); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 20px 60px rgba(0,0,0,.3);
+  padding: 20px;
+}
+.nm-modal h3 { margin-bottom: 4px; font-size: 16px; }
+.nm-modal .nm-hint { color: var(--text2); font-size: 12px; margin-bottom: 16px; }
+.nm-tpl-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 8px; }
+.nm-tpl {
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px; cursor: pointer; background: var(--bg2);
+  transition: var(--tr);
+}
+.nm-tpl:hover { border-color: var(--accent); background: var(--accent-light); }
+.nm-tpl .nm-tpl-name { font-weight: 600; font-size: 13px; }
+.nm-tpl .nm-tpl-del { color: var(--red); margin-top: 8px; font-size: 11px; }
+.nm-close { float: right; cursor: pointer; color: var(--text2); border: none; background: none; font-size: 16px; }
+.nm-close:hover { color: var(--text); }
+
+/* === NOTES GRID === */
+.notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+  animation: fadeInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.card {
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  cursor: pointer;
+  transition: var(--tr);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--purple));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s;
+}
+
+.card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card:hover::before { transform: scaleX(1) }
+
+.card-img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  transition: var(--tr);
+}
+
+.card:hover .card-img { transform: scale(1.02) }
+
+.card .title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  letter-spacing: -0.01em;
+}
+
+.card .preview {
+  color: var(--text2);
+  font-size: 13px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.card .meta {
+  font-size: 11px;
+  color: var(--text3);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.card .tag {
+  background: var(--bg3);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: var(--tr);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card .tag:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.card .tag i { font-size: 10px }
+
+.card .tag.purple {
+  background: var(--purple-light);
+  color: var(--purple);
+}
+
+.card .tag.purple:hover {
+  background: var(--purple);
+  color: #fff;
+}
+
+.card .dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text3);
+}
+
+/* === EMPTY STATE === */
+.empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text2);
+  animation: fadeIn 0.5s ease;
+  grid-column: 1 / -1;
+}
+
+.empty i {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+  color: var(--text3);
+}
+
+.empty p {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.empty .btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--tr);
+}
+
+.empty .btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+}
+
+/* === SKELETON === */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg3) 0%, var(--bg4) 50%, var(--bg3) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.skeleton-title { height: 20px; width: 80%; margin-bottom: 12px }
+.skeleton-text { height: 14px; width: 100%; margin-bottom: 8px }
+.skeleton-text.short { width: 60% }
+.skeleton-meta { height: 12px; width: 40%; margin-top: 12px }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0 }
+  100% { background-position: -200% 0 }
+}
+
+/* === MOBILE === */
+.mobile-menu-btn {
+  display: none;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg2);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.2s ease;
+}
+
+.sidebar-overlay.show { display: block }
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -300px;
+    z-index: 1000;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sidebar.open { left: 0 }
+  .mobile-menu-btn { display: block }
+  .main { padding: 12px 16px 24px }
+  .notes-grid { grid-template-columns: 1fr }
+  .top-bar h1 { font-size: 15px; min-width: 0 }
+  .top-bar { flex-wrap: wrap }
+  .top-bar .btn span:not(.icon) { display: none }
+}
+
+/* === УНИВЕРСАЛЬНЫЕ МОДАЛЬНЫЕ ОКНА === */
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease;
+  padding: 20px;
+}
+
+.modal-bg.open { display: flex !important }
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.01em;
+}
+
+.modal h3 i {
+  color: var(--accent);
+  font-size: 20px;
+}
+
+.modal label {
+  font-size: 11px;
+  color: var(--text2);
+  margin-bottom: 6px;
+  display: block;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal input[type="text"],
+.modal input[type="number"],
+.modal select,
+.modal textarea {
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: var(--tr);
+  font-family: inherit;
+}
+
+.modal input[type="text"]:focus,
+.modal input[type="number"]:focus,
+.modal select:focus,
+.modal textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-actions .btn {
+  flex: 1;
+  justify-content: center;
+  padding: 11px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--tr);
+}
+
+.modal-actions .btn:hover {
+  background: var(--bg3);
+  border-color: var(--border2);
+  transform: translateY(-1px);
+}
+
+.modal-actions .btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.modal-actions .btn.primary:hover {
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.modal-actions .btn.danger {
+  background: linear-gradient(135deg, var(--red), #b91c1c);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.modal-actions .btn.danger:hover {
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+/* Confirm modal specifics */
+.confirm-message {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text2);
+  margin-bottom: 8px;
+  padding: 12px 16px;
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--yellow);
+}
+
+.confirm-message strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* === ATTACHMENTS SIDEBAR === */
+.attachments-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 360px;
+  height: 100vh;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-left: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
+  z-index: 2500;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.attachments-sidebar.open { transform: translateX(0) }
+
+.att-sidebar-header {
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, var(--accent-light), transparent);
+}
+
+.att-sidebar-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.att-sidebar-header h3 i {
+  color: var(--accent);
+  font-size: 18px;
+}
+
+.att-sidebar-close {
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  transition: var(--tr);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.att-sidebar-close:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.att-sidebar-filters {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+}
+
+.att-sidebar-filters .search-wrapper {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.att-sidebar-filters .search-wrapper::before {
+  content: '\f002';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--text3);
+  z-index: 1;
+}
+
+.att-sidebar-filters input {
+  width: 100%;
+  padding: 9px 12px 9px 36px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: var(--tr);
+  font-family: inherit;
+}
+
+.att-sidebar-filters input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.att-sort-btns {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.att-sort-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg2);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 11px;
+  transition: var(--tr);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+}
+
+.att-sort-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.att-sort-btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.att-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+/* === COLLAB SIDEBAR (главная заметок) === */
+.collab-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text3);
+  margin: 14px 2px 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.collab-section-title i { color: var(--accent) }
+
+.collab-room-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  transition: var(--tr);
+}
+
+.collab-room-item:hover { border-color: var(--accent) }
+
+.collab-room-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collab-role-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(35, 134, 54, 0.12);
+  color: var(--green);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.collab-role-badge.owner { background: rgba(230, 153, 0, 0.15); color: #e69900 }
+.collab-role-badge.mod { background: rgba(35, 134, 54, 0.14); color: var(--green) }
+
+.collab-room-actions { display: flex; gap: 6px }
+
+.collab-room-actions button {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--tr);
+  font-family: inherit;
+}
+
+.collab-room-actions button:hover { background: var(--hover) }
+
+.collab-room-actions .collab-open { background: var(--accent); border-color: var(--accent); color: #fff }
+.collab-room-actions .collab-open:hover { filter: brightness(1.1) }
+.collab-room-actions .collab-decline:hover { border-color: var(--red); color: var(--red) }
+
+.collab-sidebar-empty {
+  text-align: center;
+  padding: 28px 12px;
+  color: var(--text3);
+  font-size: 13px;
+}
+
+.collab-sidebar-empty i { font-size: 22px; display: block; margin-bottom: 8px }
+
+.att-sidebar-item {
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: var(--tr);
+  position: relative;
+  overflow: hidden;
+}
+
+.att-sidebar-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  transform: scaleY(0);
+  transition: transform 0.3s;
+}
+
+.att-sidebar-item:hover {
+  border-color: var(--accent);
+  transform: translateX(-3px);
+  box-shadow: var(--shadow);
+}
+
+.att-sidebar-item:hover::before { transform: scaleY(1) }
+
+.att-sidebar-item img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  display: block;
+  transition: var(--tr);
+}
+
+.att-sidebar-item:hover img { transform: scale(1.02) }
+
+.att-sidebar-item .att-icon {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  color: var(--accent);
+}
+
+.att-sidebar-item .att-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.att-sidebar-item .att-meta {
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.att-sidebar-item .att-meta i { font-size: 10px }
+
+/* === ATTACHMENT PREVIEW MODAL === */
+.att-preview-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease;
+  padding: 20px;
+}
+
+.att-preview-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 700px;
+  max-width: 95vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+.att-preview-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, var(--accent-light), transparent);
+}
+
+.att-preview-header .att-icon {
+  font-size: 22px;
+  color: var(--accent);
+  width: 40px;
+  height: 40px;
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.att-preview-header .att-fname {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.att-preview-header .att-close {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  transition: var(--tr);
+}
+
+.att-preview-header .att-close:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+
+.att-preview-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  min-height: 200px;
+  background: var(--bg);
+}
+
+.att-preview-body img {
+  max-width: 100%;
+  border-radius: var(--radius);
+  display: block;
+  margin: 0 auto;
+  box-shadow: var(--shadow);
+}
+
+.att-preview-body .att-text-content {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+  font-family: var(--font-mono);
+  background: var(--bg3);
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.att-preview-body video,
+.att-preview-body audio {
+  width: 100%;
+  border-radius: var(--radius);
+  margin: 12px 0;
+}
+
+.att-preview-body iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+  border-radius: var(--radius);
+}
+
+.att-preview-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  background: var(--bg3);
+}
+
+.att-preview-footer button {
+  flex: 1;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: var(--tr);
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.att-preview-footer button:hover {
+  border-color: var(--accent);
+  background: var(--hover);
+  transform: translateY(-1px);
+}
+
+.att-preview-footer button.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.att-preview-footer button.primary:hover {
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+/* === AUDIO MODAL === */
+.audio-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease;
+  padding: 20px;
+}
+
+.audio-modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 500px;
+  max-width: 95vw;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.audio-modal-header {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-light), transparent);
+}
+
+.audio-modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.audio-modal-title i {
+  color: var(--accent);
+  font-size: 22px;
+}
+
+.audio-modal-subtitle {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.audio-modal-body {
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.audio-modal-body audio {
+  width: 100%;
+  height: 50px;
+  border-radius: 25px;
+  outline: none;
+  margin-bottom: 24px;
+}
+
+.audio-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.audio-modal-btn {
+  padding: 16px 24px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg3);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: var(--tr);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: inherit;
+}
+
+.audio-modal-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.audio-modal-btn.primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.audio-modal-btn.primary:hover {
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.audio-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  transition: var(--tr);
+}
+
+.audio-modal-close:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+/* === TOAST === */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-lg);
+  min-width: 300px;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideInRight 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: auto;
+  cursor: pointer;
+  font-size: 13px;
+  backdrop-filter: blur(12px);
+}
+
+.toast.success { border-left: 3px solid var(--green) }
+.toast.error { border-left: 3px solid var(--red) }
+.toast.info { border-left: 3px solid var(--blue) }
+.toast.warning { border-left: 3px solid var(--yellow) }
+
+.toast i { font-size: 16px }
+.toast.success i { color: var(--green) }
+.toast.error i { color: var(--red) }
+.toast.info i { color: var(--blue) }
+.toast.warning i { color: var(--yellow) }
+
+.toast.hiding { animation: slideOutRight 0.3s forwards }
+
+/* === CONTEXT MENU === */
+.context-menu {
+  position: fixed;
+  z-index: 4000;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px;
+  box-shadow: var(--shadow-lg);
+  min-width: 220px;
+  max-height: min(70vh, 460px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  backdrop-filter: blur(12px);
+  animation: menuIn 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.context-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  transition: var(--tr);
+  font-family: inherit;
+}
+
+.context-menu button:hover {
+  background: var(--hover);
+  color: var(--accent);
+}
+
+.context-menu button i {
+  width: 18px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.context-menu button:hover i { color: var(--accent) }
+
+.context-menu .divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+.context-menu .header {
+  padding: 8px 14px;
+  font-size: 11px;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* === FOLDER TREE === */
+.folder-tree-children {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.2s;
+  opacity: 0;
+}
+
+.folder-tree-children.open {
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.folder-toggle {
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  font-size: 10px;
+  transition: transform 0.2s;
+  color: var(--text3);
+}
+
+.folder-toggle.expanded { transform: rotate(90deg) }
+
+/* === ANIMATIONS === */
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px) } to { opacity: 1; transform: scale(1) translateY(0) } }
+@keyframes menuIn { from { opacity: 0; transform: scale(0.95) translateY(6px) } to { opacity: 1; transform: scale(1) translateY(0) } }
+@keyframes slideInRight { from { transform: translateX(100%); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
+@keyframes slideOutRight { from { transform: translateX(0); opacity: 1 } to { transform: translateX(100%); opacity: 0 } }
+
+@media (max-width: 768px) {
+  .attachments-sidebar { width: 100% }
+  .att-preview-box { width: 95vw }
+  .audio-modal { width: 95vw }
+}
+
+@media print {
+  .sidebar, .sidebar-overlay, .modal-bg, .attachments-sidebar, .att-preview-modal, .audio-modal-overlay, .context-menu, .toast-container, .top-bar { display: none !important }
+  .main { padding: 0 }
+  body { background: #fff; color: #000 }
+}
+</style>
+<script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+  <script src="/static/js/offline_store.js" defer></script>
+<link rel="stylesheet" href="/static/css/quick_notes.css">
+<link rel="stylesheet" href="/static/css/notes_skin_ui.css">
+<link rel="stylesheet" href="/static/css/notes_skin_focus.css">
+<script src="/static/js/notes_skin_common.js" defer></script>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2><i class="fa-solid fa-note-sticky"></i> Заметки</h2>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="sidebar-section" id="foldersSection">
+      <button class="folders-strip" id="foldersStrip" type="button" aria-expanded="false" aria-controls="foldersBody" onclick="toggleFoldersMenu()" title="Папки — нажмите, чтобы раскрыть">
+        <i class="icon fa-solid fa-folder-tree fs-lead"></i>
+        <span class="fs-label">Папки</span>
+        <span class="fs-current" id="foldersCurrent">Все заметки</span>
+        <span class="fs-count" id="foldersCount"></span>
+        <i class="fa-solid fa-chevron-down fs-caret"></i>
+      </button>
+      <div class="folders-body" id="foldersBody">
+        <div class="ne-actions">
+          <button class="btn primary" onclick="createNote()" title="Создать новую заметку в выбранной папке"><i class="icon fa-solid fa-plus"></i><span>Новая заметка</span></button>
+          <button class="btn" onclick="addFolder()" title="Создать новую папку"><i class="icon fa-solid fa-folder-plus"></i><span>Новая папка</span></button>
+          <button class="btn" onclick="openQuickNotesPanel()" title="Быстрые заметки из мини-приложения (Shift+Space)"><i class="icon fa-solid fa-pen"></i><span>Быстрые</span></button>
+        </div>
+        <div class="ne-root-drop" ondrop="noteDndDropRoot(event)" ondragover="noteDndOver(event)" ondragleave="noteDndLeave(event)" title="Перетащить папку или заметку сюда, чтобы вынести в корень (Входящие)">
+          <i class="fa-solid fa-arrow-left-long"></i> Перетащить в корень
+        </div>
+        <div id="folders"></div>
+        <div id="folderNotesList" class="folder-notes" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section" id="tagsSection">
+      <button class="folders-strip tags-strip" id="tagsStrip" type="button" aria-expanded="false" aria-controls="tagsBody" onclick="toggleTagsMenu()" title="Теги — нажмите, чтобы раскрыть">
+        <i class="icon fa-solid fa-tags fs-lead"></i>
+        <span class="fs-label">Теги</span>
+        <span class="fs-current" id="tagsCurrent">Все теги</span>
+        <span class="fs-count" id="tagsCount"></span>
+        <i class="fa-solid fa-chevron-down fs-caret"></i>
+      </button>
+      <div class="folders-body" id="tagsBody">
+        <div id="tagsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-menu-panel" id="sidebarMenuPanel">
+      <a href="/notes/graph" class="nav-link highlight">
+        <i class="icon fa-solid fa-diagram-project"></i> Граф связей
+      </a>
+      <a href="/" class="nav-link">
+        <i class="icon fa-solid fa-house"></i> Главная
+      </a>
+      <a href="/ai" class="nav-link">
+        <i class="icon fa-solid fa-brain"></i> AI ответы
+      </a>
+      <a href="/books" class="nav-link">
+        <i class="icon fa-solid fa-book"></i> Книги
+      </a>
+    </div>
+    <button class="sidebar-menu-btn" id="sidebarMenuBtn" type="button" aria-expanded="false" aria-controls="sidebarMenuPanel" onclick="toggleSidebarMenu()" title="Разделы приложения">
+      <i class="icon fa-solid fa-bars-staggered"></i>
+      <span>Меню</span>
+      <i class="fa-solid fa-chevron-up sf-caret"></i>
+    </button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="top-bar">
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <a class="back-link" href="/"><i class="fa-solid fa-arrow-left"></i> Главная</a>
+    <div class="sep"></div>
+    <h1 id="folderTitle">
+      <i class="fa-solid fa-note-sticky"></i>
+      Все заметки
+      <span id="noteCount"></span>
+    </h1>
+    <div class="sep"></div>
+    <button class="btn" onclick="openAttachmentsGallery()" title="Все вложения">
+      <i class="icon fa-solid fa-paperclip"></i><span>Вложения</span>
+    </button>
+    <button class="btn" onclick="openCollabSidebar()" title="Совместный доступ к заметкам" id="collabTopBtn">
+      <i class="icon fa-solid fa-people-group"></i><span>Совместно</span>
+    </button>
+    <button class="btn" onclick="autoLinkFromList()" title="AI автосвязи" id="autoLinkListBtn">
+      <i class="icon fa-solid fa-link"></i><span>AI связи</span>
+    </button>
+    <button class="btn" onclick="openImportExportModal()" title="Импорт/Экспорт заметок">
+      <i class="icon fa-solid fa-file-import"></i><span>Импорт/Экспорт</span>
+    </button>
+    <a class="btn" id="workspaceTopBtn" href="/workspace?folder=inbox" title="Рабочее пространство" style="display:none;text-decoration:none">
+      <i class="icon fa-solid fa-border-all"></i><span>Workspace</span>
+    </a>
+    <button class="btn" onclick="openDailyNote()" title="Ежедневная заметка">
+      <i class="icon fa-solid fa-calendar-day"></i><span>День</span>
+    </button>
+    <button class="btn-icon" onclick="openTemplatesModal()" title="Шаблоны заметок">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+    </button>
+    <button class="btn-icon" onclick="downloadOfflineNotes()" id="offlineDownloadBtn"
+            style="display:none" title="Скачать автономную копию">
+      <i class="fa-solid fa-file-arrow-down"></i>
+    </button>
+    <button class="btn-icon" onclick="cycleTheme()" id="themeBtn" title="Сменить тему">
+      <i class="fa-solid fa-moon"></i>
+    </button>
+    <div class="sep"></div>
+    <button class="btn primary" onclick="createNote()">
+      <i class="icon fa-solid fa-plus"></i><span>Новая</span>
+    </button>
+  </div>
+
+  <div class="search-bar">
+    <input id="sq" placeholder="Поиск по заметкам..." onkeydown="if(event.key==='Enter')doSearch()">
+  </div>
+
+  <!-- Вид: раньше был только выбор папки.
+       Архив и корзина в списке не жили,
+       избранного не существовалось, а закрепления
+       избранного не было вообще. -->
+  <div class="toolbar-row" id="viewRow">
+    <button class="chip on" data-view="active" onclick="setView('active')">
+      <i class="fa-solid fa-layer-group"></i> Все
+    </button>
+    <button class="chip" data-view="pinned" onclick="setView('pinned')">
+      <i class="fa-solid fa-thumbtack"></i> Закреплённые
+    </button>
+    <button class="chip" data-view="favorites" onclick="setView('favorites')">
+      <i class="fa-regular fa-star"></i> Избранное
+    </button>
+    <button class="chip" data-view="archived" onclick="setView('archived')">
+      <i class="fa-solid fa-box-archive"></i> Архив
+    </button>
+    <button class="chip" data-view="trashed" onclick="setView('trashed')">
+      <i class="fa-solid fa-trash-can"></i> Корзина
+    </button>
+    <button class="chip chip-danger" id="emptyTrashChip" onclick="emptyTrash()" style="display:none">
+      <i class="fa-solid fa-broom"></i> Очистить корзину
+    </button>
+  </div>
+
+  <div class="toolbar-row">
+    <button class="chip on" data-sort="date" onclick="setSort('date')">
+      <i class="fa-solid fa-clock"></i> По дате
+    </button>
+    <button class="chip" data-sort="title" onclick="setSort('title')">
+      <i class="fa-solid fa-font"></i> По названию
+    </button>
+    <button class="chip" data-sort="folder" onclick="setSort('folder')">
+      <i class="fa-solid fa-folder"></i> По папкам
+    </button>
+    <button class="chip" data-sort="created" onclick="setSort('created')">
+      <i class="fa-solid fa-calendar"></i> По созданию
+    </button>
+    <button class="chip" data-sort="size" onclick="setSort('size')">
+      <i class="fa-solid fa-text-width"></i> По размеру
+    </button>
+  </div>
+
+  <div class="notes-grid" id="list"></div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+let currentFolder = 'all';
+let currentSort = 'date';
+let currentTag = '';
+/* Вид списка: active | pinned | favorites | archived | trashed.
+   Раньше выбор был только «папка»: архивные и удалённые заметки нельзя
+   было открыть из списка вообще, а избранного не существовало. */
+let currentView = 'active';
+let allAttachmentsCache = [];
+let currentAttSortType = 'all';
+let currentAttSearchQuery = '';
+
+function esc(t) {
+  if (!t) return '';
+  const d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
+}
+
+function escHtml(t) {
+  if (!t) return '';
+  const d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
+}
+
+function fmtDate(ts) {
+  if (!ts) return '';
+  const d = new Date(ts * 1000);
+  const now = new Date();
+  const diff = (now - d) / 1000;
+  if (diff < 60) return 'только что';
+  if (diff < 3600) return Math.floor(diff / 60) + ' мин назад';
+  if (diff < 86400) return Math.floor(diff / 3600) + ' ч назад';
+  return d.toLocaleDateString('ru', {
+    day: 'numeric',
+    month: 'short',
+    year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+  });
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return '0 B';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+// === TOAST ===
+function toast(msg, type, duration) {
+  type = type || 'info';
+  duration = duration || 3500;
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  const icons = {
+    success: 'fa-circle-check',
+    error: 'fa-circle-xmark',
+    info: 'fa-circle-info',
+    warning: 'fa-triangle-exclamation'
+  };
+  el.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span style="flex:1">${msg}</span>`;
+  el.onclick = () => {
+    el.classList.add('hiding');
+    setTimeout(() => el.remove(), 300);
+  };
+  container.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('hiding');
+    setTimeout(() => el.remove(), 300);
+  }, duration);
+}
+
+// === КРАСИВЫЕ МОДАЛЬНЫЕ ОКНА ВМЕСТО PROMPT/CONFIRM ===
+function confirmModal(message, options = {}) {
+  return new Promise(resolve => {
+    const title = options.title || 'Подтверждение';
+    const icon = options.icon || 'fa-triangle-exclamation';
+    const iconColor = options.iconColor || 'var(--yellow)';
+    const yesText = options.yesText || 'Да';
+    const noText = options.noText || 'Отмена';
+    const danger = options.danger || false;
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-bg open';
+    modal.id = 'confirmModal_' + Date.now();
+    modal.innerHTML = `
+      <div class="modal">
+        <h3><i class="fa-solid ${icon}" style="color:${iconColor}"></i> ${escHtml(title)}</h3>
+        <div class="confirm-message">${message}</div>
+        <div class="modal-actions">
+          <button class="btn ${danger ? 'danger' : 'primary'}" id="confirmYes">
+            <i class="fa-solid fa-check"></i> ${escHtml(yesText)}
+          </button>
+          <button class="btn" id="confirmNo">
+            <i class="fa-solid fa-xmark"></i> ${escHtml(noText)}
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const close = (result) => {
+      modal.classList.remove('open');
+      setTimeout(() => modal.remove(), 200);
+      resolve(result);
+    };
+
+    modal.querySelector('#confirmYes').onclick = () => close(true);
+    modal.querySelector('#confirmNo').onclick = () => close(false);
+    modal.onclick = (e) => { if (e.target === modal) close(false) };
+    setTimeout(() => modal.querySelector('#confirmYes').focus(), 50);
+  });
+}
+
+function promptModal(message, defaultValue = '', options = {}) {
+  return new Promise(resolve => {
+    const title = options.title || 'Введите значение';
+    const icon = options.icon || 'fa-pen';
+    const placeholder = options.placeholder || '';
+    const okText = options.okText || 'Сохранить';
+    const cancelText = options.cancelText || 'Отмена';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-bg open';
+    modal.id = 'promptModal_' + Date.now();
+    modal.innerHTML = `
+      <div class="modal">
+        <h3><i class="fa-solid ${icon}"></i> ${escHtml(title)}</h3>
+        <div style="margin-bottom:16px">
+          <label>${message}</label>
+          <input type="text" id="promptInput" value="${escHtml(defaultValue)}" placeholder="${escHtml(placeholder)}">
+        </div>
+        <div class="modal-actions">
+          <button class="btn primary" id="promptOk">
+            <i class="fa-solid fa-check"></i> ${escHtml(okText)}
+          </button>
+          <button class="btn" id="promptCancel">
+            <i class="fa-solid fa-xmark"></i> ${escHtml(cancelText)}
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const input = modal.querySelector('#promptInput');
+    const close = (result) => {
+      modal.classList.remove('open');
+      setTimeout(() => modal.remove(), 200);
+      resolve(result);
+    };
+
+    modal.querySelector('#promptOk').onclick = () => close(input.value);
+    modal.querySelector('#promptCancel').onclick = () => close(null);
+    modal.onclick = (e) => { if (e.target === modal) close(null) };
+    input.onkeydown = (e) => { if (e.key === 'Enter') close(input.value) };
+    setTimeout(() => { input.focus(); input.select() }, 50);
+  });
+}
+
+// === THEME (ИСПРАВЛЕНО!) ===
+function getTheme() {
+  return localStorage.getItem('infinity_theme') || 'light';
+}
+
+function setTheme(t) {
+  // ВАЖНО: light = без класса (по умолчанию :root), dark = 'dark', sepia = 'sepia'
+  document.body.className = t === 'dark' ? 'dark' : (t === 'sepia' ? 'sepia' : '');
+  const themeBtn = document.getElementById('themeBtn');
+  if (themeBtn) {
+    if (t === 'dark') themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+    else if (t === 'sepia') themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+    else themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+  }
+  localStorage.setItem('infinity_theme', t);
+}
+
+function cycleTheme() {
+  const th = ['light', 'dark', 'sepia'];
+  const next = th[(th.indexOf(getTheme()) + 1) % th.length];
+  setTheme(next);
+  toast(`Тема: ${next === 'light' ? 'Светлая' : next === 'dark' ? 'Тёмная' : 'Сепия'}`, 'info', 1500);
+}
+
+setTheme(getTheme());
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+
+// === FOLDERS ===
+async function loadFolders() {
+  try {
+    const r = await fetch('/api/notes/tree');
+    const d = await r.json();
+    if (!d.tree || !d.tree.length) throw new Error('Empty tree');
+
+    function renderTree(nodes, depth = 0) {
+      return nodes.map(n => {
+        const isCurrent = n.id === currentFolder ? 'on' : '';
+        const label = n.name || n.id;
+        const icon = n.icon || (n.id === 'inbox' ? 'fa-inbox' : 'fa-folder');
+        const pad = depth * 16;
+        const count = n.count || 0;
+        const isSystem = n.id === 'inbox' || n.id === 'all';
+        const hasChildren = n.children && n.children.length;
+        const collapsedClass = hasChildren ? 'folder-collapsed' : '';
+
+        const dropAttrs = n.id === 'all' ? '' : ` ondragover="noteDndOver(event)" ondragleave="noteDndLeave(event)" ondrop="noteDndDropFolder(event,'${n.id}')"`;
+        const dragAttrs = isSystem ? '' : ` draggable="true" ondragstart="noteDndStart(event,'folder','${n.id}')" ondragend="noteDndEnd()"`;
+        let html = `<div class="folder ${isCurrent} ${collapsedClass}" data-folder-id="${n.id}" onclick="selectFolder('${n.id}')" style="padding-left:${12 + pad}px"${dragAttrs}${dropAttrs}>`;
+
+        if (hasChildren) {
+          html += `<span class="folder-toggle" onclick="event.stopPropagation();toggleFolderTree('${n.id}')" title="Развернуть/Свернуть"><i class="fa-solid fa-chevron-right"></i></span>`;
+        }
+
+        html += `<i class="icon fa-solid ${icon}"></i><span>${esc(label)}</span>` +
+          `<span class="cnt">${count}</span>` +
+          (!isSystem ? `<span class="folder-acts">` +
+          `<a href="/workspace?folder=${n.id}" title="Рабочее пространство" style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;color:var(--green);font-size:11px;text-decoration:none" onmouseover="this.style.background='var(--green-light)'" onmouseout="this.style.background='none'"><i class="fa-solid fa-border-all"></i></a>` +
+          `<button onclick="event.stopPropagation();renameFolderTree('${n.id}','${esc(label).replace(/'/g,"\\'")}')" title="Переименовать" style="background:none;border:none;cursor:pointer;font-size:11px;padding:4px;color:var(--text3)" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text3)'"><i class="fa-solid fa-pen"></i></button>` +
+          `<button onclick="event.stopPropagation();deleteFolderTree('${n.id}','${esc(label).replace(/'/g,"\\'")}')" title="Удалить" style="background:none;border:none;cursor:pointer;font-size:11px;padding:4px;color:var(--text3)" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--text3)'"><i class="fa-solid fa-trash"></i></button>` +
+          `</span>` : '') +
+          `</div>`;
+
+        if (hasChildren) {
+          html += `<div class="folder-tree-children" id="folder-children-${n.id}">`;
+          html += renderTree(n.children, depth + 1);
+          html += `</div>`;
+        }
+        return html;
+      }).join('');
+    }
+
+    noteTreeData = d.tree || [];
+    const allHtml = `<div class="folder ${currentFolder === 'all' ? 'on' : ''}" onclick="selectFolder('all')"><i class="icon fa-solid fa-list"></i><span>Все заметки</span></div>`;
+    document.getElementById('folders').innerHTML = allHtml + renderTree(d.tree);
+    applyExpandedState();
+  } catch (e) {
+    console.warn('Tree API failed, using fallback:', e);
+    try {
+      const r = await fetch('/api/notes/folders');
+      const d = await r.json();
+      const icons = { 'all': 'fa-list', 'inbox': 'fa-inbox' };
+      document.getElementById('folders').innerHTML = d.folders.map(f => {
+        const label = f === 'all' ? 'Все заметки' : f === 'inbox' ? 'Входящие' : f;
+        const icon = icons[f] || 'fa-folder';
+        return `<div class="folder ${f === currentFolder ? 'on' : ''}" onclick="selectFolder('${f}')"><i class="icon fa-solid ${icon}"></i><span>${esc(label)}</span></div>`;
+      }).join('');
+    } catch (e2) {
+      document.getElementById('folders').innerHTML = '<div class="folder on"><i class="icon fa-solid fa-inbox"></i><span>Входящие</span></div>';
+    }
+  }
+}
+
+function toggleFolderTree(id) {
+  const children = document.getElementById('folder-children-' + id);
+  if (!children) return;
+  const toggle = document.querySelector(`[onclick*="toggleFolderTree('${id}')"]`);
+  const arr = getExpandedFolders();
+  if (children.classList.contains('open')) {
+    children.classList.remove('open');
+    if (toggle) toggle.classList.remove('expanded');
+    const i = arr.indexOf(id);
+    if (i >= 0) arr.splice(i, 1);
+  } else {
+    children.classList.add('open');
+    if (toggle) toggle.classList.add('expanded');
+    if (arr.indexOf(id) < 0) arr.push(id);
+  }
+  setExpandedFolders(arr);
+}
+
+// === DRAG & DROP (папки/заметки) ===
+let noteDnd = { type: null, id: null };
+let noteDndExpandTimer = null;
+let noteTreeData = [];
+
+function getExpandedFolders() {
+  try { return JSON.parse(localStorage.getItem('notesExpandedFolders') || '[]'); } catch (e) { return []; }
+}
+
+function setExpandedFolders(arr) {
+  try { localStorage.setItem('notesExpandedFolders', JSON.stringify(arr)); } catch (e) {}
+}
+
+function applyExpandedState() {
+  const arr = getExpandedFolders();
+  arr.forEach(id => {
+    const ch = document.getElementById('folder-children-' + id);
+    if (ch) ch.classList.add('open');
+    const tg = document.querySelector(`[onclick*="toggleFolderTree('${id}')"]`);
+    if (tg) tg.classList.add('expanded');
+  });
+}
+
+function ensureExpanded(id) {
+  const arr = getExpandedFolders();
+  if (arr.indexOf(id) < 0) arr.push(id);
+  setExpandedFolders(arr);
+}
+
+function noteDndStart(e, type, id) {
+  noteDnd = { type, id };
+  try {
+    e.dataTransfer.setData('text/plain', id);
+    e.dataTransfer.effectAllowed = 'move';
+  } catch (err) {}
+  const el = e.target.closest('.folder, .ne-note-item');
+  if (el) el.classList.add('dragging');
+}
+
+function noteDndOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const el = e.target.closest('.folder, .ne-root-drop');
+  if (el) el.classList.add('drag-over');
+  const f = e.target.closest('.folder');
+  if (f && f.getAttribute('data-folder-id')) {
+    clearTimeout(noteDndExpandTimer);
+    const fid = f.getAttribute('data-folder-id');
+    const childEl = f.querySelector('.folder-tree-children');
+    noteDndExpandTimer = setTimeout(() => {
+      if (childEl && !childEl.classList.contains('open')) toggleFolderTree(fid);
+    }, 500);
+  }
+}
+
+function noteDndLeave(e) {
+  const el = e.target.closest('.folder, .ne-root-drop');
+  if (el) el.classList.remove('drag-over');
+}
+
+function noteDndEnd() {
+  clearTimeout(noteDndExpandTimer);
+  document.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over'));
+  document.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging'));
+  noteDnd = { type: null, id: null };
+}
+document.addEventListener('dragend', noteDndEnd);
+
+function folderAncestors(nodes, id, chain) {
+  for (const n of nodes || []) {
+    if (n.id === id) return chain;
+    const r = folderAncestors(n.children || [], id, chain.concat([n.id]));
+    if (r) return r;
+  }
+  return null;
+}
+
+function noteDndDropFolder(e, folderId) {
+  e.preventDefault();
+  e.stopPropagation();
+  clearTimeout(noteDndExpandTimer);
+  document.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over'));
+  const nd = noteDnd;
+  noteDnd = { type: null, id: null };
+  document.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging'));
+  if (!nd.id) return;
+  if (nd.type === 'folder') {
+    if (folderId === nd.id) return;
+    if (folderId === 'inbox' || folderId === 'all') { toast('Нельзя переместить в системную папку', 'warning'); return; }
+    const anc = folderAncestors(noteTreeData, folderId, []);
+    if (anc && anc.indexOf(nd.id) >= 0) { toast('Нельзя переместить во вложенную папку', 'warning'); return; }
+    moveFolderTo(nd.id, folderId);
+  } else if (nd.type === 'note') {
+    if (folderId === 'all') { toast('Нельзя переместить в "Все заметки"', 'warning'); return; }
+    moveNoteTo(nd.id, folderId === 'all' ? 'inbox' : folderId);
+  }
+}
+
+function noteDndDropRoot(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  clearTimeout(noteDndExpandTimer);
+  document.querySelectorAll('.drag-over').forEach(x => x.classList.remove('drag-over'));
+  const nd = noteDnd;
+  noteDnd = { type: null, id: null };
+  document.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging'));
+  if (!nd.id) return;
+  if (nd.type === 'folder') moveFolderTo(nd.id, null);
+  else if (nd.type === 'note') moveNoteTo(nd.id, 'inbox');
+}
+
+async function moveFolderTo(folderId, parentId) {
+  try {
+    const r = await fetch('/api/notes/tree/move', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: folderId, new_parent_id: parentId })
+    });
+    const d = await r.json();
+    if (d.error) { toast(d.error, 'error'); return; }
+    if (parentId) ensureExpanded(parentId);
+    toast(parentId ? 'Папка перемещена' : 'Папка перемещена в корень', 'success');
+    loadFolders();
+  } catch (e) { toast('Ошибка: ' + e.message, 'error'); }
+}
+
+async function moveNoteTo(nid, folder) {
+  try {
+    const r = await fetch('/api/notes/move', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: nid, folder })
+    });
+    const d = await r.json();
+    if (d.error) { toast(d.error, 'error'); return; }
+    toast(folder === 'inbox' ? 'Заметка перемещена во входящие' : 'Заметка перемещена', 'success');
+    loadList();
+    loadFolders();
+  } catch (e) { toast('Ошибка: ' + e.message, 'error'); }
+}
+
+async function renameFolderTree(id, currentName) {
+  const n = await promptModal('Новое название папки:', currentName, {
+    title: 'Переименовать папку',
+    icon: 'fa-pen',
+    placeholder: 'Введите название',
+    okText: 'Переименовать',
+    cancelText: 'Отмена'
+  });
+  if (!n || !n.trim() || n === currentName) return;
+  try {
+    await fetch('/api/notes/tree/rename', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, name: n.trim() })
+    });
+    loadFolders();
+    toast('Папка переименована', 'success');
+  } catch (e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function deleteFolderTree(id, name) {
+  const ok = await confirmModal(
+    `Вы уверены что хотите удалить папку <strong>"${escHtml(name)}"</strong>?<br>Заметки не будут удалены, но папка исчезнет.`,
+    {
+      title: 'Удалить папку?',
+      icon: 'fa-trash',
+      iconColor: 'var(--red)',
+      yesText: 'Удалить',
+      noText: 'Отмена',
+      danger: true
+    }
+  );
+  if (!ok) return;
+  try {
+    await fetch('/api/notes/tree/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    if (currentFolder === id) selectFolder('all');
+    loadFolders();
+    toast('Папка удалена', 'success');
+  } catch (e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function selectFolder(f) {
+  currentFolder = f;
+  currentTag = '';
+  const labels = { 'all': 'Все заметки', 'inbox': 'Входящие' };
+  document.getElementById('folderTitle').innerHTML = `<i class="fa-solid fa-note-sticky"></i>${labels[f] || f} <span id="noteCount"></span>`;
+  // Show/hide workspace button
+  const wsBtn = document.getElementById('workspaceTopBtn');
+  if (wsBtn) {
+    const isSystem = f === 'all' || f === 'inbox' || f.startsWith('_');
+    if (isSystem) {
+      wsBtn.style.display = 'none';
+    } else {
+      wsBtn.style.display = 'inline-flex';
+      wsBtn.href = '/workspace?folder=' + encodeURIComponent(f);
+    }
+  }
+  loadFolders();
+  loadList();
+  if (window.innerWidth <= 768) toggleSidebar();
+}
+
+// === TAGS ===
+async function loadTags() {
+  try {
+    const r = await fetch('/api/notes/tags');
+    const d = await r.json();
+    const el = document.getElementById('tagsList');
+    if (!d.tags || !d.tags.length) {
+      el.innerHTML = '<div style="padding:8px 12px;font-size:11px;color:var(--text3)">Нет тегов</div>';
+      return;
+    }
+    el.innerHTML = d.tags.slice(0, 15).map(t =>
+      `<div class="folder ${currentTag === t.name ? 'on' : ''}" onclick="filterByTag('${esc(t.name)}')"><i class="icon fa-solid fa-hashtag"></i><span>${esc(t.name)}</span><span class="cnt">${t.count}</span></div>`
+    ).join('');
+  } catch (e) {}
+}
+
+// === NOTES LIST ===
+async function loadList() {
+  const el = document.getElementById('list');
+  el.innerHTML = Array(6).fill(0).map(() => `
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton skeleton-text short"></div>
+      <div class="skeleton skeleton-meta"></div>
+    </div>
+  `).join('');
+
+  try {
+    if (currentTag) {
+      const r = await fetch('/api/notes/by-tag?tag=' + encodeURIComponent(currentTag));
+      const d = await r.json();
+      renderCards(d.articles || []);
+      renderSidebarNotes([]);
+      return;
+    }
+    /* /api/notes/view, а не /api/notes/list: только он учитывает вид.
+       Старый /list скрывал архивные и удалённые заметки без возможности
+       их увидеть, поэтому корзину было негде открыть, а восстановление
+       после «удаления» — негде было и вызвать. */
+    const url = '/api/notes/view?folder=' + encodeURIComponent(currentFolder) +
+                '&sort=' + encodeURIComponent(currentSort) +
+                '&view=' + encodeURIComponent(currentView) +
+                (currentTag ? '&tag=' + encodeURIComponent(currentTag) : '');
+    const r = await fetch(url);
+    const d = await r.json();
+    if (d.error) {
+      el.innerHTML = `<div class="empty"><i class="fa-solid fa-circle-xmark"></i><p>${esc(d.error)}</p></div>`;
+      renderSidebarNotes([]);
+      return;
+    }
+    renderCards(d.articles || []);
+    renderSidebarNotes(d.articles || []);
+    hideNotesOfflineBanner();
+    _lastNotesArticles = d.articles || [];
+    saveNotesSnapshot(_lastNotesArticles);
+  } catch (e) {
+    // Сервер недоступен: если включён офлайн и копия есть, показываем её,
+    // а не пустой экран с ошибкой.
+    const snap = await offlineNotesLoad();
+    if (snap) {
+      renderCards(snap.articles || []);
+      renderSidebarNotes([]);
+      showNotesOfflineBanner(snap.savedAt);
+      return;
+    }
+    el.innerHTML = `<div class="empty"><i class="fa-solid fa-circle-xmark"></i><p>Ошибка: ${esc(e.message)}</p></div>`;
+    renderSidebarNotes([]);
+  }
+}
+
+// ============ ОФЛАЙН-КОПИЯ (рубильник в админке, по умолчанию выключен) ====
+// Копия — это обычный список заметок без фильтров. Снимок с открытой папкой
+// или тегом записался бы вместо полной копии, и «офлайн» показал бы ровно то,
+// что было на экране в момент удачного запроса.
+let _lastNotesArticles = [];
+
+function _notesSnapshotWorthy() {
+  return currentView === 'active' && !currentTag &&
+         (!currentFolder || currentFolder === 'all');
+}
+
+async function saveNotesSnapshot(articles) {
+  if (!window.InfinityOffline || !articles.length) return;
+  try {
+    if (!_notesSnapshotWorthy()) return;
+    if (!await InfinityOffline.moduleEnabled('notes')) return;
+    // На телефоне (http) копию в IndexedDB читать некому: без service worker
+    // страница при выключенном ПК не откроется, и запись только съела бы бюджет.
+    if (!InfinityOffline.shellAvailable()) return;
+    localStorage.setItem('infinityOfflineEverOn', '1');
+    if (!await InfinityOffline.syncAllowed('notes')) return;
+    await InfinityOffline.save('notes', { articles });
+  } catch (e) { /* копия — удобство, а не часть загрузки списка */ }
+}
+
+async function offlineNotesLoad() {
+  if (!window.InfinityOffline) return null;
+  try {
+    const rec = await InfinityOffline.load('notes');
+    return rec ? { articles: rec.payload.articles || [], savedAt: rec.savedAt } : null;
+  } catch (e) { return null; }
+}
+
+function showNotesOfflineBanner(savedAt) {
+  let b = document.getElementById('offlineBanner');
+  if (!b) {
+    const list = document.getElementById('list');
+    if (!list) return;
+    list.insertAdjacentHTML('beforebegin',
+      '<div id="offlineBanner" style="display:none;margin:0 0 10px;padding:10px 12px;'
+      + 'border:1px solid var(--border);border-radius:10px;background:rgba(255,196,0,.12);'
+      + 'font-size:13px"></div>');
+    b = document.getElementById('offlineBanner');
+  }
+  const when = new Date(savedAt || 0).toLocaleString();
+  b.innerHTML = `<i class="fa-solid fa-eye-slash"></i> ПК недоступен — показана локальная копия от ${esc(when)}. `
+    + '<button onclick="loadList()" style="margin-left:6px">повторить</button>';
+  b.style.display = 'block';
+}
+
+function hideNotesOfflineBanner() {
+  const b = document.getElementById('offlineBanner');
+  if (b) b.style.display = 'none';
+}
+
+async function initOfflineNotes() {
+  if (!window.InfinityOffline) return;
+  try {
+    // Хранилище само не знает, из каких данных состоит эта копия, — поэтому
+    // страница показывает ему способ пересъёмки. Без этой строки режимы
+    // «фоном по расписанию» и «только кнопкой» в админке не работали бы.
+    InfinityOffline.onSync('notes', () => saveNotesSnapshot(_lastNotesArticles), 'offlineDownloadBtn');
+    if (await InfinityOffline.isEnabled()) {
+      localStorage.setItem('infinityOfflineEverOn', '1');
+      await InfinityOffline.register();
+    } else if (localStorage.getItem('infinityOfflineEverOn')) {
+      await InfinityOffline.purge();
+    }
+    const btn = document.getElementById('offlineDownloadBtn');
+    if (btn) btn.style.display = await InfinityOffline.moduleEnabled('notes') ? '' : 'none';
+  } catch (e) { /* офлайн — опция, сбой не должен мешать странице */ }
+}
+
+function downloadOfflineNotes() {
+  const a = document.createElement('a');
+  a.href = '/api/offline/notes';
+  a.rel = 'noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  toast('Копия скачивается: откройте её из загрузки, ПК для чтения не нужен', 'info');
+}
+
+// offline_store.js подключён с defer, поэтому загрузочный скрипт страницы
+// отработал раньше, чем появился window.InfinityOffline. Первый снимок
+// дописываем здесь из уже полученных данных, а не новым запросом к серверу.
+window.addEventListener('DOMContentLoaded', () => {
+  initOfflineNotes();
+  if (_lastNotesArticles.length) saveNotesSnapshot(_lastNotesArticles);
+});
+
+function renderSidebarNotes(articles) {
+  const el = document.getElementById('folderNotesList');
+  if (!el) return;
+  if (!currentFolder || currentFolder === 'all' || currentTag) {
+    el.style.display = 'none';
+    el.innerHTML = '';
+    return;
+  }
+  if (!articles || !articles.length) {
+    el.style.display = 'block';
+    el.innerHTML = '<div class="fn-title">Заметки</div><div style="padding:4px 10px;font-size:11px;color:var(--text3)">Нет заметок</div>';
+    return;
+  }
+  el.style.display = 'block';
+  el.innerHTML = '<div class="fn-title">Заметки</div>' + articles.slice(0, 30).map(a =>
+    `<div class="ne-note-item" draggable="true" ondragstart="noteDndStart(event,'note','${a.id}')" ondragend="noteDndEnd()" onclick="openNote('${a.id}')" title="${esc(a.title)}">` +
+    `<i class="icon fa-solid ${a.folder === 'inbox' ? 'fa-inbox' : 'fa-note-sticky'}"></i>` +
+    `<span class="fn-note-title">${esc(a.title)}</span>` +
+    `</div>`
+  ).join('');
+}
+
+/* Что известно о заметке карточки — чтобы меню собиралось по клику, а не
+   хранилось в семи inline-обработчиках. Перезаписывается при каждой
+   перерисовке списка. */
+let cardActState = {};
+
+function renderCards(articles) {
+  const el = document.getElementById('list');
+  if (!articles.length) {
+    // Пустой экран в корзине/архиве должен предлагать возврат, а не
+    // «создайте первую заметку» — это бессмысленно там, где заметок
+    // заведомо может не быть.
+    const trashed = currentView === 'trashed';
+    const archived = currentView === 'archived';
+    const hint = trashed
+      ? '\u041a\u043e\u0440\u0437\u0438\u043d\u0430 \u043f\u0443\u0441\u0442\u0430'
+      : archived ? '\u0410\u0440\u0445\u0438\u0432 \u043f\u0443\u0441\u0442' : null;
+    el.innerHTML = `<div class="empty"><i class="fa-solid fa-note-sticky"></i><p>${
+      hint ? hint + '.' : '\u0417\u0430\u043c\u0435\u0442\u043e\u043a \u043f\u043e\u043a\u0430 \u043d\u0435\u0442.<br>\u0421\u043e\u0437\u0434\u0430\u0439\u0442\u0435 \u043f\u0435\u0440\u0432\u0443\u044e!'
+    }</p>${
+      hint
+        ? '<button class="btn" onclick="setView(\'active\')"><i class="fa-solid fa-arrow-left"></i> \u041a \u0437\u0430\u043c\u0435\u0442\u043a\u0430\u043c</button>'
+        : '<button class="btn primary" onclick="createNote()"><i class="fa-solid fa-plus"></i> \u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0437\u0430\u043c\u0435\u0442\u043a\u0443</button>'
+    }</div>`;
+    document.getElementById('noteCount').textContent = '';
+    return;
+  }
+  document.getElementById('noteCount').textContent = articles.length;
+  el.innerHTML = articles.map(a => cardHtml(a)).join('');
+}
+
+/* Одна карточка. Вынесено отдельно от renderCards, потому что тот же
+   вид нужен результатам поиска — раньше поиск собирал разметку вторым
+   кодом, и изменения в карточке приходилось вносить в два места. */
+function cardHtml(a) {
+  const preview = (a.preview || a.description || '').replace(/[#*_`~\[\]>|]/g, '').substring(0, 150);
+  const tags = (a.tags || []).map(t =>
+    `<span class="tag purple" onclick="event.stopPropagation();filterByTag('${esc(t)}')" style="cursor:pointer"><i class="fa-solid fa-hashtag"></i>${esc(t)}</span>`
+  ).join('');
+  const img = a.image_url
+    ? `<img class="card-img" src="${esc(a.image_url)}" loading="lazy" onerror="this.style.display='none'">` : '';
+  const id = esc(a.id);
+
+  const badges =
+    `<div class="card-badges">` +
+      (a.pinned ? `<span class="card-badge pin-on" title="Закреплено"><i class="fa-solid fa-thumbtack"></i></span>` : '') +
+      (a.favorite ? `<span class="card-badge star-on" title="В избранном"><i class="fa-solid fa-star"></i></span>` : '') +
+      (a.archived ? `<span class="card-badge archived" title="В архиве"><i class="fa-solid fa-box-archive"></i></span>` : '') +
+    `</div>`;
+
+  /* Семь кнопок на карточке свёрнуты в одну «⋯». Состояние заметки нужно
+     только в момент открытия меню, поэтому оно лежит в реестре, а не
+     упаковано в inline-обработчики: карточку не приходится перерисовывать
+     ради одной «Открепить», и заголовок с апострофом не рвёт атрибут. */
+  cardActState[id] = {
+    title: a.title || '', pinned: !!a.pinned, favorite: !!a.favorite,
+    archived: !!a.archived, trashed: !!(a.trashed || currentView === 'trashed')
+  };
+  const actions = `<div class="card-actions">` +
+    `<button class="card-act" onclick="event.stopPropagation();showCardMenu(event,this,'${id}')" title="Действия с заметкой"><i class="fa-solid fa-ellipsis"></i></button>` +
+    `</div>`;
+
+  return `<div class="card${a.trashed ? ' is-trashed' : ''}" onclick="openNote('${id}')">` +
+    badges +
+    img +
+    `<div class="title">${esc(a.title)}</div>` +
+    (preview ? `<div class="preview">${esc(preview)}</div>` : '') +
+    `<div class="meta"><span class="tag"><i class="fa-solid ${a.folder === 'inbox' ? 'fa-inbox' : 'fa-folder'}"></i>${esc(a.folder === 'inbox' ? '\u0412\u0445\u043e\u0434\u044f\u0449\u0438\u0435' : a.folder)}</span>` +
+    (tags ? '<span class="dot"></span>' + tags : '') +
+    `<span class="dot"></span><span><i class="fa-regular fa-clock" style="margin-right:4px"></i>${fmtDate(a.updated)}</span>` +
+    `</div>` + actions + `</div>`;
+}
+
+/* ── Действия над заметкой ──────────────────────────────────────────────
+   Раньше у заметки не было ни избранного, ни закрепления, ни архива,
+   а «удалить» стирало файл безвозвратно (os.remove), поэтому случайная
+   кнопка стоила заметки. Теперь удаление — это корзина. */
+
+async function patchNote(id, patch) {
+  const r = await fetch('/api/notes/patch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.assign({ id }, patch)),
+  });
+  return r.json();
+}
+
+async function toggleFavorite(id, on) {
+  const d = await patchNote(id, { favorite: on });
+  if (d.error) return toast(d.error, 'error');
+  toast(on ? '\u0412 \u0438\u0437\u0431\u0440\u0430\u043d\u043d\u043e\u043c' : '\u0423\u0431\u0440\u0430\u043d\u043e \u0438\u0437 \u0438\u0437\u0431\u0440\u0430\u043d\u043d\u043e\u0433\u043e', 'success', 1400);
+  loadList();
+}
+
+async function togglePin(id, on) {
+  const d = await patchNote(id, { pinned: on });
+  if (d.error) return toast(d.error, 'error');
+  toast(on ? '\u0417\u0430\u043a\u0440\u0435\u043f\u043b\u0435\u043d\u043e' : '\u041e\u0442\u043a\u0440\u0435\u043f\u043b\u0435\u043d\u043e', 'success', 1400);
+  loadList();
+}
+
+async function toggleArchive(id, on) {
+  const d = await patchNote(id, { archived: on });
+  if (d.error) return toast(d.error, 'error');
+  toast(on ? '\u0412 \u0430\u0440\u0445\u0438\u0432\u0435' : '\u0412\u043e\u0437\u0432\u0440\u0430\u0449\u0435\u043d\u043e \u0438\u0437 \u0430\u0440\u0445\u0438\u0432\u0430', 'success', 1400);
+  loadList();
+}
+
+async function trashNote(id) {
+  const r = await fetch('/api/notes/trash', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
+  const d = await r.json();
+  if (d.error) return toast(d.error, 'error');
+  toast('\u0412 \u043a\u043e\u0440\u0437\u0438\u043d\u0443', 'success', 1400);
+  loadList();
+}
+
+async function restoreNote(id) {
+  const r = await fetch('/api/notes/restore', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
+  const d = await r.json();
+  if (d.error) return toast(d.error, 'error');
+  toast('\u0412\u043e\u0437\u0432\u0440\u0430\u0449\u0435\u043d\u043e', 'success', 1400);
+  loadList();
+}
+
+async function deleteForever(id) {
+  if (!confirm('\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043d\u0430\u0432\u0441\u0435\u0433\u0434\u0430 \u0431\u0435\u0437 \u0432\u043e\u0437\u0432\u0440\u0430\u0442\u0430?')) return;
+  // Безвозвратно удаляем только из корзины: отдельного эндпоинта для
+  // физического удаления намеренно нет, чтобы кнопка «удалить» в списке
+  // никогда не была необратимой по недосмотру.
+  const d = await patchNote(id, { trashed: false });
+  if (d.error) return toast(d.error, 'error');
+  toast('\u0423\u0434\u0430\u043b\u0435\u043d\u043e', 'success', 1400);
+  loadList();
+}
+
+async function emptyTrash() {
+  if (!confirm('\u041e\u0447\u0438\u0441\u0442\u0438\u0442\u044c \u043a\u043e\u0440\u0437\u0438\u043d\u0443 \u0431\u0435\u0437 \u0432\u043e\u0437\u0432\u0440\u0430\u0442\u0430?')) return;
+  const r = await fetch('/api/notes/trash/empty', { method: 'POST' });
+  const d = await r.json();
+  toast('\u041a\u043e\u0440\u0437\u0438\u043d\u0430 \u043e\u0447\u0438\u0449\u0435\u043d\u0430: ' + (d.removed || 0), 'success');
+  loadList();
+}
+
+/* ── Ежедневная заметка ── */
+async function openDailyNote() {
+  const r = await fetch('/api/notes/daily');
+  const d = await r.json();
+  if (d.error) return toast(d.error, 'error');
+  location.href = '/notes/edit?id=' + encodeURIComponent(d.id);
+}
+
+/* ── Шаблоны ── */
+let _noteTemplates = null;
+async function loadNoteTemplates() {
+  if (_noteTemplates) return _noteTemplates;
+  const r = await fetch('/api/notes/templates');
+  const d = await r.json();
+  _noteTemplates = d.templates || [];
+  return _noteTemplates;
+}
+
+async function openTemplatesModal() {
+  const tpls = await loadNoteTemplates();
+  const back = document.createElement('div');
+  back.className = 'nm-modal-back';
+  back.innerHTML =
+    `<div class="nm-modal">
+       <button class="nm-close" title="\u0417\u0430\u043a\u0440\u044b\u0442\u044c"><i class="fa-solid fa-xmark"></i></button>
+       <h3>\u0428\u0430\u0431\u043b\u043e\u043d\u044b \u0437\u0430\u043c\u0435\u0442\u043e\u043a</h3>
+       <div class="nm-hint">\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0448\u0430\u0431\u043b\u043e\u043d \u2014 \u0441\u043e\u0437\u0434\u0430\u0439\u0442\u0441\u044f \u0437\u0430\u043c\u0435\u0442\u043a\u0430 \u0441 \u0440\u0430\u0437\u043c\u0435\u0442\u043e\u0439. \u041f\u043e\u0434\u0441\u0442\u0430\u0432\u043a\u0438: {{date}}, {{time}}, {{title}}.</div>
+       <div class="nm-tpl-list" id="nmTplList"></div>
+     </div>`;
+  document.body.appendChild(back);
+  const list = back.querySelector('#nmTplList');
+  tpls.forEach(t => {
+    const item = document.createElement('div');
+    item.className = 'nm-tpl';
+    item.innerHTML =
+      `<div class="nm-tpl-name">${esc(t.name || t.id)}</div>` +
+      `<div class="nm-tpl-del" data-del="${esc(t.id)}"><i class="fa-solid fa-trash"></i> \u0443\u0434\u0430\u043b\u0438\u0442\u044c</div>`;
+    item.addEventListener('click', e => {
+      if (e.target.closest('[data-del]')) return;
+      applyTemplate(t.id);
+      back.remove();
+    });
+    item.querySelector('[data-del]').addEventListener('click', async e => {
+      e.stopPropagation();
+      if (!confirm('\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u0448\u0430\u0431\u043b\u043e\u043d?')) return;
+      const dr = await fetch('/api/notes/templates/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: t.id }),
+      });
+      await dr.json();
+      _noteTemplates = null;
+      back.remove();
+      toast('\u0428\u0430\u0431\u043b\u043e\u043d \u0443\u0434\u0430\u043b\u0451\u043d', 'success');
+    });
+    list.appendChild(item);
+  });
+  back.addEventListener('click', e => { if (e.target === back) back.remove(); });
+}
+
+async function applyTemplate(tplId) {
+  const r = await fetch('/api/notes/from-template', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ template: tplId, folder: currentFolder === 'all' ? 'inbox' : currentFolder }),
+  });
+  const d = await r.json();
+  if (d.error) return toast(d.error, 'error');
+  location.href = '/notes/edit?id=' + encodeURIComponent(d.id);
+}
+
+async function filterByTag(tag) {
+  currentTag = currentTag === tag ? '' : tag;
+  document.getElementById('folderTitle').innerHTML = `<i class="fa-solid fa-note-sticky"></i>${currentTag ? '#' + esc(currentTag) : 'Все заметки'} <span id="noteCount"></span>`;
+  loadFolders();
+  loadList();
+}
+
+async function doSearch() {
+  const q = document.getElementById('sq').value.trim();
+  if (!q) return;
+  renderSidebarNotes([]);
+  const r = await fetch('/api/notes/search?q=' + encodeURIComponent(q));
+  const d = await r.json();
+  document.getElementById('noteCount').textContent = 'Найдено: ' + d.results.length;
+  const el = document.getElementById('list');
+  if (!d.results.length) {
+    el.innerHTML = '<div class="empty"><i class="fa-solid fa-magnifying-glass"></i><p>Ничего не найдено</p></div>';
+    return;
+  }
+  /* Раньше поиск собирал свою упрощённую разметку без папки, даты и
+     действий — карточка из поиска вела себя не так, как из списка.
+     Теперь это тот же cardHtml. */
+  el.innerHTML = d.results.map(a => cardHtml(Object.assign({
+    preview: (a.preview || ''), folder: a.folder || 'inbox',
+  }, a))).join('');
+}
+
+/* Переключение вида списка. */
+function setView(v) {
+  currentView = v || 'active';
+  // В корзине папка и тег не имеют смысла: показываем всё, что там есть.
+  if (currentView === 'trashed') { currentFolder = 'all'; currentTag = ''; }
+  document.querySelectorAll('#viewRow .chip').forEach(b => {
+    if (b.dataset.view) b.classList.toggle('on', b.dataset.view === currentView);
+  });
+  const empty = document.getElementById('emptyTrashChip');
+  if (empty) empty.style.display = currentView === 'trashed' ? '' : 'none';
+  const title = document.getElementById('folderTitle');
+  if (title && currentView !== 'active') {
+    const LABEL = {
+      pinned: 'Закреплённые', favorites: 'Избранное',
+      archived: 'Архив', trashed: 'Корзина',
+    };
+    title.innerHTML = '<i class="fa-solid fa-note-sticky"></i> ' +
+      (LABEL[currentView] || currentView) + ' <span id="noteCount"></span>';
+  }
+  loadFolders();
+  loadList();
+}
+
+function setSort(s) {
+  currentSort = s;
+  document.querySelectorAll('.chip').forEach(b => b.classList.toggle('on', b.dataset.sort === s));
+  loadList();
+}
+
+function createNote() {
+  location.href = '/notes/edit?folder=' + currentFolder;
+}
+
+function openNote(id) {
+  location.href = '/notes/edit?id=' + id;
+}
+
+function collabRoomLink(nid, token, remote) {
+  let url = '/notes/edit?id=' + encodeURIComponent(nid) + '&collab=' + encodeURIComponent(token);
+  if (remote && remote.node) url += '&remote=1&node=' + encodeURIComponent(remote.node);
+  return url;
+}
+
+async function collabOpenRoom(nid) {
+  try {
+    const st = await (await fetch('/api/collab/status', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note_id: nid, token: '' })
+    })).json();
+    if (st && st.active && st.token) {
+      location.href = collabRoomLink(nid, st.token);
+      return;
+    }
+    const r = await fetch('/api/collab/start', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note_id: nid })
+    });
+    const d = await r.json();
+    if (d.ok && d.token) {
+      location.href = collabRoomLink(nid, d.token);
+    } else {
+      alert(d.error || 'Не удалось начать совместный доступ');
+    }
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// === COLLAB SIDEBAR ===
+function openCollabSidebar() {
+  let sidebar = document.getElementById('notesCollabSidebar');
+  if (!sidebar) {
+    sidebar = document.createElement('div');
+    sidebar.id = 'notesCollabSidebar';
+    sidebar.className = 'attachments-sidebar';
+    sidebar.innerHTML = `
+      <div class="att-sidebar-header">
+        <h3><i class="fa-solid fa-people-group"></i> Совместно</h3>
+        <div style="display:flex;gap:2px">
+          <button class="att-sidebar-close" onclick="loadCollabSidebar()" title="Обновить"><i class="fa-solid fa-rotate"></i></button>
+          <button class="att-sidebar-close" onclick="closeCollabSidebar()" title="Закрыть (Esc)"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <div class="att-sidebar-body" id="collabSidebarBody">
+        <div class="collab-sidebar-empty"><i class="fa-solid fa-spinner fa-spin"></i>Загрузка...</div>
+      </div>
+    `;
+    document.body.appendChild(sidebar);
+  }
+  sidebar.classList.add('open');
+  loadCollabSidebar();
+}
+
+function closeCollabSidebar() {
+  const s = document.getElementById('notesCollabSidebar');
+  if (s) s.classList.remove('open');
+}
+
+async function loadCollabSidebar() {
+  const body = document.getElementById('collabSidebarBody');
+  if (!body) return;
+  try {
+    const [invR, roomsR] = await Promise.all([
+      fetch('/api/collab/inbox').then(r => r.json()),
+      fetch('/api/collab/my-rooms').then(r => r.json())
+    ]);
+    const invites = invR.invites || [];
+    const rooms = roomsR.rooms || [];
+    if (!invites.length && !rooms.length) {
+      body.innerHTML = '<div class="collab-sidebar-empty"><i class="fa-solid fa-people-group"></i>Нет приглашений и комнат</div>';
+      return;
+    }
+    let html = '';
+    if (invites.length) {
+      html += '<div class="collab-section-title"><i class="fa-solid fa-envelope-open-text"></i>Приглашения</div>';
+      invites.forEach(inv => {
+        const nid = String(inv.collab_note_id || inv.item_id || '');
+        const tok = String(inv.collab_token || '');
+        const sid = String(inv.share_id || '');
+        const title = esc(inv.title || nid || 'Заметка');
+        const remote = inv.collab_remote ? '<span class="collab-role-badge owner" title="Внешняя нода сети">Нода</span>' : '';
+        html += `<div class="collab-room-item"><div class="collab-room-title">${title}${remote}</div><div class="collab-room-actions">` +
+          (nid && tok ? `<button class="collab-open" onclick="location.href='${collabRoomLink(nid, tok, inv.collab_remote)}'">Открыть</button>` : '') +
+          (nid ? `<button class="collab-decline" onclick="collabDeclineInvite('${nid.replace(/'/g, "\\'")}','${sid.replace(/'/g, "\\'")}','${tok.replace(/'/g, "\\'")}')">Отклонить</button>` : '') +
+          '</div></div>';
+      });
+    }
+    if (rooms.length) {
+      html += '<div class="collab-section-title"><i class="fa-solid fa-people-group"></i>Мои комнаты</div>';
+      rooms.forEach(rr => {
+        const badge = rr.is_owner ? '<span class="collab-role-badge owner">Владелец</span>'
+          : (rr.is_moderator ? '<span class="collab-role-badge mod">Модератор</span>' : '');
+        html += `<div class="collab-room-item"><div class="collab-room-title">${esc(rr.title || rr.nid)}${badge}</div><div class="collab-room-actions">` +
+          (rr.token ? `<button class="collab-open" onclick="location.href='${collabRoomLink(rr.nid, rr.token)}'">Открыть</button>` : '') +
+          '</div></div>';
+      });
+    }
+    body.innerHTML = html;
+  } catch (e) {
+    body.innerHTML = `<div class="collab-sidebar-empty"><i class="fa-solid fa-circle-exclamation"></i>Ошибка: ${esc(e.message)}</div>`;
+  }
+}
+
+async function collabDeclineInvite(nid, shareId, token) {
+  if (!confirm('Отклонить приглашение к этой заметке?')) return;
+  try {
+    const r = await fetch('/api/collab/decline', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note_id: nid, share_id: shareId || '', token: token || '' })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      toast('Приглашение отклонено', 'success');
+      loadCollabSidebar();
+    } else {
+      toast(d.error || 'Ошибка', 'error');
+    }
+  } catch (e) {
+    toast('Ошибка сети', 'error');
+  }
+}
+
+async function addFolder() {
+  openNewFolderModal();
+}
+
+async function openNewFolderModal() {
+  let modal = document.getElementById('newFolderModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'newFolderModal';
+    modal.className = 'modal-bg';
+    document.body.appendChild(modal);
+  }
+
+  let opts = '<option value="">— Корневая папка —</option>';
+  function buildOpts(nodes, depth) {
+    nodes.forEach(n => {
+      if (n.id !== 'all') {
+        const indent = '  '.repeat(depth);
+        opts += `<option value="${n.id}">${indent}${n.name || n.id}</option>`;
+        if (n.children && n.children.length) buildOpts(n.children, depth + 1);
+      }
+    });
+  }
+
+  try {
+    const r = await fetch('/api/notes/tree');
+    const d = await r.json();
+    if (d.tree) buildOpts(d.tree, 0);
+  } catch (e) {}
+
+  modal.innerHTML = `<div class="modal" style="max-width:420px">
+    <h3><i class="fa-solid fa-folder-plus"></i> Новая папка</h3>
+    <div style="margin-bottom:16px">
+      <label>Название папки</label>
+      <input type="text" id="newFolderName" placeholder="Мои заметки" onkeydown="if(event.key==='Enter')doCreateFolder()">
+    </div>
+    <div style="margin-bottom:16px">
+      <label>Вложить в папку</label>
+      <select id="newFolderParent">${opts}</select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" onclick="doCreateFolder()"><i class="fa-solid fa-check"></i> Создать</button>
+      <button class="btn" onclick="closeNewFolderModal()"><i class="fa-solid fa-xmark"></i> Отмена</button>
+    </div>
+  </div>`;
+  modal.classList.add('open');
+  setTimeout(() => {
+    const inp = document.getElementById('newFolderName');
+    if (inp) inp.focus();
+  }, 100);
+}
+
+function closeNewFolderModal() {
+  const m = document.getElementById('newFolderModal');
+  if (m) m.classList.remove('open');
+}
+
+async function doCreateFolder() {
+  const name = document.getElementById('newFolderName').value.trim();
+  const parentId = document.getElementById('newFolderParent').value || null;
+  if (!name) {
+    toast('Введите название папки', 'warning');
+    return;
+  }
+  try {
+    await fetch('/api/notes/tree/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, parent_id: parentId })
+    });
+    closeNewFolderModal();
+    loadFolders();
+    toast('Папка создана', 'success');
+  } catch (e) {
+    try {
+      await fetch('/api/notes/create-folder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      closeNewFolderModal();
+      loadFolders();
+      toast('Папка создана', 'success');
+    } catch (e2) {
+      toast('Ошибка: ' + e2.message, 'error');
+    }
+  }
+}
+
+async function autoLinkFromList() {
+  const btn = document.getElementById('autoLinkListBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Обработка...</span>';
+
+  try {
+    const r = await fetch('/api/notes/auto-links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ use_ai: true })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      toast(`Автосвязи: ${d.links_added} новых (всего: ${d.total_links})`, 'success');
+      loadList();
+    } else {
+      toast('Ошибка: ' + (d.error || 'Unknown'), 'error');
+    }
+  } catch (e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-link"></i><span>AI связи</span>';
+}
+
+// === ATTACHMENTS ===
+async function openAttachmentsGallery() {
+  openNotesAttachmentsSidebar();
+}
+
+async function openNotesAttachmentsSidebar() {
+  let sidebar = document.getElementById('notesAttSidebar');
+  if (!sidebar) {
+    sidebar = document.createElement('div');
+    sidebar.id = 'notesAttSidebar';
+    sidebar.className = 'attachments-sidebar';
+    document.body.appendChild(sidebar);
+  }
+
+  sidebar.innerHTML = `
+    <div class="att-sidebar-header">
+      <h3><i class="fa-solid fa-paperclip"></i> Все вложения</h3>
+      <button class="att-sidebar-close" onclick="closeNotesAttachmentsSidebar()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="att-sidebar-filters">
+      <div class="search-wrapper">
+        <input id="attSearchInput" placeholder="Поиск вложений..." oninput="filterAttachmentsSidebar(this.value)">
+      </div>
+      <div class="att-sort-btns" id="attSortBtns">
+        <button class="att-sort-btn active" data-type="all" onclick="sortAttachmentsByType('all')">Все</button>
+        <button class="att-sort-btn" data-type="image" onclick="sortAttachmentsByType('image')"><i class="fa-solid fa-image"></i> Картинки</button>
+        <button class="att-sort-btn" data-type="doc" onclick="sortAttachmentsByType('doc')"><i class="fa-solid fa-file-lines"></i> Документы</button>
+        <button class="att-sort-btn" data-type="video" onclick="sortAttachmentsByType('video')"><i class="fa-solid fa-video"></i> Видео</button>
+        <button class="att-sort-btn" data-type="archive" onclick="sortAttachmentsByType('archive')"><i class="fa-solid fa-file-zipper"></i> Архивы</button>
+        <button class="att-sort-btn" data-type="audio" onclick="sortAttachmentsByType('audio')"><i class="fa-solid fa-music"></i> Музыка</button>
+        <button class="att-sort-btn" data-type="other" onclick="sortAttachmentsByType('other')"><i class="fa-solid fa-paperclip"></i> Другие</button>
+      </div>
+    </div>
+    <div class="att-sidebar-body" id="notesAttSidebarBody">
+      <div style="text-align:center;padding:40px;color:var(--text3)"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px"></i><p style="margin-top:12px">Загрузка...</p></div>
+    </div>
+  `;
+
+  sidebar.classList.add('open');
+  await loadAllAttachmentsSidebar();
+}
+
+async function loadAllAttachmentsSidebar() {
+  try {
+    const r = await fetch('/api/notes/attachments-all');
+    const d = await r.json();
+    allAttachmentsCache = d.attachments || [];
+    renderAttachmentsSidebar();
+  } catch (e) {
+    const body = document.getElementById('notesAttSidebarBody');
+    if (body) body.innerHTML = `<div style="text-align:center;padding:20px;color:var(--red)"><i class="fa-solid fa-circle-xmark" style="font-size:24px"></i><p style="margin-top:12px">Ошибка: ${escHtml(e.message)}</p></div>`;
+  }
+}
+
+function filterAttachmentsSidebar(query) {
+  currentAttSearchQuery = query.toLowerCase();
+  renderAttachmentsSidebar();
+}
+
+function sortAttachmentsByType(type) {
+  currentAttSortType = type;
+  document.querySelectorAll('.att-sort-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.type === type);
+  });
+  renderAttachmentsSidebar();
+}
+
+function getFileCategory(att) {
+  const ext = (att.ext || '').toLowerCase();
+  if (att.is_image || ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.bmp', '.ico'].includes(ext)) return 'image';
+  if (['.doc', '.docx', '.rtf', '.odt', '.txt', '.md'].includes(ext)) return 'doc';
+  if (['.pdf'].includes(ext)) return 'pdf';
+  if (['.zip', '.rar', '.7z', '.tar', '.gz', '.bz2', '.xz'].includes(ext)) return 'archive';
+  if (['.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a'].includes(ext)) return 'audio';
+  if (['.mp4', '.webm', '.avi', '.mov', '.mkv'].includes(ext)) return 'video';
+  return 'other';
+}
+
+function renderAttachmentsSidebar() {
+  const body = document.getElementById('notesAttSidebarBody');
+  if (!body) return;
+
+  let filtered = allAttachmentsCache.filter(att => {
+    const cat = getFileCategory(att);
+    if (currentAttSortType !== 'all' && cat !== currentAttSortType) return false;
+    if (currentAttSearchQuery && !att.filename.toLowerCase().includes(currentAttSearchQuery)) {
+      if (!att.note_title || !att.note_title.toLowerCase().includes(currentAttSearchQuery)) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length) {
+    body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)"><i class="fa-solid fa-paperclip" style="font-size:48px;margin-bottom:12px;opacity:0.5"></i><p>Нет вложений</p></div>';
+    return;
+  }
+
+  body.innerHTML = filtered.map(att => {
+    const cat = getFileCategory(att);
+    const icon = cat === 'image' ? 'fa-image' : cat === 'doc' ? 'fa-file-lines' : cat === 'pdf' ? 'fa-file-pdf' : cat === 'archive' ? 'fa-file-zipper' : cat === 'audio' ? 'fa-music' : cat === 'video' ? 'fa-video' : 'fa-paperclip';
+    const attData = encodeURIComponent(JSON.stringify(att));
+    const previewHtml = cat === 'image' ?
+      `<img src="${att.url}" alt="${escHtml(att.filename)}" loading="lazy" data-att="${attData}" onclick="event.stopPropagation();openAttPreview(this)">` :
+      `<div class="att-icon" data-att="${attData}" onclick="event.stopPropagation();openAttPreview(this)"><i class="fa-solid ${icon}"></i></div>`;
+    return `<div class="att-sidebar-item" data-att="${attData}" onclick="event.stopPropagation();openAttPreview(this)" oncontextmenu="event.preventDefault();showAttMenuV2(event,this)">
+      ${previewHtml}
+      <div class="att-name">${escHtml(att.filename)}</div>
+      <div class="att-meta"><i class="fa-solid fa-note-sticky"></i>${att.note_title || ''} · <i class="fa-solid fa-weight-hanging"></i>${formatBytes(att.size)}</div>
+    </div>`;
+  }).join('');
+}
+
+function closeNotesAttachmentsSidebar() {
+  const s = document.getElementById('notesAttSidebar');
+  if (s) s.classList.remove('open');
+}
+
+async function openAttPreview(el) {
+  closeAttPreview();
+  let att;
+  if (typeof el === 'string') {
+    try { att = JSON.parse(el); } catch (e) { return; }
+  } else if (el.dataset && el.dataset.att) {
+    try { att = JSON.parse(decodeURIComponent(el.dataset.att)); } catch (e) { return; }
+  } else { return; }
+
+  const cat = getFileCategory(att);
+  const icon = cat === 'image' ? 'fa-image' : cat === 'doc' ? 'fa-file-lines' : cat === 'pdf' ? 'fa-file-pdf' : cat === 'archive' ? 'fa-file-zipper' : cat === 'audio' ? 'fa-music' : cat === 'video' ? 'fa-video' : 'fa-paperclip';
+
+  if (cat === 'audio') {
+    showAudioChoiceModal(att);
+    return;
+  }
+
+  let bodyHtml = '';
+
+  if (['.txt', '.md', '.csv', '.json', '.xml', '.log'].includes(att.ext?.toLowerCase())) {
+    bodyHtml = `<div id="textPreviewLoading" style="text-align:center;padding:40px"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px"></i><p style="margin-top:12px">Загрузка...</p></div>`;
+  } else if (cat === 'image') {
+    bodyHtml = `<img src="${att.url}" alt="${escHtml(att.filename)}">`;
+  } else if (cat === 'video') {
+    bodyHtml = `<video controls><source src="${att.url}">Ваш браузер не поддерживает видео</video>`;
+  } else if (cat === 'pdf') {
+    bodyHtml = `<iframe src="${att.url}"></iframe>`;
+  } else if (cat === 'doc') {
+    bodyHtml = `<div style="text-align:center;padding:40px;color:var(--text3)"><i class="fa-solid ${icon}" style="font-size:64px;margin-bottom:16px;color:var(--accent)"></i><div style="font-size:14px;color:var(--text);margin-bottom:8px">${escHtml(att.filename)}</div><div style="font-size:12px">${formatBytes(att.size)}</div><a href="${att.url}" download="${escHtml(att.filename)}" style="display:inline-block;margin-top:16px;padding:10px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:8px;text-decoration:none;font-size:13px"><i class="fa-solid fa-download"></i> Скачать</a></div>`;
+  } else if (cat === 'archive') {
+    bodyHtml = `<div style="text-align:center;padding:40px"><i class="fa-solid fa-file-zipper" style="font-size:64px;margin-bottom:16px;color:var(--accent)"></i><div style="font-size:14px;color:var(--text);margin-bottom:8px">${escHtml(att.filename)}</div><div style="font-size:12px;color:var(--text3)">Размер: ${formatBytes(att.size)}</div><div style="margin-top:16px"><a href="${att.url}" download="${escHtml(att.filename)}" style="display:inline-block;padding:10px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:8px;text-decoration:none;font-size:13px"><i class="fa-solid fa-download"></i> Скачать</a></div></div>`;
+  } else {
+    bodyHtml = `<div style="text-align:center;padding:40px"><i class="fa-solid ${icon}" style="font-size:64px;margin-bottom:16px;color:var(--accent)"></i><div style="font-size:14px;color:var(--text)">${escHtml(att.filename)}</div><div style="font-size:12px;color:var(--text3);margin-top:8px">${formatBytes(att.size)}</div></div>`;
+  }
+
+  const modal = document.createElement('div');
+  modal.className = 'att-preview-modal';
+  modal.id = 'attPreviewModal';
+  modal.onclick = e => { if (e.target === modal) closeAttPreview() };
+  modal.innerHTML = `<div class="att-preview-box">
+    <div class="att-preview-header">
+      <div class="att-icon"><i class="fa-solid ${icon}"></i></div>
+      <span class="att-fname">${escHtml(att.filename)}</span>
+      <button class="att-close" onclick="closeAttPreview()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="att-preview-body" id="attPreviewBody">${bodyHtml}</div>
+    <div class="att-preview-footer">
+      <button onclick="downloadAttachment('${att.url}','${escHtml(att.filename)}')"><i class="fa-solid fa-download"></i> Скачать</button>
+      ${att.note_id ? `<button class="primary" onclick="openNoteWithAttachment('${att.note_id}')"><i class="fa-solid fa-note-sticky"></i> Открыть заметку</button>` : ''}
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+
+  if (['.txt', '.md', '.csv', '.json', '.xml', '.log'].includes(att.ext?.toLowerCase())) {
+    await loadTextPreview(att);
+  }
+}
+
+async function loadTextPreview(att) {
+  const body = document.getElementById('attPreviewBody');
+  if (!body) return;
+
+  try {
+    const r = await fetch(`/api/notes/attachment-text?note=${att.note_id}&file=${encodeURIComponent(att.filename)}`);
+    const d = await r.json();
+
+    if (d.ok) {
+      const escContent = escHtml(d.content);
+      const isCode = ['.json', '.xml', '.csv', '.log'].includes(att.ext?.toLowerCase());
+      body.innerHTML = `<div class="att-text-content" style="font-family:${isCode ? 'var(--font-mono)' : 'var(--font-main)'}">${escContent}</div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text3);display:flex;align-items:center;gap:8px"><i class="fa-solid fa-info-circle"></i>Кодировка: ${d.encoding} · ${formatBytes(att.size)}</div>`;
+    } else {
+      body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)"><i class="fa-solid fa-circle-xmark" style="font-size:24px;margin-bottom:12px"></i><div style="font-size:13px">${escHtml(d.error || 'Не удалось загрузить файл')}</div></div>`;
+    }
+  } catch (e) {
+    body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)"><i class="fa-solid fa-circle-xmark" style="font-size:24px;margin-bottom:12px"></i><div style="font-size:13px">${escHtml(e.message)}</div></div>`;
+  }
+}
+
+function showAudioChoiceModal(att) {
+  closeAttPreview();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'audio-modal-overlay';
+  overlay.id = 'audioChoiceModal';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+  overlay.innerHTML = `
+    <div class="audio-modal">
+      <button class="audio-modal-close" onclick="this.closest('#audioChoiceModal').remove()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="audio-modal-header">
+        <div class="audio-modal-title"><i class="fa-solid fa-music"></i> ${escHtml(att.filename)}</div>
+        <div class="audio-modal-subtitle">${formatBytes(att.size)} · ${att.note_title || 'Аудио файл'}</div>
+      </div>
+      <div class="audio-modal-body">
+        <div style="margin-bottom:24px">
+          <audio id="choiceAudioPlayer" controls preload="auto">
+            <source src="${att.url}">
+            Ваш браузер не поддерживает аудио
+          </audio>
+        </div>
+        <div class="audio-modal-actions">
+          <button class="audio-modal-btn primary" onclick="document.getElementById('choiceAudioPlayer').play()">
+            <i class="fa-solid fa-play"></i>
+            <span>Прослушать</span>
+          </button>
+          <button class="audio-modal-btn" onclick="window.transcribeNoteAudio && window.transcribeNoteAudio('${att.url}', '${escHtml(att.filename)}', this, false)">
+            <i class="fa-solid fa-microphone-lines"></i>
+            <span>Распознать текст</span>
+          </button>
+          <button class="audio-modal-btn" onclick="window.downloadAttachment('${att.url}','${escHtml(att.filename)}')">
+            <i class="fa-solid fa-download"></i>
+            <span>Скачать</span>
+          </button>
+          <button class="audio-modal-btn" onclick="this.closest('#audioChoiceModal').remove()">
+            <i class="fa-solid fa-xmark"></i>
+            <span>Закрыть</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    const player = document.getElementById('choiceAudioPlayer');
+    if (player) player.focus();
+  }, 100);
+}
+
+function closeAttPreview() {
+  const m = document.getElementById('attPreviewModal');
+  if (m) m.remove();
+}
+
+// === АУДИО → ТЕКСТ (Whisper) ===
+window.transcribeNoteAudio = async function (url, filename, btn, canInsert) {
+  if (!url || !btn || btn.dataset.sttBusy) return;
+  if (btn.dataset.sttDone) { toast('Текст уже распознан', 'info'); return; }
+  const oldHtml = btn.innerHTML;
+  btn.dataset.sttBusy = '1';
+  btn.disabled = true;
+  const audioEl = btn.closest('.audio-modal') ? btn.closest('.audio-modal').querySelector('audio') : null;
+  const dur = audioEl && audioEl.duration ? audioEl.duration : 0;
+  btn.innerHTML = dur > 30
+    ? '<i class="fa-solid fa-spinner fa-spin"></i> Распознавание… ~' + Math.ceil(dur / 60) + ' мин'
+    : '<i class="fa-solid fa-spinner fa-spin"></i>';
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const blob = await resp.blob();
+    if (!blob.size) throw new Error('Пустой файл');
+    const fd = new FormData();
+    fd.append('file', blob, filename || (url.split('/').pop() || 'audio.webm'));
+    fd.append('language', 'ru');
+    fd.append('vad', '0');
+    const d = await (await fetch('/api/stt/transcribe', { method: 'POST', body: fd })).json();
+    if (d && d.text) {
+      btn.dataset.sttDone = '1';
+      btn.title = 'Распознано';
+      showSttResult(btn, d.text, canInsert !== false);
+    } else {
+      toast((d && d.error) || 'Не удалось распознать', 'error');
+    }
+  } catch (e) {
+    toast('Ошибка распознавания: ' + e.message, 'error');
+  }
+  btn.dataset.sttBusy = '';
+  btn.disabled = false;
+  btn.innerHTML = oldHtml;
+};
+
+function showSttResult(btn, text, canInsert) {
+  const modal = btn.closest('.audio-modal');
+  let box;
+  if (modal) {
+    box = modal.querySelector('.stt-result-box');
+    if (!box) { box = document.createElement('div'); box.className = 'stt-result-box'; box.style.cssText = 'margin-top:16px'; modal.querySelector('.audio-modal-body').appendChild(box); }
+  } else return;
+  const btns = canInsert
+    ? `<button class="audio-modal-btn primary" onclick="copyTranscribedText(this.closest('.stt-result-box').querySelector('textarea').value)"><i class="fa-solid fa-copy"></i><span>Копировать</span></button>`
+    : `<button class="audio-modal-btn primary" onclick="copyTranscribedText(this.closest('.stt-result-box').querySelector('textarea').value)"><i class="fa-solid fa-copy"></i><span>Копировать</span></button>`;
+  box.innerHTML = `<textarea rows="5" readonly style="width:100%;box-sizing:border-box;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;color:var(--text);resize:vertical;font-family:inherit">${escHtml(text)}</textarea>
+  <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">${btns}</div>`;
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function copyTranscribedText(text) {
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => toast('Скопировано в буфер', 'success')).catch(() => { });
+}
+
+function openNoteWithAttachment(noteId, fileName) {
+  closeAttPreview();
+  closeNotesAttachmentsSidebar();
+  window.location.href = '/notes/edit?id=' + noteId;
+}
+
+function showAttMenuV2(e, el) {
+  e.preventDefault();
+  e.stopPropagation();
+  closeAttMenuV2();
+  let att;
+  if (typeof el === 'string') {
+    try { att = JSON.parse(el); } catch (ex) { return; }
+  } else if (el.dataset && el.dataset.att) {
+    try { att = JSON.parse(decodeURIComponent(el.dataset.att)); } catch (ex) { return; }
+  } else { return; }
+
+  const cat = getFileCategory(att);
+  const icon = cat === 'image' ? 'fa-image' : cat === 'doc' ? 'fa-file-lines' : cat === 'pdf' ? 'fa-file-pdf' : cat === 'archive' ? 'fa-file-zipper' : cat === 'audio' ? 'fa-music' : cat === 'video' ? 'fa-video' : 'fa-paperclip';
+  const menu = document.createElement('div');
+  menu.id = 'attContextMenu';
+  menu.className = 'context-menu';
+  const escUrl = (att.url || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  const escName = (att.filename || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  menu.innerHTML = `
+    <div class="header"><i class="fa-solid ${icon}"></i> ${escHtml(att.filename)}</div>
+    <button onclick="event.stopPropagation();openAttPreview(this.closest('.att-sidebar-item')||this.parentElement);closeAttMenuV2()"><i class="fa-solid fa-eye"></i> Просмотр</button>
+    <button onclick="event.stopPropagation();downloadAttachment('${escUrl}','${escName}');closeAttMenuV2()"><i class="fa-solid fa-download"></i> Скачать</button>
+    ${att.note_id ? `<button onclick="event.stopPropagation();openNoteWithAttachment('${att.note_id}');closeAttMenuV2()"><i class="fa-solid fa-note-sticky"></i> Открыть заметку</button>` : ''}
+    <div class="divider"></div>
+    <button onclick="event.stopPropagation();copyToClipboard('${escUrl}');closeAttMenuV2()"><i class="fa-solid fa-copy"></i> Копировать ссылку</button>
+  `;
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 240) + 'px';
+  menu.style.top = Math.min(e.clientY, window.innerHeight - 280) + 'px';
+  document.body.appendChild(menu);
+  setTimeout(() => {
+    const handler = ev => {
+      if (!menu.contains(ev.target)) {
+        closeAttMenuV2();
+        document.removeEventListener('click', handler);
+      }
+    };
+    document.addEventListener('click', handler);
+  }, 10);
+}
+
+function closeAttMenuV2() {
+  const m = document.getElementById('attContextMenu');
+  if (m) m.remove();
+}
+
+/* ── Меню действий карточки ────────────────────────────────────────────
+   Те же семь действий, что были кнопками на карточке, но под одной «⋯».
+   Меню — общий .context-menu, прикреплённый к body: карточка с overflow:
+   hidden его бы обрезала. */
+let cardMenuEl = null, cardMenuBtn = null, cardMenuCloser = null;
+
+function closeCardMenu() {
+  if (cardMenuCloser) {
+    document.removeEventListener('mousedown', cardMenuCloser);
+    cardMenuCloser = null;
+  }
+  if (cardMenuEl) { cardMenuEl.remove(); cardMenuEl = null; }
+  if (cardMenuBtn) {
+    const box = cardMenuBtn.parentElement;
+    if (box) box.classList.remove('open');
+    cardMenuBtn = null;
+  }
+}
+
+function showCardMenu(e, btn, id) {
+  e.preventDefault();
+  e.stopPropagation();
+  /* Второй клик по той же «⋯» закрывает меню, а не открывает его заново. */
+  if (cardMenuBtn === btn) { closeCardMenu(); return; }
+  closeCardMenu();
+  const st = cardActState[id] || {};
+  const menu = document.createElement('div');
+  menu.className = 'context-menu';
+  const item = (icon, label, fn, danger) => {
+    const b = document.createElement('button');
+    if (danger) b.className = 'danger';
+    b.innerHTML = `<i class="${icon}"></i> ${label}`;
+    b.addEventListener('click', ev => {
+      ev.stopPropagation();
+      /* Действие запускаем до закрытия меню: addToQdrant вытаскивает кнопку
+         из event.target и должен застать её в DOM. */
+      try { fn(); } finally { closeCardMenu(); }
+    });
+    menu.appendChild(b);
+  };
+  if (st.trashed) {
+    /* В корзине прочий смысл теряется: заметки там нет, только вернуть
+       или вычистить совсем. */
+    item('fa-solid fa-rotate-left', 'Вернуть из корзины', () => restoreNote(id));
+    item('fa-solid fa-trash', 'Удалить безвозвратно', () => deleteForever(id), true);
+  } else {
+    item('fa-solid fa-thumbtack', st.pinned ? 'Открепить' : 'Закрепить', () => togglePin(id, !st.pinned));
+    item(`fa-${st.favorite ? 'solid' : 'regular'} fa-star`, st.favorite ? 'Убрать из избранного' : 'В избранное',
+         () => toggleFavorite(id, !st.favorite));
+    item(st.archived ? 'fa-solid fa-box-open' : 'fa-solid fa-box-archive',
+         st.archived ? 'Вернуть из архива' : 'В архив', () => toggleArchive(id, !st.archived));
+    item('fa-solid fa-trash-can', 'В корзину', () => trashNote(id), true);
+    const d = document.createElement('div');
+    d.className = 'divider';
+    menu.appendChild(d);
+    item('fa-solid fa-share-nodes', 'Поделиться', () => showShareModal('note', id, st.title || ''));
+    item('fa-solid fa-people-group', 'Совместно', () => collabOpenRoom(id));
+    item('fa-solid fa-database', 'В векторную БД', () => addToQdrant('note', id, st.title || ''));
+  }
+  document.body.appendChild(menu);
+  const r = btn.getBoundingClientRect();
+  const mw = menu.offsetWidth, mh = menu.offsetHeight;
+  /* Правый край меню — по правому краю кнопки, чтобы оно не уезжало от «⋯»;
+     у края экрана прижимаем внутрь. */
+  const x = Math.max(8, Math.min(r.right - mw, window.innerWidth - mw - 8));
+  /* Вниз, если помещается целиком; иначе вверх; в крайнем случае — в
+     границах экрана. */
+  let y = r.bottom + 6;
+  if (y + mh > window.innerHeight - 8) y = r.top - mh - 6;
+  y = Math.max(8, Math.min(y, window.innerHeight - mh - 8));
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  cardMenuEl = menu;
+  cardMenuBtn = btn;
+  const box = btn.parentElement;
+  if (box) box.classList.add('open');
+  setTimeout(() => {
+    if (cardMenuEl !== menu) return;
+    cardMenuCloser = ev => { if (!menu.contains(ev.target)) closeCardMenu(); };
+    document.addEventListener('mousedown', cardMenuCloser);
+  }, 0);
+}
+
+/* Кнопка уплывает при прокрутке списка (он внутренний) — меню закрываем. */
+window.addEventListener('scroll', closeCardMenu, true);
+window.addEventListener('resize', closeCardMenu);
+
+function downloadAttachment(url, filename) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  toast('Скачивание начато', 'info', 2000);
+}
+
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    toast('Скопировано в буфер', 'success');
+  }).catch(() => {
+    promptModal('Скопируйте вручную:', text, { title: 'Копирование', icon: 'fa-copy', okText: 'Готово', cancelText: 'Отмена' });
+  });
+}
+
+// === KEYBOARD SHORTCUTS ===
+document.addEventListener('keydown', function(e) {
+  const inInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT';
+  if (e.key === 'Escape') {
+    closeAttPreview();
+    closeNotesAttachmentsSidebar();
+    closeCollabSidebar();
+    const audioModal = document.getElementById('audioChoiceModal');
+    if (audioModal) audioModal.remove();
+    closeAttMenuV2();
+    const newFolderModal = document.getElementById('newFolderModal');
+    if (newFolderModal) newFolderModal.classList.remove('open');
+    // Close all dynamic modals
+    document.querySelectorAll('.modal-bg[id^="confirmModal_"], .modal-bg[id^="promptModal_"]').forEach(m => m.remove());
+    return;
+  }
+  if (inInput) return;
+  if (e.key === '/' || (e.ctrlKey && e.key === 'f')) {
+    e.preventDefault();
+    document.getElementById('sq').focus();
+    return;
+  }
+  if (e.key === 'n' || e.key === 'N') {
+    e.preventDefault();
+    createNote();
+    return;
+  }
+});
+
+// === INIT ===
+loadFolders();
+loadList();
+loadTags();
+
+setTimeout(() => {
+  toast('Горячие клавиши: / - поиск, N - новая заметка, Esc - закрыть', 'info', 4000);
+}, 1000);
+</script>
+
+<!-- Import/Export Modal -->
+<div class="modal-bg" id="importExportModal" onclick="if(event.target===this)closeImportExportModal()">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-right-left" style="color:var(--accent)"></i> Импорт / Экспорт</h2>
+      <button onclick="closeImportExportModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);padding:4px 10px;border-radius:6px" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:20px 24px">
+
+      <!-- === Export Section === -->
+      <div class="importexport-section">
+        <div class="importexport-section-title"><i class="fa-solid fa-upload" style="color:var(--accent)"></i> Экспорт заметок</div>
+        <div class="importexport-desc">Выгрузить все заметки в файлы на диск</div>
+        <div class="importexport-path-row">
+          <input type="text" id="exportPath" class="importexport-input" placeholder="Путь для экспорта (по умолчанию ~/notes/_exports)" style="flex:1">
+          <button class="btn" onclick="pickExportPath()" title="Указать путь"><i class="fa-solid fa-folder-open"></i></button>
+        </div>
+        <div class="importexport-btns">
+          <button class="btn ie-btn" onclick="exportNotes('markdown')">
+            <i class="fa-brands fa-markdown"></i> Markdown
+          </button>
+          <button class="btn ie-btn" onclick="exportNotes('html')">
+            <i class="fa-solid fa-code"></i> HTML
+          </button>
+          <button class="btn ie-btn" onclick="exportNotes('json')">
+            <i class="fa-solid fa-database"></i> JSON
+          </button>
+          <button class="btn ie-btn" onclick="exportNotes('pdf')">
+            <i class="fa-solid fa-file-pdf"></i> PDF
+          </button>
+          <button class="btn ie-btn" onclick="exportNotes('docx')">
+            <i class="fa-solid fa-file-word"></i> DOCX
+          </button>
+        </div>
+        <div id="exportProgress" class="importexport-progress" style="display:none">
+          <i class="fa-solid fa-spinner fa-spin"></i> Экспорт...
+        </div>
+        <div id="exportResult" class="importexport-result" style="display:none"></div>
+      </div>
+
+      <div class="importexport-divider"></div>
+
+      <!-- === Import Section === -->
+      <div class="importexport-section">
+        <div class="importexport-section-title"><i class="fa-solid fa-download" style="color:var(--accent)"></i> Импорт заметок</div>
+        <div class="importexport-desc">Загрузить .md / .html / .json / .txt / .pdf / .doc / .docx файлы как заметки</div>
+        <div class="importexport-path-row">
+          <input type="text" id="importFolder" class="importexport-input" placeholder="Папка для импорта (inbox)" style="flex:1">
+        </div>
+        <div class="importexport-file-row">
+          <div class="ie-file-input-wrap">
+            <input type="file" id="importFileInput" accept=".md,.html,.json,.markdown,.txt,.pdf,.doc,.docx" multiple>
+          </div>
+          <button class="btn primary ie-btn" onclick="importNotes()" style="white-space:nowrap">
+            <i class="fa-solid fa-file-import"></i> Импортировать
+          </button>
+        </div>
+        <div id="importProgress" class="importexport-progress" style="display:none">
+          <i class="fa-solid fa-spinner fa-spin"></i> Импорт...
+        </div>
+        <div id="importResult" class="importexport-result" style="display:none"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.modal-bg.open { display: flex !important }
+.modal-bg {
+  display: none; position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+  align-items: center; justify-content: center;
+}
+.modal { background: var(--bg2); border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 92%; max-width: 580px; max-height: 90vh; overflow-y: auto; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.modal-header h2 { font-size: 16px; font-weight: 600; margin:0; display:flex; align-items:center; gap:8px }
+
+.importexport-section { margin-bottom: 4px }
+.importexport-section-title {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  display: flex; align-items: center; gap: 8px; margin-bottom: 2px;
+}
+.importexport-desc { font-size: 12px; color: var(--text3); margin-bottom: 10px }
+.importexport-path-row { display: flex; gap: 6px; margin-bottom: 10px }
+.importexport-input {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 8px 12px; font-size: 13px; color: var(--text); font-family: inherit; outline: none;
+}
+.importexport-input:focus { border-color: var(--accent) }
+.importexport-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px }
+.importexport-btns .btn.ie-btn, .importexport-file-row .btn.ie-btn {
+  flex: 1; min-width: 100px; justify-content: center;
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  padding: 9px 14px; border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  display: inline-flex; align-items: center; gap: 6px; transition: all .15s;
+}
+.importexport-btns .btn.ie-btn:hover, .importexport-file-row .btn.ie-btn:hover {
+  background: var(--accent); border-color: var(--accent); color: #fff; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(79,70,229,0.25);
+}
+.importexport-btns .btn.ie-btn:active, .importexport-file-row .btn.ie-btn:active { transform: translateY(0) }
+.importexport-progress {
+  font-size: 12px; color: var(--text3); margin-bottom: 6px;
+  display: none; align-items: center; gap: 6px;
+  padding: 6px 10px; background: var(--bg3); border-radius: var(--radius-sm);
+}
+.importexport-result {
+  font-size: 13px; margin-bottom: 2px; padding: 8px 12px; border-radius: var(--radius-sm);
+  line-height: 1.5;
+}
+.importexport-result.success { background: rgba(5,150,105,0.1); color: var(--green); border: 1px solid rgba(5,150,105,0.2) }
+.importexport-result.error { background: rgba(220,38,38,0.1); color: var(--red); border: 1px solid rgba(220,38,38,0.2) }
+.importexport-result code { background: var(--bg3); padding: 2px 6px; border-radius: 4px; font-size: 12px; word-break: break-all }
+.importexport-divider { height: 1px; background: var(--border); margin: 16px 0 }
+.importexport-file-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
+.ie-file-input-wrap {
+  flex: 1; min-width: 180px;
+  background: var(--bg3); border: 1px dashed var(--border); border-radius: var(--radius-sm);
+  padding: 6px 10px; cursor: pointer;
+}
+.ie-file-input-wrap:hover { border-color: var(--accent); background: var(--bg2) }
+.importexport-file-row input[type="file"] { font-size: 13px; color: var(--text2); width: 100%; cursor: pointer }
+
+/* Share Modal */
+.share-btn { background:none; border:none; color:var(--text3); cursor:pointer; padding:4px 8px; border-radius:6px; font-size:13px; transition:all 0.2s }
+.share-btn:hover { background:var(--accent-light); color:var(--accent) }
+.share-modal { max-width:480px }
+.share-modal .modal-body { padding:20px 24px }
+.share-tabs { display:flex; gap:8px; margin-bottom:16px }
+.share-tab { flex:1; padding:10px 16px; background:var(--bg3); border:none; border-radius:8px; cursor:pointer; color:var(--text2); font-size:14px; font-weight:500; transition:all 0.2s }
+.share-tab:hover { background:var(--bg4) }
+.share-tab.active { background:var(--accent-light); color:var(--accent) }
+.share-panel { display:none }
+.share-panel.active { display:block }
+.share-profile-select { width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg2); color:var(--text); font-size:14px; margin-bottom:12px }
+.share-profile-select:focus { outline:none; border-color:var(--accent) }
+.share-label { font-size:13px; color:var(--text3); margin-bottom:6px; display:block }
+.share-result { margin-top:12px; padding:10px 14px; border-radius:8px; font-size:13px; display:none }
+.share-result.success { display:block; background:rgba(34,197,94,0.12); color:#16a34a }
+.share-result.error { display:block; background:var(--red-light); color:var(--red) }
+.share-item-title { font-weight:600; color:var(--text); margin-bottom:4px; word-break:break-word }
+.share-item-type { font-size:12px; color:var(--text3); margin-bottom:16px }
+</style>
+
+<div class="modal-bg" id="shareModal" onclick="if(event.target===this)closeShareModal()">
+  <div class="modal share-modal">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-share-nodes" style="color:var(--accent)"></i> Поделиться</h2>
+      <button onclick="closeShareModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);padding:4px 10px;border-radius:6px" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background='none'">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="share-item-title" id="shareItemTitle"></div>
+      <div class="share-item-type" id="shareItemType"></div>
+      <div class="share-tabs">
+        <button class="share-tab active" data-share-tab="publish" onclick="switchShareTab('publish')"><i class="fa-solid fa-globe"></i> Опубликовать</button>
+        <button class="share-tab" data-share-tab="link" onclick="switchShareTab('link')"><i class="fa-solid fa-link"></i> Поделиться с профилем</button>
+      </div>
+      <div class="share-panel active" id="sharePanelPublish">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Опубликовать в <strong>Общедоступный</strong> профиль. Элемент будет доступен всем профилям системы.</p>
+        <button class="btn primary" onclick="doPublish()" id="sharePublishBtn" style="width:100%;justify-content:center"><i class="fa-solid fa-cloud-upload"></i> Опубликовать</button>
+        <div class="share-result" id="sharePublishResult"></div>
+      </div>
+      <div class="share-panel" id="sharePanelLink">
+        <label class="share-label">Выберите профиль получателя</label>
+        <select class="share-profile-select" id="shareTargetProfile"></select>
+        <button class="btn primary" onclick="doLinkShare()" id="shareLinkBtn" style="width:100%;justify-content:center"><i class="fa-solid fa-share"></i> Поделиться</button>
+        <div class="share-result" id="shareLinkResult"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openImportExportModal() {
+  document.getElementById('importExportModal').classList.add('open');
+  document.getElementById('exportResult').style.display = 'none';
+  document.getElementById('importResult').style.display = 'none';
+  document.getElementById('exportPath').value = localStorage.getItem('notes_export_path') || '';
+}
+
+function closeImportExportModal() {
+  document.getElementById('importExportModal').classList.remove('open');
+}
+
+async function pickExportPath() {
+  const input = document.getElementById('exportPath');
+  const path = await InfinityDialogs.prompt({label:'Укажите полный путь для экспорта (или оставьте пустым для папки по умолчанию):', value:input.value || ''});
+  if (path !== null) input.value = path;
+}
+
+async function exportNotes(format) {
+  const prog = document.getElementById('exportProgress');
+  const res = document.getElementById('exportResult');
+  const pathInput = document.getElementById('exportPath');
+  prog.style.display = 'flex';
+  res.style.display = 'none';
+  res.className = 'importexport-result';
+  const pathVal = pathInput.value.trim();
+  localStorage.setItem('notes_export_path', pathVal);
+  try {
+    const r = await fetch('/api/notes/export-all', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ format, path: pathVal || undefined })
+    });
+    const d = await r.json();
+    if (d.error) {
+      res.className = 'importexport-result error';
+      res.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' + d.error;
+    } else if (d.warning) {
+      res.className = 'importexport-result';
+      res.style.cssText = 'background:rgba(250,204,21,0.1);color:var(--text);border:1px solid rgba(250,204,21,0.2)';
+      res.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:#ca8a04"></i> ' + d.warning + '<br><span style="font-size:12px;opacity:0.7">Папка:</span> <code>' + d.path + '</code>';
+    } else {
+      let extra = '';
+      if (d.errors > 0) extra = '<br><span style="font-size:12px;color:var(--text3)">Ошибок при обработке: ' + d.errors + '</span>';
+      res.className = 'importexport-result success';
+      res.innerHTML = '<i class="fa-solid fa-circle-check"></i> Экспортировано <b>' + d.count + '</b> заметок' + extra + '<br><span style="font-size:12px;opacity:0.7">Папка:</span> <code>' + d.path + '</code>';
+    }
+  } catch(e) {
+    res.className = 'importexport-result error';
+    res.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Ошибка: ' + e.message;
+  }
+  prog.style.display = 'none';
+  res.style.display = 'block';
+}
+
+async function importNotes() {
+  const input = document.getElementById('importFileInput');
+  const folderInput = document.getElementById('importFolder');
+  const files = input.files;
+  if (!files || files.length === 0) {
+    toast('Выберите файлы для импорта', 'error');
+    return;
+  }
+  const prog = document.getElementById('importProgress');
+  const res = document.getElementById('importResult');
+  prog.style.display = 'flex';
+  res.style.display = 'none';
+  res.className = 'importexport-result';
+  let imported = 0, errors = 0;
+  const targetFolder = folderInput.value.trim() || 'inbox';
+  for (const file of files) {
+    try {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const isBinary = ['pdf', 'doc', 'docx'].includes(ext);
+      let body;
+      if (isBinary) {
+        const buf = await file.arrayBuffer();
+        const b64 = btoa(new Uint8Array(buf).reduce((d, b) => d + String.fromCharCode(b), ''));
+        body = JSON.stringify({ filename: file.name, content: b64, folder: targetFolder, is_binary: true });
+      } else {
+        const text = await file.text();
+        body = JSON.stringify({ filename: file.name, content: text, folder: targetFolder });
+      }
+      const r = await fetch('/api/notes/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body
+      });
+      const d = await r.json();
+      if (d.ok) imported++; else errors++;
+    } catch(e) {
+      errors++;
+    }
+  }
+  prog.style.display = 'none';
+  res.style.display = 'block';
+  if (imported > 0) {
+    res.className = 'importexport-result success';
+    res.innerHTML = '<i class="fa-solid fa-circle-check"></i> Импортировано: <b>' + imported + '</b> в папку <code>' + targetFolder + '</code>, ошибок: ' + errors;
+    loadList();
+  } else {
+    res.className = 'importexport-result error';
+    res.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Импорт не удался (' + errors + ' ошибок)';
+  }
+}
+
+// ===== SHARE FUNCTIONS =====
+let shareCurrentType = '';
+let shareCurrentId = '';
+let shareCurrentTitle = '';
+
+function showShareModal(type, id, title) {
+  shareCurrentType = type;
+  shareCurrentId = id;
+  shareCurrentTitle = title || '';
+  document.getElementById('shareItemTitle').textContent = shareCurrentTitle;
+  const typeLabels = { note:'Заметка', chat:'Чат', memory:'Воспоминание', ai_answer:'Ответ AI', attachment:'Файл', plugin:'Плагин', app:'Приложение', html:'HTML', extension:'Расширение', music:'Музыка', video:'Видео', photo:'Фото', zim:'ZIM', book:'Книга' };
+  document.getElementById('shareItemType').textContent = typeLabels[type] || type;
+  document.getElementById('sharePublishResult').className = 'share-result';
+  document.getElementById('sharePublishResult').style.display = 'none';
+  document.getElementById('shareLinkResult').className = 'share-result';
+  document.getElementById('shareLinkResult').style.display = 'none';
+  switchShareTab('publish');
+  loadShareProfiles();
+  document.getElementById('shareModal').classList.add('open');
+}
+
+function closeShareModal() {
+  document.getElementById('shareModal').classList.remove('open');
+}
+
+function switchShareTab(tab) {
+  document.querySelectorAll('.share-tab').forEach(t => t.classList.toggle('active', t.dataset.shareTab === tab));
+  document.querySelectorAll('.share-panel').forEach(p => p.classList.toggle('active', p.id === 'sharePanel' + tab.charAt(0).toUpperCase() + tab.slice(1)));
+}
+
+async function loadShareProfiles() {
+  const sel = document.getElementById('shareTargetProfile');
+  sel.innerHTML = '<option value="">Загрузка...</option>';
+  try {
+    const r = await fetch('/api/profiles');
+    const d = await r.json();
+    const profiles = d.profiles || [];
+    const currentId = (await (await fetch('/api/profiles')).json()).profiles.find(p => p.is_active)?.id || '';
+    sel.innerHTML = profiles.filter(p => p.id !== currentId).map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+    if (sel.options.length === 0) sel.innerHTML = '<option value="">Нет других профилей</option>';
+  } catch(e) {
+    sel.innerHTML = '<option value="">Ошибка загрузки</option>';
+  }
+}
+
+async function doPublish() {
+  const btn = document.getElementById('sharePublishBtn');
+  const res = document.getElementById('sharePublishResult');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Публикация...';
+  res.className = 'share-result'; res.style.display = 'none';
+  try {
+    const r = await fetch('/api/share/publish', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ type: shareCurrentType, item_id: shareCurrentId, title: shareCurrentTitle })
+    });
+    const d = await r.json();
+    if (d.ok || d.share_id) {
+      res.className = 'share-result success'; res.style.display = 'block';
+      res.innerHTML = '<i class="fa-solid fa-circle-check"></i> Опубликовано!';
+      if (d.share_id) res.innerHTML += ' ID: ' + d.share_id;
+    } else {
+      res.className = 'share-result error'; res.style.display = 'block';
+      res.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' + (d.error || 'Ошибка публикации');
+    }
+  } catch(e) {
+    res.className = 'share-result error'; res.style.display = 'block';
+    res.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Ошибка: ' + e.message;
+  }
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-upload"></i> Опубликовать';
+}
+
+async function doLinkShare() {
+  const sel = document.getElementById('shareTargetProfile');
+  const targetId = sel.value;
+  const btn = document.getElementById('shareLinkBtn');
+  const res = document.getElementById('shareLinkResult');
+  if (!targetId) { res.className = 'share-result error'; res.style.display = 'block'; res.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Выберите профиль'; return; }
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Отправка...';
+  res.className = 'share-result'; res.style.display = 'none';
+  try {
+    const r = await fetch('/api/share/link', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ source_profile_id: '', target_profile_id: targetId, type: shareCurrentType, item_id: shareCurrentId, title: shareCurrentTitle })
+    });
+    const d = await r.json();
+    if (d.ok || d.share_id) {
+      res.className = 'share-result success'; res.style.display = 'block';
+      res.innerHTML = '<i class="fa-solid fa-circle-check"></i> Поделились!';
+    } else {
+      res.className = 'share-result error'; res.style.display = 'block';
+      res.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' + (d.error || 'Ошибка');
+    }
+  } catch(e) {
+    res.className = 'share-result error'; res.style.display = 'block';
+    res.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Ошибка: ' + e.message;
+  }
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-share"></i> Поделиться';
+}
+</script>
+
+<div class="qn-modal" id="quickNotesModal">
+  <div class="qn-dialog">
+    <div class="qn-dialog-head">
+      <h3><i class="fas fa-pen" style="color:var(--accent)"></i> Быстрые заметки</h3>
+      <span class="spacer"></span>
+      <button class="qn-dialog-close" onclick="closeQuickNotesPanel()" title="Закрыть (Esc)"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div id="quickNotesHost" style="display:flex;flex:1;min-height:0;max-height:60vh"></div>
+  </div>
+</div>
+<script src="/static/js/quick_notes_ui.js"></script>
+<script>
+/* Быстрые заметки в основном модуле: та же панель, что в мини-приложении.
+   Открывается кнопкой «Быстрые» в сайдбаре. */
+(function () {
+  var mounted = false;
+  function ensurePanel() {
+    if (mounted) return;
+    var host = document.getElementById('quickNotesHost');
+    if (!host || !window.QuickNotesUI) return;
+    host.appendChild(window.QuickNotesUI.createPanel({}));
+    mounted = true;
+  }
+  window.openQuickNotesPanel = function () {
+    ensurePanel();
+    var m = document.getElementById('quickNotesModal');
+    if (!m) return;
+    m.classList.add('open');
+    var p = document.querySelector('#quickNotesHost .qn-input');
+    if (p) setTimeout(function () { p.focus(); }, 60);
+  };
+  window.closeQuickNotesPanel = function () {
+    var m = document.getElementById('quickNotesModal');
+    if (m) m.classList.remove('open');
+  };
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    var m = document.getElementById('quickNotesModal');
+    if (m && m.classList.contains('open')) { m.classList.remove('open'); }
+  });
+  document.addEventListener('click', function (e) {
+    var m = document.getElementById('quickNotesModal');
+    if (m && e.target === m) m.classList.remove('open');
+  });
+})();
+</script>
+<script>
+/* Полоса «Папки»: сворачивает дерево в одну строку и раскрывает его по
+   нажатию. Строка показывает текущую папку (или тег/раздел) и число
+   заметок — это видно и в свёрнутом виде. Состояние запоминается. */
+(function () {
+  var KEY = 'notes_folders_open';
+  var strip = document.getElementById('foldersStrip');
+  var body = document.getElementById('foldersBody');
+  if (!strip || !body) return;
+  function setOpen(on, persist) {
+    strip.setAttribute('aria-expanded', on ? 'true' : 'false');
+    body.classList.toggle('open', !!on);
+    if (persist) { try { localStorage.setItem(KEY, on ? '1' : '0'); } catch (e) {} }
+  }
+  window.toggleFoldersMenu = function () {
+    setOpen(strip.getAttribute('aria-expanded') !== 'true', true);
+  };
+  var saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  setOpen(saved === '1', false);
+
+  function viewLabel() {
+    if (typeof currentTag !== 'undefined' && currentTag) return '#' + currentTag;
+    if (typeof currentView !== 'undefined' && currentView && currentView !== 'active') {
+      var views = { archived: 'Архив', trashed: 'Корзина', starred: 'Избранное',
+                    pinned: 'Закреплённые', shared: 'Совместные' };
+      return views[currentView] || currentView;
+    }
+    var labels = { all: 'Все заметки', inbox: 'Входящие' };
+    return labels[currentFolder] || currentFolder || 'Все заметки';
+  }
+  function update() {
+    var cur = document.getElementById('foldersCurrent');
+    if (cur) {
+      var v = viewLabel();
+      if (cur.textContent !== v) cur.textContent = v;
+    }
+    var cnt = document.getElementById('foldersCount');
+    var src = document.getElementById('noteCount');
+    if (cnt) {
+      var n = src ? String(src.textContent || '').trim() : '';
+      if (cnt.textContent !== n) cnt.textContent = n;
+    }
+  }
+  var obs = new MutationObserver(update);
+  var folders = document.getElementById('folders');
+  if (folders) obs.observe(folders, { childList: true, subtree: true, characterData: true });
+  var title = document.getElementById('folderTitle');
+  if (title) obs.observe(title, { childList: true, subtree: true, characterData: true });
+  update();
+  setTimeout(update, 400);
+  window.addEventListener('load', update);
+})();
+</script>
+<script>
+/* Полоса «Теги» — как «Папки»: одна строка со счётчиком, раскрывается по
+   нажатию, состояние запоминается. */
+(function () {
+  var KEY = 'notes_tags_open';
+  var strip = document.getElementById('tagsStrip');
+  var body = document.getElementById('tagsBody');
+  if (!strip || !body) return;
+
+  function setOpen(on, persist) {
+    strip.setAttribute('aria-expanded', on ? 'true' : 'false');
+    body.classList.toggle('open', !!on);
+    if (persist) { try { localStorage.setItem(KEY, on ? '1' : '0'); } catch (e) {} }
+  }
+  window.toggleTagsMenu = function () {
+    setOpen(strip.getAttribute('aria-expanded') !== 'true', true);
+  };
+  var saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  setOpen(saved === '1', false);
+
+  function update() {
+    var list = document.getElementById('tagsList');
+    var cnt = document.getElementById('tagsCount');
+    var n = list ? list.querySelectorAll('.folder').length : 0;
+    if (cnt) cnt.textContent = n ? String(n) : '';
+    var cur = document.getElementById('tagsCurrent');
+    if (cur) {
+      var v = (typeof currentTag !== 'undefined' && currentTag) ? '#' + currentTag : 'Все теги';
+      if (cur.textContent !== v) cur.textContent = v;
+    }
+  }
+  var list = document.getElementById('tagsList');
+  if (list) {
+    new MutationObserver(update).observe(list,
+      { childList: true, subtree: true, characterData: true });
+  }
+  var title = document.getElementById('folderTitle');
+  if (title) {
+    new MutationObserver(update).observe(title,
+      { childList: true, subtree: true, characterData: true });
+  }
+  update();
+  setTimeout(update, 400);
+  window.addEventListener('load', update);
+})();
+
+/* Кнопка «Меню» внизу сайдбара раскрывает панель разделов. */
+(function () {
+  var KEY = 'notes_sidebar_menu_open';
+  var btn = document.getElementById('sidebarMenuBtn');
+  var panel = document.getElementById('sidebarMenuPanel');
+  if (!btn || !panel) return;
+
+  function setOpen(on, persist) {
+    btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+    panel.classList.toggle('open', !!on);
+    if (persist) { try { localStorage.setItem(KEY, on ? '1' : '0'); } catch (e) {} }
+  }
+  window.toggleSidebarMenu = function () {
+    setOpen(btn.getAttribute('aria-expanded') !== 'true', true);
+  };
+  var saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  setOpen(saved === '1', false);
+})();
+</script>
+</body>
+</html>
+

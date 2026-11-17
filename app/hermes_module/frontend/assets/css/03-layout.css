@@ -1,0 +1,253 @@
+/* 03-layout.css — Drag & drop, оверлеи, боковая панель, чат */
+/* ---------- drag & drop ---------- */
+.drop-overlay{position:fixed;inset:0;z-index:999;background:rgba(79,70,229,.08);border:2px dashed var(--accent);
+  pointer-events:none;opacity:0;transition:opacity .2s;display:grid;place-items:center}
+.drop-overlay.active{opacity:1}
+.drop-overlay .drop-inner{background:var(--surface);padding:28px 44px;border-radius:16px;text-align:center;box-shadow:var(--sh-3)}
+.drop-overlay .drop-inner i{font-size:34px;color:var(--accent);margin-bottom:10px;display:block}
+.drop-overlay .drop-inner b{font-size:15px;display:block;margin-bottom:4px}
+.drop-overlay .drop-inner span{font-size:12px;color:var(--text-3)}
+
+/* ---------- оверлеи и модалки ---------- */
+.overlay{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:2vh 2vw;
+  background:rgba(15,20,30,.32);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .25s ease}
+[data-theme="dark"] .overlay{background:rgba(0,0,0,.5)}
+.overlay.open{opacity:1;pointer-events:auto}
+.modal{width:80%;height:80%;max-width:1440px;max-height:920px;background:var(--surface);border-radius:var(--r-xl);
+  box-shadow:var(--sh-3);display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--border);
+  transform:scale(.97) translateY(10px);opacity:0;transition:transform .3s cubic-bezier(.2,.85,.25,1),opacity .25s}
+.overlay.open .modal{transform:none;opacity:1}
+.m-head{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);background:var(--surface);flex:none;
+  position:relative}   /* якорь для .pomo-pop: без него поп уезжает в угол экрана */
+.m-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.m-title i{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:13px;color:#fff;background:var(--accent)}
+.m-head .spacer{flex:1}
+.m-body{flex:1;min-height:0;display:flex}
+.m-foot{flex:none;display:flex;align-items:center;gap:12px;padding:11px 18px;border-top:1px solid var(--border);background:var(--surface-2)}
+.m-foot .spacer{flex:1}
+
+.icon-btn{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:var(--text-2);border:1px solid transparent;transition:var(--t);font-size:13px;flex:none}
+.icon-btn:hover{background:var(--surface-3);color:var(--accent);border-color:var(--border)}
+.icon-btn.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.icon-btn.sm{width:28px;height:28px;border-radius:8px;font-size:11.5px}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;font-weight:550;font-size:12.5px;
+  transition:var(--t);border:1px solid var(--border);background:var(--surface);color:var(--text-2);white-space:nowrap}
+.btn:hover{background:var(--surface-3);color:var(--text)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{background:var(--accent);filter:brightness(1.06);transform:translateY(-1px)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--surface-3)}
+.btn.danger{color:var(--err);border-color:var(--err-soft)}
+.btn.danger:hover{background:var(--err-soft)}
+.btn.sm{padding:5px 10px;font-size:11.5px;border-radius:8px}
+.btn:disabled{opacity:.5;pointer-events:none}
+
+.field{width:100%;padding:8px 11px;border:1px solid var(--border-2);border-radius:9px;background:var(--surface);
+  transition:var(--t);outline:none;font-size:13px;color:var(--text)}
+.field:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
+textarea.field{resize:vertical;min-height:74px;line-height:1.55}
+select.field{cursor:pointer;appearance:none;padding-right:30px;color:var(--text);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2399a1af' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 9px center;background-size:14px}
+[data-theme="dark"] select.field{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d7790' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")}
+
+.toggle{position:relative;width:40px;height:23px;border-radius:12px;background:var(--border-2);transition:var(--t);flex:none;cursor:pointer}
+.toggle::after{content:"";position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(16,24,40,.25);transition:var(--t)}
+.toggle.on{background:var(--accent)}
+.toggle.on::after{left:19.5px}
+
+.seg{display:inline-flex;padding:3px;background:var(--surface-3);border-radius:9px;gap:2px;border:1px solid var(--border)}
+.seg button{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:550;color:var(--text-2);transition:var(--t)}
+.seg button.on{background:var(--surface);color:var(--accent);box-shadow:var(--sh-1)}
+
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:7px;background:var(--surface-3);
+  border:1px solid var(--border);font-size:11.5px;color:var(--text-2);max-width:100%}
+.chip i{font-size:10.5px;color:var(--accent)}
+.chip.accent{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chip .x{cursor:pointer;opacity:.55;transition:var(--t)}
+.chip .x:hover{opacity:1;color:var(--err)}
+.chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:650;letter-spacing:.04em;text-transform:uppercase}
+.badge.done{background:var(--ok-soft);color:var(--ok)}
+.badge.running{background:var(--accent-soft);color:var(--accent)}
+.badge.error{background:var(--err-soft);color:var(--err)}
+.badge.wait{background:var(--surface-3);color:var(--text-3)}
+.badge.warn{background:var(--warn-soft);color:var(--warn)}
+
+.empty{display:flex;flex-direction:column;align-items:center;gap:11px;padding:32px 20px;text-align:center;color:var(--text-3)}
+.empty i{font-size:24px;width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:var(--surface-3);color:var(--text-3)}
+.empty p{font-size:12.5px;line-height:1.6;max-width:280px}
+
+/* ---------- боковая панель: рейл 2.0 ----------
+   Тот же каркас, что у левых рейлов новостей/поиска/ZIM (module_rail.css):
+   карточка с рамкой и скруглением 20, бренд сверху, подписи секций и
+   пункты-строки. Панель живёт внутри модалки, поэтому карточка — внешние
+   поля, а не fixed-позиционирование. */
+.side{width:var(--side);flex:none;position:relative;margin:12px 0 12px 12px;padding:10px;
+  border:1px solid var(--border);border-radius:var(--r-xl);background:var(--surface-2);
+  box-shadow:var(--sh-1);display:flex;flex-direction:column;gap:6px;min-height:0;
+  transition:width .28s ease,padding .28s ease}
+.side > .side-top,.side > .bulk-bar,.side > .tree{transition:opacity .18s ease,visibility 0s}
+.rail-head{flex:0 0 auto}
+.rail-brand{display:flex;align-items:center;gap:10px;padding:4px 6px 8px;border-radius:12px;min-width:0}
+.rail-logo{display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;border-radius:12px;
+  background:color-mix(in srgb,var(--accent) 16%,var(--surface-3));
+  border:1px solid color-mix(in srgb,var(--accent) 26%,transparent);color:var(--accent);font-size:15px}
+.rail-name{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.rail-name b{font-size:14px;font-weight:650;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rail-name small{font-size:10.5px;font-weight:500;letter-spacing:.03em;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side-collapse-btn{position:absolute;top:18px;right:-13px;width:26px;height:26px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);display:grid;place-items:center;cursor:pointer;color:var(--text-3);font-size:9px;transition:var(--t);z-index:10;box-shadow:var(--sh-1)}
+.side-collapse-btn:hover{background:var(--surface-3);color:var(--accent);border-color:var(--accent)}
+.side-cap{padding:2px 10px 3px;font-size:9.5px;font-weight:650;letter-spacing:.10em;text-transform:uppercase;color:var(--text-3)}
+.side-top{padding:0;border:0;display:flex;flex-direction:column;gap:6px;flex:none}
+.side-actions{display:flex;gap:6px;flex-wrap:nowrap;padding-top:2px}
+.side-actions .btn{flex:1;min-width:0;justify-content:center}
+.search{position:relative;display:flex;align-items:center;padding:0 2px}
+.search i{position:absolute;left:13px;font-size:11.5px;color:var(--text-3);pointer-events:none}
+.search input{width:100%;height:34px;padding:0 30px 0 32px;border-radius:10px;border:1px solid var(--border);background:var(--surface-3);outline:none;font-size:12.5px;transition:var(--t);color:var(--text)}
+.search input:focus{background:var(--surface);border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
+.search .clr{position:absolute;right:6px;width:22px;height:22px;border-radius:6px;display:none;place-items:center;color:var(--text-3);font-size:10px}
+.search .clr:hover{background:var(--surface-3);color:var(--err)}
+.search.has .clr{display:grid}
+.filters{display:flex;gap:4px;flex-wrap:wrap;padding:0 2px}
+.filters button{padding:3px 8px;font-size:10.5px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-weight:600;transition:var(--t)}
+.filters button.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.quick{display:flex;flex-direction:column;gap:2px}
+.quick button{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;height:33px;padding:0 10px;border-radius:10px;
+  border:1px solid transparent;background:transparent;font-size:12.5px;font-weight:500;color:var(--text-2);transition:var(--t);text-align:left}
+.quick button i{width:16px;flex:0 0 16px;text-align:center;font-size:13px;color:var(--text-3);transition:color .14s ease}
+.quick button span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quick button:hover{border-color:transparent;background:var(--surface-3);color:var(--text)}
+.quick button:hover i{color:var(--accent)}
+
+/* Свёрнутая панель — полоса иконок 76px, как в модульных рейлах. */
+@media (min-width:861px){
+  .side.collapsed{width:76px;padding:10px 8px}
+  .side.collapsed .rail-brand{justify-content:center;padding:4px 0 8px}
+  .side.collapsed .rail-name,
+  .side.collapsed .side-cap,
+  .side.collapsed .search,
+  .side.collapsed .filters,
+  .side.collapsed .bulk-bar,
+  .side.collapsed .side-actions > .btn > span{display:none}
+  .side.collapsed > .side-top,
+  .side.collapsed > .tree{opacity:1;visibility:visible;pointer-events:auto}
+  .side.collapsed .quick{align-items:center;gap:3px}
+  .side.collapsed .quick button{width:40px;height:40px;padding:0;justify-content:center;margin:0 auto;border-radius:11px}
+  .side.collapsed .quick button span{display:none}
+  .side.collapsed .side-actions{flex-direction:column;align-items:center;gap:3px}
+  .side.collapsed .side-actions .btn{width:40px;height:34px;padding:0;flex:0 0 40px}
+  .side.collapsed .tree{padding:6px 0 4px}
+  .side.collapsed .grp-head{display:none}
+  .side.collapsed .nested{margin:0;padding:0;border:0}
+  .side.collapsed .row{justify-content:center;gap:0;padding:6px 0}
+  .side.collapsed .row .rt,
+  .side.collapsed .row .more,
+  .side.collapsed .row .tag-mini{display:none}
+  .side.collapsed .row.on::before{left:2px;top:6px;bottom:6px}
+  .side.collapsed .side-collapse-btn i{transform:rotate(180deg)}
+}
+
+.bulk-bar{display:none;align-items:center;gap:8px;padding:8px 11px;background:var(--accent-soft);border-bottom:1px solid var(--accent);font-size:11.5px;font-weight:600;color:var(--accent)}
+.bulk-bar.on{display:flex}
+.bulk-bar .spacer{flex:1}
+
+.tree{flex:1;min-height:0;overflow-y:auto;padding:6px 2px;margin-top:2px;border-top:1px solid var(--border)}
+.grp{margin-bottom:4px}
+.grp-head{display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:8px;font-size:10px;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);cursor:pointer;transition:var(--t);width:100%}
+.grp-head:hover{background:var(--surface-3);color:var(--text-2)}
+.grp-head .chev{font-size:8px;transition:transform .2s;width:11px}
+.grp.collapsed .chev{transform:rotate(-90deg)}
+.grp-head .n{margin-left:auto;font-size:9.5px;background:var(--surface-3);border-radius:5px;padding:1px 6px;color:var(--text-3);letter-spacing:0}
+.grp.collapsed .grp-items{display:none}
+.grp-items{display:flex;flex-direction:column;gap:1px;padding-left:2px}
+
+.row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:var(--t);position:relative}
+.row:hover{background:var(--surface)}
+.row.on{background:var(--surface);box-shadow:var(--sh-1)}
+.row.on::before{content:"";position:absolute;left:-4px;top:8px;bottom:8px;width:2.5px;border-radius:3px;background:var(--accent)}
+.row .check{width:15px;height:15px;border:1.5px solid var(--border-2);border-radius:4px;display:none;place-items:center;flex:none;font-size:9px}
+.bulk-mode .row .check{display:grid}
+.bulk-mode .row .check.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.row .ric{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:10.5px;flex:none;background:var(--surface-3);color:var(--text-2)}
+.row.on .ric{background:var(--accent-soft);color:var(--accent)}
+.row.proj .ric{background:var(--ok-soft);color:var(--ok)}
+.row.folder .ric{background:var(--warn-soft);color:var(--warn)}
+.row.archived .ric{opacity:.6}
+.row .rt{flex:1;min-width:0}
+.row .rt b{display:block;font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .rt small{display:flex;align-items:center;gap:4px;font-size:10.5px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.row .rt small i{font-size:8.5px}
+.row .pin{font-size:9.5px;color:var(--warn)}
+.row .lock{font-size:8.5px;color:var(--err)}
+.row .bookmark-mini{font-size:9.5px;color:var(--accent)}
+.row .tag-mini{font-size:9px;background:var(--accent-soft);color:var(--accent);padding:1px 5px;border-radius:4px;margin-left:4px}
+.row .more{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;color:var(--text-3);opacity:0;transition:var(--t);font-size:11px;flex:none}
+.row:hover .more,.row.on .more{opacity:1}
+.row .more:hover{background:var(--surface-3);color:var(--accent)}
+.nested{margin-left:14px;padding-left:8px;border-left:1px solid var(--border);display:flex;flex-direction:column;gap:1px}
+
+.res{display:flex;gap:9px;padding:9px;border-radius:9px;cursor:pointer;transition:var(--t);border:1px solid transparent}
+.res:hover{background:var(--surface);border-color:var(--border);box-shadow:var(--sh-1)}
+.res .ric{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:11px;flex:none}
+.res b{font-size:12px;font-weight:550;display:block;margin-bottom:2px}
+.res p{font-size:11px;color:var(--text-2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.res mark{background:#fef08a;color:#161a22;border-radius:3px;padding:0 2px}
+[data-theme="dark"] .res mark{background:#854d0e;color:#fef3c7}
+.res small{display:block;font-size:10px;color:var(--text-3);margin-top:3px}
+
+/* ---------- чат ---------- */
+.chat{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--surface);position:relative}
+.chat-head{flex:none;display:flex;align-items:center;gap:11px;padding:10px 16px;border-bottom:1px solid var(--border)}
+.chat-head .ttl{min-width:0}
+
+/* Кнопки окна в стиле Electron: рамки нет (frame:false), поэтому сворачивание,
+   разворачивание и закрытие рисует сам интерфейс. Показываются только внутри
+   обёртки — в обычном браузере панель скрыта, там рамка системная. */
+.win-btns{position:fixed;top:0;right:0;z-index:1300;
+  display:flex;align-items:center;gap:2px;padding:4px 6px;
+  -webkit-app-region:no-drag}
+.win-btns[hidden]{display:none}
+.wb{width:34px;height:30px;border:0;border-radius:7px;background:transparent;
+  color:var(--text-2);display:grid;place-items:center;cursor:pointer;
+  transition:background .12s,color .12s}
+.wb svg{width:12px;height:12px;display:block}
+.wb:hover{background:var(--surface-2);color:var(--text)}
+.wb:active{background:var(--border-2)}
+.wb-close:hover{background:#e5484d;color:#fff}
+/* Кнопка браузера — слева от управления окном, с отступом 20 px. */
+.wb-browser{margin-right:20px}
+/* Окно можно перетаскивать за свободные места: шапки модалок и главный экран.
+   Интерактивные элементы внутри помечены no-drag, иначе клик по кнопке
+   тянул бы окно, а не нажимал. */
+.m-head,.s-head,.stage{-webkit-app-region:drag}
+.m-head button,.m-head input,.s-head button,.s-head input,
+.stage button,.stage input,.stage textarea,.stage select,.stage a,
+#winBtns,.win-btns{-webkit-app-region:no-drag}
+
+.chat-head .ttl h2{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:36vw;cursor:text;border-radius:5px;padding:1px 4px;margin-left:-4px}
+.chat-head .ttl h2:hover{color:var(--accent);background:var(--surface-3)}
+.chat-head .sub{display:flex;align-items:center;gap:7px;margin-top:2px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--text-2);
+  background:var(--surface-3);border:1px solid var(--border);padding:2px 8px;border-radius:7px}
+.pill i{font-size:8.5px}
+.pill.live{color:var(--ok);background:var(--ok-soft);border-color:transparent}
+.pill.busy{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+.pill.busy i{animation:spin 1.1s linear infinite}
+.pill.pomo{color:var(--err);background:var(--err-soft);border-color:transparent}
+.pill.pomo.break{color:var(--ok);background:var(--ok-soft);border-color:transparent}
+.pill.focus{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.pomo-pop{position:absolute;top:100%;right:10px;margin-top:8px;width:250px;background:var(--surface);border:1px solid var(--border);
+  border-radius:13px;box-shadow:var(--sh-3);padding:13px;z-index:30;display:none}
+.pomo-pop.open{display:block;animation:msgIn .2s ease}
+.pomo-pop>b{display:block;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3);margin-bottom:9px}
+.pomo-time{font-size:30px;font-weight:650;text-align:center;margin:8px 0;font-variant-numeric:tabular-nums;font-family:var(--mono)}
+.pomo-time .lbl{font-size:9.5px;color:var(--text-3);display:block;margin-top:3px;text-transform:uppercase;letter-spacing:.09em}
+.pomo-acts{display:flex;gap:6px;justify-content:center;margin-top:9px}
+.pomo-stats{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-3);margin-top:11px;padding-top:9px;border-top:1px solid var(--border)}
+.pomo-stats b{font-size:13px;color:var(--accent)}

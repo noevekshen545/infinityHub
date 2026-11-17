@@ -1,0 +1,199 @@
+/* GenLab — редактор области (выделение, кисть, инпейнт).
+   Отдельный файл, чтобы модуль холста не раздувал основной genlab.css. */
+
+.gl-canvas-edit {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 3;
+  box-shadow: var(--gl-shadow-md);
+  backdrop-filter: blur(6px);
+}
+.gl-canvas-edit[hidden] { display: none; }
+
+.gl-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: var(--gl-bg);
+  color: var(--gl-text);
+}
+.gl-editor[hidden] { display: none; }
+
+.gl-editor-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--gl-border);
+  background: var(--gl-surface);
+  flex-wrap: wrap;
+}
+.gl-editor-title { font-weight: 650; font-size: 14px; margin-right: 6px; }
+.gl-editor-top .gl-spacer { flex: 1 1 auto; }
+
+.gl-tools { display: flex; gap: 4px; padding: 3px; border-radius: var(--gl-radius);
+  background: var(--gl-surface-2); border: 1px solid var(--gl-border); }
+.gl-tool {
+  border: 0;
+  background: transparent;
+  color: var(--gl-text-2);
+  padding: 6px 11px;
+  border-radius: var(--gl-radius-sm);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  transition: background var(--gl-tr), color var(--gl-tr);
+}
+.gl-tool:hover { background: var(--gl-hover); color: var(--gl-text); }
+.gl-tool.is-active { background: var(--gl-accent); color: #fff; }
+
+.gl-zoom { display: flex; align-items: center; gap: 6px; font-size: 12.5px;
+  color: var(--gl-muted); }
+.gl-zoom span { min-width: 46px; text-align: center; font-variant-numeric: tabular-nums; }
+
+.gl-editor-main { flex: 1 1 auto; display: flex; min-height: 0; }
+
+.gl-editor-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(45deg, rgba(0,0,0,.03) 25%, transparent 25%, transparent 75%, rgba(0,0,0,.03) 75%) 0 0 / 22px 22px,
+    linear-gradient(45deg, rgba(0,0,0,.03) 25%, transparent 25%, transparent 75%, rgba(0,0,0,.03) 75%) 11px 11px / 22px 22px,
+    var(--gl-bg);
+  cursor: crosshair;
+  touch-action: none;
+}
+.gl-editor-stage.is-pan { cursor: grab; }
+.gl-editor-stage.is-panning { cursor: grabbing; }
+.gl-editor-stage canvas {
+  position: absolute;
+  top: 0; left: 0;
+  transform-origin: 0 0;
+  image-rendering: auto;
+  box-shadow: var(--gl-shadow-lg);
+  /* Только слой картинки непрозрачный: слои маски и разметки лежат поверх,
+     и с фоном они перекрывали бы изображение снизу. */
+  background: transparent;
+}
+.gl-editor-stage canvas.gl-edit-image { background: #fff; }
+.gl-editor-stage canvas.gl-edit-mask { pointer-events: none; }
+
+/* Кружок кисти: размер учитывает зум, поэтому совпадает с реальной областью
+   закрашивания. Лежит поверх канв и не ловит указатель. */
+.gl-edit-cursor {
+  position: absolute;
+  top: 0; left: 0;
+  border: 1.5px solid rgba(255, 255, 255, .9);
+  outline: 1.5px solid rgba(0, 0, 0, .55);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.gl-editor-side {
+  width: 320px;
+  flex: 0 0 auto;
+  border-left: 1px solid var(--gl-border);
+  background: var(--gl-surface);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.gl-editor-side .gl-scroll { flex: 1 1 auto; overflow-y: auto; padding: 14px; }
+.gl-editor-side section { margin-bottom: 18px; }
+.gl-editor-side label { display: block; }
+.gl-editor-side h4 {
+  margin: 0 0 8px;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--gl-muted);
+}
+
+.gl-editor-side .gl-field-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin: 8px 0 4px;
+  font-size: 12.5px;
+  color: var(--gl-text-2);
+}
+.gl-editor-side .gl-field-num { color: var(--gl-muted); font-variant-numeric: tabular-nums; }
+.gl-editor-side input[type="text"],
+.gl-editor-side input[type="number"],
+.gl-editor-side textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 9px;
+  border: 1px solid var(--gl-border);
+  border-radius: var(--gl-radius-sm);
+  background: var(--gl-surface-2);
+  color: var(--gl-text);
+  font: inherit;
+  font-size: 13px;
+  resize: vertical;
+}
+.gl-editor-side input[type="range"] { width: 100%; margin: 2px 0; }
+.gl-editor-side select.gl-editor-select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 9px;
+  border: 1px solid var(--gl-border);
+  border-radius: var(--gl-radius-sm);
+  background: var(--gl-surface-2);
+  color: var(--gl-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.gl-editor-side .gl-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.gl-editor-side .gl-grid2 .gl-field-label { margin-top: 8px; }
+.gl-editor-side label > input[type="checkbox"] { margin-right: 6px; }
+.gl-editor-side [data-mode][hidden] { display: none; }
+.gl-editor-side input:focus,
+.gl-editor-side textarea:focus,
+.gl-editor-side select:focus {
+  outline: none;
+  border-color: var(--gl-accent);
+  box-shadow: 0 0 0 3px var(--gl-accent-soft);
+}
+
+.gl-editor-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.gl-editor-actions .gl-btn { flex: 1 1 auto; }
+
+.gl-editor-foot {
+  padding: 10px 14px;
+  border-top: 1px solid var(--gl-border);
+  background: var(--gl-surface);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.gl-edit-status {
+  font-size: 12px;
+  color: var(--gl-muted);
+  min-height: 16px;
+}
+.gl-edit-status.is-ok { color: var(--gl-success); }
+.gl-edit-status.is-bad { color: var(--gl-danger); }
+
+@media (max-width: 980px) {
+  .gl-editor-main { flex-direction: column; }
+  .gl-editor-side { width: auto; border-left: 0; border-top: 1px solid var(--gl-border); max-height: 46vh; }
+}

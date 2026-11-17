@@ -1,0 +1,1172 @@
+/* ══════════════════════════════════════════════════════════════════
+   Infinity File Manager — Windows 11 Design (exact match)
+   ══════════════════════════════════════════════════════════════════ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* Значения по умолчанию (светлая). Вторая часть селектора — <body>:
+   сервер дописывает в каждую страницу design.css, который объявляет те же
+   --bg/--text/--accent на :root и на body.<тема> и подключается ПОСЛЕ этого
+   файла, поэтому на :root он выигрывал бы всегда. Объявляя палитру на <body>
+   (ближайший предок всего интерфейса) и с более высоким весом, файловый
+   менеджер получает собственную палитру на своей странице, а не смесь из
+   двух файлов. data-fm-theme ставит file_manager.js. */
+:root, html[data-fm-theme] body {
+  --bg: #f3f3f3; --bg-window: #f3f3f3; --bg-sidebar: #f3f3f3;
+  --bg-file: #ffffff; --bg-hover: rgba(0,0,0,0.04); --bg-active: rgba(0,0,0,0.06);
+  --bg-selected: #e5f1fb; --bg-header: #ffffff;
+  --bg-context: #f9f9f9; --bg-context-hover: rgba(0,0,0,0.06); --bg-context-toolbar: #f3f3f3;
+  --bg-input: #ffffff; --bg-preview: #fafafa; --bg-tab: #ffffff;
+  --text: #1f2937; --text-secondary: #333333; --text-muted: #333333;
+  --border: rgba(0,0,0,0.08); --border-light: rgba(0,0,0,0.06);
+  --accent: #0078d4; --accent-hover: #106ebe;
+  --shadow: 0 2px 4px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.08), 0 32px 64px rgba(0,0,0,0.12);
+  --shadow-context: 0 8px 24px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08);
+  --folder-grad-1: #ffd878; --folder-grad-2: #e8a838;
+  --scrollbar: rgba(0,0,0,0.15); --scrollbar-hover: rgba(0,0,0,0.25);
+  --check-bg: #0078d4;
+  --red: #e81123; --green: #107c10; --yellow: #ff8c00; --purple: #8764b8;
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --icon-size: 80px;
+}
+
+/* Переменные, которых в этом файле не было: стили окна копирования и
+   AI-чипов ссылались на --bg2/--text3/--surface/--radius, ожидая, что их
+   даст design.css приложения. Теперь файловый менеджер объявляет их сам —
+   как ссылки на собственные переменные, поэтому они автоматически следуют
+   за каждой из девяти палитр и не зависят от того, что придёт извне.
+
+   Селектор — просто body, без условия на data-fm-theme. Раньше здесь стоял
+   html[data-fm-theme] body, и если атрибут на <html> не успел встать (или
+   не смог прочитаться из localStorage во вложенном окне), блок не
+   применялся вовсе — и --bg2/--surface/--text3 молча подставлялись из
+   СВЕТЛОГО :root в design.css, тогда как фон и панели брались из
+   body.midnight. Это и было видно как «смешались тёмная и белая тема». */
+body {
+  --bg2: var(--bg-file);
+  --bg3: var(--bg-sidebar);
+  --bg4: var(--bg-active);
+  --text2: var(--text-secondary);
+  --text3: var(--text-muted);
+  --border2: var(--border);
+  --surface: var(--bg-sidebar);
+  --surface2: var(--bg-active);
+  --glass: var(--bg-context);
+  --glass-border: var(--border);
+  --shadow-lg: var(--shadow);
+  --radius: 8px;
+  --radius-sm: 4px;
+  --radius-lg: 12px;
+}
+
+body.dark, html[data-fm-theme="dark"] body {
+  --bg: #202020; --bg-window: #202020; --bg-sidebar: #202020;
+  --bg-file: #2b2b2b; --bg-hover: rgba(255,255,255,0.06); --bg-active: rgba(255,255,255,0.08);
+  --bg-selected: #2d4a6b; --bg-header: #2b2b2b;
+  --bg-context: #2b2b2b; --bg-context-hover: rgba(255,255,255,0.08); --bg-context-toolbar: #252525;
+  --bg-input: #333333; --bg-preview: #252525; --bg-tab: #2b2b2b;
+  --text: #ffffff; --text-secondary: #aaaaaa; --text-muted: #888888;
+  --border: rgba(255,255,255,0.1); --border-light: rgba(255,255,255,0.06);
+  --accent: #4cc2ff; --accent-hover: #69d0ff;
+  --shadow: 0 2px 4px rgba(0,0,0,0.2), 0 8px 16px rgba(0,0,0,0.3), 0 32px 64px rgba(0,0,0,0.4);
+  --shadow-context: 0 8px 24px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
+  --folder-grad-1: #f0c040; --folder-grad-2: #c89020;
+  --scrollbar: rgba(255,255,255,0.2); --scrollbar-hover: rgba(255,255,255,0.3);
+  --check-bg: #4cc2ff;
+  /* Не тема, а постоянные величины. Без них тёмные палитры тянули эти
+     значения из СВЕТЛОГО :root — то есть часть элементов (статусы,
+     кнопки действий, размер иконок) выглядела как от светлой темы. */
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --red: #e81123;
+  --green: #107c10;
+  --yellow: #ff8c00;
+  --purple: #8764b8;
+  --icon-size: 80px;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══ CONTAINER ═══════════════════════════════════════════════ */
+.fm-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--bg-window);
+  border: 1px solid var(--border);
+}
+
+/* ═══ PROGRESS BAR ════════════════════════════════════════════ */
+.fm-progress {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 3px; background: var(--bg); z-index: 9999; overflow: hidden;
+}
+.fm-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--purple), var(--accent));
+  background-size: 200% 100%;
+  animation: fmProgress 1.5s ease infinite;
+}
+
+/* ═══ TITLE BAR ═══════════════════════════════════════════════ */
+.fm-titlebar {
+  display: flex; align-items: stretch; height: 40px;
+  background: var(--bg); border-bottom: 1px solid var(--border-light);
+  user-select: none; flex-shrink: 0;
+}
+.fm-titlebar-tabs {
+  display: flex; align-items: flex-end; padding: 0 8px; flex: 1; gap: 2px;
+}
+.fm-titlebar-tab {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px 8px; background: var(--bg-tab);
+  border-radius: 8px 8px 0 0; font-size: 12.5px; color: var(--text);
+  border: 1px solid var(--border); border-bottom: none;
+  position: relative; top: 1px; cursor: pointer; min-width: 80px; max-width: 180px;
+}
+.fm-titlebar-tab.active { font-weight: 500; }
+.fm-titlebar-tab .fm-pane-tab-close {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 4px; margin-left: 4px;
+  font-size: 10px; color: var(--text-muted); opacity: 0; transition: opacity 0.15s;
+}
+.fm-titlebar-tab:hover .fm-pane-tab-close { opacity: 1; }
+.fm-titlebar-tab .fm-pane-tab-close:hover { background: rgba(232,17,35,0.15); color: #e81123; }
+.fm-titlebar-newtab {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 6px;
+  font-size: 14px; color: var(--text-secondary); cursor: pointer; margin-bottom: 2px;
+}
+.fm-titlebar-newtab:hover { background: var(--bg-hover); }
+.fm-titlebar-newtab:active { transform: scale(0.92); }
+
+/* ═══ CLIPBOARD INDICATORS ════════════════════════════════════ */
+.fm-grid-item.in-clipboard, .fm-list-row.in-clipboard {
+  position: relative;
+}
+.fm-grid-item.in-clipboard::after, .fm-list-row.in-clipboard::after {
+  content: '';
+  position: absolute; top: 2px; right: 2px;
+  width: 8px; height: 8px; border-radius: 50%;
+  animation: fmPulse 1.2s ease-in-out infinite;
+}
+.fm-grid-item.in-clipboard::after { background: var(--accent); }
+.fm-list-row.in-clipboard::after { background: var(--accent); }
+.fm-grid-item.clipboard-cut::after, .fm-list-row.clipboard-cut::after {
+  animation: fmPulseCut 1.2s ease-in-out infinite;
+}
+.fm-grid-item.in-clipboard, .fm-list-row.in-clipboard {
+  opacity: 0.7;
+}
+.fm-grid-item.clipboard-cut, .fm-list-row.clipboard-cut {
+  opacity: 0.45;
+}
+@keyframes fmPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+@keyframes fmPulseCut {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.5); }
+}
+
+
+/* ═══ ADDRESS ROW ═════════════════════════════════════════════ */
+.fm-address-row {
+  display: flex; align-items: center;
+  padding: 6px 12px; gap: 4px;
+  background: var(--bg); border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+.fm-nav { display: flex; gap: 2px; }
+.fm-nav .fm-btn {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border: none; background: none; border-radius: 6px;
+  font-size: 13px; color: var(--text-muted); cursor: pointer; padding: 0;
+}
+.fm-nav .fm-btn:hover { background: var(--bg-hover); color: var(--text); }
+.fm-nav .fm-btn.disabled { color: var(--border); cursor: default; }
+.fm-nav .fm-btn.disabled:hover { background: none; color: var(--border); }
+
+.fm-breadcrumbs {
+  flex: 1; display: flex; align-items: center; gap: 2px;
+  /* min-width:0 обязателен: у flex-элемента по умолчанию минимальная ширина
+     равна содержимому, поэтому крошки не сжимались и выдавливали поиск с
+     переключателями друг на друга. */
+  min-width: 0;
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0 12px; height: 32px; font-size: 12.5px;
+  margin: 0 8px; overflow-x: auto; scrollbar-width: none;
+}
+.fm-breadcrumbs::-webkit-scrollbar { display: none; }
+
+.fm-breadcrumb-action {
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 4px; cursor: pointer;
+  color: var(--text-muted); font-size: 11px; flex-shrink: 0;
+}
+.fm-breadcrumb-action:hover { background: var(--bg-hover); color: var(--accent); }
+
+.fm-breadcrumb-item {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 6px; border-radius: 4px; cursor: pointer;
+  color: var(--text); white-space: nowrap; font-size: 12.5px;
+  position: relative;
+}
+.fm-breadcrumb-item:hover { background: var(--bg-hover); }
+.fm-breadcrumb-item.active { font-weight: 600; }
+.fm-breadcrumb-sep { color: var(--text-muted); font-size: 9px; margin: 0 2px; }
+
+.fm-path-input {
+  flex: 1; background: var(--bg-input); border: 1px solid var(--accent);
+  border-radius: 6px; padding: 4px 8px; color: var(--text);
+  font-size: 12.5px; font-family: var(--font-mono); outline: none;
+  box-shadow: 0 0 0 2px rgba(0,120,212,0.15);
+}
+
+.fm-search-bar {
+  display: flex; align-items: center; gap: 2px;
+  /* Сжимается вместе со строкой: иначе на узкой ширине кнопки .fm-viewtoggles
+     (aiTasksBtnTop/ribbonToggle) выползают поверх поиска. */
+  min-width: 70px; max-width: 260px; flex: 0 1 220px; min-height: 0;
+}
+.fm-search-bar input {
+  flex: 1 1 auto; min-width: 0; width: 100%; box-sizing: border-box;
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 10px; color: var(--text);
+  font-size: 12px; font-family: var(--font); outline: none; height: 32px;
+}
+/* Режим поиска занимает много места на узкой панели — текст длиннее поля. */
+.fm-search-bar .fm-select { flex: 0 1 auto; min-width: 0; max-width: 104px; }
+.fm-search-bar input:focus { border-color: var(--accent); }
+.fm-search-bar .fm-btn {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border: none; background: none; border-radius: 6px; font-size: 14px;
+  color: var(--text-secondary); cursor: pointer;
+}
+.fm-search-bar .fm-btn:hover { background: var(--bg-hover); }
+
+.fm-viewtoggles { display: flex; gap: 2px; margin-left: 8px; flex-shrink: 0; }
+.fm-viewtoggles .fm-btn {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border: none; background: none; border-radius: 6px; font-size: 14px;
+  color: var(--text-secondary); cursor: pointer;
+}
+.fm-viewtoggles .fm-btn:hover { background: var(--bg-hover); }
+
+/* ═══ COMMAND BAR (RIBBON) ════════════════════════════════════ */
+.fm-ribbon { flex-shrink: 0; }
+.fm-ribbon.collapsed { display: none; }
+.fm-ribbon-bar {
+  display: flex; align-items: stretch; gap: 0;
+  padding: 4px 12px; background: var(--bg);
+  border-bottom: 1px solid var(--border-light);
+  overflow-x: auto; scrollbar-width: none;
+}
+.fm-ribbon-bar::-webkit-scrollbar { display: none; }
+.fm-ribbon-group {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 4px 10px; border-right: 1px solid var(--border); min-width: 0;
+}
+.fm-ribbon-group:last-child { border-right: none; }
+.fm-ribbon-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px;
+  color: var(--text-muted); font-weight: 600; white-space: nowrap;
+}
+.fm-ribbon-btns { display: flex; align-items: center; gap: 2px; flex-wrap: nowrap; }
+
+/* ═══ TOOLBAR GROUP ═══════════════════════════════════════════ */
+.fm-toolbar-group {
+  display: flex; align-items: center; gap: 2px;
+}
+
+/* ═══ BUTTONS ═════════════════════════════════════════════════ */
+.fm-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border: none; background: none;
+  border-radius: 6px; font-size: 12.5px; color: var(--text);
+  cursor: pointer; font-family: inherit; white-space: nowrap; line-height: 1;
+  transition: background 0.1s;
+}
+.fm-btn:hover { background: var(--bg-hover); }
+.fm-btn:active { background: var(--bg-active); }
+.fm-btn.active { background: rgba(0,120,212,0.1); color: var(--accent); }
+.fm-btn.primary { background: transparent; padding: 6px 10px; }
+.fm-btn i { font-size: 14px; color: var(--text-secondary); }
+.fm-btn.primary i { color: var(--text-secondary); }
+
+.fm-ribbon-btns .fm-btn {
+  padding: 4px 8px; font-size: 12px; min-height: 28px;
+}
+.fm-ribbon-btns .fm-btn i { font-size: 14px; }
+.fm-ribbon-btns .fm-btn span { font-size: 10.5px; }
+.fm-ribbon-btns .fm-btn:hover { background: var(--bg-hover); }
+.fm-ribbon-btns .fm-btn.active { background: rgba(0,120,212,0.1); color: var(--accent); }
+
+.fm-close-btn {
+  background: transparent; border: none; color: var(--text-muted);
+  cursor: pointer; padding: 4px; border-radius: 4px; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+}
+.fm-close-btn:hover { background: var(--bg-hover); color: var(--text); }
+
+/* ═══ MAIN BODY ═══════════════════════════════════════════════ */
+.fm-main {
+  display: flex; flex: 1; overflow: hidden;
+}
+
+/* ═══ TREE SIDEBAR ════════════════════════════════════════════ */
+.fm-tree {
+  width: 240px; background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-light);
+  padding: 8px 0; overflow-y: auto; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  transition: width 0.2s ease, min-width 0.2s ease, opacity 0.2s ease;
+}
+.fm-tree.collapsed { width: 0; min-width: 0; border-right: none; opacity: 0; padding: 0; overflow: hidden; }
+
+.fm-tree-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 16px 4px; font-size: 11px; font-weight: 600;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px;
+  gap: 6px; flex-shrink: 0;
+}
+.fm-tree-header span { display: flex; align-items: center; gap: 6px; }
+
+.fm-tree-content { flex: 1; overflow-y: auto; padding: 4px 0; }
+
+.fm-tree-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 5px 16px 5px 20px; font-size: 13px; color: var(--text);
+  cursor: pointer; margin: 1px 8px; border-radius: 6px;
+  transition: background 0.1s; white-space: nowrap; position: relative;
+}
+.fm-tree-item:hover { background: var(--bg-hover); }
+.fm-tree-item.active { background: var(--bg-active); }
+.fm-tree-item i { width: 18px; text-align: center; font-size: 14px; flex-shrink: 0; }
+.fm-tree-item .fm-tree-toggle {
+  width: 14px; font-size: 9px; color: var(--text-muted); text-align: center;
+  flex-shrink: 0; cursor: pointer; transition: transform 0.2s;
+}
+.fm-tree-item .fm-tree-toggle:hover { color: var(--text); }
+.fm-tree-item .fm-tree-icon { font-size: 15px; }
+.fm-tree-item .fm-tree-label { overflow: hidden; text-overflow: ellipsis; }
+.fm-tree-children { padding-left: 20px; }
+.fm-tree-label-header {
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
+  padding: 8px 16px 4px; display: flex; align-items: center; gap: 6px;
+  text-transform: uppercase; letter-spacing: 0.3px;
+}
+
+/* ═══ DRIVE INDICATORS ════════════════════════════════════════ */
+.fm-drive-indicator { padding: 6px 8px; flex-shrink: 0; }
+.fm-drive-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px; border-radius: 6px; cursor: pointer;
+  transition: background 0.1s; font-size: 12px; color: var(--text-secondary);
+  margin: 1px 4px;
+}
+.fm-drive-item:hover { background: var(--bg-hover); color: var(--text); }
+.fm-drive-bar {
+  height: 4px; background: var(--border); border-radius: 2px;
+  flex: 1; overflow: hidden;
+}
+.fm-drive-bar-fill {
+  height: 100%; border-radius: 2px; transition: width 0.3s ease;
+}
+
+/* ═══ FILES AREA ══════════════════════════════════════════════ */
+.fm-files {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; min-width: 0; background: var(--bg-file);
+}
+.fm-panes { flex: 1; display: flex; overflow: hidden; }
+.fm-pane {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; min-width: 0; position: relative;
+}
+.fm-pane + .fm-pane { border-left: 2px solid var(--border); }
+
+.fm-pane-header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 10px; background: var(--bg-file);
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0; min-height: 34px;
+}
+.fm-pane-header .fm-pane-info {
+  font-size: 11px; color: var(--text-muted); flex-shrink: 0; margin-left: auto;
+}
+.fm-pane-header .fm-pane-tabs {
+  display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1;
+}
+.fm-pane-tab {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 6px; cursor: pointer;
+  font-size: 11px; color: var(--text-muted); white-space: nowrap;
+}
+.fm-pane-tab:hover { background: var(--bg-hover); color: var(--text); }
+.fm-pane-tab.active { background: rgba(0,120,212,0.1); color: var(--accent); font-weight: 500; }
+.fm-pane-tab-close {
+  font-size: 9px; opacity: 0.4; cursor: pointer; padding: 2px; border-radius: 4px;
+}
+.fm-pane-tab-close:hover { opacity: 1; color: var(--red); background: var(--bg-hover); }
+.fm-view-controls { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+
+/* ═══ FILE LIST ═══════════════════════════════════════════════ */
+.fm-file-list { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px; position: relative; }
+
+/* Grid View */
+.fm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--icon-size, 80px), 1fr));
+  gap: 4px;
+}
+.fm-grid-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 10px 4px 8px; border-radius: 6px; cursor: pointer;
+  border: 1px solid transparent; position: relative; min-height: 90px;
+  transition: background 0.08s;
+}
+.fm-grid-item:hover { background: var(--bg-hover); }
+.fm-grid-item.selected { background: var(--bg-selected); }
+.fm-grid-item .fm-grid-icon { font-size: 32px; line-height: 1; color: var(--accent); }
+.fm-grid-item .fm-grid-icon i { color: inherit; }
+.fm-grid-item .fm-grid-name {
+  font-size: 11px; text-align: center; word-break: break-word; line-height: 1.3;
+  max-height: 2.6em; overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: var(--text);
+}
+.fm-grid-item .fm-grid-details { font-size: 10px; color: var(--text-muted); }
+.fm-grid-item .fm-grid-thumb {
+  width: 100%; height: 60px; object-fit: cover; border-radius: 4px; margin-bottom: 4px;
+}
+
+/* List / Details View */
+.fm-list { width: 100%; border-collapse: collapse; }
+.fm-list-header {
+  display: grid;
+  grid-template-columns: 32px 2fr 0.6fr 1.6fr 1.2fr 0.8fr;
+  padding: 6px 16px; font-size: 12px; color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-light); background: var(--bg-header);
+  position: sticky; top: 0; z-index: 1; cursor: pointer; user-select: none;
+}
+.fm-list-header span {
+  display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 0;
+}
+.fm-list-header span:hover { color: var(--text); }
+.fm-list-row {
+  display: grid;
+  grid-template-columns: 32px 2fr 0.6fr 1.6fr 1.2fr 0.8fr;
+  padding: 4px 16px; font-size: 12.5px; color: var(--text);
+  align-items: center; cursor: pointer;
+  border-bottom: 1px solid var(--border-light);
+  transition: background 0.08s; position: relative;
+}
+.fm-list-row:hover { background: var(--bg-hover); }
+.fm-list-row.selected { background: var(--bg-selected); }
+.fm-list-row.fm-checkbox-mode { padding-left: 30px; }
+.fm-list-icon { width: 20px; text-align: center; font-size: 14px; flex-shrink: 0; color: var(--text-secondary); }
+.fm-list-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.fm-list-size { text-align: right; color: var(--text-secondary); font-size: 12px; }
+.fm-list-type { color: var(--text-secondary); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fm-list-modified { color: var(--text-secondary); font-size: 12px; }
+.fm-list-thumb { width: 24px; height: 24px; object-fit: cover; border-radius: 3px; flex-shrink: 0; }
+.fm-col-size { text-align: right; }
+.fm-col-type, .fm-col-date { color: var(--text-secondary); font-size: 12px; }
+.fm-details-path { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+/* Checkbox */
+.fm-checkbox {
+  position: absolute; top: 6px; left: 6px;
+  width: 18px; height: 18px; border: 1.5px solid var(--border);
+  border-radius: 4px; background: var(--bg-input);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; font-size: 10px; color: transparent; cursor: pointer; z-index: 2;
+}
+.fm-checkbox:hover { border-color: var(--text-muted); }
+.fm-checkbox.checked { background: var(--check-bg); border-color: var(--check-bg); color: #fff; }
+
+/* Column resize grip */
+.fm-col-grip {
+  width: 4px; cursor: col-resize; background: transparent; transition: background 0.2s;
+}
+.fm-col-grip:hover { background: var(--accent); }
+
+/* ═══ PREVIEW PANE ════════════════════════════════════════════ */
+.fm-preview {
+  width: 260px; background: var(--bg-preview);
+  border-left: 1px solid var(--border-light);
+  padding: 24px 20px; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center;
+  overflow-y: auto;
+  transition: width 0.2s, padding 0.2s;
+}
+.fm-preview.collapsed { width: 0; padding: 0; overflow: hidden; border: none; }
+
+.fm-preview-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 0 12px; font-weight: 600; font-size: 13px;
+  color: var(--text); flex-shrink: 0; width: 100%;
+}
+.fm-preview-content {
+  flex: 1; overflow-y: auto; width: 100%;
+}
+
+/* ═══ CONTEXT MENU ════════════════════════════════════════════ */
+.fm-context-menu {
+  position: fixed; background: var(--bg-context);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: var(--shadow-context); padding: 4px;
+  min-width: 260px; z-index: 10000;
+  animation: fmContextOpen 0.15s ease-out;
+}
+@keyframes fmContextOpen {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Context toolbar row */
+.fm-ctx-toolbar {
+  display: flex; align-items: center; padding: 4px 4px 8px;
+  gap: 2px; border-bottom: 1px solid var(--border-light); margin-bottom: 4px;
+}
+.fm-ctx-toolbar-btn {
+  width: 36px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; background: none; border-radius: 4px;
+  cursor: pointer; color: var(--text-secondary); font-size: 14px;
+}
+.fm-ctx-toolbar-btn:hover { background: var(--bg-context-hover); color: var(--text); }
+.fm-ctx-toolbar-btn.danger:hover { background: rgba(232,17,35,0.1); color: #e81123; }
+.fm-ctx-toolbar-divider {
+  width: 1px; height: 20px; background: var(--border-light); margin: 0 2px;
+}
+
+/* Context items */
+.fm-context-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 7px 12px; font-size: 13px; color: var(--text);
+  border-radius: 4px; cursor: pointer; position: relative;
+}
+.fm-context-item:hover { background: var(--bg-context-hover); }
+.fm-context-item .ctx-icon { width: 16px; text-align: center; font-size: 13px; color: var(--text-secondary); }
+.fm-context-item .ctx-shortcut {
+  margin-left: auto; font-size: 11px; color: var(--text-muted); padding-left: 16px;
+}
+.fm-context-item .arrow {
+  margin-left: auto; font-size: 10px; color: var(--text-muted);
+}
+.fm-context-item.danger .ctx-icon { color: #e81123; }
+.fm-context-item.danger:hover { background: rgba(232,17,35,0.1); }
+.fm-context-sep { height: 1px; background: var(--border-light); margin: 4px 8px; }
+.fm-context-item.disabled { color: var(--text-muted); cursor: default; }
+.fm-context-item.disabled:hover { background: none; }
+
+/* ═══ MODALS ══════════════════════════════════════════════════ */
+.fm-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9000; animation: fmFadeIn 0.15s ease;
+}
+.fm-modal {
+  background: var(--bg-file); border: 1px solid var(--border);
+  border-radius: 8px; box-shadow: var(--shadow);
+  display: flex; flex-direction: column; max-height: 90vh;
+  animation: fmModalOpen 0.3s cubic-bezier(0.1,0.9,0.2,1); overflow: hidden;
+}
+@keyframes fmModalOpen {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.fm-modal-sm { width: 380px; }
+.fm-modal-lg { width: 700px; }
+.fm-modal-full { width: 95vw; height: 92vh; }
+.fm-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid var(--border-light); flex-shrink: 0;
+}
+.fm-modal-header h3 { font-size: 15px; font-weight: 600; }
+.fm-modal-body { flex: 1; overflow-y: auto; padding: 16px 20px; font-size: 13px; }
+.fm-modal-footer {
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  padding: 12px 20px; border-top: 1px solid var(--border-light); flex-shrink: 0;
+}
+
+/* ═══ STATUS BAR ══════════════════════════════════════════════ */
+.fm-statusbar {
+  display: flex; align-items: center; gap: 16px;
+  padding: 4px 16px; font-size: 11.5px; color: var(--text-secondary);
+  background: var(--bg); border-top: 1px solid var(--border-light);
+  height: 28px; flex-shrink: 0;
+}
+.fm-statusbar .status-item { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.fm-statusbar .status-item:hover { color: var(--text); }
+.fm-statusbar-left { flex: 1; }
+.fm-statusbar-right { display: flex; align-items: center; gap: 8px; }
+
+/* ═══ EMPTY STATE ═════════════════════════════════════════════ */
+.fm-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 40px 20px; color: var(--text-muted);
+}
+.fm-empty-icon { font-size: 40px; margin-bottom: 10px; opacity: 0.3; }
+.fm-empty-text { font-size: 13px; }
+
+/* ═══ INPUTS ══════════════════════════════════════════════════ */
+.fm-input {
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 10px; color: var(--text);
+  font-size: 13px; font-family: var(--font); outline: none; width: 100%;
+}
+.fm-input:focus { border-color: var(--accent); }
+.fm-select {
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 8px; color: var(--text);
+  font-size: 12px; font-family: var(--font); outline: none; cursor: pointer;
+}
+
+/* ═══ TERMINAL ════════════════════════════════════════════════ */
+.fm-terminal {
+  background: #0d1117; border-radius: 8px; padding: 12px;
+  font-family: var(--font-mono); font-size: 12px; color: #c9d1d9;
+  max-height: 400px; overflow-y: auto;
+}
+.fm-terminal-input-line { display: flex; align-items: center; gap: 6px; padding: 4px 0; }
+.fm-terminal-prompt { color: var(--green); }
+.fm-terminal-input {
+  flex: 1; background: transparent; border: none; color: #e6edf3;
+  font-family: var(--font-mono); font-size: 12px; outline: none;
+}
+.fm-terminal-output { white-space: pre-wrap; margin: 4px 0; }
+.fm-terminal-error { color: var(--red); }
+
+/* ═══ NOTIFICATIONS ═══════════════════════════════════════════ */
+.fm-notification {
+  position: fixed; bottom: 40px; right: 20px;
+  background: var(--bg-file); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 16px; z-index: 9999;
+  box-shadow: var(--shadow-context); animation: fmSlideUp 0.2s ease;
+  font-size: 12px; max-width: 360px; display: flex; align-items: center; gap: 8px;
+}
+
+/* ═══ TOOLTIP ═════════════════════════════════════════════════ */
+.fm-tooltip {
+  position: absolute; background: var(--bg-file); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 10px; font-size: 11px; color: var(--text);
+  box-shadow: var(--shadow); z-index: 5000; pointer-events: none; max-width: 300px;
+}
+
+/* ═══ ANIMATIONS ══════════════════════════════════════════════ */
+@keyframes fmFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fmScaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes fmSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fmProgress { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ═══ SCROLLBAR ═══════════════════════════════════════════════ */
+.fm-file-list::-webkit-scrollbar, .fm-tree-content::-webkit-scrollbar,
+.fm-preview-content::-webkit-scrollbar { width: 8px; height: 8px; }
+.fm-file-list::-webkit-scrollbar-track, .fm-tree-content::-webkit-scrollbar-track,
+.fm-preview-content::-webkit-scrollbar-track { background: transparent; }
+.fm-file-list::-webkit-scrollbar-thumb, .fm-tree-content::-webkit-scrollbar-thumb,
+.fm-preview-content::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 4px; }
+.fm-file-list::-webkit-scrollbar-thumb:hover, .fm-tree-content::-webkit-scrollbar-thumb:hover,
+.fm-preview-content::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
+
+/* ═══ EMBEDDED MODE ═══════════════════════════════════════════ */
+.fm-embedded .fm-ribbon { display: none; }
+.fm-embedded .fm-tree { width: 180px; }
+.fm-embedded .fm-preview { display: none; }
+.fm-embedded .fm-address-row { padding: 3px 6px; }
+.fm-embedded .fm-search-bar { min-width: 70px; max-width: 160px; flex-shrink: 1; }
+.fm-embedded .fm-viewtoggles #layoutToggle,
+.fm-embedded .fm-viewtoggles #dualSyncToggle { display: none; }
+.fm-embedded .fm-statusbar { height: 22px; padding: 2px 8px; font-size: 10px; }
+.fm-embedded .fm-file-list { padding: 4px; }
+.fm-embedded .fm-grid-item { min-height: 70px; padding: 6px 2px 4px; }
+.fm-embedded .fm-grid-item .fm-grid-icon { font-size: 26px; }
+.fm-embedded .fm-grid-item .fm-grid-name { font-size: 10px; }
+
+/* ═══ RESPONSIVE ══════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .fm-ribbon-bar { display: none; }
+  .fm-tree { display: none; }
+  .fm-preview { display: none; }
+  .fm-search-bar { min-width: 60px; }
+  .fm-breadcrumb-item { max-width: 80px; }
+  /* На узких экранах второстепенные переключатели уступают место
+     aiTasksBtnTop/ribbonToggle — иначе кнопки снова лезут на поиск. */
+  .fm-viewtoggles #layoutToggle,
+  .fm-viewtoggles #dualSyncToggle,
+  .fm-viewtoggles #treeToggle { display: none; }
+}
+
+/* ═══ SEPIA THEME ════════════════════════════════════════════ */
+body.sepia, html[data-fm-theme="sepia"] body {
+  --bg: #f4ecd8; --bg-window: #f4ecd8; --bg-sidebar: #f0e8d4;
+  --bg-file: #faf5e8; --bg-hover: rgba(139,119,71,0.08); --bg-active: rgba(139,119,71,0.12);
+  --bg-selected: #e8dcc4; --bg-header: #f0e8d4;
+  --bg-context: #f8f2e4; --bg-context-hover: rgba(139,119,71,0.1); --bg-context-toolbar: #f0e8d4;
+  --bg-input: #faf5e8; --bg-preview: #f0e8d4; --bg-tab: #f8f2e4;
+  --text: #3e3224; --text-secondary: #6b5a42; --text-muted: #9a8a70;
+  --border: rgba(139,119,71,0.15); --border-light: rgba(139,119,71,0.1);
+  --accent: #8b6914; --accent-hover: #a07818;
+  --shadow: 0 2px 4px rgba(62,50,36,0.08), 0 8px 16px rgba(62,50,36,0.12), 0 32px 64px rgba(62,50,36,0.16);
+  --shadow-context: 0 8px 24px rgba(62,50,36,0.2), 0 2px 6px rgba(62,50,36,0.12);
+  --folder-grad-1: #d4a843; --folder-grad-2: #b8902e;
+  --scrollbar: rgba(139,119,71,0.25); --scrollbar-hover: rgba(139,119,71,0.4);
+  --check-bg: #8b6914;
+  --red: #c0392b; --green: #27ae60; --yellow: #e67e22; --purple: #8e44ad;
+  /* Постоянные величины (шрифты, цвета статусов, размер иконок) —
+     тема на них не влияет. Без них тёмная палитра брала эти значения
+     из светлого :root. */
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --red: #e81123;
+  --green: #107c10;
+  --yellow: #ff8c00;
+  --purple: #8764b8;
+  --icon-size: 80px;
+}
+
+/* ═══ ОСТАЛЬНЫЕ ТЕМЫ ПРИЛОЖЕНИЯ ══════════════════════════════════════
+   В приложении девять тем (static/js/theme.js, THEME_VARS), а здесь были
+   палитры только для тёмной и сепии: выбрать, скажем, «Океан» можно было
+   на главной странице, а файловый менеджере оставался тёмным. Значения
+   взяты из THEME_VARS, чтобы тема выглядела одинаково везде. */
+body.warm, html[data-fm-theme="warm"] body {
+  --bg: #1a1410; --bg-window: #1a1410; --bg-sidebar: #1a1410;
+  --bg-file: #2a1f18; --bg-hover: rgba(212,165,116,0.08); --bg-active: rgba(212,165,116,0.13);
+  --bg-selected: #43352a; --bg-header: #2a1f18;
+  --bg-context: #2a1f18; --bg-context-hover: rgba(212,165,116,0.1); --bg-context-toolbar: #241a14;
+  --bg-input: #33251c; --bg-preview: #241a14; --bg-tab: #2a1f18;
+  --text: #e8d8c8; --text-secondary: #a89888; --text-muted: #7a6a5a;
+  --border: rgba(212,165,116,0.14); --border-light: rgba(212,165,116,0.09);
+  --accent: #d4a574; --accent-hover: #e0b689;
+  --shadow: 0 2px 4px rgba(0,0,0,0.35), 0 8px 16px rgba(0,0,0,0.45), 0 32px 64px rgba(0,0,0,0.55);
+  --shadow-context: 0 8px 24px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.4);
+  --folder-grad-1: #d4a574; --folder-grad-2: #a87f52;
+  --scrollbar: rgba(212,165,116,0.25); --scrollbar-hover: rgba(212,165,116,0.4);
+  --check-bg: #d4a574;
+  /* Постоянные величины (шрифты, цвета статусов, размер иконок) —
+     тема на них не влияет. Без них тёмная палитра брала эти значения
+     из светлого :root. */
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --red: #e81123;
+  --green: #107c10;
+  --yellow: #ff8c00;
+  --purple: #8764b8;
+  --icon-size: 80px;
+}
+body.paper, html[data-fm-theme="paper"] body {
+  --bg: #fdfcf8; --bg-window: #fdfcf8; --bg-sidebar: #f6f2e8;
+  --bg-file: #fffefb; --bg-hover: rgba(80,60,40,0.06); --bg-active: rgba(80,60,40,0.1);
+  --bg-selected: #efe6d6; --bg-header: #f6f2e8;
+  --bg-context: #faf7f0; --bg-context-hover: rgba(80,60,40,0.08); --bg-context-toolbar: #f0ebe0;
+  --bg-input: #fffefb; --bg-preview: #f6f2e8; --bg-tab: #faf7f0;
+  --text: #2c2418; --text-secondary: #5a4a38; --text-muted: #8a7a68;
+  --border: rgba(80,60,40,0.14); --border-light: rgba(80,60,40,0.09);
+  --accent: #a0522d; --accent-hover: #b85f38;
+  --shadow: 0 2px 4px rgba(80,60,40,0.08), 0 8px 16px rgba(80,60,40,0.12), 0 32px 64px rgba(80,60,40,0.16);
+  --shadow-context: 0 8px 24px rgba(80,60,40,0.18), 0 2px 6px rgba(80,60,40,0.12);
+  --folder-grad-1: #e0b98a; --folder-grad-2: #c49a63;
+  --scrollbar: rgba(80,60,40,0.22); --scrollbar-hover: rgba(80,60,40,0.36);
+  --check-bg: #a0522d;
+  /* Постоянные величины (шрифты, цвета статусов, размер иконок) —
+     тема на них не влияет. Без них тёмная палитра брала эти значения
+     из светлого :root. */
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --red: #e81123;
+  --green: #107c10;
+  --yellow: #ff8c00;
+  --purple: #8764b8;
+  --icon-size: 80px;
+}
+body.ocean, html[data-fm-theme="ocean"] body {
+  --bg: #0a1628; --bg-window: #0a1628; --bg-sidebar: #0a1628;
+  --bg-file: #102038; --bg-hover: rgba(100,180,255,0.09); --bg-active: rgba(100,180,255,0.14);
+  --bg-selected: #1c3a5e; --bg-header: #102038;
+  --bg-context: #102038; --bg-context-hover: rgba(100,180,255,0.11); --bg-context-toolbar: #0d1a2e;
+  --bg-input: #16294a; --bg-preview: #0d1a2e; --bg-tab: #102038;
+  --text: #c8dcf0; --text-secondary: #8aa8c8; --text-muted: #5a7898;
+  --border: rgba(100,180,255,0.15); --border-light: rgba(100,180,255,0.09);
+  --accent: #4aa3df; --accent-hover: #66b3e8;
+  --shadow: 0 2px 4px rgba(0,0,0,0.35), 0 8px 16px rgba(0,0,0,0.45), 0 32px 64px rgba(0,0,0,0.55);
+  --shadow-context: 0 8px 24px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.4);
+  --folder-grad-1: #6fb7e8; --folder-grad-2: #3f7fa8;
+  --scrollbar: rgba(100,180,255,0.25); --scrollbar-hover: rgba(100,180,255,0.4);
+  --check-bg: #4aa3df;
+  /* Постоянные величины (шрифты, цвета статусов, размер иконок) —
+     тема на них не влияет. Без них тёмная палитра брала эти значения
+     из светлого :root. */
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --red: #e81123;
+  --green: #107c10;
+  --yellow: #ff8c00;
+  --purple: #8764b8;
+  --icon-size: 80px;
+}
+body.forest, html[data-fm-theme="forest"] body {
+  --bg: #0f1a14; --bg-window: #0f1a14; --bg-sidebar: #0f1a14;
+  --bg-file: #16241c; --bg-hover: rgba(80,200,120,0.09); --bg-active: rgba(80,200,120,0.14);
+  --bg-selected: #1f3d2d; --bg-header: #16241c;
+  --bg-context: #16241c; --bg-context-hover: rgba(80,200,120,0.11); --bg-context-toolbar: #12201a;
+  --bg-input: #1c2e24; --bg-preview: #12201a; --bg-tab: #16241c;
+  --text: #c8e0d0; --text-secondary: #88b098; --text-muted: #588068;
+  --border: rgba(80,200,120,0.15); --border-light: rgba(80,200,120,0.09);
+  --accent: #4aa878; --accent-hover: #63bd8c;
+  --shadow: 0 2px 4px rgba(0,0,0,0.35), 0 8px 16px rgba(0,0,0,0.45), 0 32px 64px rgba(0,0,0,0.55);
+  --shadow-context: 0 8px 24px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.4);
+  --folder-grad-1: #6fc493; --folder-grad-2: #4a8f66;
+  --scrollbar: rgba(80,200,120,0.25); --scrollbar-hover: rgba(80,200,120,0.4);
+  --check-bg: #4aa878;
+  /* Постоянные величины (шрифты, цвета статусов, размер иконок) —
+     тема на них не влияет. Без них тёмная палитра брала эти значения
+     из светлого :root. */
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --red: #e81123;
+  --green: #107c10;
+  --yellow: #ff8c00;
+  --purple: #8764b8;
+  --icon-size: 80px;
+}
+body.midnight, html[data-fm-theme="midnight"] body {
+  --bg: #08090f; --bg-window: #08090f; --bg-sidebar: #08090f;
+  --bg-file: #111320; --bg-hover: rgba(130,140,255,0.1); --bg-active: rgba(130,140,255,0.16);
+  --bg-selected: #1c2040; --bg-header: #111320;
+  --bg-context: #111320; --bg-context-hover: rgba(130,140,255,0.12); --bg-context-toolbar: #0c0e18;
+  --bg-input: #171a2b; --bg-preview: #0c0e18; --bg-tab: #111320;
+  --text: #dfe3f5; --text-secondary: #9aa0c4; --text-muted: #6b6f96;
+  --border: rgba(130,140,255,0.16); --border-light: rgba(130,140,255,0.1);
+  --accent: #7c86ff; --accent-hover: #96a0ff;
+  --shadow: 0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.5), 0 32px 64px rgba(0,0,0,0.6);
+  --shadow-context: 0 8px 24px rgba(0,0,0,0.65), 0 2px 6px rgba(0,0,0,0.45);
+  --folder-grad-1: #8e97ff; --folder-grad-2: #5c66cc;
+  --scrollbar: rgba(130,140,255,0.25); --scrollbar-hover: rgba(130,140,255,0.4);
+  --check-bg: #7c86ff;
+  /* Не тема, а постоянные величины. Без них тёмные палитры тянули эти
+     значения из СВЕТЛОГО :root — то есть часть элементов (статусы,
+     кнопки действий, размер иконок) выглядела как от светлой темы. */
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --red: #e81123;
+  --green: #107c10;
+  --yellow: #ff8c00;
+  --purple: #8764b8;
+  --icon-size: 80px;
+}
+body.rose, html[data-fm-theme="rose"] body {
+  --bg: #fff5f7; --bg-window: #fff5f7; --bg-sidebar: #fbe9ee;
+  --bg-file: #fffafb; --bg-hover: rgba(190,80,120,0.07); --bg-active: rgba(190,80,120,0.12);
+  --bg-selected: #fbdde6; --bg-header: #fbe9ee;
+  --bg-context: #fff8fa; --bg-context-hover: rgba(190,80,120,0.09); --bg-context-toolbar: #fceef2;
+  --bg-input: #fffafb; --bg-preview: #fceef2; --bg-tab: #fff8fa;
+  --text: #3a1f28; --text-secondary: #6d4453; --text-muted: #9c7080;
+  --border: rgba(190,80,120,0.16); --border-light: rgba(190,80,120,0.1);
+  --accent: #d1477a; --accent-hover: #e0608f;
+  --shadow: 0 2px 4px rgba(90,30,55,0.08), 0 8px 16px rgba(90,30,55,0.12), 0 32px 64px rgba(90,30,55,0.16);
+  --shadow-context: 0 8px 24px rgba(90,30,55,0.18), 0 2px 6px rgba(90,30,55,0.12);
+  --folder-grad-1: #f0a0be; --folder-grad-2: #d1748f;
+  --scrollbar: rgba(190,80,120,0.24); --scrollbar-hover: rgba(190,80,120,0.38);
+  --check-bg: #d1477a;
+  /* Постоянные величины (шрифты, цвета статусов, размер иконок) —
+     тема на них не влияет. Без них тёмная палитра брала эти значения
+     из светлого :root. */
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --red: #e81123;
+  --green: #107c10;
+  --yellow: #ff8c00;
+  --purple: #8764b8;
+  --icon-size: 80px;
+}
+
+/* Явная светлая тема — последним, чтобы перекрывала остаточный класс
+   темы на <body>. theme.js снимает классы тем, но если он не отработал
+   (шаблон жёстко пишет <body class="dark">), при переключении на светлую
+   страницу оставшийся body.dark иначе остался бы тёмной. */
+html[data-fm-theme="light"] body, body.light {
+  --bg: #f3f3f3; --bg-window: #f3f3f3; --bg-sidebar: #f3f3f3;
+  --bg-file: #ffffff; --bg-hover: rgba(0,0,0,0.04); --bg-active: rgba(0,0,0,0.06);
+  --bg-selected: #e5f1fb; --bg-header: #ffffff;
+  --bg-context: #f9f9f9; --bg-context-hover: rgba(0,0,0,0.06); --bg-context-toolbar: #f3f3f3;
+  --bg-input: #ffffff; --bg-preview: #fafafa; --bg-tab: #ffffff;
+  --text: #1f2937; --text-secondary: #333333; --text-muted: #333333;
+  --border: rgba(0,0,0,0.08); --border-light: rgba(0,0,0,0.06);
+  --accent: #0078d4; --accent-hover: #106ebe;
+  --shadow: 0 2px 4px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.08), 0 32px 64px rgba(0,0,0,0.12);
+  --shadow-context: 0 8px 24px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08);
+  --folder-grad-1: #ffd878; --folder-grad-2: #e8a838;
+  --scrollbar: rgba(0,0,0,0.15); --scrollbar-hover: rgba(0,0,0,0.25);
+  --check-bg: #0078d4;
+  --red: #e81123; --green: #107c10; --yellow: #ff8c00; --purple: #8764b8;
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --icon-size: 80px;
+}
+
+/* Copy/Move progress modal */
+.fm-copy-modal{position:fixed;inset:0;z-index:10001;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);animation:fadeIn .15s}
+.fm-copy-dialog{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);width:420px;max-height:70vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:scaleIn .2s}
+.fm-copy-header{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border)}
+.fm-copy-header h3{flex:1;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.fm-copy-header .close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px;line-height:1}
+.fm-copy-header .close:hover{color:var(--text)}
+.fm-copy-body{flex:1;overflow-y:auto;padding:12px 18px;min-height:0}
+.fm-copy-file{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px;border-bottom:1px solid var(--border-light, var(--border))}
+.fm-copy-file:last-child{border-bottom:none}
+.fm-copy-file .icon{width:16px;text-align:center;flex-shrink:0}
+.fm-copy-file .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.fm-copy-file .status{width:20px;text-align:center;flex-shrink:0;font-size:13px}
+.fm-copy-file.ok .status{color:var(--green)}
+.fm-copy-file.error .status{color:var(--red)}
+.fm-copy-file.active .name{color:var(--accent);font-weight:600}
+.fm-copy-file.pending .status{color:var(--text3)}
+.fm-copy-progress-wrap{padding:0 18px 6px}
+.fm-copy-progress{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.fm-copy-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));transition:width .3s;border-radius:2px}
+.fm-copy-footer{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)}
+.fm-copy-footer .cancel{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit}
+.fm-copy-footer .cancel:hover{background:var(--surface)}
+.fm-copy-error{background:var(--surface);border:1px solid var(--red);border-radius:6px;padding:8px 12px;margin:8px 0;font-size:11px;color:var(--red)}
+
+/* ═══ Задания AI-агента ═══════════════════════════════════════════════ */
+.fm-ai-row{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;transition:border-color .15s}
+.fm-ai-row:hover{border-color:var(--accent)}
+.fm-ai-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--text2)}
+.fm-ai-hint{cursor:pointer;padding:2px 7px;background:var(--bg);border:1px solid var(--border);border-radius:5px;font-size:10px;color:var(--text3);font-family:ui-monospace,Menlo,Consolas,monospace}
+.fm-ai-hint:hover{border-color:var(--accent);color:var(--text)}
+
+/* ═══ КОРЗИНА ══════════════════════════════════════════════════════════ */
+.fm-tree-trash .fm-tree-badge{margin-left:auto;background:var(--accent);color:#fff;border-radius:9px;
+  font-size:10px;line-height:1;padding:3px 6px;font-weight:600}
+.fm-tree-trash.fm-tree-item{display:flex;align-items:center;gap:8px}
+.fm-trash-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);
+  background:var(--bg-context-toolbar);position:sticky;top:0;z-index:2;flex-wrap:wrap}
+.fm-trash-bar .fm-btn{background:var(--bg-file);border:1px solid var(--border);color:var(--text);
+  border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;display:inline-flex;
+  align-items:center;gap:6px;font-family:var(--font)}
+.fm-trash-bar .fm-btn:hover:not(:disabled){background:var(--bg-hover);border-color:var(--border)}
+.fm-trash-bar .fm-btn:disabled{opacity:.45;cursor:not-allowed}
+.fm-trash-bar .fm-btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.fm-trash-bar .fm-btn-primary:hover:not(:disabled){background:var(--accent-hover);border-color:var(--accent-hover)}
+.fm-trash-bar .fm-btn-danger{background:var(--red);border-color:var(--red);color:#fff}
+.fm-trash-bar .fm-btn-danger:hover:not(:disabled){filter:brightness(1.12)}
+.fm-trash-sep{width:1px;height:20px;background:var(--border)}
+.fm-trash-hint{margin-left:auto;font-size:11px;color:var(--text-muted);
+  display:inline-flex;align-items:center;gap:5px}
+.fm-trash-head,.fm-trash-row{display:grid;
+  grid-template-columns:26px minmax(90px,1.1fr) minmax(120px,2fr) 92px 130px 30px;
+  gap:8px;align-items:center;padding:7px 12px}
+.fm-trash-head{font-size:11px;color:var(--text-muted);border-bottom:1px solid var(--border);
+  background:var(--bg-header);font-weight:600;position:sticky;top:41px;z-index:1}
+.fm-trash-row{cursor:default;border-bottom:1px solid var(--border-light)}
+.fm-trash-row:hover{background:var(--bg-hover)}
+.fm-trash-row.selected{background:var(--bg-selected)}
+.fm-trash-icon{text-align:center;color:var(--accent)}
+.fm-trash-name{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fm-trash-orig{font-size:11px;color:var(--text-secondary);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:left}
+.fm-trash-orig-unknown{font-style:italic;color:var(--text-muted);direction:ltr}
+.fm-trash-size,.fm-trash-date{font-size:11px;color:var(--text-muted);white-space:nowrap}
+.fm-trash-restore-btn{background:none;border:1px solid transparent;color:var(--text-muted);
+  cursor:pointer;border-radius:5px;padding:3px 6px;font-size:12px}
+.fm-trash-restore-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ═══ ВЫДЕЛЕНИЕ РАМКОЙ ═════════════════════════════════════════════════ */
+.fm-rubber-band{position:fixed;z-index:9999;display:none;pointer-events:none;
+  border:1px solid var(--accent);background:color-mix(in srgb,var(--accent) 15%,transparent);
+  border-radius:2px}
+/* Пока тянут рамку, текст под ней не должен выделяться — иначе после
+   отпускания мыши остаётся синее пятно поверх имён файлов. */
+body.fm-rubber-active{user-select:none;-webkit-user-select:none;cursor:crosshair}
+body.fm-rubber-active *{cursor:crosshair !important}
+
+/* ═══ «ОТКРЫТЬ С ПОМОЩЬЮ…» ═════════════════════════════════════════════ */
+.fm-ow-assoc{display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:10px;
+  border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border));border-radius:8px;
+  background:color-mix(in srgb,var(--accent) 10%,transparent);font-size:12.5px}
+.fm-ow-assoc>i{color:var(--accent)}
+.fm-ow-assoc span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fm-ow-search{position:relative;margin-bottom:8px}
+.fm-ow-search>i{position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--text-muted);font-size:12px;pointer-events:none}
+.fm-ow-search .fm-input{padding-left:30px}
+.fm-ow-section{margin-bottom:10px}
+.fm-ow-head{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);
+  padding:4px 2px;margin-bottom:2px}
+.fm-ow-refresh{margin-left:auto;background:none;border:0;color:var(--text-muted);
+  cursor:pointer;padding:2px 6px;border-radius:5px;font-size:11px}
+.fm-ow-refresh:hover{background:var(--bg-hover);color:var(--accent)}
+.fm-ow-scroll{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;
+  padding-right:2px}
+.fm-ow-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;
+  cursor:pointer;border:1px solid var(--border-light);background:var(--bg-file)}
+.fm-ow-row:hover,.fm-ow-row:focus-visible{background:var(--bg-hover);
+  border-color:color-mix(in srgb,var(--accent) 45%,var(--border))}
+.fm-ow-ico{width:26px;height:26px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-size:16px;color:var(--accent)}
+.fm-ow-exeico img{width:22px;height:22px;object-fit:contain;border-radius:3px}
+.fm-ow-txt{flex:1;min-width:0}
+.fm-ow-name{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.fm-ow-desc{font-size:10.5px;color:var(--text-muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;direction:ltr}
+.fm-ow-arrow{font-size:10px;color:var(--text-muted);flex-shrink:0}
+.fm-ow-loading{font-size:12px;color:var(--text-muted);padding:10px 4px}
+.fm-ow-methods{display:flex;flex-direction:column;gap:12px}
+.fm-ow-mfile,.fm-ow-mapp{display:flex;align-items:center;gap:8px;font-size:13px;
+  padding:8px 10px;border-radius:7px;background:var(--bg);border:1px solid var(--border-light)}
+.fm-ow-mfile{color:var(--text-secondary)}
+.fm-ow-mapp{font-weight:600;color:var(--text)}
+.fm-ow-mfile>i,.fm-ow-mapp>i{color:var(--accent)}
+.fm-ow-check{display:flex;align-items:flex-start;gap:9px;font-size:12.5px;cursor:pointer;
+  padding:9px 10px;border:1px solid var(--border-light);border-radius:7px;background:var(--bg-file)}
+.fm-ow-check input{margin-top:2px;flex-shrink:0}
+.fm-ow-check small{display:block;color:var(--text-muted);font-size:10.5px;margin-top:3px;
+  line-height:1.4}
+.fm-ow-check.disabled{opacity:.45;cursor:not-allowed}
+.fm-ow-check code{font-size:11px;padding:1px 5px;border-radius:4px;background:var(--bg)}
+.fm-ow-hint{display:flex;gap:8px;align-items:flex-start;font-size:11px;line-height:1.45;
+  color:var(--text-muted);padding:0 2px}
+.fm-ow-hint>i{color:var(--warning,var(--accent));margin-top:1px}
+.fm-ow-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;
+  padding-top:10px;border-top:1px solid var(--border-light)}
+
+@media (max-width: 640px){
+  .fm-modal-lg{width:calc(100vw - 16px)}
+  .fm-ow-scroll{max-height:40vh}
+  .fm-ow-row{padding:10px 8px}
+  .fm-ow-name{font-size:13px}
+  .fm-ow-check{padding:11px 10px}
+  .fm-ow-actions{position:sticky;bottom:-16px;background:var(--bg-file);
+    padding-bottom:8px;margin-bottom:-16px}
+}
+
+/* ─── «Поделиться» (этап 17) ─────────────────────────────────────────── */
+.fm-share{display:flex;flex-direction:column;gap:12px;min-width:420px}
+.fm-share-file{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:10px 12px;border-radius:10px;background:var(--bg-secondary,var(--bg2));
+  border:1px solid var(--border);font-size:13px}
+.fm-share-file>i{color:var(--accent)}
+.fm-share-sub{font-size:11px;line-height:1.5;color:var(--text-muted,var(--text3));
+  word-break:break-all}
+.fm-share-file .fm-share-sub{flex-basis:100%}
+.fm-share-opt{display:flex;gap:10px;align-items:flex-start;cursor:pointer;
+  padding:10px 12px;border-radius:10px;border:1px solid var(--border);
+  background:var(--bg-secondary,var(--bg2));font-size:13px}
+.fm-share-opt input{margin-top:3px;flex:0 0 auto;width:15px;height:15px;cursor:pointer}
+.fm-share-opt span{display:flex;flex-direction:column;gap:3px}
+.fm-share-opt small{font-size:11px;color:var(--text-muted,var(--text3));line-height:1.45}
+.fm-share-row{display:flex;align-items:center;gap:10px;padding:0 4px;font-size:12px}
+.fm-share-row label{color:var(--text-muted,var(--text3));min-width:96px}
+.fm-share-row select{flex:1;padding:7px 9px;border-radius:8px;font-size:12px;
+  background:var(--bg-secondary,var(--bg2));color:var(--text);
+  border:1px solid var(--border)}
+.fm-share-actions{display:flex;align-items:center;gap:12px}
+.fm-share-hint{font-size:12px;color:var(--text-muted,var(--text3))}
+.fm-share-result{display:flex;flex-direction:column;gap:6px;padding:10px;
+  border-radius:10px;border:1px dashed var(--border);background:var(--bg-secondary,var(--bg2))}
+.fm-share-linkbox{display:flex;align-items:center;gap:6px}
+.fm-share-linkbox>i{color:var(--accent);flex:0 0 auto}
+.fm-share-linkbox input{flex:1;min-width:0;padding:7px 9px;border-radius:8px;
+  font-size:12px;font-family:ui-monospace,Consolas,monospace;
+  background:var(--bg);color:var(--text);border:1px solid var(--border)}
+.fm-share-existing{border-top:1px solid var(--border);padding-top:10px;
+  display:flex;flex-direction:column;gap:8px}
+.fm-share-existing-head{display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--text-muted,var(--text3))}
+.fm-share-list{display:flex;flex-direction:column;gap:6px;max-height:190px;overflow:auto}
+.fm-share-item{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:8px 10px;border-radius:9px;border:1px solid var(--border);
+  background:var(--bg-secondary,var(--bg2));font-size:12px}
+.fm-share-item-main{display:flex;align-items:center;gap:8px;min-width:0}
+.fm-share-item-main>i{color:var(--accent);flex:0 0 auto}
+.fm-share-item-main b{display:block;font-weight:600;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;max-width:250px}
+.fm-share-item-btns{display:flex;gap:2px;flex:0 0 auto}
+.fm-share-item-btns button{width:26px;height:26px;border:0;border-radius:7px;
+  background:transparent;color:var(--text-muted,var(--text3));cursor:pointer}
+.fm-share-item-btns button:hover{background:var(--bg-hover,rgba(127,127,127,.16));color:var(--text)}
+.fm-share-item-btns button.danger:hover{color:var(--red,#da3633)}
+.fm-share-empty{font-size:12px;color:var(--text-muted,var(--text3));padding:4px 2px}
+
+/* Режимы «Поделиться»: доступ / копия / ссылка */
+.fm-share-tabs{display:flex;gap:4px;padding:4px;border-radius:10px;
+  background:var(--bg-secondary,var(--bg2));border:1px solid var(--border)}
+.fm-share-tabs button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px 10px;border:0;border-radius:8px;background:transparent;
+  color:var(--text-muted,var(--text3));font-size:12px;cursor:pointer;
+  transition:background .15s,color .15s}
+.fm-share-tabs button:hover{color:var(--text)}
+.fm-share-tabs button.active{background:var(--accent);color:#fff}
+.fm-share-pane{display:flex;flex-direction:column;gap:10px}
+.fm-share-pane[hidden]{display:none}
+.fm-share-hint-small{font-size:11px;line-height:1.45;color:var(--text-muted,var(--text3))}
+.fm-share-result[hidden]{display:none}
+
+/* Счётчик входящих доступов на кнопке «Доступы» */
+.fm-incoming-btn{position:relative}
+.fm-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;
+  border-radius:8px;background:var(--red,#da3633);color:#fff;font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;line-height:1}
+.fm-badge[hidden]{display:none}
+
+/* Просмотр файла/папки, к которым выдан доступ */
+.fm-gv{display:flex;flex-direction:column;gap:10px;min-height:0}
+.fm-gv-path{display:flex;flex-wrap:wrap;align-items:center;gap:2px;font-size:12px;
+  color:var(--text-muted,var(--text3))}
+.fm-gv-crumb{border:0;background:transparent;color:var(--accent);cursor:pointer;
+  font-size:12px;padding:2px 4px;border-radius:6px}
+.fm-gv-crumb:hover{background:var(--bg-hover,rgba(127,127,127,.16))}
+.fm-gv-sep{font-size:12px;opacity:.6}
+.fm-gv-body{display:flex;flex-direction:column;gap:8px;min-height:120px}
+.fm-gv-list{display:flex;flex-direction:column;gap:2px;max-height:58vh;overflow:auto}
+.fm-gv-row{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;
+  border:0;border-radius:8px;background:transparent;color:var(--text);
+  font-size:13px;text-align:left;cursor:pointer}
+.fm-gv-row:hover{background:var(--bg-hover,rgba(127,127,127,.14))}
+.fm-gv-row>i{color:var(--accent);width:16px;text-align:center;flex:0 0 auto}
+.fm-gv-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fm-gv-size{font-size:11px;color:var(--text-muted,var(--text3));flex:0 0 auto}
+.fm-gv-text{width:100%;min-height:46vh;resize:vertical;padding:10px 12px;
+  border-radius:10px;border:1px solid var(--border);background:var(--bg);
+  color:var(--text);font-family:ui-monospace,Consolas,monospace;
+  font-size:12px;line-height:1.5}
+.fm-gv-text[readonly]{opacity:.9}
+.fm-gv-media{display:flex;align-items:center;justify-content:center;
+  border-radius:10px;background:var(--bg-secondary,var(--bg2));padding:8px;overflow:auto}
+.fm-gv-media img,.fm-gv-media video{max-width:100%;max-height:58vh;border-radius:8px}
+.fm-gv-media audio{width:100%}
+.fm-gv-pdf{width:100%;height:60vh;border:1px solid var(--border);border-radius:10px;
+  background:#fff}
+.fm-gv-download{display:flex;flex-direction:column;align-items:center;gap:12px;
+  padding:26px 16px;border-radius:12px;border:1px dashed var(--border);
+  background:var(--bg-secondary,var(--bg2));font-size:13px;
+  color:var(--text-muted,var(--text3))}
+.fm-gv-download>i{font-size:28px;color:var(--accent)}
+
+@media (max-width: 640px){
+  .fm-share{min-width:0}
+  .fm-share-item-main b{max-width:150px}
+  .fm-share-tabs button span{display:none}
+  .fm-gv-text{min-height:38vh}
+}

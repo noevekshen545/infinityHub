@@ -1,0 +1,2515 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/extensions",
+    "name": "List all extensions",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/{name}/config",
+    "name": "Get extension config",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/{name}/export",
+    "name": "Export extension as ZIP",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/{name}/files",
+    "name": "List extension files",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/{name}/files/read",
+    "name": "Read extension file",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/{name}/logs",
+    "name": "Get extension logs",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/{name}/permissions",
+    "name": "Get extension permissions",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/api-docs",
+    "name": "Extension API documentation",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/builder-data",
+    "name": "Extension builder data",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/builder-page",
+    "name": "Extension builder page",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/by-module/{module}",
+    "name": "Extensions by module",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/frontend-scripts",
+    "name": "Get frontend scripts",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/marketplace/categories",
+    "name": "Marketplace categories",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/marketplace/list",
+    "name": "Marketplace listing",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/marketplace/page",
+    "name": "Marketplace page",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/permissions/list-all",
+    "name": "All permissions",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/extensions/updates",
+    "name": "Check extension updates",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/{name}/config",
+    "name": "Update extension config",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/{name}/disable",
+    "name": "Disable extension",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/{name}/enable",
+    "name": "Enable extension",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/{name}/files/create-folder",
+    "name": "Create extension folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/{name}/files/delete",
+    "name": "Delete extension file",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/{name}/files/save",
+    "name": "Save extension file",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/{name}/permissions",
+    "name": "Set extension permissions",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/{name}/reload",
+    "name": "Reload extension",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/{name}/update",
+    "name": "Update extension",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/extensions/{name}",
+    "name": "Delete extension",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/builder/ai-generate",
+    "name": "AI generate extension config",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/builder/ai-improve",
+    "name": "AI improve extension code",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/builder/preview",
+    "name": "Extension preview",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/builder/test-simulate",
+    "name": "Test extension simulation",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/create-test",
+    "name": "Create test extension",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/generate-visual",
+    "name": "Generate extension from builder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/install-git",
+    "name": "Install extension from git",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/marketplace/install",
+    "name": "Install from marketplace",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/marketplace/publish",
+    "name": "Publish to marketplace",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/marketplace/remove",
+    "name": "Remove from marketplace",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/register-module",
+    "name": "Register new module",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/repository/add",
+    "name": "Add extension repository",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/repository/load",
+    "name": "Load extension repository",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/repository/remove",
+    "name": "Remove extension repository",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/upload",
+    "name": "Upload extension ZIP",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/extensions/upload-with-deps",
+    "name": "Upload extension with deps",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/agent/history",
+    "name": "Chat history",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/agent/memory",
+    "name": "Agent memory",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/chat/folders",
+    "name": "Chat folders",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/chat/history",
+    "name": "Chat history",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/chat/session",
+    "name": "Get chat session",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/chat/sessions",
+    "name": "List chat sessions",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/agent/chat",
+    "name": "Send chat message",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/ask",
+    "name": "Ask chat",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/attach-file",
+    "name": "Attach file to chat",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/attach-search-result",
+    "name": "Attach search result to chat",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/auto-name",
+    "name": "Auto-name chat session",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/delete",
+    "name": "Delete chat session",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/delete-all",
+    "name": "Delete all sessions",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/detach",
+    "name": "Detach from chat",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/folder/create",
+    "name": "Create chat folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/folder/delete",
+    "name": "Delete chat folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/folder/rename",
+    "name": "Rename chat folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/free-ask",
+    "name": "Free-form chat ask",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/message/delete",
+    "name": "Delete chat message",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/message/favorite",
+    "name": "Favorite chat message",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/message/to-notes",
+    "name": "Copy message to notes",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/message/update",
+    "name": "Update chat message",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/move",
+    "name": "Move chat session",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/rename",
+    "name": "Rename chat session",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/save-attachment",
+    "name": "Save chat attachment",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/sessions",
+    "name": "Create chat session",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/books",
+    "name": "List books",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/books/cover",
+    "name": "Get book cover",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/books/image",
+    "name": "Get book image",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/books/progress",
+    "name": "Get reading progress",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/books/read",
+    "name": "Read book content",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/books/search",
+    "name": "Search books",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/book-categories",
+    "name": "Book categories",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/book-folders",
+    "name": "Book folders",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/bookmarks",
+    "name": "List bookmarks",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/bookmarks/favorites",
+    "name": "Favorite bookmarks",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/collection/author/{author_id}/books",
+    "name": "Books by author",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/collection/authors",
+    "name": "List authors",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/collection/book/{book_id}",
+    "name": "Get book details",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/collection/books",
+    "name": "Collection books",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/collection/cover/{book_id}",
+    "name": "Collection cover",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/collection/genre/{genre_id}/books",
+    "name": "Books by genre",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/collection/genres",
+    "name": "List genres",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/collection/read/{book_id}",
+    "name": "Read collection book",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/collection/search",
+    "name": "Search collection",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/collection/series",
+    "name": "List series",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/collection/series/{series_id}/books",
+    "name": "Books in series",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/collection/stats",
+    "name": "Collection stats",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-categories/add-book",
+    "name": "Add book to category",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-categories/ai-sort",
+    "name": "AI sort categories",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-categories/create",
+    "name": "Create category",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-categories/delete",
+    "name": "Delete category",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-categories/remove-book",
+    "name": "Remove book from category",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-categories/rename",
+    "name": "Rename category",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-categories/reorder",
+    "name": "Reorder categories",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-folders/add-book",
+    "name": "Add book to folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-folders/create",
+    "name": "Create book folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-folders/delete",
+    "name": "Delete book folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-folders/move",
+    "name": "Move book to folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-folders/remove-book",
+    "name": "Remove book from folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/book-folders/rename",
+    "name": "Rename book folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/bookmarks/add",
+    "name": "Add bookmark",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/bookmarks/clear",
+    "name": "Clear bookmarks",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/bookmarks/favorite",
+    "name": "Toggle bookmark favorite",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/bookmarks/read",
+    "name": "Read bookmark",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/bookmarks/remove",
+    "name": "Remove bookmark",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/books/ask",
+    "name": "Ask about book",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/collection/book/mark-has-images",
+    "name": "Mark book has images",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/collection/db/path",
+    "name": "Set collection DB path",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/collection/genre/create",
+    "name": "Create genre",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/collection/genre/delete",
+    "name": "Delete genre",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/collection/genre/merge",
+    "name": "Merge genres",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/collection/genre/rename",
+    "name": "Rename genre",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/collection/genre/scan-images",
+    "name": "Scan genre images",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/collection/reset-images-cache",
+    "name": "Reset images cache",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/collection/scan/clear",
+    "name": "Clear scan status",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/collection/scan/start",
+    "name": "Start collection scan",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/collection/scan/stop",
+    "name": "Stop collection scan",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media",
+    "name": "List media",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/artist-info",
+    "name": "Artist info",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/collections",
+    "name": "Media collections",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/collections/{collection_id}",
+    "name": "Collection detail",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/cover/{track_id}",
+    "name": "Track cover",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/download",
+    "name": "Download media",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/duplicates",
+    "name": "Find duplicates",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/favorites",
+    "name": "Media favorites",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/favorites/videos",
+    "name": "Video favorites",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/file-info",
+    "name": "Media file info",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/index-progress",
+    "name": "Media index progress",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/lyrics",
+    "name": "Get lyrics",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/movie-metadata",
+    "name": "Movie metadata",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/music-index",
+    "name": "Music index",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/playlist",
+    "name": "Get playlist",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/playlists",
+    "name": "List playlists",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/random",
+    "name": "Random media",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/recommendations",
+    "name": "Media recommendations",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/search",
+    "name": "Search media",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/series/{series_name}",
+    "name": "Media series",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/statistics",
+    "name": "Media statistics",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/stream/{file_path_encoded}",
+    "name": "Stream media",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/tracks-by-album",
+    "name": "Tracks by album",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/tracks-by-artist",
+    "name": "Tracks by artist",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/video-index",
+    "name": "Video index",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/media/video-stream/{video_id}",
+    "name": "Video stream",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/artist-info/save",
+    "name": "Save artist info",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/collections/add",
+    "name": "Add to collection",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/collections/create",
+    "name": "Create collection",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/collections/delete",
+    "name": "Delete collection",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/collections/remove",
+    "name": "Remove from collection",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/favorites/add",
+    "name": "Add to favorites",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/favorites/remove",
+    "name": "Remove from favorites",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/lyrics/fetch",
+    "name": "Fetch lyrics",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/lyrics/save",
+    "name": "Save lyrics",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/movie-metadata/save",
+    "name": "Save movie metadata",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/playlist/add-track",
+    "name": "Add track to playlist",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/playlist/create",
+    "name": "Create playlist",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/playlist/delete",
+    "name": "Delete playlist",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/playlist/remove-track",
+    "name": "Remove track from playlist",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/playlist/update",
+    "name": "Update playlist",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/play-log",
+    "name": "Log media play",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/rebuild-music",
+    "name": "Rebuild music index",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/rebuild-video",
+    "name": "Rebuild video index",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/start-indexing",
+    "name": "Start media indexing",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/media/validate-all",
+    "name": "Validate all media",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/notes",
+    "name": "List notes",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/notes/attachment",
+    "name": "Get note attachment",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/notes/attachments",
+    "name": "List note attachments",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/notes/by-tag",
+    "name": "Notes by tag",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/notes/folders",
+    "name": "Note folders",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/notes/get",
+    "name": "Get note",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/notes/graph",
+    "name": "Notes knowledge graph",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/notes/list",
+    "name": "List all notes",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/notes/search",
+    "name": "Search notes",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/notes/tags",
+    "name": "Note tags",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/notes/create-folder",
+    "name": "Create note folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/notes/delete",
+    "name": "Delete note",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/notes/delete-folder",
+    "name": "Delete note folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/notes/export",
+    "name": "Export note",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/notes/export-all",
+    "name": "Export all notes",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/notes/import",
+    "name": "Import note",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/notes/save",
+    "name": "Save note",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/search",
+    "name": "Full-text search",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/search-all",
+    "name": "Search all sources",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/search-history",
+    "name": "Search history",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/search-stats",
+    "name": "Search statistics",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/suggestions",
+    "name": "Search suggestions",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/search-context",
+    "name": "Search with context",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/search-slow",
+    "name": "Deep search",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/apps",
+    "name": "List apps",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/apps/config/get",
+    "name": "Get app config",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/apps/detail",
+    "name": "App detail",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/apps/file/get",
+    "name": "Get app file",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/apps/files",
+    "name": "List app files",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/apps/icon",
+    "name": "Get app icon",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/apps/serve",
+    "name": "Serve app page",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/apps/server/status",
+    "name": "App server status",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/apps/servers",
+    "name": "List app servers",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/apps/terminal/output",
+    "name": "App terminal output",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/config/save",
+    "name": "Save app config",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/create",
+    "name": "Create app",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/delete",
+    "name": "Delete app",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/file/save",
+    "name": "Save app file",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/folder/create",
+    "name": "Create app folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/image/upload",
+    "name": "Upload app image",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/repository/add",
+    "name": "Add app repository",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/repository/load",
+    "name": "Load app repository",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/repository/remove",
+    "name": "Remove app repository",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/terminal/input",
+    "name": "App terminal input",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/terminal/start",
+    "name": "Start app terminal",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/terminal/stop",
+    "name": "Stop app terminal",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/update",
+    "name": "Update app",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/apps/upload",
+    "name": "Upload app",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/albums",
+    "name": "Photo albums",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/dirs",
+    "name": "Photo directories",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/editor",
+    "name": "Photo editor",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/events",
+    "name": "Photo events",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/file/{photo_id}",
+    "name": "Get photo file",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/happy-moments",
+    "name": "Happy moments",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/index",
+    "name": "Photo index",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/persons",
+    "name": "Detected persons",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/photo/{photo_id}",
+    "name": "Get photo metadata",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/search",
+    "name": "Search photos",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/slideshow",
+    "name": "Photo slideshow",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/stats",
+    "name": "Photo statistics",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/thumb/{photo_id}",
+    "name": "Photo thumbnail",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/photos/timeline",
+    "name": "Photo timeline",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/photos/albums/add",
+    "name": "Add to album",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/photos/albums/create",
+    "name": "Create album",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/photos/albums/delete",
+    "name": "Delete album",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/photos/albums/remove",
+    "name": "Remove from album",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/photos/detect-faces",
+    "name": "Detect faces",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/photos/dirs",
+    "name": "Set photo dirs",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/photos/edit",
+    "name": "Edit photo",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/photos/identify-face",
+    "name": "Identify face",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/photos/scan",
+    "name": "Scan photos",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/photos/toggle-fav",
+    "name": "Toggle photo favorite",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/photos/update-meta",
+    "name": "Update photo metadata",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/workspace",
+    "name": "Get workspace",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/workspace/attachments",
+    "name": "Workspace attachments",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/workspace/folders",
+    "name": "Workspace folders",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/workspace/notes",
+    "name": "Workspace notes",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/workspace/state",
+    "name": "Workspace state",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/workspace/ai-query",
+    "name": "Workspace AI query",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/workspace/save",
+    "name": "Save workspace",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/wiki/graph",
+    "name": "Wiki graph",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/wiki/links",
+    "name": "Wiki links",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/wiki/list",
+    "name": "Wiki pages list",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/wiki/page",
+    "name": "Get wiki page",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/wiki/search",
+    "name": "Search wiki",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/wiki/page",
+    "name": "Save wiki page",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/wiki/reflect/config",
+    "name": "Wiki reflect config",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/wiki/reflect/stop",
+    "name": "Stop wiki reflect",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/wiki/reflect/trigger",
+    "name": "Trigger wiki reflect",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/brain/graph-data",
+    "name": "Brain graph data",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/brain/regenerate",
+    "name": "Regenerate brain",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/memory",
+    "name": "Get memory",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/memory/categories",
+    "name": "Memory categories",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/brain/delete-node",
+    "name": "Delete brain node",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/brain/edit-node",
+    "name": "Edit brain node",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/brain/save-node",
+    "name": "Save brain node",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/brain/save-to-ai",
+    "name": "Save brain to AI",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/brain/save-to-notes",
+    "name": "Save brain to notes",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/memory/clear",
+    "name": "Clear memory",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/memory/delete",
+    "name": "Delete memory item",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/memory/list",
+    "name": "List memory",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/memory/save",
+    "name": "Save memory",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/memory/search",
+    "name": "Search memory",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/bookgen/books",
+    "name": "Generated books list",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/bookgen/download/{book_id}/{fmt}",
+    "name": "Download generated book",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/bookgen/library",
+    "name": "Book gen library",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/bookgen/models",
+    "name": "Book gen models",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/bookgen/page/{book_id}/{page_num}",
+    "name": "Get generated page",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/bookgen/plan",
+    "name": "Get book plan",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/bookgen/status/{book_id}",
+    "name": "Book gen status",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/bookgen/generate_page",
+    "name": "Generate page",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/bookgen/plan",
+    "name": "Create book plan",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/bookgen/start",
+    "name": "Start book generation",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/html",
+    "name": "HTML pages",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/html/folders",
+    "name": "HTML folders",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/html/search",
+    "name": "Search HTML pages",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/html/tree",
+    "name": "HTML tree",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/html/view",
+    "name": "View HTML page",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/html/file/create",
+    "name": "Create HTML file",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/html/file/delete",
+    "name": "Delete HTML file",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/html/file/rename",
+    "name": "Rename HTML file",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/html/folder/create",
+    "name": "Create HTML folder",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/zim/list",
+    "name": "List ZIM files",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/zim/search",
+    "name": "Search ZIM",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/zim/random",
+    "name": "Random ZIM entry",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/tts",
+    "name": "Text-to-speech",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/tts/voices",
+    "name": "TTS voices",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/stt/status",
+    "name": "STT status",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/voice/status",
+    "name": "Voice status",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/stt/transcribe",
+    "name": "Transcribe audio",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/voice/interrupt",
+    "name": "Interrupt voice",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/social/feed",
+    "name": "Social feed",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/social/friends",
+    "name": "Social friends",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/social/messages",
+    "name": "Social messages",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/social/music",
+    "name": "Social music",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/social/profile",
+    "name": "Social profile",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/social/video",
+    "name": "Social video",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/profiles",
+    "name": "List profiles",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/profiles/load-state",
+    "name": "Load profile state",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/profiles/private-paths",
+    "name": "Private paths",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/profiles/create",
+    "name": "Create profile",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/profiles/delete",
+    "name": "Delete profile",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/profiles/rename",
+    "name": "Rename profile",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/profiles/save-private-paths",
+    "name": "Save private paths",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/profiles/save-state",
+    "name": "Save profile state",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/profiles/switch",
+    "name": "Switch profile",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/share/inbox",
+    "name": "Share inbox",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/share/my-links",
+    "name": "My shared links",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/share/my-publications",
+    "name": "My publications",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/share/resolve",
+    "name": "Resolve share",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/share/link",
+    "name": "Create share link",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/share/publish",
+    "name": "Publish share",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/share/revoke",
+    "name": "Revoke share",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/share/unpublish",
+    "name": "Unpublish",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/templates",
+    "name": "List templates",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/templates/get",
+    "name": "Get template",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/templates/match",
+    "name": "Match template",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/templates/create",
+    "name": "Create template",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/templates/delete",
+    "name": "Delete template",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/templates/update",
+    "name": "Update template",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/config",
+    "name": "Get config",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/settings",
+    "name": "Get settings",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/config/save",
+    "name": "Save config",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/settings/save",
+    "name": "Save settings",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/health",
+    "name": "Health check",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/index-status",
+    "name": "Index status",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/models",
+    "name": "AI models",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/system/load",
+    "name": "System load",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/system/cache-stats",
+    "name": "Cache statistics",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/ai/list",
+    "name": "AI providers list",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/ai/get",
+    "name": "Get AI provider",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/ai/search",
+    "name": "Search AI providers",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/ai/add",
+    "name": "Add AI provider",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/ai/delete",
+    "name": "Delete AI provider",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/ai/update",
+    "name": "Update AI provider",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/rebuild-index",
+    "name": "Rebuild search index",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/translate",
+    "name": "Translate text",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/translate-query",
+    "name": "Translate query",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/enhance-query",
+    "name": "Enhance search query",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/correct-query",
+    "name": "Correct search query",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/summarize",
+    "name": "Summarize text",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/docs",
+    "name": "API documentation",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/education/courses",
+    "name": "Education courses",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/achievements",
+    "name": "Achievements",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/achievements/stats",
+    "name": "Achievement stats",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/api/achievements/unlocked",
+    "name": "Unlocked achievements",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/todos",
+    "name": "Todos list",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "GET",
+    "path": "/todos/stats",
+    "name": "Todo statistics",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/api/achievements/check",
+    "name": "Check achievements",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "POST",
+    "path": "/todos",
+    "name": "Create todo",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "PUT",
+    "path": "/todos/{todo_id}",
+    "name": "Update todo",
+    "endpoint": "",
+    "curated": true
+  },
+  {
+    "method": "DELETE",
+    "path": "/todos/{todo_id}",
+    "name": "Delete todo",
+    "endpoint": "",
+    "curated": true
+  }
+]

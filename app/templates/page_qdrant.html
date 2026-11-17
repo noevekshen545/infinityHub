@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang='ru'>
+<head>
+<meta charset='UTF-8'>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Qdrant — Infinity</title>
+<link rel='stylesheet' href='/static/css/font-awesome.min.css'>
+<style>
+:root {
+  --bg:#f4f6fb;
+  --bg2:#ffffff;
+  --bg3:#f8fafc;
+  --bg4:#eef2f7;
+  --text:#0f172a;
+  --text2:#475569;
+  --text3:#94a3b8;
+  --accent:#6366f1;
+  --accent2:#8b5cf6;
+  --accent-soft:rgba(99,102,241,.10);
+  --success:#10b981;
+  --warning:#f59e0b;
+  --danger:#ef4444;
+  --border:#e5e9f2;
+  --border-2:#d8dee9;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.04);
+  --shadow:0 4px 16px rgba(15,23,42,.06);
+  --shadow-lg:0 12px 32px rgba(15,23,42,.08);
+  --radius:16px;
+  --radius-sm:10px;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { height:100%; }
+body {
+  font-family:var(--font);
+  background:var(--bg);
+  background-image:
+    radial-gradient(at 10% 0%, rgba(99,102,241,.08) 0, transparent 45%),
+    radial-gradient(at 90% 10%, rgba(236,72,153,.06) 0, transparent 40%),
+    radial-gradient(at 50% 100%, rgba(14,165,233,.06) 0, transparent 50%);
+  background-attachment:fixed;
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- NAV ---------- */
+.nav {
+  display:flex;
+  align-items:center;
+  gap:18px;
+  padding:14px 28px;
+  background:rgba(255,255,255,.72);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+.nav .back {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  color:var(--text2);
+  text-decoration:none;
+  font-size:13px;
+  font-weight:500;
+  padding:8px 12px;
+  border-radius:10px;
+  transition:all .18s ease;
+}
+.nav .back:hover { background:var(--accent-soft); color:var(--accent); transform:translateX(-2px); }
+.nav .title {
+  font-size:15px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  letter-spacing:-.01em;
+}
+.nav .logo-ic {
+  width:28px; height:28px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  color:#fff;
+  border-radius:8px;
+  font-size:13px;
+  box-shadow:0 6px 14px rgba(99,102,241,.32);
+}
+.nav .spacer { flex:1; }
+.nav .hint { font-size:12px; color:var(--text3); }
+
+/* ---------- LAYOUT ---------- */
+.wrap { padding:28px; max-width:1280px; margin:0 auto; }
+
+.card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  margin-bottom:22px;
+  box-shadow:var(--shadow-sm);
+  transition:box-shadow .25s ease, transform .25s ease;
+  position:relative;
+  overflow:hidden;
+}
+.card::before {
+  content:'';
+  position:absolute; inset:0 0 auto 0; height:3px;
+  background:linear-gradient(90deg, transparent, rgba(99,102,241,.5), transparent);
+  opacity:0; transition:opacity .3s;
+}
+.card:hover { box-shadow:var(--shadow); }
+.card:hover::before { opacity:.7; }
+
+.card h2 {
+  font-size:15px;
+  font-weight:600;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  letter-spacing:-.01em;
+}
+.card h2 .ic {
+  width:32px; height:32px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--accent-soft);
+  color:var(--accent);
+  border-radius:10px;
+  font-size:14px;
+}
+
+.row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+.row + .row { margin-top:4px; }
+
+label { font-size:12px; color:var(--text2); display:flex; flex-direction:column; gap:6px; font-weight:500; }
+
+input, select, textarea {
+  font-family:inherit;
+  font-size:13px;
+  background:var(--bg3);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:9px 12px;
+  outline:none;
+  transition:all .18s ease;
+}
+input:focus, select:focus, textarea:focus {
+  border-color:var(--accent);
+  background:#fff;
+  box-shadow:0 0 0 4px var(--accent-soft);
+}
+input::placeholder, textarea::placeholder { color:var(--text3); }
+textarea { width:100%; min-height:80px; resize:vertical; }
+
+/* ---------- BUTTONS ---------- */
+button {
+  font-family:inherit;
+  font-size:13px;
+  cursor:pointer;
+  border:none;
+  border-radius:var(--radius-sm);
+  padding:9px 16px;
+  font-weight:600;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  transition:all .18s ease;
+  letter-spacing:-.005em;
+  position:relative;
+  overflow:hidden;
+}
+button i { font-size:12px; }
+
+.btn-primary {
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  color:#fff;
+  box-shadow:0 4px 12px rgba(99,102,241,.28);
+}
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 18px rgba(99,102,241,.38); }
+.btn-primary:active { transform:translateY(0); }
+
+.btn-sec {
+  background:#fff;
+  color:var(--text);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);
+}
+.btn-sec:hover { border-color:var(--accent); color:var(--accent); background:#fff; }
+.btn-sec.on {
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  color:#fff;
+  border-color:transparent;
+  box-shadow:0 4px 12px rgba(99,102,241,.28);
+}
+
+/* ---------- GRID / LIST ---------- */
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:12px;
+}
+.col {
+  background:linear-gradient(180deg,#fff 0%,#fbfcff 100%);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px 16px;
+  position:relative;
+  transition:all .2s ease;
+  overflow:hidden;
+}
+.col::after {
+  content:'';
+  position:absolute; top:0; left:0; width:4px; height:100%;
+  background:linear-gradient(180deg,var(--accent),var(--accent2));
+  border-radius:0 2px 2px 0;
+  opacity:.85;
+}
+.col:hover { transform:translateY(-2px); box-shadow:var(--shadow); border-color:var(--accent); }
+.col .name { font-weight:600; font-size:13px; word-break:break-all; color:var(--text); letter-spacing:-.01em; }
+.col .cnt { color:var(--text3); font-size:11px; margin-top:4px; font-weight:500; }
+
+.list {
+  max-height:360px;
+  overflow:auto;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:6px;
+  background:var(--bg3);
+}
+.item {
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:8px;
+  font-size:13px;
+  cursor:pointer;
+  transition:background .15s;
+  border:1px solid transparent;
+}
+.item:hover { background:#fff; border-color:var(--border); }
+.item input[type='checkbox'] {
+  width:16px; height:16px; margin-top:2px;
+  accent-color:var(--accent);
+  cursor:pointer;
+  flex:none;
+}
+.item .title { font-weight:600; color:var(--text); }
+.item .meta { color:var(--text3); font-size:11px; margin-top:2px; }
+
+/* ---------- RESULTS ---------- */
+.res {
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px 16px;
+  margin-bottom:10px;
+  box-shadow:var(--shadow-sm);
+  transition:all .2s;
+  position:relative;
+  overflow:hidden;
+}
+.res::before {
+  content:'';
+  position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:linear-gradient(180deg,var(--accent),var(--accent2));
+}
+.res:hover { box-shadow:var(--shadow); }
+.res .rt { font-weight:600; font-size:14px; margin-bottom:6px; color:var(--text); }
+.res .rs {
+  position:absolute; top:12px; right:14px;
+  background:var(--accent-soft);
+  color:var(--accent);
+  padding:3px 8px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:700;
+  font-variant-numeric:tabular-nums;
+}
+.res .rb { color:var(--text2); font-size:12px; white-space:pre-wrap; max-height:140px; overflow:auto; line-height:1.55; }
+
+/* ---------- BADGES ---------- */
+.badge {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 11px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.02em;
+}
+.badge i { font-size:9px; }
+.badge.ok {
+  background:linear-gradient(135deg, rgba(16,185,129,.14), rgba(16,185,129,.08));
+  color:#047857;
+  border:1px solid rgba(16,185,129,.22);
+}
+.badge.ok::before {
+  content:''; width:7px; height:7px; border-radius:50%;
+  background:var(--success);
+  box-shadow:0 0 0 3px rgba(16,185,129,.18);
+  animation:pulse 1.8s ease-in-out infinite;
+}
+.badge.off {
+  background:rgba(148,163,184,.12);
+  color:var(--text3);
+  border:1px solid var(--border);
+}
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.5; } }
+
+.muted { color:var(--text3); font-size:12px; }
+
+/* ---------- DUBLIKATY ---------- */
+.dup-list { max-height:420px; overflow:auto; border:1px solid var(--border); border-radius:12px; padding:8px; background:var(--bg3); }
+.dup-group { background:#fff; border:1px solid var(--border); border-radius:10px; padding:10px 12px; margin-bottom:8px; transition:border-color .15s, box-shadow .15s; }
+.dup-group:last-child { margin-bottom:0; }
+.dup-group:hover { border-color:rgba(239,68,68,.4); box-shadow:var(--shadow-sm); }
+.dup-head { display:flex; align-items:center; gap:8px; }
+.dup-head .t { font-weight:600; font-size:13px; color:var(--text); word-break:break-all; min-width:0; }
+.dup-chip { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:12px; font-size:10.5px; font-weight:700; letter-spacing:.02em; flex:none; white-space:nowrap; }
+.dup-chip i { font-size:9px; }
+.dup-chip.src { background:var(--accent-soft); color:var(--accent); }
+.dup-chip.cnt { background:rgba(239,68,68,.1); color:#b91c1c; border:1px solid rgba(239,68,68,.18); }
+.dup-meta { color:var(--text3); font-size:11px; margin-top:4px; word-break:break-all; }
+.dup-sample { color:var(--text2); font-size:11.5px; margin-top:6px; padding:7px 9px; background:var(--bg3); border-left:2px solid var(--border); border-radius:0 6px 6px 0; max-height:56px; overflow:hidden; line-height:1.45; }
+.dup-actions { margin-left:auto; flex:none; }
+.dup-actions .btn-sec { padding:5px 10px; font-size:11px; }
+.dup-actions .btn-sec:hover { border-color:#ef4444; color:#ef4444; }
+
+
+/* ---------- PROGRESS ---------- */
+.progress {
+  height:8px;
+  background:var(--bg4);
+  border-radius:8px;
+  overflow:hidden;
+  margin-top:10px;
+  display:none;
+  position:relative;
+}
+.progress > div {
+  height:100%;
+  width:0;
+  background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent));
+  background-size:200% 100%;
+  border-radius:8px;
+  transition:width .4s ease;
+  animation:shimmer 2s linear infinite;
+}
+@keyframes shimmer { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }
+
+/* ---------- GRAPH ---------- */
+.graph-wrap {
+  position:relative;
+  border-radius:var(--radius);
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+#kgCanvas {
+  width:100%;
+  height:620px;
+  display:block;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(99,102,241,.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(236,72,153,.06) 0%, transparent 50%),
+    linear-gradient(180deg,#fbfcff 0%,#f4f7fc 100%);
+  cursor:grab;
+}
+#kgCanvas:active { cursor:grabbing; }
+
+#kgTip {
+  position:fixed;
+  display:none;
+  pointer-events:none;
+  background:rgba(15,23,42,.92);
+  color:#fff;
+  padding:10px 14px;
+  border-radius:10px;
+  font-size:12px;
+  z-index:9999;
+  max-width:340px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 10px 30px rgba(15,23,42,.35);
+  border:1px solid rgba(255,255,255,.08);
+}
+#kgTip b { display:block; font-size:13px; margin-bottom:3px; }
+#kgTip .tip-sub { color:#94a3b8; font-size:11px; }
+
+#kgPanel {
+  position:absolute;
+  top:14px;
+  right:14px;
+  width:280px;
+  max-height:560px;
+  overflow:auto;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+  display:none;
+  font-size:13px;
+  box-shadow:var(--shadow-lg);
+}
+#kgPanel .pn-title { font-weight:700; font-size:14px; margin-bottom:8px; color:var(--text); letter-spacing:-.01em; }
+#kgPanel .pn-sub { color:var(--text3); font-size:11px; margin-bottom:10px; font-weight:500; }
+#kgPanel .pn-id { font-size:10px; color:var(--text3); word-break:break-all; background:var(--bg3); padding:6px 8px; border-radius:6px; margin-bottom:10px; font-family:ui-monospace,monospace; }
+#kgPanel .pn-close { width:100%; justify-content:center; }
+
+#graphStats {
+  font-size:12px;
+  color:var(--text2);
+  padding:6px 12px;
+  background:var(--bg3);
+  border-radius:20px;
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
+}
+
+#graphLegend {
+  margin-top:14px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.legend-item {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:5px 11px;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:20px;
+  font-size:11px;
+  font-weight:600;
+  color:var(--text2);
+  box-shadow:var(--shadow-sm);
+}
+.legend-dot {
+  width:10px; height:10px; border-radius:50%;
+  box-shadow:0 0 0 3px rgba(0,0,0,.04);
+  flex:none;
+}
+.legend-count { color:var(--text3); font-weight:500; }
+
+/* graph overlay controls */
+.kg-controls {
+  position:absolute;
+  bottom:14px; left:14px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  z-index:5;
+}
+.kg-ctrl {
+  width:36px; height:36px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.92);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--border);
+  border-radius:10px;
+  color:var(--text2);
+  cursor:pointer;
+  font-size:13px;
+  transition:all .18s;
+  box-shadow:var(--shadow-sm);
+}
+.kg-ctrl:hover { color:var(--accent); border-color:var(--accent); transform:translateY(-1px); }
+
+.kg-info {
+  position:absolute;
+  bottom:14px; right:14px;
+  background:rgba(255,255,255,.92);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:8px 12px;
+  font-size:11px;
+  color:var(--text2);
+  box-shadow:var(--shadow-sm);
+  z-index:5;
+}
+
+/* scroll */
+::-webkit-scrollbar { width:10px; height:10px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:6px; border:2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+
+.hidden { display:none !important; }
+
+@media (max-width:720px){
+  .wrap { padding:16px; }
+  .card { padding:16px; }
+  #kgCanvas { height:460px; }
+  #kgPanel { width:calc(100% - 28px); left:14px; }
+}
+</style>
+<link rel="stylesheet" href="/static/css/mobile.css">
+<script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+</head>
+<body>
+<div class='nav'>
+  <a class='back' href='/desktop'><i class='fas fa-arrow-left'></i> Назад</a>
+  <div class='title'>
+    <span class='logo-ic'><i class='fas fa-database'></i></span>
+    Qdrant · Infinity
+  </div>
+  <div class='spacer'></div>
+  <div class='hint'>Векторная база · семантический поиск</div>
+</div>
+
+<div class='wrap'>
+
+  <div class='card'>
+    <h2><span class='ic'><i class='fas fa-heartbeat'></i></span> Статус и коллекции</h2>
+    <div class='row'>
+      <span id='statusBadge' class='badge off'><i class='fas fa-circle'></i> …</span>
+      <span id='modeLabel' class='muted'></span>
+      <button class='btn-sec' onclick='loadStatus()'><i class='fas fa-sync'></i> Обновить</button>
+    </div>
+    <div id='collections' class='grid'></div>
+  </div>
+
+  <div class='card'>
+    <h2><span class='ic'><i class='fas fa-microchip'></i></span> Эмбеддинг-модель (fastembed)</h2>
+    <p class='muted' style='margin-bottom:12px'>Локальная модель для семантического поиска. Скачивается один раз в папку проекта <code>models/fastembed</code> и затем грузится офлайн (без обращения к сети).</p>
+    <div class='row'>
+      <span id='embStatus' class='badge off'><i class='fas fa-circle'></i> …</span>
+      <span id='embModel' class='muted'></span>
+      <span id='embCuda' class='badge off' style='margin-left:6px'><i class='fas fa-circle'></i> CUDA: …</span>
+    </div>
+    <div class='row' style='margin-top:8px'>
+      <label style='min-width:200px'>Устройство
+        <select id='embDevice' onchange='saveEmbedCfg()' style='width:100%'>
+          <option value='cpu'>CPU</option>
+          <option value='gpu'>GPU (CUDA)</option>
+        </select>
+      </label>
+      <label style='flex:1;min-width:280px'>Путь кэша модели
+        <input id='embCache' placeholder='models/fastembed' style='width:100%'>
+      </label>
+    </div>
+    <div class='row' style='margin-top:4px'>
+      <label style='display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);font-weight:500;cursor:pointer'>
+        <input type='checkbox' id='embLocalOnly' style='width:auto;accent-color:var(--accent)' onchange='saveEmbedCfg()'> строго офлайн (local_files_only)
+      </label>
+      <button class='btn-primary' id='btnDownloadModel' onclick='downloadModel()'><i class='fas fa-download'></i> Скачать модель</button>
+      <button class='btn-sec' onclick='loadEmbedInfo()'><i class='fas fa-sync'></i> Обновить</button>
+    </div>
+    <div id='embLive' style='margin-top:10px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;color:var(--text);min-height:18px'></div>
+    <div class='progress' id='embProg'><div></div></div>
+    <div id='embMsg' class='muted' style='margin-top:10px'></div>
+  </div>
+
+  <div class='card'>
+    <h2><span class='ic'><i class='fas fa-search'></i></span> Полная индексация поиска (книги / ZIM)</h2>
+    <p class='muted' style='margin-bottom:14px'>Гибридный индекс поиска (Tantivy + Qdrant). Запускается отдельным процессом с пониженным приоритетом — сервер не блокируется. Для больших библиотек и ZIM это может занять много времени и места на диске.</p>
+    <div class='row'>
+      <button class='btn-primary' id='btnBooks' onclick='startFullIndex("books")'><i class='fas fa-book'></i> 📚 Индексировать книги</button>
+      <button class='btn-primary' id='btnZim' onclick='startFullIndex("zim")'><i class='fas fa-globe'></i> 🌐 Индексировать ZIM</button>
+      <button class='btn-sec' onclick='loadIndexStatus()'><i class='fas fa-sync'></i> Статус</button>
+    </div>
+    <div id='idxStatus' class='muted' style='margin-top:10px;white-space:pre-wrap'>—</div>
+  </div>
+
+  <div class='card'>
+    <h2><span class='ic'><i class='fas fa-folder-open'></i></span> Путь хранения индекса</h2>
+    <p class='muted' style='margin-bottom:14px'>Директория, где лежит гибридный индекс поиска (Tantivy/Qdrant/эмбеддинги). Новый путь вступает в силу после перезапуска сервера. Существующий индекс при смене пути не переносится — потребуется переиндексация.</p>
+    <div class='row'>
+      <input id='idxDir' style='flex:1;min-width:280px' placeholder='/путь/к/индексу'>
+      <button class='btn-sec' onclick='saveIndexPath()'><i class='fas fa-save'></i> Сохранить путь</button>
+    </div>
+    <div id='idxDirInfo' class='muted' style='margin-top:8px'>—</div>
+  </div>
+
+  <div class='card'>
+    <h2><span class='ic'><i class='fas fa-plus-circle'></i></span> Индексация</h2>
+    <p class='muted' style='margin-bottom:14px'>Индекс изначально пустой. Добавьте данные: из проектных источников (целиком или выборочно) либо загрузите файлы с ПК.</p>
+    <div class='row'>
+      <label>Источник
+        <select id='src'>
+          <option value='books'>Книги</option>
+          <option value='zim'>ZIM (вики)</option>
+          <option value='notes'>Заметки</option>
+          <option value='ai'>AI-ответы</option>
+          <option value='html'>HTML</option>
+          <option value='news'>Новости</option>
+          <option value='book_collections'>Коллекции книг (серии/жанры)</option>
+          <option value='pc'>С ПК (файлы)</option>
+        </select>
+      </label>
+      <label>Коллекция
+        <input id='coll' value='search_all_semantic' style='width:260px'>
+      </label>
+      <button class='btn-sec' onclick='createColl()'><i class='fas fa-folder-plus'></i> Создать</button>
+    </div>
+
+    <div class='row' id='browseRow'>
+      <input id='q' placeholder='Поиск по источнику…' style='width:300px'>
+      <button class='btn-sec' onclick='browse(false)'><i class='fas fa-search'></i> Найти</button>
+      <button class='btn-sec' onclick='browse(true)'><i class='fas fa-list'></i> Показать всё</button>
+      <label class='hidden' id='pcLabel'>Файлы с ПК
+        <input type='file' id='pcFiles' multiple>
+      </label>
+      <button class='btn-sec hidden' id='pcBtn' onclick='uploadPc()'><i class='fas fa-upload'></i> Загрузить</button>
+    </div>
+
+    <div id='items' class='list'></div>
+
+    <div class='row' style='margin-top:14px'>
+      <button class='btn-primary' onclick='startIndex()'><i class='fas fa-database'></i> Добавить выбранное в индекс</button>
+      <button class='btn-sec' onclick='selectAll(true)'><i class='fas fa-check-double'></i> Выбрать всё</button>
+      <button class='btn-sec' onclick='selectAll(false)'><i class='fas fa-times'></i> Снять</button>
+      <span id='selCount' class='muted' style='margin-left:auto'>Выбрано: 0</span>
+    </div>
+    <div class='progress' id='prog'><div></div></div>
+    <div id='indexMsg' class='muted' style='margin-top:10px'></div>
+  </div>
+
+  <div class='card'>
+    <h2><span class='ic'><i class='fas fa-project-diagram'></i></span> Граф знаний</h2>
+    <p class='muted' style='margin-bottom:14px'>Семантический граф проиндексированных документов: узлы — документы, рёбра — смысловая близость. Перетаскивайте узлы, колесом — зум, поиск — подсветка связей.</p>
+    <div class='row'>
+      <label>Коллекция <input id='gColl' value='search_all_semantic' style='width:220px'></label>
+      <button class='btn-sec' onclick='kg.build()'><i class='fas fa-sync'></i> Построить</button>
+      <button class='btn-sec on' id='kgPhysicsBtn' onclick='kg.togglePhysics()' title='Вкл/выкл физику'><i class='fas fa-circle-nodes'></i> Физика</button>
+      <button class='btn-sec' id='kgLabelsBtn' onclick='kg.toggleLabels()' title='Показать все подписи узлов'><i class='fas fa-tags'></i> Подписи</button>
+      <button class='btn-sec' onclick='kg.resetView()' title='Сбросить вид'><i class='fas fa-expand'></i> Вид</button>
+      <input id='kgSearch' placeholder='Поиск узла…' style='width:200px' oninput='kg.onSearch(this.value)'>
+      <span id='graphStats' class='muted'></span>
+    </div>
+    <div class='graph-wrap'>
+      <canvas id='kgCanvas'></canvas>
+      <div id='kgTip'></div>
+      <div id='kgPanel'></div>
+      <div class='kg-controls'>
+        <div class='kg-ctrl' onclick='kg.zoom(1.2)' title='Приблизить'><i class='fas fa-plus'></i></div>
+        <div class='kg-ctrl' onclick='kg.zoom(0.83)' title='Отдалить'><i class='fas fa-minus'></i></div>
+        <div class='kg-ctrl' onclick='kg.resetView()' title='Сбросить'><i class='fas fa-compress'></i></div>
+      </div>
+      <div class='kg-info'>Drag · Wheel zoom · Click — детали</div>
+    </div>
+    <div id='graphLegend'></div>
+  </div>
+
+  <div class='card'>
+    <h2><span class='ic'><i class='fas fa-search'></i></span> Тестовый семантический поиск</h2>
+    <div class='row'>
+      <label>Коллекция
+        <input id='sColl' value='search_all_semantic' style='width:240px'>
+      </label>
+      <label>Запрос
+        <input id='sQ' placeholder='Введите запрос…' style='width:340px'>
+      </label>
+      <label>K
+        <input id='sK' value='5' style='width:70px'>
+      </label>
+      <button class='btn-primary' onclick='testSearch()'><i class='fas fa-search'></i> Искать</button>
+    </div>
+    <div id='searchRes'></div>
+  </div>
+
+  <div class='card'>
+    <h2><span class='ic'><i class='fas fa-note-sticky'></i></span> Блокнот (заметки в векторном индексе)</h2>
+    <p class='muted' style='margin-bottom:14px'>Текст сохраняется как файл и сразу индексируется в коллекцию — доступен семантическому поиску.</p>
+    <div class='row'>
+      <input id='noteTitle' placeholder='Заголовок заметки' style='width:280px'>
+      <label>Коллекция <input id='noteColl' value='search_all_semantic' style='width:220px'></label>
+      <button class='btn-primary' onclick='saveNote()'><i class='fas fa-save'></i> Сохранить и проиндексировать</button>
+    </div>
+    <textarea id='noteText' placeholder='Текст заметки…' style='width:100%;min-height:110px;margin-top:10px;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px'></textarea>
+    <div id='noteMsg' class='muted' style='margin-top:8px'></div>
+    <div id='notesList' class='list' style='margin-top:10px'></div>
+  </div>
+
+  <div class='card'>
+    <h2><span class='ic'><i class='fas fa-clone'></i></span> Дубликаты в коллекции</h2>
+    <p class='muted' style='margin-bottom:14px'>Поиск повторов: один и тот же элемент, проиндексированный несколько раз, и одинаковые тексты в разных элементах.</p>
+    <div class='row'>
+      <label>Коллекция <input id='dupColl' value='search_all_semantic' style='width:240px'></label>
+      <button class='btn-sec' onclick='findDuplicates()'><i class='fas fa-magnifying-glass'></i> Найти дубликаты</button>
+      <button class='btn-sec' id='delAllDupsBtn' onclick='deleteAllDups()' style='display:none'><i class='fas fa-broom'></i> Удалить все повторы</button>
+    </div>
+    <div id='dupMsg' class='muted' style='margin-top:8px'></div>
+    <div id='dupList' style='margin-top:10px'></div>
+  </div>
+
+</div>
+
+<script>
+var _paths = [];
+
+function api(u, opts){ return fetch(u, opts); }
+
+// ===== Полная индексация поиска (книги/ZIM) и путь индекса =====
+var _idxPollTimer = null;
+
+function startFullIndex(type){
+  if(!confirm('Запустить ПОЛНУЮ индексацию (' + type + ')? Для больших данных это часы работы и гигабайты на диске.')) return;
+  api('/api/index/build', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({type:type})})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.error){ alert('Ошибка: ' + d.error); return; }
+      document.getElementById('idxStatus').textContent = '⏳ ' + d.message;
+      pollIndexStatus(true);
+    })
+    .catch(function(e){ alert('Ошибка запроса: ' + e); });
+}
+
+function loadIndexStatus(){
+  api('/api/load-daemon/status').then(function(r){ return r.json(); }).then(function(d){
+    var lines = [];
+    var all = (d.running || []).concat(d.queued || []);
+    var mine = all.filter(function(t){ return (t.name||'').indexOf('full-index-') === 0; });
+    if(mine.length === 0){
+      var recent = (d.recent || []).filter(function(t){ return (t.name||'').indexOf('full-index-') === 0; })[0];
+      if(recent){
+        lines.push('Последняя задача: ' + recent.name + ' → ' + recent.status +
+                   (recent.error ? (' (' + recent.error + ')') : ''));
+      } else {
+        lines.push('Фоновые задачи индексации не запущены.');
+      }
+      setIdxButtons(false);
+    } else {
+      setIdxButtons(true);
+      mine.forEach(function(t){
+        lines.push('▶ ' + t.name + ' [' + t.status + '] ' + (t.message || ''));
+      });
+    }
+    var r = d.resources || {};
+    lines.push('ПК: tier=' + r.tier + ', CPU ' + r.cpu_percent + '%, RAM своб. ' + r.avail_ram_gb + ' ГБ' +
+               (d.limits && d.limits.paused_by_load ? ' ⏸ фон приостановлен (высокая нагрузка)' : ''));
+    document.getElementById('idxStatus').textContent = lines.join('\n');
+  }).catch(function(e){
+    document.getElementById('idxStatus').textContent = 'Ошибка статуса: ' + e;
+  });
+}
+
+function pollIndexStatus(start){
+  loadIndexStatus();
+  if(_idxPollTimer) clearInterval(_idxPollTimer);
+  _idxPollTimer = setInterval(function(){
+    loadIndexStatus();
+  }, 5000);
+}
+
+function setIdxButtons(busy){
+  var b1 = document.getElementById('btnBooks'), b2 = document.getElementById('btnZim');
+  if(b1) b1.disabled = busy;
+  if(b2) b2.disabled = busy;
+}
+
+function saveIndexPath(){
+  var p = document.getElementById('idxDir').value.trim();
+  if(!p){ alert('Укажите путь'); return; }
+  if(!confirm('Сохранить путь индекса?\n' + p + '\n\nВступит в силу после перезапуска сервера.')) return;
+  api('/api/index/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({index_dir:p})})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.error){ alert('Ошибка: ' + d.error); return; }
+      document.getElementById('idxDirInfo').textContent = '✓ ' + d.message;
+    })
+    .catch(function(e){ alert('Ошибка: ' + e); });
+}
+
+function loadIndexSettings(){
+  api('/api/index/settings').then(function(r){ return r.json(); }).then(function(d){
+    if(d.error) { document.getElementById('idxDirInfo').textContent = 'Ошибка: ' + d.error; return; }
+    document.getElementById('idxDir').value = d.index_dir || '';
+    document.getElementById('idxDirInfo').textContent =
+      'Текущий путь: ' + (d.index_dir || 'не задан') +
+      (d.exists ? (', занято ' + d.size_gb + ' ГБ') : ' (директория ещё не создана)');
+    loadIndexStatus();
+  }).catch(function(e){
+    document.getElementById('idxDirInfo').textContent = 'Ошибка: ' + e;
+  });
+}
+
+
+// в него пишет основной гибридный поиск (RRF + Tantivy).
+var COLL_ROLES = {
+  'vectors': 'Векторный индекс основного поиска. Удаление отключит семантический поиск по книгам.',
+  'search_all_semantic': 'Семантический индекс модуля «Поиск по всем данным». Используется на странице поиска и в графе.'
+};
+function collRole(name){
+  if(COLL_ROLES[name]) return COLL_ROLES[name];
+  if(/^mem|memory|chat/i.test(name)) return 'Память и диалоги агента.';
+  if(/book/i.test(name)) return 'Индекс книг.';
+  if(/^notes?_?/i.test(name)) return 'Индекс заметок.';
+  return 'Служебная коллекция. Перед удалением проверьте, не использует ли её поиск.';
+}
+
+function loadStatus(){
+  api('/api/qdrant/status').then(function(r){ return r.json(); }).then(function(d){
+    var b = document.getElementById('statusBadge');
+    if(d.available){ b.className='badge ok'; b.innerHTML='<i class="fas fa-circle"></i> Доступен'; }
+    else { b.className='badge off'; b.innerHTML='<i class="fas fa-circle"></i> Недоступен'; }
+    var modeExtra = d.available ? ('режим: '+d.mode+' · '+d.path) : '';
+    if(d.last_embed_error){
+      modeExtra += ' ⚠ эмбеддинги: ' + d.last_embed_error;
+      var m = document.getElementById('indexMsg');
+      if(m && !m.textContent) { m.textContent = '⚠ ' + d.last_embed_error; m.style.color = '#ef4444'; }
+    } else if(d.fastembed_available === false){
+      modeExtra += ' · эмбеддинги: LM Studio (' + (d.embed_url||'') + ')';
+    }
+    document.getElementById('modeLabel').textContent = modeExtra;
+    var html = '';
+    var colls = d.collections||[];
+    colls.forEach(function(c, ci){
+      html += "<div class='col' id='colcard_"+ci+"'><div class='name'>"+esc(c.name)+"</div><div class='cnt'>"+(c.count>=0?c.count:'…')+" точек</div><div class='muted' style='margin-top:6px;font-size:11px;line-height:1.35'>"+esc(collRole(c.name))+"</div><div class='muted' style='margin-top:8px;font-size:11px'><i class=\"fas fa-spinner fa-spin\"></i> статистика…</div></div>";
+    });
+    document.getElementById('collections').innerHTML = html || "<div class='muted' style='padding:12px'><i class='fas fa-inbox' style='margin-right:6px'></i>Нет коллекций</div>";
+    // Подгружаем детальную статистику по каждой коллекции (источники: книги/вики/заметки/чанки)
+    colls.forEach(function(c, ci){
+      api('/api/qdrant/stats?collection='+encodeURIComponent(c.name)).then(function(r){ return r.json(); }).then(function(s){
+        var card = document.getElementById('colcard_'+ci);
+        if(!card || !s.exists) return;
+        var cntEl = card.querySelector('.cnt');
+        if(cntEl && (c.count<0)) cntEl.textContent = (s.total_points||0)+' точек';
+        var by = s.by_source||{};
+        var keys = Object.keys(by).sort(function(a,b){ return by[b].chunks-by[a].chunks; });
+        var parts = keys.map(function(k){
+          return '<span style="display:inline-block;padding:2px 8px;margin:2px 4px 2px 0;border-radius:12px;background:var(--accent-soft);color:var(--text);font-size:11px">'
+            + esc(by[k].label||k)+': <b>'+by[k].items+'</b> шт / '+by[k].chunks+' чанк.</span>';
+        });
+        var box = document.createElement('div');
+        box.style.marginTop = '8px';
+        box.innerHTML = parts.length
+          ? ('<div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:2px">Содержимое коллекции</div>'+parts.join(''))
+          : '<div class="muted" style="font-size:11px">Коллекция пуста</div>';
+        card.appendChild(box);
+      }).catch(function(){ /* статистика необязательна */ });
+    });
+  }).catch(function(e){ console.error(e); });
+}
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m]; }); }
+
+function browse(all){
+  var src = document.getElementById('src').value;
+  var q = document.getElementById('q').value;
+  var url = '/api/qdrant/browse?source='+encodeURIComponent(src)+'&list_all='+(all?'true':'false')+'&limit=200';
+  if(q && !all) url += '&q='+encodeURIComponent(q);
+  api(url).then(function(r){ return r.json(); }).then(function(d){
+    var html = '';
+    (d.items||[]).forEach(function(it, i){
+      html += "<label class='item'><input type='checkbox' class='sel' data-id='"+esc(it.id)+"' data-title='"+esc(it.title)+"'><span><span class='title'>"+esc(it.title)+"</span><br><span class='meta'>"+esc(it.source)+" · "+esc(it.url||'')+"</span></span></label>";
+    });
+    document.getElementById('items').innerHTML = html || "<div class='muted' style='padding:24px;text-align:center'><i class='fas fa-inbox' style='font-size:20px;margin-bottom:6px;display:block;opacity:.4'></i>Ничего не найдено</div>";
+    updateSelCount();
+  }).catch(function(e){ console.error(e); });
+}
+
+function uploadPc(){
+  var inp = document.getElementById('pcFiles');
+  if(!inp.files.length){ return; }
+  var fd = new FormData();
+  for(var i=0;i<inp.files.length;i++){ fd.append('files', inp.files[i]); }
+  api('/api/qdrant/upload', {method:'POST', body:fd}).then(function(r){ return r.json(); }).then(function(d){
+    _paths = d.paths || [];
+    var html = '';
+    _paths.forEach(function(p){
+      html += "<label class='item'><input type='checkbox' class='sel' data-id='"+esc(p)+"' data-title='"+esc(p.split('/').pop().split('\\\\').pop())+"' checked><span><span class='title'>"+esc(p.split('/').pop().split('\\\\').pop())+"</span><br><span class='meta'>pc · "+esc(p)+"</span></span></label>";
+    });
+    document.getElementById('items').innerHTML = html;
+    updateSelCount();
+  }).catch(function(e){ console.error(e); });
+}
+
+function selectAll(on){
+  document.querySelectorAll('#items .sel').forEach(function(c){ c.checked = on; });
+  updateSelCount();
+}
+
+function updateSelCount(){
+  var n = document.querySelectorAll('#items .sel:checked').length;
+  document.getElementById('selCount').textContent = 'Выбрано: '+n;
+}
+
+function startIndex(){
+  var src = document.getElementById('src').value;
+  var coll = document.getElementById('coll').value;
+  var items = [];
+  document.querySelectorAll('#items .sel:checked').forEach(function(c){
+    items.push({id:c.getAttribute('data-id'), title:c.getAttribute('data-title')});
+  });
+  // Коллекции книг индексируются как source='book' с id 'collection://<book_id>'
+  var realSrc = (src === 'book_collections') ? 'book' : src;
+  var body = {collection: coll, source: realSrc, items: items};
+  if(src === 'pc'){ body.paths = _paths; body.items = items; }
+  var whole = (src !== 'pc' && items.length === 0);
+  body.whole_source = whole;
+  document.getElementById('indexMsg').textContent = 'Индексация запущена…';
+  document.getElementById('indexMsg').style.color = '';
+  api('/api/qdrant/index', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)})
+    .then(function(r){ return r.json(); }).then(function(d){
+      if(d.accepted){
+        document.getElementById('indexMsg').textContent = 'Индексация выполняется в фоне. Обновляйте статус коллекций.';
+        pollProgress();
+      } else { document.getElementById('indexMsg').textContent = 'Ошибка: '+(d.error||'неизвестно'); }
+    }).catch(function(e){ console.error(e); });
+}
+
+function pollProgress(){
+  var bar = document.getElementById('prog');
+  bar.style.display = 'block';
+  var iv = setInterval(function(){
+    api('/api/qdrant/index-status').then(function(r){ return r.json(); }).then(function(p){
+      var pct = p.total ? Math.min(100, Math.round(100*p.done/p.total)) : (p.running?50:100);
+      bar.firstElementChild.style.width = pct+'%';
+      if(!p.running){
+        clearInterval(iv);
+        bar.style.display='none';
+        var m = document.getElementById('indexMsg');
+        if(p.errors > 0){
+          m.textContent = 'Готово с ошибками: ' + p.errors + '. Причина: ' + (p.last_error || 'смотрите лог сервера');
+          m.style.color = '#ef4444';
+        } else {
+          m.textContent = 'Индексация завершена';
+          m.style.color = '';
+        }
+        loadStatus();
+      }
+    }).catch(function(){ clearInterval(iv); });
+  }, 1500);
+}
+
+function createColl(){
+  var name = document.getElementById('coll').value;
+  api('/api/qdrant/create', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({collection:name})})
+    .then(function(r){ return r.json(); }).then(function(d){ loadStatus(); document.getElementById('indexMsg').textContent = d.ok?'Коллекция создана':'Не удалось создать'; });
+}
+
+function testSearch(){
+  var coll = document.getElementById('sColl').value;
+  var q = document.getElementById('sQ').value;
+  var k = parseInt(document.getElementById('sK').value||'5', 10);
+  api('/api/qdrant/search', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({collection:coll, query:q, k:k})})
+    .then(function(r){ return r.json(); }).then(function(d){
+      var html='';
+      (d.results||[]).forEach(function(r, i){
+        var pl = r.payload||{};
+        html += "<div class='res'><span class='rs'>"+ (typeof r.score!=='undefined'?r.score.toFixed(3):'') +"</span><div class='rt'>"+esc(pl.title||'')+"</div><div class='rb'>"+esc((pl.text||'').slice(0,800))+"</div></div>";
+      });
+      document.getElementById('searchRes').innerHTML = html || "<div class='muted' style='padding:24px;text-align:center'><i class='fas fa-search' style='font-size:20px;margin-bottom:6px;display:block;opacity:.4'></i>Нет результатов</div>";
+    }).catch(function(e){ console.error(e); });
+}
+
+document.getElementById('src').addEventListener('change', function(){
+  var pc = this.value === 'pc';
+  document.getElementById('pcLabel').classList.toggle('hidden', !pc);
+  document.getElementById('pcBtn').classList.toggle('hidden', !pc);
+  document.getElementById('items').innerHTML = '';
+  if(this.value === 'book_collections'){ browseBookCollections(); }
+});
+
+// ====== Блокнот (заметки) ======
+function saveNote(){
+  var title = document.getElementById('noteTitle').value.trim();
+  var text = document.getElementById('noteText').value.trim();
+  var coll = document.getElementById('noteColl').value.trim();
+  if(!text){ document.getElementById('noteMsg').textContent = 'Введите текст заметки'; return; }
+  var m = document.getElementById('noteMsg');
+  m.textContent = 'Сохранение и индексация…'; m.style.color='';
+  api('/api/qdrant/note', {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({title:title, text:text, collection:coll})})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.error){ m.textContent = 'Ошибка: ' + d.error; m.style.color='#ef4444'; return; }
+      m.textContent = '✓ Заметка сохранена и проиндексирована (' + (d.chunks||0) + ' чанков)';
+      document.getElementById('noteText').value = '';
+      document.getElementById('noteTitle').value = '';
+      loadNotes();
+    })
+    .catch(function(e){ m.textContent = 'Ошибка: ' + e; m.style.color='#ef4444'; });
+}
+
+function loadNotes(){
+  var coll = document.getElementById('noteColl').value.trim();
+  api('/api/qdrant/notes?collection='+encodeURIComponent(coll))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var html = '';
+      (d.notes||[]).forEach(function(n){
+        html += "<div class='item' style='cursor:default'>"
+          + "<span><span class='title'>"+esc(n.title||n.id)+"</span>"
+          + "<br><span class='meta'>"+esc((n.text||'').slice(0,120))+(n.indexed?'':' · ⚠ не в индексе')+"</span></span>"
+          + "<button class='btn-sec' onclick='deleteNote(\""+esc(n.id)+"\")' title='Удалить'><i class='fas fa-trash'></i></button>"
+          + "</div>";
+      });
+      document.getElementById('notesList').innerHTML = html
+        || "<div class='muted' style='padding:12px;text-align:center'>Заметок пока нет</div>";
+    }).catch(function(e){ console.error(e); });
+}
+
+function deleteNote(id){
+  if(!confirm('Удалить заметку из индекса и с диска?')) return;
+  var coll = document.getElementById('noteColl').value.trim();
+  api('/api/qdrant/note/'+encodeURIComponent(id)+'?collection='+encodeURIComponent(coll), {method:'DELETE'})
+    .then(function(r){ return r.json(); })
+    .then(function(){ loadNotes(); loadStatus(); })
+    .catch(function(e){ alert('Ошибка: ' + e); });
+}
+
+// ====== Дубликаты ======
+function findDuplicates(){
+  var coll = document.getElementById('dupColl').value.trim();
+  var m = document.getElementById('dupMsg');
+  m.textContent = 'Сканирование коллекции…'; m.style.color='';
+  document.getElementById('dupList').innerHTML = '';
+  api('/api/qdrant/duplicates?collection='+encodeURIComponent(coll))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.error){ m.textContent = 'Ошибка: ' + d.error; m.style.color='#ef4444'; return; }
+      var items = d.duplicate_items||[], texts = d.duplicate_texts||[];
+      if(!items.length && !texts.length){
+        m.textContent = 'Дубликатов не найдено (' + (d.total_points||0) + ' точек проверено)';
+        return;
+      }
+      m.textContent = 'Найдено: ' + items.length + ' повторных элементов, ' + texts.length + ' одинаковых текстов';
+      var sc = d.safe_counts || {};
+      var btn = document.getElementById('delAllDupsBtn');
+      if(btn && (sc.total||0) > 0){
+        btn.style.display = '';
+        btn.innerHTML = "<i class='fas fa-broom'></i> Удалить все повторы (" + sc.total + ")";
+      } else if(btn){ btn.style.display = 'none'; }
+      var html = '';
+      items.forEach(function(g, i){
+        var dupN = g.dup_count || 0;
+        html += "<div class='dup-group'>"
+          + "<div class='dup-head'>"
+          + "<span class='dup-chip src'><i class='fas fa-cube'></i> " + esc(g.source) + "</span>"
+          + "<span class='t'>" + esc(g.title) + "</span>"
+          + "<span class='dup-chip cnt'><i class='fas fa-layer-group'></i> " + g.chunks + " чанк.</span>"
+          + (dupN > 0 ? "<span class='dup-chip cnt'><i class='fas fa-clone'></i> " + dupN + " дубл.</span>" : "")
+          + "<span class='dup-actions'><button class='btn-sec' onclick='deleteDup(\"dup-item-" + i + "\")'><i class='fas fa-trash'></i> Все точки</button></span>"
+          + "</div>"
+          + "<div class='dup-meta'>item_id: " + esc(g.item_id) + "</div>"
+          + "<span class='hidden' id='dup-item-" + i + "'>" + esc(JSON.stringify(g.point_ids)) + "</span>"
+          + "</div>";
+      });
+      texts.forEach(function(g, i){
+        html += "<div class='dup-group'>"
+          + "<div class='dup-head'>"
+          + "<span class='dup-chip src'><i class='fas fa-align-left'></i> текст</span>"
+          + "<span class='dup-chip cnt'><i class='fas fa-layer-group'></i> ×" + g.chunks + "</span>"
+          + "<span class='dup-actions'><button class='btn-sec' onclick='deleteDup(\"dup-text-" + i + "\")'><i class='fas fa-trash'></i> Удалить дубли</button></span>"
+          + "</div>"
+          + "<div class='dup-sample'>" + esc(g.sample) + "</div>"
+          + "<span class='hidden' id='dup-text-" + i + "'>" + esc(JSON.stringify(g.point_ids)) + "</span>"
+          + "</div>";
+      });
+      document.getElementById('dupList').className = 'dup-list';
+      document.getElementById('dupList').innerHTML = html;
+    })
+    .catch(function(e){ m.textContent = 'Ошибка: ' + e; m.style.color='#ef4444'; });
+}
+
+function deleteDup(hiddenId){
+  var raw = document.getElementById(hiddenId).textContent;
+  var ids;
+  try { ids = JSON.parse(raw); } catch(e){ return; }
+  var coll = document.getElementById('dupColl').value.trim();
+  if(!confirm('Удалить ВСЕ точки этой группы (' + ids.length + ' шт.)? После удаления переиндексируйте источник один раз.')) return;
+  api('/api/qdrant/delete', {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({collection:coll, ids:ids})})
+    .then(function(r){ return r.json(); })
+    .then(function(){
+      document.getElementById('dupMsg').textContent = '✓ Удалено точек: ' + ids.length;
+      findDuplicates();
+      loadStatus();
+    })
+    .catch(function(e){ alert('Ошибка: ' + e); });
+}
+
+function deleteAllDups(){
+  var coll = document.getElementById('dupColl').value.trim();
+  var btn = document.getElementById('delAllDupsBtn');
+  if(!btn || btn.disabled) return;
+  if(!confirm('Удалить избыточные копии (безопасный режим): повторные чанки внутри элементов и одинаковые тексты в разных элементах. Первые вхождения СОХРАНЯЮТСЯ, содержимое не теряется. Продолжить?')) return;
+  btn.disabled = true;
+  var prev = btn.innerHTML;
+  btn.innerHTML = '...';
+  api('/api/qdrant/duplicates?collection=' + encodeURIComponent(coll))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.error){ throw new Error(d.error); }
+      var ids = d.safe_delete_ids || [];
+      if(!ids.length){
+        showQdrantToast('Нет избыточных копий для удаления', 'ok');
+        return null;
+      }
+      return api('/api/qdrant/delete', {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({collection: coll, ids: ids})})
+        .then(function(r2){ return r2.json(); })
+        .then(function(d2){
+          if(d2.ok){
+            showQdrantToast('✓ Удалено избыточных точек: ' + ids.length, 'ok');
+          } else {
+            showQdrantToast('Ошибка удаления: ' + (d2.error || 'неизвестно'), 'err');
+          }
+        });
+    })
+    .catch(function(e){ showQdrantToast('Ошибка: ' + e, 'err'); })
+    .finally(function(){
+      btn.disabled = false;
+      btn.innerHTML = prev;
+      findDuplicates();
+      loadStatus();
+    });
+}
+
+// ====== Коллекции книг ======
+var _bookColls = [];
+function loadBookCollections(){
+  api('/api/qdrant/book-collections').then(function(r){ return r.json(); }).then(function(d){
+    _bookColls = d.collections||[];
+  }).catch(function(){ _bookColls = []; });
+}
+
+function browseBookCollections(){
+  var html = _bookColls.map(function(c){
+    return "<label class='item'><input type='radio' name='bkc' onchange='browseBookItems()' data-kind='"+esc(c.kind)+"' value='"+esc(c.id)+"'><span><span class='title'>"+esc(c.name)+"</span></span></label>";
+  }).join('');
+  document.getElementById('items').innerHTML = html
+    || "<div class='muted' style='padding:24px;text-align:center'>Коллекции книг не найдены</div>";
+}
+
+function browseBookItems(){
+  var sel = document.querySelector('input[name=bkc]:checked');
+  if(!sel) return;
+  api('/api/qdrant/book-collection-items?kind='+encodeURIComponent(sel.getAttribute('data-kind'))+'&cid='+encodeURIComponent(sel.value))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var html = (d.items||[]).map(function(b){
+        return "<label class='item'><input type='checkbox' class='sel' data-id='collection://"+esc(b.id)+"' data-title='"+esc(b.title)+"'><span><span class='title'>"+esc(b.title)+"</span><br><span class='meta'>book · collection://"+esc(b.id)+"</span></span></label>";
+      }).join('');
+      document.getElementById('items').innerHTML = html
+        || "<div class='muted' style='padding:24px;text-align:center'>В коллекции нет книг</div>";
+      updateSelCount();
+    }).catch(function(e){ console.error(e); });
+}
+
+
+// Эмбеддинг-функции (loadEmbedInfo/downloadModel/pollEmbedDownload/saveEmbedCfg)
+// вынесены в static/js/qdrant_embed.js, чтобы ошибки этой карточки не ломали
+// отрисовку статуса коллекций и графа знаний на странице.
+
+loadStatus();
+loadIndexSettings();
+loadNotes();
+loadBookCollections();
+
+// ====== Граф знаний (улучшенная версия) ======
+var KG_COLORS = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4','#ef4444','#84cc16','#14b8a6','#f97316'];
+var KG_GLYPHS = {
+  'book':'📖','zim':'🌐','wiki':'🌐','note':'📝','ai':'🤖','html':'📄','news':'📰','pc':'💻',
+  'document':'📄','default':'●'
+};
+
+var kg = (function(){
+  var cv = document.getElementById('kgCanvas');
+  var ctx = cv.getContext('2d');
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var nodes = [], edges = [], adj = {}, _byId = {}, colorMap = {}, types = {};
+  var W = 0, H = 0, scale = 1, panX = 0, panY = 0;
+  var alpha = 0, physicsOn = true, rafId = null, needsRender = true, labelsOn = false;
+  var hoverId = null, selId = null, dragNode = null, dragPan = false, dragMoved = false, lastX = 0, lastY = 0;
+  var searchTerm = '';
+  var tip = document.getElementById('kgTip');
+  var panel = document.getElementById('kgPanel');
+  var animTime = 0;
+
+  function resize(){
+    var rect = cv.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    cv.width = Math.max(1, Math.round(W * dpr)); cv.height = Math.max(1, Math.round(H * dpr));
+    kick();
+  }
+  function kick(){ needsRender = true; if(!rafId) loop(); }
+
+  function hexToRgb(h){
+    var s = h.replace('#','');
+    if(s.length===3) s = s.split('').map(function(c){return c+c;}).join('');
+    var n = parseInt(s,16);
+    return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+  }
+  function rgba(hex,a){ var c = hexToRgb(hex); return 'rgba('+c.r+','+c.g+','+c.b+','+a+')'; }
+  function lighten(hex, amt){
+    var c = hexToRgb(hex);
+    var r = Math.min(255, c.r + amt);
+    var g = Math.min(255, c.g + amt);
+    var b = Math.min(255, c.b + amt);
+    return 'rgb('+r+','+g+','+b+')';
+  }
+
+  function setColorMap(t){
+    colorMap = {};
+    Object.keys(t).forEach(function(k,i){ colorMap[k] = KG_COLORS[i % KG_COLORS.length]; });
+  }
+
+  // Назначение коллекций: без этой подписи карточки выглядели одинаково и
+  // выглядит так, будто половина из них — мусор. Но 'vectors' удалять нельзя:
+  function build(){
+    var coll = (document.getElementById('gColl')||{}).value || 'search_all_semantic';
+    ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#94a3b8'; ctx.font='500 13px Inter,sans-serif';
+    ctx.fillText('Загрузка графа…', 20, 32);
+    fetch('/api/qdrant/graph?collection='+encodeURIComponent(coll)+'&limit=1200')
+      .then(function(r){ return r.json(); })
+      .then(function(d){ if(d.error){ drawError(d.error); return; } init(d); })
+      .catch(function(e){ drawError(e.message||e); });
+  }
+  function drawError(msg){
+    ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#ef4444'; ctx.font='500 13px Inter,sans-serif';
+    ctx.fillText('Ошибка: '+msg, 20, 32);
+  }
+
+  function init(d){
+    types = d.types || {}; setColorMap(types);
+    nodes = []; edges = []; adj = {}; _byId = {};
+    var arr = d.nodes||[];
+    var n = arr.length || 1;
+    arr.forEach(function(nd, i){
+      var ang = i / n * 2*Math.PI, rad = Math.min(W,H)*0.22 + Math.sqrt(i)*8;
+      var node = {
+        id:nd.id, title:nd.title, type:nd.type,
+        x: Math.cos(ang)*rad + W/2,
+        y: Math.sin(ang)*rad + H/2,
+        vx:0, vy:0, fx:0, fy:0,
+        deg:0, r:7, born:performance.now(), targetR:7
+      };
+      nodes.push(node); _byId[node.id] = node;
+    });
+    (d.edges||[]).forEach(function(e){
+      var a = _byId[e[0]], b = _byId[e[1]];
+      if(a && b){ edges.push(e); a.deg++; b.deg++; (adj[e[0]]=adj[e[0]]||[]).push(e[1]); (adj[e[1]]=adj[e[1]]||[]).push(e[0]); }
+    });
+    nodes.forEach(function(x){ x.targetR = 8 + Math.min(18, x.deg*1.4); x.r = 1; });
+    var tKeys = Object.keys(types), legend = document.getElementById('graphLegend');
+    legend.innerHTML = tKeys.map(function(t){
+      var c = colorMap[t]||'#888';
+      return "<span class='legend-item'><span class='legend-dot' style='background:"+c+";box-shadow:0 0 10px "+rgba(c,.5)+"'></span>"+esc(t)+" <span class='legend-count'>("+types[t]+")</span></span>";
+    }).join('');
+    document.getElementById('graphStats').textContent = 'узлов: '+nodes.length+' · связей: '+edges.length+' · всего точек: '+(d.total||0);
+    scale = 1; panX = 0; panY = 0; selId = null; hoverId = null; panel.style.display='none';
+    if(!nodes.length){
+      ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+      ctx.fillStyle='#94a3b8'; ctx.font='500 13px Inter,sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('Коллекция пуста — проиндексируйте документы во вкладке выше', W/2, H/2);
+      ctx.textAlign='start';
+      return;
+    }
+    alpha = 0.9; loop();
+  }
+
+  function loop(){
+    rafId = requestAnimationFrame(loop);
+    animTime = performance.now();
+    if(physicsOn && alpha > 0.015) step();
+    // плавное появление узлов
+    var still = true;
+    for(var i=0;i<nodes.length;i++){
+      var nd = nodes[i];
+      if(Math.abs(nd.r - nd.targetR) > 0.1){
+        nd.r += (nd.targetR - nd.r) * 0.12;
+        still = false;
+      }
+    }
+    if(needsRender || alpha > 0.015 || dragNode || !still){ render(); needsRender = false; }
+    if(alpha <= 0.015 && !dragNode && still && !(hoverId || selId)){
+      // один раз отрисуем финальный кадр и остановимся
+      render();
+      cancelAnimationFrame(rafId); rafId = null;
+    }
+  }
+  function reheat(a){ if(a>alpha) alpha = a; if(!rafId) loop(); }
+
+  function step(){
+    var cx=W/2, cy=H/2, repel=3200, spring=0.018, rest=105, grav=0.025, decay=0.58;
+    var tKeys=Object.keys(types), anchors={};
+    tKeys.forEach(function(t,i){
+      var a = i/tKeys.length*2*Math.PI - Math.PI/2;
+      anchors[t] = [ cx + Math.cos(a)*Math.min(W,H)*0.32, cy + Math.sin(a)*Math.min(W,H)*0.32 ];
+    });
+    var i,j,a,b,dx,dy,d2,d,f,ux,uy;
+    for(i=0;i<nodes.length;i++){ nodes[i].fx=0; nodes[i].fy=0; }
+    for(i=0;i<nodes.length;i++){
+      a=nodes[i];
+      for(j=i+1;j<nodes.length;j++){
+        b=nodes[j];
+        dx=a.x-b.x; dy=a.y-b.y;
+        d2=dx*dx+dy*dy+0.01; d=Math.sqrt(d2);
+        f=repel/d2; ux=dx/d; uy=dy/d;
+        a.fx+=ux*f; a.fy+=uy*f;
+        b.fx-=ux*f; b.fy-=uy*f;
+      }
+    }
+    for(i=0;i<edges.length;i++){
+      a=_byId[edges[i][0]]; b=_byId[edges[i][1]];
+      if(!a||!b) continue;
+      dx=b.x-a.x; dy=b.y-a.y;
+      d=Math.sqrt(dx*dx+dy*dy)+0.01;
+      f=(d-rest)*spring; ux=dx/d; uy=dy/d;
+      a.fx+=ux*f; a.fy+=uy*f;
+      b.fx-=ux*f; b.fy-=uy*f;
+    }
+    for(i=0;i<nodes.length;i++){
+      a=nodes[i];
+      a.fx+=(cx-a.x)*grav; a.fy+=(cy-a.y)*grav;
+      var an=anchors[a.type];
+      if(an){ a.fx+=(an[0]-a.x)*0.010; a.fy+=(an[1]-a.y)*0.010; }
+      if(a===dragNode){ a.fx=0; a.fy=0; continue; }
+      a.vx=(a.vx+a.fx)*decay; a.vy=(a.vy+a.fy)*decay;
+      a.x+=a.vx*alpha; a.y+=a.vy*alpha;
+    }
+    alpha*=0.986; if(alpha<0.015) alpha=0;
+  }
+
+  function drawBackground(){
+    // точечная сетка
+    ctx.save();
+    ctx.translate(panX, panY);
+    var step = 28 * scale;
+    if(step > 10){
+      var startX = -((panX % step) + step) % step;
+      var startY = -((panY % step) + step) % step;
+      ctx.fillStyle = 'rgba(148,163,184,.18)';
+      for(var x = startX; x < W; x += step){
+        for(var y = startY; y < H; y += step){
+          ctx.fillRect(x, y, 1, 1);
+        }
+      }
+    }
+    ctx.restore();
+  }
+
+  function render(){
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,W,H);
+    drawBackground();
+    ctx.translate(panX,panY);
+    ctx.scale(scale,scale);
+
+    // --- подписи кластеров по типам ---
+    try{
+      var tkC = Object.keys(types);
+      for(var ti=0; ti<tkC.length; ti++){
+        var ta = ti/tkC.length*2*Math.PI - Math.PI/2;
+        var ax = W/2 + Math.cos(ta)*Math.min(W,H)*0.32;
+        var ay = H/2 + Math.sin(ta)*Math.min(W,H)*0.32;
+        ctx.fillStyle = rgba(colorMap[tkC[ti]]||'#94a3b8', .5);
+        ctx.font = '600 '+Math.max(11, 12/scale)+'px Inter,sans-serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(String(tkC[ti]||'').toUpperCase(), ax, ay - 26/scale);
+      }
+      ctx.textAlign='start'; ctx.textBaseline='alphabetic';
+    }catch(eC){}
+
+    var hl = hoverId || selId;
+    var neighSet = null;
+    if(hl){
+      neighSet = {}; neighSet[hl] = true;
+      (adj[hl]||[]).forEach(function(n){ neighSet[n]=true; });
+    }
+    var hasSearch = searchTerm.length > 0;
+    var searchLower = searchTerm.toLowerCase();
+
+    // --- EDGES ---
+    ctx.lineCap = 'round';
+    for(var i=0;i<edges.length;i++){
+      var e = edges[i];
+      var a=_byId[e[0]], b=_byId[e[1]];
+      if(!a||!b) continue;
+      var isActive = hl && (a.id===hl || b.id===hl);
+      var dim = hasSearch && a.title.toLowerCase().indexOf(searchLower)<0 && b.title.toLowerCase().indexOf(searchLower)<0;
+      if(hl && !isActive) continue;
+
+      ctx.beginPath();
+      // кривая Безье для красоты
+      var mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
+      var dx = b.x-a.x, dy = b.y-a.y;
+      var len = Math.sqrt(dx*dx+dy*dy);
+      var off = Math.min(22, len*0.08);
+      var nx = -dy/len * off, ny = dx/len * off;
+      ctx.moveTo(a.x, a.y);
+      ctx.quadraticCurveTo(mx+nx, my+ny, b.x, b.y);
+
+      if(isActive){
+        var grad = ctx.createLinearGradient(a.x,a.y,b.x,b.y);
+        var ca = colorMap[a.type]||'#6366f1';
+        var cb = colorMap[b.type]||'#6366f1';
+        grad.addColorStop(0, rgba(ca,.7));
+        grad.addColorStop(1, rgba(cb,.7));
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2/scale;
+        ctx.shadowColor = rgba(ca,.4);
+        ctx.shadowBlur = 6;
+      } else {
+        ctx.strokeStyle = dim ? 'rgba(148,163,184,.06)' : 'rgba(148,163,184,.18)';
+        ctx.lineWidth = 1/scale;
+        ctx.shadowBlur = 0;
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    // --- NODES ---
+    for(i=0;i<nodes.length;i++){
+      var nd=nodes[i];
+      var dim = hasSearch && nd.title.toLowerCase().indexOf(searchLower)<0;
+      var col = colorMap[nd.type] || '#6366f1';
+      var isHl = nd.id===selId || nd.id===hoverId;
+      var isNeigh = neighSet && neighSet[nd.id];
+      var globalAlpha = dim ? 0.18 : 1;
+      ctx.globalAlpha = globalAlpha;
+
+      var r = nd.r;
+      var pulse = isHl ? 1 + Math.sin(animTime/260)*0.08 : 1;
+      var rr = r * pulse;
+
+      // outer glow
+      var glowR = rr*3.2;
+      var glow = ctx.createRadialGradient(nd.x,nd.y,rr*0.6, nd.x,nd.y, glowR);
+      glow.addColorStop(0, rgba(col, isHl ? 0.45 : 0.22));
+      glow.addColorStop(1, rgba(col, 0));
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(nd.x,nd.y, glowR, 0, Math.PI*2); ctx.fill();
+
+      // main circle with gradient
+      var cg = ctx.createRadialGradient(nd.x-rr*0.3, nd.y-rr*0.3, rr*0.1, nd.x, nd.y, rr);
+      cg.addColorStop(0, lighten(col, 60));
+      cg.addColorStop(1, col);
+      ctx.fillStyle = cg;
+      ctx.beginPath(); ctx.arc(nd.x,nd.y, rr, 0, Math.PI*2); ctx.fill();
+
+      // white border
+      ctx.strokeStyle = 'rgba(255,255,255,.9)';
+      ctx.lineWidth = 1.5/scale;
+      ctx.stroke();
+
+      // highlight ring
+      if(isHl){
+        ctx.beginPath(); ctx.arc(nd.x,nd.y, rr+3/scale, 0, Math.PI*2);
+        ctx.strokeStyle = rgba(col, 0.9);
+        ctx.lineWidth = 2/scale;
+        ctx.stroke();
+      } else if(selId && isNeigh){
+        ctx.beginPath(); ctx.arc(nd.x,nd.y, rr+2/scale, 0, Math.PI*2);
+        ctx.strokeStyle = rgba(col, 0.55);
+        ctx.lineWidth = 1.5/scale;
+        ctx.setLineDash([3,3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // glyph inside (first letter)
+      if(rr > 9){
+        ctx.fillStyle = 'rgba(255,255,255,.95)';
+        ctx.font = '600 '+(rr*0.95/scale>11?11:Math.max(8,rr*0.95))+'px Inter,sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        var letter = (nd.title||'?').charAt(0).toUpperCase();
+        ctx.fillText(letter, nd.x, nd.y + 0.5);
+      }
+
+      // label
+      var showLabel = labelsOn || isHl || (nd.targetR > 14 && scale > 0.55) || (scale > 1.1 && nd.targetR > 10);
+      if(showLabel && !dim && scale > 0.4){
+        var label = nd.title.length > 36 ? nd.title.slice(0,34)+'…' : nd.title;
+        var fs = Math.max(10, 11/scale);
+        ctx.font = (isHl?'600 ':'500 ') + fs + 'px Inter,sans-serif';
+        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        var tx = nd.x + rr + 5;
+        var ty = nd.y;
+        // background pill
+        var tw = ctx.measureText(label).width;
+        ctx.fillStyle = 'rgba(255,255,255,.88)';
+        ctx.beginPath();
+        var px = 6, py = 3, prh = fs*0.5 + py;
+        roundRect(ctx, tx-px, ty-prh, tw+px*2, prh*2, 6);
+        ctx.fill();
+        ctx.strokeStyle = rgba(col, 0.3);
+        ctx.lineWidth = 0.8/scale;
+        ctx.stroke();
+        ctx.fillStyle = '#0f172a';
+        ctx.fillText(label, tx, ty);
+      }
+    }
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'start';
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  function toWorld(ev){ var r=cv.getBoundingClientRect(); return { x:(ev.clientX-r.left-panX)/scale, y:(ev.clientY-r.top-panY)/scale }; }
+  function pick(wx,wy){
+    for(var i=nodes.length-1;i>=0;i--){
+      var n=nodes[i],dx=n.x-wx,dy=n.y-wy;
+      if(dx*dx+dy*dy<=(n.r+6)*(n.r+6)) return n;
+    }
+    return null;
+  }
+
+  cv.addEventListener('wheel', function(ev){
+    ev.preventDefault();
+    var r=cv.getBoundingClientRect(), sx=ev.clientX-r.left, sy=ev.clientY-r.top;
+    var f = ev.deltaY<0 ? 1.12 : 0.89;
+    applyZoom(f, sx, sy);
+  }, {passive:false});
+
+  function applyZoom(f, sx, sy){
+    var old=scale;
+    scale = Math.max(0.25, Math.min(5, scale*f));
+    panX = sx - (sx-panX)*(scale/old);
+    panY = sy - (sy-panY)*(scale/old);
+    kick();
+  }
+
+  cv.addEventListener('mousedown', function(ev){
+    var w=toWorld(ev), n=pick(w.x,w.y);
+    if(n){ dragNode=n; n.vx=0; n.vy=0; dragMoved=false; cv.style.cursor='grabbing'; }
+    else { dragPan=true; lastX=ev.clientX; lastY=ev.clientY; cv.style.cursor='grabbing'; }
+  });
+  window.addEventListener('mousemove', function(ev){
+    if(dragNode){
+      var w=toWorld(ev); dragNode.x=w.x; dragNode.y=w.y; dragMoved=true; reheat(0.25);
+    }
+    else if(dragPan){
+      panX+=ev.clientX-lastX; panY+=ev.clientY-lastY; lastX=ev.clientX; lastY=ev.clientY; kick();
+    }
+    else {
+      var w=toWorld(ev), n=pick(w.x,w.y);
+      if(n){
+        hoverId=n.id; cv.style.cursor='pointer';
+        tip.style.display='block';
+        var deg=(adj[n.id]||[]).length;
+        tip.innerHTML='<b>'+esc(n.title)+'</b><span class="tip-sub">'+esc(n.type)+' · связей: '+deg+'</span>';
+        var tx = ev.clientX+14, ty = ev.clientY+14;
+        if(tx + 340 > window.innerWidth) tx = ev.clientX - 340 - 10;
+        if(ty + 60 > window.innerHeight) ty = ev.clientY - 60;
+        tip.style.left = tx+'px'; tip.style.top = ty+'px';
+      } else {
+        hoverId=null; cv.style.cursor='grab'; tip.style.display='none';
+      }
+      kick();
+    }
+  });
+  window.addEventListener('mouseup', function(ev){
+    if(dragNode){
+      var n=dragNode; dragNode=null;
+      if(!dragMoved) showPanel(n);
+      reheat(0.12);
+    }
+    dragPan=false;
+    var r=cv.getBoundingClientRect();
+    if(ev.clientX>=r.left && ev.clientX<=r.right && ev.clientY>=r.top && ev.clientY<=r.bottom){
+      var w=toWorld(ev), n=pick(w.x,w.y);
+      cv.style.cursor = n ? 'pointer' : 'grab';
+    } else { cv.style.cursor='grab'; }
+  });
+  cv.addEventListener('mouseleave', function(){ hoverId=null; tip.style.display='none'; kick(); });
+
+  function showPanel(nd){
+    selId = nd.id;
+    panel.style.display = 'block';
+    var deg = (adj[nd.id]||[]).length;
+    var col = colorMap[nd.type]||'#6366f1';
+    var neighList = (adj[nd.id]||[]).map(function(id){
+      var nn = _byId[id];
+      if(!nn) return '';
+      var nc = colorMap[nn.type]||'#6366f1';
+      return "<div class='item' onclick='kg.focusNode(\""+esc(id)+"\")' style='cursor:pointer;padding:8px 10px'>"+
+        "<span style='width:10px;height:10px;border-radius:50%;background:"+nc+";flex:none;margin-top:4px;box-shadow:0 0 8px "+rgba(nc,.5)+"'></span>"+
+        "<span><span class='title'>"+esc(nn.title)+"</span><br><span class='meta'>"+esc(nn.type)+"</span></span></div>";
+    }).join('');
+    panel.innerHTML =
+      "<div class='pn-title' style='display:flex;align-items:center;gap:8px'>"+
+        "<span style='width:10px;height:10px;border-radius:50%;background:"+col+";box-shadow:0 0 10px "+rgba(col,.6)+"'></span>"+
+        esc(nd.title)+
+      "</div>"+
+      "<div class='pn-sub'>тип: "+esc(nd.type)+" · связей: "+deg+"</div>"+
+      "<div class='pn-id'>"+esc(nd.id)+"</div>"+
+      (neighList ? "<div style='font-size:11px;color:#64748b;font-weight:600;margin-bottom:6px'>СОСЕДИ</div>"+
+        "<div style='max-height:220px;overflow:auto;margin:0 -6px'>"+neighList+"</div>" : "")+
+      "<button class='btn-sec pn-close' style='margin-top:12px' onclick='kg.closePanel()'><i class='fas fa-times'></i> Закрыть</button>";
+    reheat(0.12);
+  }
+  function closePanel(){ panel.style.display='none'; selId=null; kick(); }
+
+  function focusNode(id){
+    var nd = _byId[id];
+    if(!nd) return;
+    selId = id;
+    var targetScale = 1.5;
+    scale = targetScale;
+    panX = W/2 - nd.x*scale;
+    panY = H/2 - nd.y*scale;
+    showPanel(nd);
+    kick();
+  }
+
+  function onSearch(v){ searchTerm=(v||'').trim(); kick(); }
+  function togglePhysics(){
+    physicsOn=!physicsOn;
+    var b=document.getElementById('kgPhysicsBtn');
+    if(b) b.classList.toggle('on', physicsOn);
+    if(physicsOn) reheat(0.8);
+    else { if(rafId){ cancelAnimationFrame(rafId); rafId=null; } render(); }
+  }
+  function toggleLabels(){
+    labelsOn=!labelsOn;
+    var b=document.getElementById('kgLabelsBtn');
+    if(b) b.classList.toggle('on', labelsOn);
+    kick();
+  }
+  function resetView(){ scale=1; panX=0; panY=0; kick(); }
+  function zoom(f){ applyZoom(f, W/2, H/2); }
+
+  window.addEventListener('resize', resize);
+  resize();
+  return { build:build, onSearch:onSearch, togglePhysics:togglePhysics, toggleLabels:toggleLabels, resetView:resetView, closePanel:closePanel, focusNode:focusNode, zoom:zoom };
+})();
+kg.build();
+</script>
+<script src="/static/js/qdrant_embed.js"></script>
+</body>
+</html>

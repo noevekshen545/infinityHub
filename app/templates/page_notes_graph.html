@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html class="pg-page_notes_graph" lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Граф связей</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/fonts/google-fonts.css">
+<script src="/static/libs/three.min.js"></script>
+<script src="/static/libs/3d-force-graph.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box }
+
+:root {
+  --bg: #fafbfc;
+  --bg2: #ffffff;
+  --bg3: #f3f4f6;
+  --bg4: #e5e7eb;
+  --border: rgba(0, 0, 0, 0.06);
+  --border2: rgba(0, 0, 0, 0.1);
+  --text: #111827;
+  --text2: #4b5563;
+  --text3: #9ca3af;
+  --accent: #4f46e5;
+  --accent2: #4338ca;
+  --accent-glow: rgba(79, 70, 229, 0.15);
+  --accent-light: rgba(79, 70, 229, 0.1);
+  --link: #4338ca;
+  --card: rgba(255, 255, 255, 0.8);
+  --hover: rgba(0, 0, 0, 0.03);
+  --red: #dc2626;
+  --red-light: rgba(220, 38, 38, 0.08);
+  --green: #059669;
+  --green-light: rgba(5, 150, 105, 0.08);
+  --yellow: #d97706;
+  --yellow-light: rgba(217, 119, 6, 0.08);
+  --purple: #7c3aed;
+  --purple-light: rgba(124, 58, 237, 0.08);
+  --blue: #2563eb;
+  --orange: #ea580c;
+  --orange-light: rgba(234, 88, 12, 0.08);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 40px rgba(79, 70, 229, 0.1);
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --tr: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --glass: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --font-sans: 'Inter', 'SF Pro Display', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+body.dark {
+  --bg: #0f1419;
+  --bg2: #151b23;
+  --bg3: #1c242f;
+  --bg4: #232d3a;
+  --border: rgba(255, 255, 255, 0.08);
+  --border2: rgba(255, 255, 255, 0.12);
+  --text: #e4e8ef;
+  --text2: #a0aec0;
+  --text3: #6b7280;
+  --accent: #6366f1;
+  --accent2: #4f46e5;
+  --accent-glow: rgba(99, 102, 241, 0.25);
+  --accent-light: rgba(99, 102, 241, 0.15);
+  --link: #818cf8;
+  --card: rgba(21, 27, 35, 0.7);
+  --hover: rgba(255, 255, 255, 0.05);
+  --red: #ef4444;
+  --red-light: rgba(239, 68, 68, 0.1);
+  --green: #10b981;
+  --green-light: rgba(16, 185, 129, 0.1);
+  --yellow: #f59e0b;
+  --yellow-light: rgba(245, 158, 11, 0.1);
+  --purple: #a855f7;
+  --purple-light: rgba(168, 85, 247, 0.1);
+  --blue: #3b82f6;
+  --orange: #f97316;
+  --orange-light: rgba(249, 115, 22, 0.1);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
+  --glass: rgba(21, 27, 35, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+body.sepia {
+  --bg: #f5f0e8;
+  --bg2: #ede5d8;
+  --bg3: #e2d8c9;
+  --bg4: #d4c9b5;
+  --border: rgba(91, 70, 54, 0.1);
+  --border2: rgba(91, 70, 54, 0.15);
+  --text: #3d2f21;
+  --text2: #5c4a3a;
+  --text3: #8b7560;
+  --accent: #8b5e3c;
+  --accent2: #6d4a2e;
+  --accent-glow: rgba(139, 94, 60, 0.2);
+  --accent-light: rgba(139, 94, 60, 0.1);
+  --link: #6d4a2e;
+  --card: rgba(237, 229, 216, 0.8);
+  --hover: rgba(91, 70, 54, 0.05);
+  --red: #9b2c2c;
+  --red-light: rgba(155, 44, 44, 0.08);
+  --green: #276749;
+  --green-light: rgba(39, 103, 73, 0.08);
+  --yellow: #975a16;
+  --yellow-light: rgba(151, 90, 22, 0.08);
+  --purple: #553c9a;
+  --purple-light: rgba(85, 60, 154, 0.08);
+  --blue: #2c5282;
+  --orange: #c05621;
+  --orange-light: rgba(192, 86, 33, 0.08);
+  --shadow-sm: 0 2px 8px rgba(91, 70, 54, 0.06);
+  --shadow: 0 4px 20px rgba(91, 70, 54, 0.08);
+  --shadow-lg: 0 8px 40px rgba(91, 70, 54, 0.1);
+  --glass: rgba(237, 229, 216, 0.7);
+  --glass-border: rgba(91, 70, 54, 0.12);
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow: hidden;
+  transition: background 0.3s, color 0.3s;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -20%, var(--accent-glow), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(168, 85, 247, 0.05), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+::selection { background: var(--accent); color: #fff }
+a { color: var(--accent); text-decoration: none; transition: var(--tr) }
+a:hover { color: var(--link) }
+
+.icon { display: inline-flex; align-items: center; justify-content: center; font-size: 14px; width: 18px; text-align: center }
+
+/* === FLOATING GLASS TOOLBAR (ZIM STYLE) === */
+.toolbar {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-lg);
+  max-width: calc(100vw - 32px);
+}
+
+.toolbar .btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: var(--tr);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.toolbar .btn:hover {
+  background: var(--bg4);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.toolbar .btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.toolbar .btn.primary:hover {
+  box-shadow: 0 4px 12px var(--accent-glow);
+  color: #fff;
+}
+
+.toolbar .btn-icon {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  transition: var(--tr);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar .btn-icon:hover {
+  background: var(--bg4);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.toolbar .sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin: 0 2px;
+}
+
+.toolbar select {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--tr);
+}
+
+.toolbar select:hover { border-color: var(--accent) }
+.toolbar select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.toolbar .search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.toolbar .search-wrapper::before {
+  content: '\f002';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: var(--text3);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.toolbar input[type="text"] {
+  padding: 7px 12px 7px 32px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 12px;
+  outline: none;
+  font-family: inherit;
+  transition: var(--tr);
+  width: 180px;
+}
+
+.toolbar input[type="text"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+  width: 220px;
+}
+
+.toolbar input[type="text"]::placeholder { color: var(--text3) }
+
+/* === GRAPH CONTAINER === */
+#graph-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background: var(--bg);
+}
+
+/* === SIDEBAR INFO PANEL === */
+.info-panel {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 100;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 16px;
+  max-width: 320px;
+  box-shadow: var(--shadow-lg);
+  display: none;
+  animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px) }
+  to { opacity: 1; transform: translateY(0) }
+}
+
+.info-panel.open { display: block }
+
+.info-panel h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-panel .meta {
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.info-panel .meta span {
+  background: var(--bg3);
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.info-panel .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.info-panel .tag {
+  background: var(--purple-light);
+  color: var(--purple);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.info-panel .actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.info-panel .actions .btn {
+  flex: 1;
+  justify-content: center;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+.info-panel .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: var(--tr);
+}
+
+.info-panel .close-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+/* === LEGEND PANEL === */
+.legend-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  max-width: 240px;
+  box-shadow: var(--shadow-lg);
+}
+
+.legend-panel h4 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: var(--tr);
+}
+
+.legend-item:hover { color: var(--text) }
+
+.legend-item .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-item.active .dot {
+  box-shadow: 0 0 0 2px var(--text), 0 0 0 4px var(--accent-light);
+}
+
+/* === STATS PANEL === */
+.stats-panel {
+  position: fixed;
+  top: 72px;
+  right: 20px;
+  z-index: 100;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  min-width: 200px;
+  box-shadow: var(--shadow-lg);
+}
+
+.stats-panel .stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.stats-panel .stat-row .label { color: var(--text3) }
+.stats-panel .stat-row .value { font-weight: 600; color: var(--text) }
+
+/* === FILTER MODAL === */
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease;
+  padding: 20px;
+}
+
+.modal-bg.open { display: flex !important }
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px) }
+  to { opacity: 1; transform: scale(1) translateY(0) }
+}
+
+.modal h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.01em;
+}
+
+.modal h3 i { color: var(--accent); font-size: 20px }
+
+.modal .filter-group {
+  margin-bottom: 20px;
+}
+
+.modal .filter-group label {
+  font-size: 11px;
+  color: var(--text2);
+  margin-bottom: 8px;
+  display: block;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal .filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.modal .filter-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  font-size: 12px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: var(--tr);
+  font-family: inherit;
+}
+
+.modal .filter-option:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.modal .filter-option input { accent-color: var(--accent) }
+
+.modal .filter-option.active {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-actions .btn {
+  flex: 1;
+  justify-content: center;
+  padding: 11px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: var(--tr);
+}
+
+.modal-actions .btn:hover {
+  background: var(--bg3);
+  border-color: var(--border2);
+  transform: translateY(-1px);
+}
+
+.modal-actions .btn.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+.modal-actions .btn.primary:hover {
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+/* === TOAST === */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-lg);
+  min-width: 300px;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideInRight 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: auto;
+  cursor: pointer;
+  font-size: 13px;
+  backdrop-filter: blur(12px);
+}
+
+.toast.success { border-left: 3px solid var(--green) }
+.toast.error { border-left: 3px solid var(--red) }
+.toast.info { border-left: 3px solid var(--blue) }
+.toast.warning { border-left: 3px solid var(--yellow) }
+
+.toast i { font-size: 16px }
+.toast.success i { color: var(--green) }
+.toast.error i { color: var(--red) }
+.toast.info i { color: var(--blue) }
+.toast.warning i { color: var(--yellow) }
+
+.toast.hiding { animation: slideOutRight 0.3s forwards }
+
+@keyframes slideInRight { from { transform: translateX(100%); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
+@keyframes slideOutRight { from { transform: translateX(0); opacity: 1 } to { transform: translateX(100%); opacity: 0 } }
+
+/* === LOADING === */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.loading-overlay.hidden { display: none }
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg) } }
+
+.loading-text {
+  font-size: 14px;
+  color: var(--text2);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .toolbar {
+    padding: 6px 10px;
+    max-width: calc(100vw - 16px);
+  }
+  .toolbar .btn span:not(.icon) { display: none }
+  .toolbar input[type="text"] { width: 140px }
+  .toolbar input[type="text"]:focus { width: 160px }
+  .info-panel, .legend-panel, .stats-panel {
+    max-width: calc(100vw - 40px);
+    left: 10px;
+    right: 10px;
+  }
+  .stats-panel { top: auto; bottom: 180px }
+}
+
+/* === SCROLLBARS === */
+::-webkit-scrollbar { width: 10px; height: 10px }
+::-webkit-scrollbar-track { background: var(--scrollbar-track, var(--bg3)); border-radius: 5px }
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, var(--border2));
+  border-radius: 5px;
+  border: 2px solid var(--scrollbar-track, var(--bg3));
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover, var(--accent)) }
+* { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb, var(--border2)) var(--scrollbar-track, var(--bg3)) }
+</style>
+<script src="/static/js/i18n.js"></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+</head>
+<body>
+
+<!-- FLOATING GLASS TOOLBAR -->
+<div class="toolbar">
+  <a class="btn" href="/notes"><i class="icon fa-solid fa-arrow-left"></i><span>Заметки</span></a>
+  <div class="sep"></div>
+  <div class="search-wrapper">
+    <input type="text" id="searchInput" placeholder="Поиск по графу..." oninput="filterGraph()">
+  </div>
+  <select id="folderFilter" onchange="filterByFolder(this.value)">
+    <option value="all">📁 Все папки</option>
+  </select>
+  <select id="minConnections" onchange="filterByConnections(this.value)">
+    <option value="0">🔗 Любые связи</option>
+    <option value="1">🔗 1+ связь</option>
+    <option value="3">🔗 3+ связи</option>
+    <option value="5">🔗 5+ связей</option>
+  </select>
+  <button class="btn" onclick="openFilterModal()"><i class="icon fa-solid fa-filter"></i><span>Фильтры</span></button>
+  <div class="sep"></div>
+  <button class="btn" onclick="resetView()"><i class="icon fa-solid fa-expand"></i><span>Сброс</span></button>
+  <button class="btn" onclick="toggleLabels()"><i class="icon fa-solid fa-tag"></i><span>Метки</span></button>
+  <button class="btn" onclick="exportGraph()"><i class="icon fa-solid fa-download"></i><span>Экспорт</span></button>
+  <div class="sep"></div>
+  <button class="btn-icon" onclick="cycleTheme()" id="themeBtn" title="Сменить тему"><i class="fa-solid fa-moon"></i></button>
+  <button class="btn-icon" onclick="toggleFullscreen()" title="Полный экран"><i class="fa-solid fa-expand"></i></button>
+</div>
+
+<!-- 3D GRAPH CONTAINER -->
+<div id="graph-container"></div>
+
+<!-- INFO PANEL -->
+<div class="info-panel" id="infoPanel">
+  <button class="close-btn" onclick="closeInfoPanel()"><i class="fa-solid fa-xmark"></i></button>
+  <h4><i class="fa-solid fa-note-sticky"></i> <span id="infoTitle"></span></h4>
+  <div class="meta">
+    <span id="infoFolder"></span>
+    <span id="infoConnections"></span>
+    <span id="infoUpdated"></span>
+  </div>
+  <div class="tags" id="infoTags"></div>
+  <div class="actions">
+    <a class="btn primary" id="openNoteBtn" href="#"><i class="fa-solid fa-pen"></i> Открыть</a>
+    <button class="btn" onclick="highlightNeighbors()"><i class="fa-solid fa-diagram-project"></i> Соседи</button>
+  </div>
+</div>
+
+<!-- LEGEND PANEL -->
+<div class="legend-panel">
+  <h4>🗂 Папки</h4>
+  <div id="legendList"></div>
+</div>
+
+<!-- STATS PANEL -->
+<div class="stats-panel">
+  <div class="stat-row"><span class="label">Узлов:</span><span class="value" id="statNodes">0</span></div>
+  <div class="stat-row"><span class="label">Связей:</span><span class="value" id="statLinks">0</span></div>
+  <div class="stat-row"><span class="label">Папок:</span><span class="value" id="statFolders">0</span></div>
+</div>
+
+<!-- FILTER MODAL -->
+<div class="modal-bg" id="filterModal">
+  <div class="modal">
+    <h3><i class="fa-solid fa-filter"></i> Фильтры графа</h3>
+
+    <div class="filter-group">
+      <label>Типы связей</label>
+      <div class="filter-options">
+        <label class="filter-option active" data-filter="all">
+          <input type="radio" name="linkType" value="all" checked> Все
+        </label>
+        <label class="filter-option" data-filter="wiki">
+          <input type="radio" name="linkType" value="wiki"> [[Wiki]]
+        </label>
+        <label class="filter-option" data-filter="tag">
+          <input type="radio" name="linkType" value="tag"> #Tags
+        </label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>Мин. связей узла</label>
+      <div class="filter-options">
+        <label class="filter-option active" data-minconn="0">
+          <input type="radio" name="minConn" value="0" checked> Любые
+        </label>
+        <label class="filter-option" data-minconn="1">
+          <input type="radio" name="minConn" value="1"> 1+
+        </label>
+        <label class="filter-option" data-minconn="3">
+          <input type="radio" name="minConn" value="3"> 3+
+        </label>
+        <label class="filter-option" data-minconn="5">
+          <input type="radio" name="minConn" value="5"> 5+
+        </label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>Размер узла</label>
+      <div class="filter-options">
+        <label class="filter-option active" data-size="normal">
+          <input type="radio" name="nodeSize" value="normal" checked> Нормальный
+        </label>
+        <label class="filter-option" data-size="connections">
+          <input type="radio" name="nodeSize" value="connections"> По связям
+        </label>
+        <label class="filter-option" data-size="tags">
+          <input type="radio" name="nodeSize" value="tags"> По тегам
+        </label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>Физика</label>
+      <div class="filter-options">
+        <label class="filter-option active" data-force="normal">
+          <input type="radio" name="force" value="normal" checked> Нормальная
+        </label>
+        <label class="filter-option" data-force="strong">
+          <input type="radio" name="force" value="strong"> Сильная
+        </label>
+        <label class="filter-option" data-force="weak">
+          <input type="radio" name="force" value="weak"> Слабая
+        </label>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" onclick="closeFilterModal()"><i class="fa-solid fa-xmark"></i> Закрыть</button>
+      <button class="btn primary" onclick="applyFilters()"><i class="fa-solid fa-check"></i> Применить</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Загрузка графа...</div>
+</div>
+
+<script>
+// === STATE ===
+let graphData = { nodes: [], links: [] };
+let filteredData = { nodes: [], links: [] };
+let selectedNode = null;
+let showLabels = true;
+let currentFilters = {
+  folder: 'all',
+  minConnections: 0,
+  linkType: 'all',
+  nodeSize: 'normal',
+  force: 'normal'
+};
+let folderColors = {};
+let colorPalette = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#a855f7', '#3b82f6', '#ec4899', '#f97316', '#14b8a6', '#8b5cf6'];
+
+// === THEME ===
+function getTheme() { return localStorage.getItem('infinity_theme') || 'light'; }
+function setTheme(t) {
+  document.body.className = t === 'dark' ? 'dark' : (t === 'sepia' ? 'sepia' : '');
+  const btn = document.getElementById('themeBtn');
+  if (btn) {
+    if (t === 'dark') btn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+    else if (t === 'sepia') btn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+    else btn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+  }
+  localStorage.setItem('infinity_theme', t);
+  if (window.Graph) updateGraphColors();
+}
+function cycleTheme() {
+  const th = ['light', 'dark', 'sepia'];
+  const next = th[(th.indexOf(getTheme()) + 1) % th.length];
+  setTheme(next);
+  toast(`Тема: ${next === 'light' ? 'Светлая' : next === 'dark' ? 'Тёмная' : 'Сепия'}`, 'info', 1500);
+}
+setTheme(getTheme());
+
+// === TOAST ===
+function toast(msg, type, duration) {
+  type = type || 'info';
+  duration = duration || 3500;
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  const icons = {
+    success: 'fa-circle-check',
+    error: 'fa-circle-xmark',
+    info: 'fa-circle-info',
+    warning: 'fa-triangle-exclamation'
+  };
+  el.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span style="flex:1">${msg}</span>`;
+  el.onclick = () => {
+    el.classList.add('hiding');
+    setTimeout(() => el.remove(), 300);
+  };
+  container.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('hiding');
+    setTimeout(() => el.remove(), 300);
+  }, duration);
+}
+
+// === UTILS ===
+function esc(t) {
+  if (!t) return '';
+  const d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
+}
+
+function getFolderColor(folder) {
+  if (!folderColors[folder]) {
+    const keys = Object.keys(folderColors);
+    folderColors[folder] = colorPalette[keys.length % colorPalette.length];
+  }
+  return folderColors[folder];
+}
+
+function fmtDate(ts) {
+  if (!ts) return '';
+  const d = new Date(ts * 1000);
+  return d.toLocaleDateString('ru', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// === INIT GRAPH ===
+let Graph;
+
+async function initGraph() {
+  try {
+    const r = await fetch('/api/notes/graph');
+    const d = await r.json();
+
+    graphData.nodes = d.nodes || [];
+    graphData.links = d.links || [];
+
+    // Assign colors to folders
+    const folders = [...new Set(graphData.nodes.map(n => n.folder || 'inbox'))];
+    folders.forEach((f, i) => {
+      folderColors[f] = colorPalette[i % colorPalette.length];
+    });
+
+    // Calculate connections count
+    graphData.nodes.forEach(n => n.connections = 0);
+    graphData.links.forEach(l => {
+      const src = graphData.nodes.find(n => n.id === l.source);
+      const tgt = graphData.nodes.find(n => n.id === l.target);
+      if (src) src.connections++;
+      if (tgt) tgt.connections++;
+    });
+
+    // Initial filter
+    applyFilters();
+
+    // Update stats
+    updateStats();
+    renderLegend();
+
+    // Hide loading
+    document.getElementById('loadingOverlay').classList.add('hidden');
+
+    if (!graphData.nodes.length) {
+      toast('Заметок пока нет — создайте первую заметку', 'info', 5000);
+    }
+
+    // Create 3D Force Graph
+    createForceGraph();
+
+  } catch (e) {
+    console.error('Graph load error:', e);
+    toast('Ошибка загрузки графа: ' + e.message, 'error');
+    document.getElementById('loadingOverlay').innerHTML = `
+      <div style="text-align:center;color:var(--red)">
+        <i class="fa-solid fa-circle-exclamation" style="font-size:48px;margin-bottom:16px"></i>
+        <p>Не удалось загрузить граф</p>
+        <button class="btn" onclick="location.reload()" style="margin-top:16px">Попробовать ещё раз</button>
+      </div>
+    `;
+  }
+}
+
+function createForceGraph() {
+  const container = document.getElementById('graph-container');
+
+  Graph = ForceGraph3D()
+    (container)
+    .graphData(filteredData)
+
+    // Node styling
+    .nodeLabel(node => `<b>${esc(node.title)}</b><br><small>${esc(node.folder || 'inbox')} · ${node.connections} связей</small>`)
+    .nodeVal(node => {
+      if (currentFilters.nodeSize === 'connections') {
+        return Math.log(node.connections + 1) * 3 + 4;
+      } else if (currentFilters.nodeSize === 'tags') {
+        return Math.log((node.tags || []).length + 1) * 3 + 4;
+      }
+      return 6;
+    })
+    .nodeColor(node => {
+      if (node === selectedNode) return '#fbbf24';
+      if (node === hoveredNode) return '#fcd34d';
+      return getFolderColor(node.folder || 'inbox');
+    })
+    .nodeResolution(8)
+
+    // Link styling
+    .linkWidth(link => (link === highlightedLink ? 2 : 0.5))
+    .linkColor(link => {
+      if (link.type === 'wiki') return 'rgba(99, 102, 241, 0.6)';
+      if (link.type === 'tag') return 'rgba(168, 85, 247, 0.6)';
+      return 'rgba(156, 163, 175, 0.3)';
+    })
+    .linkDirectionalParticles(0)
+
+    // Physics
+    .d3AlphaDecay(currentFilters.force === 'strong' ? 0.02 : currentFilters.force === 'weak' ? 0.002 : 0.01)
+    .d3VelocityDecay(0.4)
+
+    // Camera
+    .backgroundColor(getComputedStyle(document.body).getPropertyValue('--bg').trim())
+
+    // Events
+    .onNodeClick((node, event) => {
+      selectedNode = node;
+      showInfoPanel(node);
+      highlightConnections(node);
+    })
+
+    .onNodeHover((node, prev) => {
+      hoveredNode = node;
+      container.style.cursor = node ? 'pointer' : 'default';
+      // Redraw to update hover color, only when hover target changed
+      if (node !== prev) {
+        Graph.nodeColor(Graph.nodeColor());
+      }
+    })
+
+    .onLinkClick((link, event) => {
+      // Открыть заметку на противоположном конце связи от выбранного узла
+      const srcId = (link.source && (link.source.id || link.source)) || '';
+      const tgtId = (link.target && (link.target.id || link.target)) || '';
+      let nid = srcId || tgtId;
+      if (selectedNode && selectedNode.id === srcId && tgtId) nid = tgtId;
+      if (nid) window.location.href = '/notes/edit?id=' + nid;
+    });
+
+  // Enable controls
+  Graph.controls().enablePan = true;
+  Graph.controls().enableZoom = true;
+  Graph.controls().enableRotate = true;
+
+  // Один раз подогнать камеру после первой стабилизации симуляции
+  let fitted = false;
+  Graph.onEngineStop(() => {
+    if (!fitted && filteredData.nodes.length) {
+      fitted = true;
+      try { Graph.zoomToFit(400, 50); } catch (e) {}
+    }
+  });
+
+  // Double-click to open note
+  container.addEventListener('dblclick', (event) => {
+    if (selectedNode) {
+      window.location.href = '/notes/edit?id=' + selectedNode.id;
+    }
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      selectedNode = null;
+      closeInfoPanel();
+      clearHighlights();
+    }
+    if (e.key === 'l' || e.key === 'L') toggleLabels();
+    if (e.key === 'f' || e.key === 'F') openFilterModal();
+    if (e.key === 'r' || e.key === 'R') resetView();
+  });
+}
+
+function updateGraphColors() {
+  if (!Graph) return;
+  Graph.backgroundColor(getComputedStyle(document.body).getPropertyValue('--bg').trim());
+  Graph.nodeColor(Graph.nodeColor());
+  Graph.linkColor(Graph.linkColor());
+}
+
+// === FILTERING ===
+function computeFilterData() {
+  const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+  const nodes = graphData.nodes.filter(node => {
+    if (currentFilters.folder !== 'all' && (node.folder || 'inbox') !== currentFilters.folder) return false;
+    if (node.connections < currentFilters.minConnections) return false;
+    if (query && !(node.title.toLowerCase().includes(query) ||
+        (node.tags || []).some(t => String(t).toLowerCase().includes(query)) ||
+        (node.folder || '').toLowerCase().includes(query))) return false;
+    return true;
+  });
+
+  const validIds = new Set(nodes.map(n => n.id));
+  const linkId = (endpoint) => {
+    if (endpoint == null) return null;
+    return typeof endpoint === 'object' ? (endpoint.id || null) : endpoint;
+  };
+  const links = graphData.links.filter(link =>
+    validIds.has(linkId(link.source)) && validIds.has(linkId(link.target)) &&
+    (currentFilters.linkType === 'all' || link.type === currentFilters.linkType)
+  );
+
+  return { nodes, links };
+}
+
+function applyFilters() {
+  filteredData = computeFilterData();
+
+  // Update graph
+  if (Graph) {
+    Graph.graphData(filteredData);
+    updateStats();
+  }
+
+  closeFilterModal();
+}
+
+function filterGraph() {
+  filteredData = computeFilterData();
+  if (Graph) Graph.graphData(filteredData);
+  updateStats();
+}
+
+function filterByFolder(folder) {
+  currentFilters.folder = folder;
+  applyFilters();
+}
+
+function filterByConnections(val) {
+  currentFilters.minConnections = parseInt(val);
+  applyFilters();
+}
+
+function resetView() {
+  if (Graph) {
+    Graph.zoomToFit(400, 50);
+    Graph.controls().reset();
+  }
+  selectedNode = null;
+  closeInfoPanel();
+  clearHighlights();
+  document.getElementById('searchInput').value = '';
+  filterGraph();
+  toast('Вид сброшен', 'info');
+}
+
+function toggleLabels() {
+  showLabels = !showLabels;
+  if (Graph) {
+    Graph.nodeLabel(showLabels ?
+      node => `<b>${esc(node.title)}</b><br><small>${esc(node.folder || 'inbox')}</small>` :
+      () => ''
+    );
+  }
+  toast(showLabels ? 'Метки включены' : 'Метки выключены', 'info');
+}
+
+// === INFO PANEL ===
+let hoveredNode = null;
+let highlightedLink = null;
+
+function showInfoPanel(node) {
+  const panel = document.getElementById('infoPanel');
+  document.getElementById('infoTitle').textContent = node.title;
+  document.getElementById('infoFolder').innerHTML = `<i class="fa-solid fa-folder"></i> ${esc(node.folder || 'inbox')}`;
+  document.getElementById('infoConnections').innerHTML = `<i class="fa-solid fa-link"></i> ${node.connections} связей`;
+  document.getElementById('infoUpdated').innerHTML = `<i class="fa-regular fa-clock"></i> ${fmtDate(node.updated)}`;
+
+  // Tags
+  const tagsEl = document.getElementById('infoTags');
+  tagsEl.innerHTML = (node.tags || []).map(t => `<span class="tag">#${esc(t)}</span>`).join('');
+
+  // Open button
+  document.getElementById('openNoteBtn').href = '/notes/edit?id=' + node.id;
+
+  panel.classList.add('open');
+}
+
+function closeInfoPanel() {
+  document.getElementById('infoPanel').classList.remove('open');
+  selectedNode = null;
+  clearHighlights();
+}
+
+function highlightConnections(node) {
+  clearHighlights();
+  highlightedLink = null;
+
+  if (!Graph || !node) return;
+
+  // Highlight connected links
+  Graph.linkColor(link => {
+    if (link.source === node || link.target === node) {
+      highlightedLink = link;
+      return 'rgba(99, 102, 241, 1)';
+    }
+    return 'rgba(156, 163, 175, 0.15)';
+  });
+
+  // Highlight connected nodes
+  Graph.nodeColor(n => {
+    if (n === node) return '#fbbf24';
+    // Check if connected
+    const connected = filteredData.links.some(l =>
+      (l.source === node && l.target === n) ||
+      (l.target === node && l.source === n)
+    );
+    if (connected) return getFolderColor(n.folder || 'inbox');
+    return 'rgba(156, 163, 175, 0.3)';
+  });
+}
+
+function clearHighlights() {
+  if (Graph) {
+    Graph.linkColor(Graph.linkColor());
+    Graph.nodeColor(Graph.nodeColor());
+  }
+  highlightedLink = null;
+}
+
+function highlightNeighbors() {
+  if (!selectedNode) return;
+  highlightConnections(selectedNode);
+  toast('Подсвечены связанные заметки', 'info');
+}
+
+function escAttr(s) {
+  return esc(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// === LEGEND ===
+function renderLegend() {
+  const list = document.getElementById('legendList');
+  const folders = [...new Set(graphData.nodes.map(n => n.folder || 'inbox'))];
+
+  list.innerHTML = folders.map(f => `
+    <div class="legend-item ${currentFilters.folder === f ? 'active' : ''}" data-folder="${escAttr(f)}">
+      <span class="dot" style="background:${getFolderColor(f)}"></span>
+      <span>${esc(f)}</span>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.legend-item').forEach(el => {
+    el.addEventListener('click', () => filterByFolder(el.dataset.folder));
+  });
+}
+
+// === STATS ===
+function updateStats() {
+  document.getElementById('statNodes').textContent = filteredData.nodes.length;
+  document.getElementById('statLinks').textContent = filteredData.links.length;
+  document.getElementById('statFolders').textContent = [...new Set(filteredData.nodes.map(n => n.folder || 'inbox'))].length;
+}
+
+// === FILTER MODAL ===
+function openFilterModal() {
+  document.getElementById('filterModal').classList.add('open');
+
+  // Sync radio buttons with current filters
+  document.querySelectorAll('[name="linkType"]').forEach(r => {
+    r.checked = currentFilters.linkType === r.value;
+    r.closest('.filter-option').classList.toggle('active', currentFilters.linkType === r.value);
+  });
+  document.querySelectorAll('[name="minConn"]').forEach(r => {
+    r.checked = currentFilters.minConnections === parseInt(r.value);
+    r.closest('.filter-option').classList.toggle('active', currentFilters.minConnections === parseInt(r.value));
+  });
+  document.querySelectorAll('[name="nodeSize"]').forEach(r => {
+    r.checked = currentFilters.nodeSize === r.value;
+    r.closest('.filter-option').classList.toggle('active', currentFilters.nodeSize === r.value);
+  });
+  document.querySelectorAll('[name="force"]').forEach(r => {
+    r.checked = currentFilters.force === r.value;
+    r.closest('.filter-option').classList.toggle('active', currentFilters.force === r.value);
+  });
+}
+
+function closeFilterModal() {
+  document.getElementById('filterModal').classList.remove('open');
+}
+
+// Filter option click handlers
+document.querySelectorAll('.filter-option').forEach(opt => {
+  opt.addEventListener('click', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    const input = opt.querySelector('input');
+    if (input) {
+      input.checked = true;
+      opt.parentElement.querySelectorAll('.filter-option').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+    }
+  });
+});
+
+function applyFiltersFromModal() {
+  currentFilters.linkType = document.querySelector('[name="linkType"]:checked')?.value || 'all';
+  currentFilters.minConnections = parseInt(document.querySelector('[name="minConn"]:checked')?.value || 0);
+  currentFilters.nodeSize = document.querySelector('[name="nodeSize"]:checked')?.value || 'normal';
+  currentFilters.force = document.querySelector('[name="force"]:checked')?.value || 'normal';
+
+  // Update force graph
+  if (Graph) {
+    if (currentFilters.force === 'strong') {
+      Graph.d3AlphaDecay(0.02).d3VelocityDecay(0.3);
+    } else if (currentFilters.force === 'weak') {
+      Graph.d3AlphaDecay(0.002).d3VelocityDecay(0.5);
+    } else {
+      Graph.d3AlphaDecay(0.01).d3VelocityDecay(0.4);
+    }
+    Graph.nodeVal(Graph.nodeVal());
+  }
+
+  applyFilters();
+  toast('Фильтры применены', 'success');
+}
+
+// === EXPORT ===
+function exportGraph() {
+  const data = {
+    nodes: filteredData.nodes.map(n => ({
+      id: n.id,
+      title: n.title,
+      folder: n.folder,
+      tags: n.tags,
+      connections: n.connections,
+      updated: n.updated
+    })),
+    links: filteredData.links,
+    exported: new Date().toISOString(),
+    filters: currentFilters
+  };
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `graph-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  toast('Граф экспортирован', 'success');
+}
+
+// === FULLSCREEN ===
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {
+      toast('Не удалось включить полный экран', 'warning');
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+// === INIT ===
+window.addEventListener('load', initGraph);
+
+// Handle folder filter populate
+async function populateFolderFilter() {
+  try {
+    const r = await fetch('/api/notes/folders');
+    const d = await r.json();
+    const sel = document.getElementById('folderFilter');
+    sel.innerHTML = '<option value="all">📁 Все папки</option>';
+    (d.folders || []).filter(f => f !== 'all').forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f;
+      opt.textContent = (f === 'inbox' ? '📥' : '📁') + ' ' + f;
+      sel.appendChild(opt);
+    });
+  } catch (e) {
+    console.warn('Could not load folders:', e);
+  }
+}
+populateFolderFilter();
+</script>
+</body>
+</html>

@@ -1,0 +1,3475 @@
+<!DOCTYPE html>
+<html class="pg-page_bookgen" lang="ru" data-bookgen-skin="next">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Генератор книг — Infinity</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box }
+:root {
+--bg: #fafbfc; --bg2: #ffffff; --bg3: #f3f4f6; --bg4: #e5e7eb;
+--border: rgba(0, 0, 0, 0.06); --border2: rgba(0, 0, 0, 0.1);
+--text: #111827; --text2: #4b5563; --text3: #9ca3af;
+--accent: #4f46e5; --accent2: #4338ca;
+--accent-glow: rgba(79, 70, 229, 0.15); --accent-light: rgba(79, 70, 229, 0.1);
+--link: #4338ca; --card: rgba(255, 255, 255, 0.8); --hover: rgba(0, 0, 0, 0.03);
+--red: #dc2626; --red-light: rgba(220, 38, 38, 0.08);
+--green: #059669; --green-light: rgba(5, 150, 105, 0.08);
+--yellow: #d97706; --yellow-light: rgba(217, 119, 6, 0.08);
+--purple: #7c3aed; --purple-light: rgba(124, 58, 237, 0.08);
+--blue: #2563eb; --orange: #ea580c;
+--shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+--shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+--shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.08);
+--shadow-glow: 0 0 40px rgba(79, 70, 229, 0.1);
+--radius: 16px; --radius-sm: 10px; --radius-lg: 24px; --radius-xl: 32px;
+--tr: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+--tr-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+--glass: rgba(255, 255, 255, 0.72); --glass-border: rgba(0, 0, 0, 0.08);
+--glass-hover: rgba(255, 255, 255, 0.85);
+--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+--font-serif: 'Literata', 'Merriweather', Georgia, serif;
+--font-mono: 'JetBrains Mono', monospace;
+}
+html { scroll-behavior: smooth }
+body {
+font-family: var(--font-sans); background: var(--bg); color: var(--text);
+min-height: 100vh; transition: background 0.4s, color 0.4s;
+line-height: 1.6; -webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale; overflow-x: hidden;
+}
+body::before {
+content: ''; position: fixed; inset: 0;
+background:
+  radial-gradient(ellipse 80% 50% at 20% -10%, var(--accent-glow), transparent),
+  radial-gradient(ellipse 60% 40% at 85% 85%, rgba(168, 85, 247, 0.06), transparent),
+  radial-gradient(ellipse 50% 50% at 50% 50%, rgba(59, 130, 246, 0.03), transparent);
+pointer-events: none; z-index: 0; transition: opacity 0.4s;
+}
+::selection { background: var(--accent); color: #fff }
+a { color: var(--accent); text-decoration: none; transition: var(--tr) }
+a:hover { color: var(--link) }
+button { font-family: inherit; border: none; cursor: pointer; outline: none; background: none }
+input, textarea, select { font-family: inherit; outline: none }
+
+::-webkit-scrollbar { width: 8px; height: 8px }
+::-webkit-scrollbar-track { background: transparent }
+::-webkit-scrollbar-thumb {
+background: var(--border2); border-radius: 10px;
+border: 2px solid var(--bg); transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--accent) }
+
+.glass-panel {
+background: var(--glass);
+backdrop-filter: blur(24px) saturate(180%);
+-webkit-backdrop-filter: blur(24px) saturate(180%);
+border: 1px solid var(--glass-border);
+border-radius: var(--radius);
+box-shadow: var(--shadow);
+}
+
+/* ===== TOOLBAR ===== */
+.toolbar {
+position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+z-index: 1000; background: var(--glass);
+backdrop-filter: blur(28px) saturate(180%);
+-webkit-backdrop-filter: blur(28px) saturate(180%);
+border: 1px solid var(--glass-border);
+border-radius: var(--radius-xl); padding: 6px;
+display: flex; align-items: center; gap: 4px; flex-wrap: nowrap;
+box-shadow: var(--shadow-lg), 0 0 0 0.5px rgba(0,0,0,0.05);
+max-width: calc(100vw - 24px);
+transition: var(--tr);
+}
+.toolbar:hover { box-shadow: var(--shadow-lg), 0 0 60px var(--accent-glow) }
+.toolbar .btn {
+background: transparent; border: 1px solid transparent;
+color: var(--text2); padding: 8px 14px; border-radius: 12px;
+cursor: pointer; font-size: 13px; font-weight: 500; transition: var(--tr);
+display: inline-flex; align-items: center; gap: 7px;
+font-family: inherit; text-decoration: none; white-space: nowrap;
+position: relative;
+}
+.toolbar .btn i { font-size: 14px; transition: var(--tr) }
+/* display:inline-flex у кнопок перебивает браузерное [hidden]{display:none},
+   поэтому скрытые разделы оставались видимыми. Правило возвращает hidden. */
+.toolbar .btn[hidden] { display: none !important; }
+.toolbar .btn:hover {
+background: var(--hover); color: var(--text);
+transform: translateY(-1px);
+}
+.toolbar .btn:hover i { color: var(--accent) }
+.toolbar .btn.active {
+background: linear-gradient(135deg, var(--accent), var(--accent2));
+border-color: transparent; color: #fff;
+box-shadow: 0 4px 16px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.toolbar .btn.active i { color: #fff }
+.toolbar .sep {
+width: 1px; height: 20px;
+background: linear-gradient(to bottom, transparent, var(--border2), transparent);
+margin: 0 2px; flex-shrink: 0;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+max-width: 1200px; margin: 0 auto;
+padding: 90px 24px 140px; position: relative; z-index: 1;
+}
+
+.page-header {
+display: flex; align-items: center; justify-content: space-between;
+margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
+}
+.page-header h1 {
+font-size: 28px; font-weight: 700; letter-spacing: -0.5px;
+background: linear-gradient(135deg, var(--text), var(--text2));
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+background-clip: text;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+background: linear-gradient(135deg, var(--accent), var(--accent2));
+color: #fff; border: none;
+padding: 10px 18px; border-radius: 12px;
+cursor: pointer; font-size: 13px; font-weight: 600;
+transition: var(--tr); font-family: inherit;
+display: inline-flex; align-items: center; gap: 8px;
+box-shadow: 0 2px 8px var(--accent-glow);
+position: relative; overflow: hidden;
+}
+.btn::before {
+content: ''; position: absolute; inset: 0;
+background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+opacity: 0; transition: var(--tr);
+}
+.btn:hover {
+transform: translateY(-2px);
+box-shadow: 0 6px 20px var(--accent-glow);
+}
+.btn:hover::before { opacity: 1 }
+.btn:active { transform: translateY(0) }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none }
+.btn.btn-outline {
+background: var(--glass); backdrop-filter: blur(8px);
+border: 1.5px solid var(--border);
+color: var(--text); box-shadow: none;
+}
+.btn.btn-outline:hover {
+border-color: var(--accent); color: var(--accent);
+background: var(--accent-light); box-shadow: none;
+}
+.btn.btn-success {
+background: linear-gradient(135deg, var(--green), #059669);
+box-shadow: 0 2px 8px var(--green-light);
+}
+.btn.btn-danger {
+background: linear-gradient(135deg, var(--red), #b91c1c);
+box-shadow: 0 2px 8px var(--red-light);
+}
+
+/* ===== FORM ELEMENTS ===== */
+.form-grid {
+display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+.form-grid.full { grid-template-columns: 1fr; }
+.form-group { margin-bottom: 16px; }
+.form-group label {
+display: block; margin-bottom: 6px; font-weight: 600;
+color: var(--text2); font-size: 13px;
+}
+.form-group input, .form-group textarea, .form-group select {
+width: 100%; padding: 12px 14px;
+background: var(--bg2); border: 1.5px solid var(--border);
+border-radius: 10px; color: var(--text); font-size: 14px;
+transition: var(--tr);
+}
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+border-color: var(--accent);
+box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* ===== CARDS ===== */
+.card {
+background: var(--glass);
+backdrop-filter: blur(12px);
+border: 1px solid var(--glass-border);
+border-radius: var(--radius);
+padding: 24px; margin-bottom: 20px;
+transition: var(--tr);
+}
+.card:hover {
+box-shadow: var(--shadow);
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-container {
+background: var(--bg3); border-radius: 10px;
+overflow: hidden; height: 12px; margin: 16px 0;
+}
+.progress-bar {
+height: 100%;
+background: linear-gradient(90deg, var(--accent), var(--purple));
+transition: width 0.5s ease;
+border-radius: 10px;
+}
+.progress-text {
+text-align: center; font-size: 13px;
+color: var(--text3); margin-top: 8px;
+}
+
+/* ===== BOOK LIST ===== */
+.book-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+gap: 16px;
+}
+.book-card {
+background: var(--glass);
+backdrop-filter: blur(12px);
+border: 1px solid var(--glass-border);
+border-radius: var(--radius);
+padding: 20px; transition: var(--tr);
+cursor: pointer; position: relative;
+}
+.book-card:hover {
+transform: translateY(-4px);
+box-shadow: var(--shadow-lg);
+border-color: var(--accent);
+}
+.book-card .title {
+font-size: 16px; font-weight: 700;
+margin-bottom: 8px; color: var(--text);
+}
+.book-card .author {
+font-size: 13px; color: var(--text2);
+margin-bottom: 12px;
+}
+.book-card .meta {
+display: flex; gap: 12px; flex-wrap: wrap;
+font-size: 12px; color: var(--text3);
+}
+.book-card .meta span {
+display: inline-flex; align-items: center; gap: 4px;
+}
+.book-card .status-badge {
+position: absolute; top: 16px; right: 16px;
+padding: 4px 10px; border-radius: 8px;
+font-size: 11px; font-weight: 700;
+}
+.status-done { background: var(--green-light); color: var(--green); }
+.status-progress { background: var(--yellow-light); color: var(--yellow); }
+
+/* ===== EDITOR ===== */
+.editor-container {
+display: grid; grid-template-columns: 1fr 1fr;
+gap: 20px; margin-top: 20px;
+}
+.editor-pane {
+background: var(--glass);
+backdrop-filter: blur(12px);
+border: 1px solid var(--glass-border);
+border-radius: var(--radius);
+overflow: hidden;
+}
+.editor-pane .pane-header {
+padding: 16px 20px;
+border-bottom: 1px solid var(--border);
+display: flex; align-items: center; justify-content: space-between;
+}
+.editor-pane .pane-header h3 {
+font-size: 14px; font-weight: 700;
+display: flex; align-items: center; gap: 8px;
+}
+.editor-pane .pane-body {
+padding: 20px; max-height: 500px; overflow-y: auto;
+}
+.editor-pane textarea {
+width: 100%; min-height: 400px;
+background: transparent; border: none;
+color: var(--text); font-size: 14px;
+line-height: 1.7; resize: none;
+}
+.editor-pane textarea:focus { outline: none; }
+
+/* ===== LOG ===== */
+.log-container {
+background: #000; color: #0f0;
+padding: 16px; border-radius: 10px;
+font-family: var(--font-mono); font-size: 13px;
+max-height: 300px; overflow-y: auto;
+white-space: pre-wrap; margin-top: 16px;
+}
+
+/* ===== TABS ===== */
+.tabs {
+display: flex; gap: 4px; margin-bottom: 20px;
+padding: 4px; background: var(--glass);
+backdrop-filter: blur(12px);
+border: 1px solid var(--glass-border);
+border-radius: var(--radius);
+width: fit-content;
+}
+.tab {
+padding: 10px 20px; border-radius: 10px;
+cursor: pointer; font-size: 13px; font-weight: 600;
+color: var(--text2); transition: var(--tr);
+}
+.tab:hover { background: var(--hover); color: var(--text); }
+.tab.active {
+background: linear-gradient(135deg, var(--accent), var(--accent2));
+color: #fff;
+box-shadow: 0 2px 8px var(--accent-glow);
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+text-align: center; padding: 60px 24px; color: var(--text3);
+background: var(--glass); backdrop-filter: blur(12px);
+border: 1px dashed var(--border); border-radius: var(--radius-lg);
+}
+.empty-state .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.6; }
+.empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+.empty-state p { font-size: 14px; }
+
+/* ===== LOADING ===== */
+.loading {
+text-align: center; padding: 60px 20px; color: var(--text2);
+}
+.loading i { font-size: 36px; margin-bottom: 16px; animation: spin 1s linear infinite; color: var(--accent); }
+@keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
+
+/* ===== PROOFREAD ===== */
+.proofread-item { transition: opacity 0.2s; }
+.proofread-item:hover { border-color: var(--accent-light) !important; }
+.severity-high { text-transform: uppercase; font-weight: 700; }
+.severity-med { font-weight: 600; }
+.severity-low { opacity: 0.8; }
+
+/* ===== SPINNER ===== */
+.spinner {
+display: inline-block; width: 16px; height: 16px;
+border: 2px solid rgba(255,255,255,0.3);
+border-top-color: #fff; border-radius: 50%;
+animation: spin 0.8s linear infinite;
+margin-right: 8px; vertical-align: middle;
+}
+
+/* ===== NOTIFICATION ===== */
+.notification {
+position: fixed; top: 80px; right: 24px;
+background: var(--glass); backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border: 1px solid var(--glass-border);
+color: var(--text); padding: 14px 20px;
+border-radius: var(--radius);
+z-index: 9999; font-size: 14px; font-weight: 500;
+box-shadow: var(--shadow-lg);
+display: flex; align-items: center; gap: 10px;
+animation: slideInRight 0.3s ease;
+max-width: 360px;
+}
+.notification.success { border-left: 3px solid var(--green) }
+.notification.error { border-left: 3px solid var(--red) }
+.notification.info { border-left: 3px solid var(--accent) }
+@keyframes slideInRight {
+from { opacity: 0; transform: translateX(30px) }
+to { opacity: 1; transform: translateX(0) }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+.toolbar { padding: 4px; gap: 2px; top: 8px; border-radius: 20px; }
+.toolbar .btn { padding: 6px 10px; font-size: 11px }
+.toolbar .btn span { display: none }
+.main-content { padding: 80px 12px 100px }
+.form-grid { grid-template-columns: 1fr; }
+.editor-container { grid-template-columns: 1fr; }
+.book-grid { grid-template-columns: 1fr; }
+.pages-toolbar { flex-direction: column; align-items: stretch; }
+.page-count-control { width: 100%; justify-content: space-between; }
+}
+
+/* ===== NEW UI - EDITOR ENHANCEMENTS ===== */
+.editor-toolbar {
+display: flex; align-items: center; gap: 6px;
+padding: 6px 10px; background: var(--bg3); border: 1px solid var(--border);
+border-bottom: none; border-radius: 12px 12px 0 0;
+}
+.char-counter {
+font-size: 12px; color: var(--text3); margin-right: auto;
+}
+.mini-btn {
+background: transparent; border: 1px solid transparent;
+color: var(--text2); padding: 6px 10px; border-radius: 8px;
+font-size: 12px; cursor: pointer; transition: var(--tr);
+display: inline-flex; align-items: center; gap: 4px;
+}
+.mini-btn:hover {
+background: var(--hover); color: var(--accent); border-color: var(--border);
+}
+.mini-btn.btn-save {
+background: var(--green-light); color: var(--green);
+}
+.mini-btn.btn-save:hover {
+background: var(--green); color: #fff;
+}
+.plan-editor {
+width: 100%; min-height: 420px;
+background: var(--bg3); border: 1px solid var(--border);
+border-radius: 0 0 12px 12px; border-top: none;
+padding: 16px; color: var(--text);
+font-family: var(--font-serif); font-size: 15px; line-height: 1.8;
+resize: vertical;
+}
+.plan-editor:focus {
+outline: none; border-color: var(--accent);
+box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.pages-toolbar {
+display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+align-items: center;
+}
+.page-count-control {
+display: flex; align-items: center; gap: 8px;
+margin-left: auto;
+background: var(--bg3); border: 1px solid var(--border);
+border-radius: 12px; padding: 4px 10px;
+}
+.page-count-control label {
+font-size: 13px; color: var(--text2); font-weight: 600;
+}
+.page-count-control input {
+width: 70px; padding: 6px 8px;
+background: var(--bg2); border: 1px solid var(--border);
+border-radius: 8px; color: var(--text); font-size: 13px;
+}
+
+.chapter-nav-wrap {
+background: var(--bg3); border: 1px solid var(--border);
+border-radius: 12px; padding: 14px; margin-bottom: 20px;
+}
+.chapter-nav-header {
+display: flex; align-items: center; justify-content: space-between;
+margin-bottom: 10px;
+}
+.chapter-nav-list {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+gap: 6px;
+max-height: 240px; overflow-y: auto;
+padding-right: 4px;
+}
+.chapter-btn {
+padding: 10px 6px; border-radius: 8px;
+border: 1.5px solid var(--border);
+background: var(--bg2); color: var(--text2);
+font-size: 12px; font-weight: 600;
+cursor: pointer; transition: var(--tr);
+display: flex; align-items: center; justify-content: center;
+position: relative;
+}
+.chapter-btn:hover {
+border-color: var(--accent); color: var(--accent);
+transform: translateY(-1px);
+}
+.chapter-btn.generated {
+  border-color: var(--green); color: var(--green);
+  background: var(--green-light);
+}
+.chapter-btn.current {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; border-color: transparent;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+/* ===== CHAPTER LIST (move/delete/insert) ===== */
+.chapter-toolbar {
+  display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;
+  align-items: center;
+}
+.chapter-toolbar .label {
+  font-size: 12px; color: var(--text3); margin-right: 4px;
+}
+
+.chapter-list {
+  display: flex; flex-direction: column;
+  gap: 2px; max-height: 520px; overflow-y: auto;
+  padding: 4px 2px;
+}
+.chapter-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: var(--tr);
+  position: relative;
+}
+.chapter-row:hover {
+  border-color: var(--accent);
+  background: var(--hover);
+  transform: translateX(2px);
+}
+.chapter-row.current {
+  background: linear-gradient(135deg, var(--accent-light), var(--accent-glow));
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-light);
+}
+.chapter-row.empty {
+  opacity: 0.7;
+  border-style: dashed;
+  background: transparent;
+}
+.chapter-row.dragging {
+  opacity: 0.35;
+  transform: scale(0.98);
+}
+.chapter-row.drag-over-top {
+  border-top: 3px solid var(--green);
+}
+.chapter-row.drag-over-bottom {
+  border-bottom: 3px solid var(--green);
+}
+.chapter-drag-handle {
+  color: var(--text3); font-size: 14px;
+  cursor: grab; padding: 0 2px;
+  user-select: none;
+}
+.chapter-drag-handle:hover { color: var(--accent); }
+.chapter-drag-handle:active { cursor: grabbing; }
+.chapter-num {
+  font-size: 14px; font-weight: 700;
+  min-width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: var(--tr);
+}
+.chapter-row.current .chapter-num {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+.chapter-row.generated .chapter-num {
+  background: var(--green-light); color: var(--green);
+}
+.chapter-info {
+  flex: 1; min-width: 0; overflow: hidden;
+}
+.chapter-title {
+  font-size: 13px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-weight: 500;
+}
+.chapter-row.empty .chapter-title {
+  color: var(--text3); font-style: italic; font-weight: 400;
+}
+.chapter-stats {
+  font-size: 11px; color: var(--text3);
+  margin-top: 2px;
+}
+.chapter-actions {
+  display: flex; gap: 3px; flex-shrink: 0;
+}
+.icon-btn {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text3);
+  border: 1px solid transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: var(--tr);
+  font-size: 12px;
+  padding: 0;
+}
+.icon-btn:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--accent);
+  border-color: var(--border);
+  transform: translateY(-1px);
+}
+.icon-btn.danger:hover:not(:disabled) {
+  background: var(--red-light);
+  color: var(--red);
+  border-color: var(--red);
+}
+.icon-btn.success:hover:not(:disabled) {
+  background: var(--green-light);
+  color: var(--green);
+  border-color: var(--green);
+}
+.icon-btn:disabled {
+  opacity: 0.25; cursor: not-allowed;
+}
+
+.insert-row {
+  display: flex; align-items: center;
+  height: 14px; margin: -1px 0;
+  position: relative; z-index: 1;
+  opacity: 0; transition: opacity 0.2s;
+  padding: 0 12px;
+}
+.chapter-list:hover .insert-row,
+.insert-row:hover,
+.insert-row.force-show {
+  opacity: 1;
+}
+.insert-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(to right, transparent, var(--border2), transparent);
+}
+.insert-btn {
+  background: var(--bg2);
+  color: var(--accent);
+  border: 1.5px dashed var(--accent);
+  padding: 1px 10px;
+  border-radius: 10px;
+  font-size: 10px; font-weight: 700;
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 3px;
+  transition: var(--tr);
+  margin: 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.insert-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-style: solid;
+  transform: scale(1.05);
+}
+.insert-row.first .insert-btn { margin-left: 0; }
+.insert-row.last .insert-btn { margin-right: 0; }
+
+.pane-header {
+padding: 14px 18px;
+border-bottom: 1px solid var(--border);
+display: flex; align-items: center; justify-content: space-between;
+gap: 10px;
+}
+.pane-actions {
+display: flex; align-items: center; gap: 4px;
+}
+.page-view-content {
+white-space: pre-wrap; line-height: 1.85;
+font-family: var(--font-serif); font-size: 15px;
+color: var(--text);
+}
+.editor-pane .pane-body {
+padding: 14px 18px; max-height: 560px; overflow-y: auto;
+position: relative;
+}
+.editor-pane textarea {
+font-family: var(--font-serif); font-size: 15px; line-height: 1.85;
+min-height: 460px;
+}
+.editor-statusbar {
+position: sticky; bottom: -14px;
+display: flex; justify-content: space-between; align-items: center;
+padding: 8px 0; font-size: 11px;
+color: var(--text3); border-top: 1px dashed var(--border);
+margin-top: 8px; background: var(--glass);
+}
+
+/* ===== AI MODAL ===== */
+.modal-overlay {
+position: fixed; inset: 0; z-index: 9998;
+background: rgba(0, 0, 0, 0.55);
+backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+display: flex; align-items: center; justify-content: center;
+animation: fadeIn 0.2s ease;
+padding: 16px;
+}
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+.modal {
+background: var(--bg2);
+border: 1px solid var(--border2);
+border-radius: var(--radius-lg);
+padding: 28px;
+max-width: 640px; width: 100%;
+max-height: 90vh; overflow-y: auto;
+box-shadow: var(--shadow-lg);
+animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+.modal h3 {
+display: flex; align-items: center; gap: 10px;
+font-size: 18px; margin-bottom: 6px;
+}
+.modal .modal-desc {
+color: var(--text2); font-size: 13px; margin-bottom: 18px;
+}
+.modal-actions {
+display: flex; gap: 10px; justify-content: flex-end;
+margin-top: 20px; flex-wrap: wrap;
+}
+
+/* ===== FULLSCREEN OVERLAY ===== */
+.fs-overlay {
+position: fixed; inset: 0; z-index: 9990;
+background: var(--bg); padding: 24px;
+display: flex; flex-direction: column;
+animation: fadeIn 0.2s ease;
+}
+.fs-overlay .fs-header {
+display: flex; justify-content: space-between; align-items: center;
+margin-bottom: 16px;
+}
+.fs-overlay textarea {
+flex: 1; width: 100%;
+background: var(--bg2); border: 1px solid var(--border);
+border-radius: 12px; padding: 24px;
+color: var(--text); font-size: 16px; line-height: 1.85;
+font-family: var(--font-serif); resize: none;
+}
+
+/* ===== PROMPT SUGGESTIONS ===== */
+.prompt-suggestions {
+display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
+}
+.prompt-chip {
+font-size: 12px; padding: 6px 10px;
+background: var(--accent-light); color: var(--accent);
+border-radius: 20px; cursor: pointer;
+border: 1px solid transparent; transition: var(--tr);
+}
+.prompt-chip:hover { background: var(--accent); color: #fff; transform: translateY(-1px); }
+</style>
+<script src="/static/js/i18n.js"></script>
+<script src="/static/js/connection_watch.js" defer></script>
+    <link rel="stylesheet" href="/static/css/mobile.css">
+    <script src="/static/js/mobile.js" defer></script>
+  <script src="/static/js/dialogs.js" defer></script>
+<link rel="stylesheet" href="/static/fonts/site-fonts.css">
+</head>
+<body>
+
+<!-- ЛЕВОЕ МЕНЮ (рейл). id и обработчики сохранены. -->
+<div class="toolbar" role="navigation" aria-label="Генератор книг">
+<a class="btn rail-brand" href="/" title="На главную">
+<span class="rail-brand-mark"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+<span class="rail-brand-text"><b>Генератор</b><small>BookGen · Infinity</small></span>
+</a>
+<div class="rail-scroll">
+<div class="rail-group">
+<div class="rail-cap">Разделы</div>
+<button class="btn active" data-section="create" onclick="showSection('create')">
+<i class="fa-solid fa-wand-magic-sparkles"></i><span>Создать книгу</span>
+</button>
+<button class="btn" data-section="books" onclick="showSection('books')">
+<i class="fa-solid fa-book"></i><span>Мои книги</span>
+</button>
+<button class="btn" data-section="library" onclick="showSection('library')">
+<i class="fa-solid fa-upload"></i><span>Библиотека</span>
+</button>
+<!-- Раздел «Изображения» скрыт по запросу: генерация картинок не относится
+     к книгам. Разметка и JS оставлены — включить обратно = убрать hidden. -->
+<button class="btn" data-section="images" onclick="showSection('images')" hidden>
+<i class="fa-solid fa-image"></i><span>Изображения</span>
+</button>
+<button class="btn" data-section="sheets" onclick="showSection('sheets')" hidden>
+<i class="fa-solid fa-address-card"></i><span>Персонажи</span>
+</button>
+<button class="btn" data-section="manga" onclick="showSection('manga')" hidden>
+<i class="fa-solid fa-book-open"></i><span>Манга</span>
+</button>
+</div>
+<div class="rail-group">
+<div class="rail-cap">Перейти</div>
+<a class="btn" href="/books"><i class="fa-solid fa-book-open"></i><span>Читалка</span></a>
+<a class="btn" href="/bookgen" title="Классический генератор"><i class="fa-solid fa-clock-rotate-left"></i><span>Старый вид</span></a>
+</div>
+</div>
+<div class="rail-foot">
+<button class="btn btn-icon" onclick="loadModels()" title="Обновить модели">
+<i class="fa-solid fa-rotate"></i>
+</button>
+</div>
+</div>
+
+<div class="main-content">
+
+<!-- CREATE SECTION -->
+<section id="createSection" class="tab-content active">
+<div class="page-header">
+<div>
+<h1><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent)"></i> Генератор книг</h1>
+<div class="subtitle">Опишите идею — сюжет, главы и текст соберёт ИИ</div>
+</div>
+</div>
+
+<div class="card">
+<h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+<span class="bg-step">1</span> Идея и жанр
+</h3>
+
+<div class="form-grid">
+<div class="form-group">
+<label>Название книги</label>
+<input id="f-title" placeholder="Тени древнего города" value="">
+</div>
+<div class="form-group">
+<label>Автор</label>
+<input id="f-author" placeholder="Иван Писатель" value="">
+</div>
+</div>
+
+<div class="form-grid">
+<div class="form-group">
+<label>Тема / Идея</label>
+<input id="f-theme" placeholder="Путешествие во времени, детектив в будущем...">
+</div>
+<div class="form-group">
+<label>Жанр</label>
+<select id="f-genre" onchange="onGenreChange()">
+<optgroup label="Фантастика">
+<option>Фантастика</option>
+<option>Научная фантастика</option>
+<option>Космическая фантастика</option>
+<option>Киберпанк</option>
+<option>Постапокалипсис</option>
+<option>Антиутопия</option>
+<option>Стимпанк</option>
+</optgroup>
+<optgroup label="Фэнтези">
+<option>Фэнтези</option>
+<option>Тёмное фэнтези</option>
+<option>Героическое фэнтези</option>
+<option>Городское фэнтези</option>
+<option>Магический реализм</option>
+</optgroup>
+<optgroup label="Детектив">
+<option>Детектив</option>
+<option>Классический детектив</option>
+<option>Иронический детектив</option>
+<option>Политический детектив</option>
+<option>Шпионский детектив</option>
+</optgroup>
+<optgroup label="Триллер / Хоррор">
+<option>Триллер</option>
+<option>Психологический триллер</option>
+<option>Юридический триллер</option>
+<option>Медицинский триллер</option>
+<option>Хоррор</option>
+<option>Мистика</option>
+</optgroup>
+<optgroup label="Любовный роман">
+<option>Любовный роман</option>
+<option>Исторический роман</option>
+<option>Современный любовный роман</option>
+</optgroup>
+<optgroup label="Приключения">
+<option>Приключения</option>
+<option>Морские приключения</option>
+<option>Вестерн</option>
+<option>Приключения для детей</option>
+</optgroup>
+<optgroup label="Историческая / Современная">
+<option>Историческая проза</option>
+<option>Военная проза</option>
+<option>Художественная проза</option>
+<option>Современная проза</option>
+<option>Классическая проза</option>
+<option>Юмор и сатира</option>
+</optgroup>
+<optgroup label="Прочее">
+<option>Сказка</option>
+<option>Молодёжная проза</option>
+<option>Детская литература</option>
+<option>Поэзия</option>
+<option>Пьеса</option>
+<option>Биография</option>
+<option>Научпоп</option>
+<option>Публицистика</option>
+<option>Эзотерика</option>
+<option>Эпопея</option>
+</optgroup>
+<option value="__custom__">⚙ Свой жанр…</option>
+</select>
+<input id="f-genre-custom" type="text" placeholder="Введите свой жанр" style="margin-top:8px;display:none;">
+</div>
+</div>
+</div>
+
+<div class="card">
+<h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+<span class="bg-step">2</span> Сюжет и параметры
+</h3>
+
+<div class="form-group">
+<label>Персонажи и наброски (необязательно)</label>
+<textarea id="f-notes" placeholder="Главный герой — детектив Макс, ему 45, ироничный. Его помощница — робот Лира. Действие — мегаполис 2150 года..."></textarea>
+</div>
+
+<div class="form-grid">
+<div class="form-group">
+<label>Количество глав</label>
+<input id="f-pages" type="number" min="1" max="500" value="10">
+</div>
+<div class="form-group">
+<label>Модель ИИ</label>
+<select id="f-model">
+<option value="">Загрузка...</option>
+</select>
+</div>
+<div class="form-group">
+<label>Книга-образец <span style="color:var(--text3);font-weight:400">(не обязательно)</span></label>
+<div style="display:flex;gap:8px">
+<select id="f-reference-book" onchange="onReferenceBookChange()" style="flex:1">
+<option value="">Без образца</option>
+</select>
+<button class="btn btn-outline" onclick="openLibraryRefSearch()" title="Найти книгу в библиотеке"><i class="fa-solid fa-search"></i></button>
+</div>
+</div>
+</div>
+
+<div id="ref-options" style="display:none">
+<div class="form-grid">
+<div class="form-group">
+<label>Режим использования образца</label>
+<select id="f-reference-mode" onchange="onReferenceModeChange()">
+<option value="style">Похожий стиль и структура</option>
+<option value="continuation">Продолжение книги-образца</option>
+<option value="custom">Свой промт</option>
+</select>
+</div>
+</div>
+<div class="form-group" id="custom-prompt-group" style="display:none">
+<label>Свой промт для генерации</label>
+<textarea id="f-custom-prompt" placeholder="Напиши главу {num} из {total} в стиле книги-образца. Тема: {theme}. Жанр: {genre}. Сюжет: {scenario}. Персонажи: {characters}. План: {outline}.&#10;&#10;Доступные переменные: {num}, {total}, {theme}, {genre}, {scenario}, {characters}, {outline}, {prev_context}, {ref}"></textarea>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+<span class="bg-step">3</span> Стиль и запуск
+</h3>
+
+<div class="form-grid">
+<div class="form-group">
+<label>Стиль / тон <span style="color:var(--text3);font-weight:400">(не обязательно)</span></label>
+<input id="f-style" placeholder="мрачный, поэтичный, кинематографичный, юмористический...">
+</div>
+<div class="form-group">
+<label>Целевая аудитория <span style="color:var(--text3);font-weight:400">(не обязательно)</span></label>
+<input id="f-audience" placeholder="подростки 14+, взрослые, ценители фантастики...">
+</div>
+</div>
+
+<div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
+<button class="btn" onclick="createBook()">
+<i class="fa-solid fa-rocket"></i> Создать книгу
+</button>
+</div>
+</div>
+</section>
+
+<!-- BOOKS LIST SECTION -->
+<section id="booksSection" class="tab-content">
+<div class="page-header">
+<h1><i class="fa-solid fa-book" style="color: var(--accent)"></i> Сгенерированные книги</h1>
+<button class="btn btn-outline" onclick="loadBooks()">
+<i class="fa-solid fa-rotate"></i> Обновить
+</button>
+</div>
+<div id="booksList">
+<div class="loading"><i class="fa-solid fa-spinner"></i><div>Загрузка...</div></div>
+</div>
+</section>
+
+<!-- BOOK EDITOR SECTION -->
+<section id="editorSection" class="tab-content">
+<div class="page-header">
+<div>
+<h1 id="editorTitle"><i class="fa-solid fa-pen" style="color: var(--accent)"></i> Редактор книги</h1>
+<div class="progress-container">
+<div class="progress-bar" id="progressBar" style="width: 0%"></div>
+</div>
+<div class="progress-text" id="progressText">Страниц: 0 / 0</div>
+</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap;">
+<button class="btn btn-outline" onclick="showSection('books')">
+<i class="fa-solid fa-arrow-left"></i> К списку
+</button>
+<button class="btn btn-danger" onclick="deleteCurrentBook()">
+<i class="fa-solid fa-trash"></i> Удалить
+</button>
+</div>
+</div>
+
+<div class="tabs">
+<div class="tab active" data-tab="plan" onclick="switchTab('plan')">
+<i class="fa-solid fa-list-check"></i> План
+</div>
+<div class="tab" data-tab="pages" onclick="switchTab('pages')">
+<i class="fa-solid fa-file-lines"></i> Главы
+</div>
+<div class="tab" data-tab="proofread" onclick="switchTab('proofread')" id="tab-proofread-btn">
+<i class="fa-solid fa-check-double"></i> Редактура <span id="proofread-badge" style="display:none;background:var(--red);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span>
+</div>
+<div class="tab" data-tab="export" onclick="switchTab('export')">
+<i class="fa-solid fa-download"></i> Экспорт
+</div>
+<div class="tab" data-tab="log" onclick="switchTab('log')">
+<i class="fa-solid fa-terminal"></i> Лог
+</div>
+</div>
+
+<!-- TAB: PLAN -->
+<div id="tab-plan" class="tab-content active">
+<div class="card">
+<div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+<button class="btn" id="btn-gen-plan" onclick="generatePlan()">
+<i class="fa-solid fa-wand-magic-sparkles"></i> Создать план
+</button>
+<button class="btn btn-success" onclick="savePlan()">
+<i class="fa-solid fa-save"></i> Сохранить изменения
+</button>
+<button class="btn btn-outline" onclick="regenerateCurrentSection()">
+<i class="fa-solid fa-rotate"></i> Пересоздать раздел
+</button>
+<button class="btn btn-outline" onclick="openAiEditSection()">
+<i class="fa-solid fa-robot"></i> Доработать ИИ
+</button>
+</div>
+
+<div class="tabs" style="margin-bottom: 16px;">
+<div class="tab active" data-subtab="scenario" onclick="switchSubTab('scenario')">Сценарий</div>
+<div class="tab" data-subtab="characters" onclick="switchSubTab('characters')">Персонажи</div>
+<div class="tab" data-subtab="outline" onclick="switchSubTab('outline')">План по главам</div>
+<div class="tab" data-subtab="draft" onclick="switchSubTab('draft')">Черновик</div>
+<div class="tab" data-subtab="world" onclick="switchSubTab('world')">Мир</div>
+<div class="tab" data-subtab="study" onclick="switchSubTab('study')">Изучение книги</div>
+</div>
+
+<div id="subtab-scenario" class="tab-content active">
+<div class="editor-toolbar">
+<span class="char-counter" id="cnt-scenario">0 символов</span>
+<button class="mini-btn" onclick="copyText('t-scenario')" title="Копировать"><i class="fa-solid fa-copy"></i></button>
+<button class="mini-btn" onclick="clearText('t-scenario')" title="Очистить"><i class="fa-solid fa-eraser"></i></button>
+<button class="mini-btn" onclick="fullscreenEditor('t-scenario')" title="На весь экран"><i class="fa-solid fa-expand"></i></button>
+</div>
+<textarea id="t-scenario" class="plan-editor" placeholder="Сценарий будет сгенерирован автоматически..." oninput="updateCharCount('scenario')"></textarea>
+</div>
+<div id="subtab-characters" class="tab-content">
+<div class="editor-toolbar">
+<span class="char-counter" id="cnt-characters">0 символов</span>
+<button class="mini-btn" onclick="copyText('t-characters')" title="Копировать"><i class="fa-solid fa-copy"></i></button>
+<button class="mini-btn" onclick="clearText('t-characters')" title="Очистить"><i class="fa-solid fa-eraser"></i></button>
+<button class="mini-btn" onclick="fullscreenEditor('t-characters')" title="На весь экран"><i class="fa-solid fa-expand"></i></button>
+</div>
+<textarea id="t-characters" class="plan-editor" placeholder="Персонажи будут сгенерированы автоматически..." oninput="updateCharCount('characters')"></textarea>
+</div>
+<div id="subtab-outline" class="tab-content">
+<div class="editor-toolbar">
+<span class="char-counter" id="cnt-outline">0 символов</span>
+<button class="mini-btn" onclick="copyText('t-outline')" title="Копировать"><i class="fa-solid fa-copy"></i></button>
+<button class="mini-btn" onclick="clearText('t-outline')" title="Очистить"><i class="fa-solid fa-eraser"></i></button>
+<button class="mini-btn" onclick="fullscreenEditor('t-outline')" title="На весь экран"><i class="fa-solid fa-expand"></i></button>
+</div>
+<textarea id="t-outline" class="plan-editor" placeholder="План будет сгенерирован автоматически..." oninput="updateCharCount('outline')"></textarea>
+</div>
+<div id="subtab-draft" class="tab-content">
+<div class="editor-toolbar">
+<span class="char-counter" id="cnt-draft">0 символов</span>
+<button class="mini-btn" onclick="copyText('t-draft')" title="Копировать"><i class="fa-solid fa-copy"></i></button>
+<button class="mini-btn" onclick="clearText('t-draft')" title="Очистить"><i class="fa-solid fa-eraser"></i></button>
+<button class="mini-btn" onclick="fullscreenEditor('t-draft')" title="На весь экран"><i class="fa-solid fa-expand"></i></button>
+<button class="mini-btn" onclick="saveDraft()" title="Сохранить черновик"><i class="fa-solid fa-floppy-disk"></i></button>
+<button class="mini-btn" onclick="loadDraft()" title="Обновить из ИИ"><i class="fa-solid fa-rotate"></i></button>
+</div>
+<textarea id="t-draft" class="plan-editor" placeholder="Черновик — ключевые события. Заполняется автоматически при генерации глав. Можно редактировать вручную." oninput="updateCharCount('draft')"></textarea>
+</div>
+<div id="subtab-world" class="tab-content">
+<div class="editor-toolbar">
+<span class="char-counter" id="cnt-world">0 символов</span>
+<button class="mini-btn" onclick="copyText('t-world')" title="Копировать"><i class="fa-solid fa-copy"></i></button>
+<button class="mini-btn" onclick="clearText('t-world')" title="Очистить"><i class="fa-solid fa-eraser"></i></button>
+<button class="mini-btn" onclick="fullscreenEditor('t-world')" title="На весь экран"><i class="fa-solid fa-expand"></i></button>
+<button class="mini-btn" onclick="generateWorld()" title="Сгенерировать мир"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+</div>
+<textarea id="t-world" class="plan-editor" placeholder="Словарь мира — география, магия, технологии, культура. Генерируется автоматически." oninput="updateCharCount('world')"></textarea>
+</div>
+<div id="subtab-study" class="tab-content">
+<div class="editor-toolbar">
+<span class="char-counter" id="cnt-study">0 символов</span>
+<button class="mini-btn" onclick="copyText('t-study')" title="Копировать"><i class="fa-solid fa-copy"></i></button>
+<button class="mini-btn" onclick="saveStudy()" title="Сохранить изучение"><i class="fa-solid fa-floppy-disk"></i></button>
+</div>
+<textarea id="t-study" class="plan-editor" placeholder="Здесь появится конспект исходной книги, изученной ИИ для продолжения..." oninput="updateCharCount('study')"></textarea>
+</div>
+</div>
+</div>
+
+<!-- TAB: PAGES -->
+<div id="tab-pages" class="tab-content">
+<div class="card">
+<div class="pages-toolbar">
+<button class="btn" id="btn-gen-all" onclick="generateAll()">
+<i class="fa-solid fa-play"></i> Сгенерировать все
+</button>
+<button class="btn btn-outline" id="btn-gen-next" onclick="generateNext()">
+<i class="fa-solid fa-plus"></i> Следующая глава
+</button>
+<button class="btn btn-outline" onclick="regenerateCurrentPage()" id="btn-regen-page" disabled>
+<i class="fa-solid fa-rotate"></i> Пересоздать
+</button>
+<button class="btn btn-danger" onclick="stopGeneration()">
+<i class="fa-solid fa-stop"></i> Стоп
+</button>
+<div class="page-count-control">
+<label>Всего глав:</label>
+<input type="number" id="totalPagesInput" min="1" max="500" value="10">
+<button class="mini-btn" onclick="updateTotalPages()" title="Изменить кол-во глав"><i class="fa-solid fa-check"></i></button>
+</div>
+</div>
+
+        <div class="chapter-nav-wrap">
+          <div class="chapter-nav-header">
+            <strong><i class="fa-solid fa-list-ol"></i> Главы</strong>
+            <span id="chapterCount" style="color:var(--text3);font-size:12px;">0 / 0</span>
+          </div>
+          <div class="chapter-toolbar">
+            <span class="label"><i class="fa-solid fa-hand-pointer"></i> Перетаскивайте, чтобы изменить порядок:</span>
+            <button class="mini-btn" onclick="insertNewPage(1)" title="Добавить главу в самое начало">
+              <i class="fa-solid fa-plus"></i> В начало
+            </button>
+            <button class="mini-btn" onclick="insertNewPageAtEnd()" title="Добавить главу в самый конец">
+              <i class="fa-solid fa-plus"></i> В конец
+            </button>
+          </div>
+          <div id="pagesList" class="chapter-list"></div>
+        </div>
+
+<div class="editor-container">
+<div class="editor-pane">
+<div class="pane-header">
+<h3><i class="fa-solid fa-eye"></i> Просмотр <span id="pageViewNum" style="color:var(--text3);font-weight:500;font-size:13px"></span></h3>
+<div class="pane-actions">
+<span id="pageViewStats" style="color:var(--text3);font-size:12px"></span>
+<button class="mini-btn" onclick="refreshCurrentPage()" title="Обновить"><i class="fa-solid fa-rotate"></i></button>
+</div>
+</div>
+<div class="pane-body">
+<div id="pageView" class="page-view-content">Выберите главу для просмотра</div>
+</div>
+</div>
+<div class="editor-pane">
+<div class="pane-header">
+<h3><i class="fa-solid fa-edit"></i> Редактор</h3>
+<div class="pane-actions">
+<button class="mini-btn" onclick="openAiEditPage()" title="ИИ-правка"><i class="fa-solid fa-robot"></i></button>
+<button class="mini-btn" onclick="openAiEditSelected()" title="ИИ-правка выделенного"><i class="fa-solid fa-i-cursor"></i></button>
+<button class="mini-btn" onclick="copyText('pageEditor')" title="Копировать"><i class="fa-solid fa-copy"></i></button>
+<button class="mini-btn" onclick="fullscreenEditor('pageEditor')" title="На весь экран"><i class="fa-solid fa-expand"></i></button>
+<button class="mini-btn btn-save" onclick="savePageManual()" title="Сохранить"><i class="fa-solid fa-save"></i></button>
+</div>
+</div>
+<div class="pane-body">
+<textarea id="pageEditor" placeholder="Текст главы..." oninput="markPageDirty()"></textarea>
+<div class="editor-statusbar">
+<span id="editorStats">0 символов · 0 слов</span>
+<span id="editorDirty" style="color:var(--yellow);display:none">● несохранено</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- TAB: PROOFREAD -->
+<div id="tab-proofread" class="tab-content">
+<div class="card">
+<div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+<button class="btn" onclick="startProofread()" id="btn-proofread">
+<i class="fa-solid fa-check-double"></i> Проверить книгу
+</button>
+<button class="btn btn-success" onclick="applyAllProofreads()" id="btn-apply-all">
+<i class="fa-solid fa-check"></i> Принять все
+</button>
+<button class="btn btn-danger" onclick="rejectAllProofreads()" id="btn-reject-all">
+<i class="fa-solid fa-xmark"></i> Отклонить все
+</button>
+</div>
+<div id="proofread-list">
+<div class="empty-state"><p>Нажмите "Проверить книгу" для поиска несоответствий</p></div>
+</div>
+</div>
+</div>
+
+<!-- TAB: EXPORT -->
+<div id="tab-export" class="tab-content">
+<div class="card">
+<h3 style="margin-bottom: 12px;"><i class="fa-solid fa-bookmark" style="color: var(--green)"></i> Моя библиотека</h3>
+<p style="color: var(--text2); margin-bottom: 16px; font-size: 13px;">
+Сохранить книгу в формате FB2 в директорию, указанную в настройках под "Книги".
+</p>
+<div style="display: flex; gap: 12px; flex-wrap: wrap;">
+<button class="btn btn-success" onclick="saveToLibrary()">
+<i class="fa-solid fa-bookmark"></i> Добавить в Мои книги
+</button>
+<button class="btn btn-outline" onclick="location.href='/books'">
+<i class="fa-solid fa-book-open"></i> Открыть библиотеку
+</button>
+</div>
+</div>
+
+<div class="card">
+<h3 style="margin-bottom: 20px;"><i class="fa-solid fa-download" style="color: var(--accent)"></i> Скачать книгу</h3>
+<div style="display: flex; gap: 12px; flex-wrap: wrap;">
+<button class="btn btn-success" onclick="downloadBook('fb2')">
+<i class="fa-solid fa-book"></i> Скачать .FB2
+</button>
+<button class="btn btn-outline" onclick="downloadBook('txt')">
+<i class="fa-solid fa-file-lines"></i> Скачать .TXT
+</button>
+<button class="btn btn-outline" onclick="downloadBook('md')">
+<i class="fa-brands fa-markdown"></i> Скачать .MD
+</button>
+<button class="btn btn-outline" onclick="downloadBook('plan')">
+<i class="fa-solid fa-list-check"></i> Скачать план
+</button>
+</div>
+</div>
+
+<div class="card">
+<h3 style="margin-bottom: 12px;"><i class="fa-solid fa-paperclip" style="color: var(--purple)"></i> Книга-образец</h3>
+<div id="reference-editor-info" style="margin-bottom:12px;padding:12px;background:var(--bg3);border-radius:10px;font-size:13px;color:var(--text3)">
+Не прикреплена
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn btn-outline" onclick="openReferenceSelector()">
+<i class="fa-solid fa-link"></i> Прикрепить образец
+</button>
+<button class="btn btn-outline" onclick="removeReference()">
+<i class="fa-solid fa-unlink"></i> Открепить
+</button>
+</div>
+<div class="form-group" style="margin-top:12px">
+<label>Режим использования</label>
+<select id="editor-reference-mode" onchange="onEditorReferenceModeChange()">
+<option value="style">Похожий стиль и структура</option>
+<option value="continuation">Продолжение книги-образца</option>
+<option value="custom">Свой промт</option>
+</select>
+</div>
+<div class="form-group" id="editor-custom-prompt-group" style="display:none">
+<label>Свой промт для генерации</label>
+<textarea id="editor-custom-prompt" placeholder="Напиши главу {num} из {total}..." style="min-height:100px"></textarea>
+<button class="btn btn-success" style="margin-top:8px" onclick="saveCustomPrompt()">
+<i class="fa-solid fa-save"></i> Сохранить промт
+</button>
+</div>
+</div>
+
+<div class="card">
+<h3 style="margin-bottom: 12px;"><i class="fa-solid fa-info-circle" style="color: var(--purple)"></i> Метаданные книги</h3>
+<div class="form-grid">
+<div class="form-group">
+<label>Название</label>
+<input id="m-title">
+</div>
+<div class="form-group">
+<label>Автор</label>
+<input id="m-author">
+</div>
+</div>
+<div class="form-grid">
+<div class="form-group">
+<label>Тема</label>
+<input id="m-theme">
+</div>
+<div class="form-group">
+<label>Жанр</label>
+<input id="m-genre">
+</div>
+</div>
+<div class="form-group">
+<label>Заметки</label>
+<textarea id="m-notes"></textarea>
+</div>
+<button class="btn btn-success" onclick="updateMeta()">
+<i class="fa-solid fa-save"></i> Сохранить метаданные
+</button>
+</div>
+</div>
+
+<!-- TAB: LOG -->
+<div id="tab-log" class="tab-content">
+<div class="card">
+<div class="log-container" id="logContainer">Готово к работе...</div>
+</div>
+</div>
+</section>
+
+</div>
+
+<!-- LIBRARY SECTION -->
+<section id="librarySection" class="tab-content">
+<div class="page-header">
+<h1><i class="fa-solid fa-upload" style="color: var(--accent)"></i> Библиотека книг</h1>
+<button class="btn btn-outline" onclick="loadLibrary()"><i class="fa-solid fa-rotate"></i> Обновить</button>
+</div>
+
+<div class="card">
+<h3 style="margin-bottom:20px"><i class="fa-solid fa-file-arrow-up"></i> Загрузить книгу с ПК</h3>
+<div class="form-group">
+<label>Выберите файл (.fb2, .txt, .md, .epub, .jsonl)</label>
+<input type="file" id="uploadFileInput" accept=".fb2,.txt,.md,.epub,.jsonl,.json" style="padding:10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;width:100%;color:var(--text)">
+</div>
+<button class="btn" onclick="uploadBook()"><i class="fa-solid fa-cloud-arrow-up"></i> Загрузить</button>
+<div id="uploadProgress" style="margin-top:12px;display:none">
+<div class="progress-container"><div class="progress-bar" id="uploadProgressBar" style="width:0%"></div></div>
+</div>
+</div>
+
+<div class="card">
+<h3 style="margin-bottom:20px"><i class="fa-solid fa-books"></i> Файлы в библиотеке</h3>
+<div id="libraryFilesList">
+<div class="empty-state"><div class="icon">📂</div><p>Загрузка...</p></div>
+</div>
+</div>
+</section>
+
+<!-- IMAGES SECTION: скрыт вместе с кнопкой (см. тулбар). -->
+<section id="imagesSection" class="tab-content" hidden>
+<div class="page-header">
+<h1><i class="fa-solid fa-image" style="color: var(--accent)"></i> Генерация изображений</h1>
+<span id="imageStatus" style="font-size:13px;color:var(--text3)">Проверка Easy Diffusion...</span>
+</div>
+
+<div class="card">
+<div class="form-grid">
+<div class="form-group" style="grid-column:1/-1">
+<label>Промт (описание на английском)</label>
+<textarea id="img-prompt" placeholder="a fantasy landscape, epic mountains, sunset, digital art, highly detailed" style="min-height:100px"></textarea>
+</div>
+<div class="form-group">
+<label>Негативный промт</label>
+<textarea id="img-negative" placeholder="nsfw, low quality, blurry, ugly" style="min-height:60px"></textarea>
+</div>
+</div>
+<div class="form-grid">
+<div class="form-group">
+<label>Ширина</label>
+<select id="img-width"><option>512</option><option>768</option><option>1024</option></select>
+</div>
+<div class="form-group">
+<label>Высота</label>
+<select id="img-height"><option>512</option><option>768</option><option>1024</option></select>
+</div>
+<div class="form-group">
+<label>Шагов</label>
+<input type="number" id="img-steps" value="20" min="1" max="150">
+</div>
+<div class="form-group">
+<label>CFG Scale</label>
+<input type="number" id="img-cfg" value="7" min="1" max="30" step="0.5">
+</div>
+<div class="form-group">
+<label>Seed (-1 = random)</label>
+<input type="number" id="img-seed" value="-1">
+</div>
+<div class="form-group">
+<label>Количество</label>
+<input type="number" id="img-batch" value="1" min="1" max="4">
+</div>
+</div>
+<button class="btn" onclick="generateImage()"><i class="fa-solid fa-wand-magic-sparkles"></i> Сгенерировать</button>
+</div>
+
+<div id="imageResults" style="display:none">
+<div class="card">
+<h3 style="margin-bottom:16px"><i class="fa-solid fa-images"></i> Результаты</h3>
+<div id="imageGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(256px,1fr));gap:12px"></div>
+</div>
+</div>
+</section>
+
+<!-- CHARACTER & LOCATION SHEETS SECTION -->
+<section id="sheetsSection" class="tab-content">
+<div class="page-header">
+<h1><i class="fa-solid fa-address-card" style="color: var(--accent)"></i> Персонажи и локации</h1>
+</div>
+
+<div class="tabs">
+<div class="tab active" onclick="switchSheetTab('characters')" data-sheet="characters">Персонажи</div>
+<div class="tab" onclick="switchSheetTab('locations')" data-sheet="locations">Локации</div>
+</div>
+
+<div id="sheet-characters" class="tab-content active">
+<div class="card">
+<h3 style="margin-bottom:16px"><i class="fa-solid fa-user-plus"></i> Добавить персонажа</h3>
+<div class="form-grid">
+<div class="form-group"><label>Имя</label><input id="ch-name" placeholder="Гарри Поттер"></div>
+<div class="form-group"><label>Роль</label><input id="ch-role" placeholder="Главный герой"></div>
+</div>
+<div class="form-group"><label>Описание</label><textarea id="ch-desc" placeholder="История, мотивация..." style="min-height:60px"></textarea></div>
+<div class="form-group"><label>Внешность</label><textarea id="ch-appearance" placeholder="Рост, волосы, одежда..." style="min-height:60px"></textarea></div>
+<div class="form-group"><label>Характер</label><textarea id="ch-personality" placeholder="Черты характера, привычки..." style="min-height:60px"></textarea></div>
+<button class="btn" onclick="saveCharacter()"><i class="fa-solid fa-floppy-disk"></i> Сохранить персонажа</button>
+</div>
+<div class="card">
+<h3 style="margin-bottom:16px"><i class="fa-solid fa-users"></i> Сохранённые персонажи</h3>
+<div id="charactersList"><div class="loading"><i class="fa-solid fa-spinner"></i><div>Загрузка...</div></div></div>
+</div>
+</div>
+
+<div id="sheet-locations" class="tab-content">
+<div class="card">
+<h3 style="margin-bottom:16px"><i class="fa-solid fa-location-plus"></i> Добавить локацию</h3>
+<div class="form-grid">
+<div class="form-group"><label>Название</label><input id="loc-name" placeholder="Запретный лес"></div>
+<div class="form-group"><label>Атмосфера</label><input id="loc-atmosphere" placeholder="Мрачная, таинственная"></div>
+</div>
+<div class="form-group"><label>Описание</label><textarea id="loc-desc" placeholder="Детальное описание..." style="min-height:60px"></textarea></div>
+<div class="form-group"><label>Архитектура / Окружение</label><textarea id="loc-arch" placeholder="Тип построек, природа..." style="min-height:60px"></textarea></div>
+<button class="btn" onclick="saveLocation()"><i class="fa-solid fa-floppy-disk"></i> Сохранить локацию</button>
+</div>
+<div class="card">
+<h3 style="margin-bottom:16px"><i class="fa-solid fa-map-locations"></i> Сохранённые локации</h3>
+<div id="locationsList"><div class="loading"><i class="fa-solid fa-spinner"></i><div>Загрузка...</div></div></div>
+</div>
+</div>
+</section>
+
+<!-- MANGA SECTION -->
+<section id="mangaSection" class="tab-content">
+<div class="page-header">
+<h1><i class="fa-solid fa-book-open" style="color: var(--accent)"></i> Создание манги</h1>
+</div>
+
+<div class="tabs">
+<div class="tab active" onclick="switchMangaTab('create')" data-manga="create">Создать мангу</div>
+<div class="tab" onclick="switchMangaTab('list')" data-manga="list">Мои манги</div>
+<div class="tab" onclick="switchMangaTab('editor')" data-manga="editor">Редактор</div>
+</div>
+
+<div id="manga-create" class="tab-content active">
+<div class="card">
+<div class="form-grid">
+<div class="form-group"><label>Название</label><input id="manga-title" placeholder="Тень дракона"></div>
+<div class="form-group"><label>Автор</label><input id="manga-author" placeholder="Мангака"></div>
+</div>
+<div class="form-group"><label>Жанр</label><input id="manga-genre" placeholder="фэнтези, приключения"></div>
+<div class="form-group"><label>Описание</label><textarea id="manga-desc" placeholder="Краткий синопсис..." style="min-height:80px"></textarea></div>
+<div class="form-group">
+<label>Панелей на страницу</label>
+<select id="manga-panels"><option>2</option><option selected>4</option><option>6</option><option>8</option></select>
+</div>
+<button class="btn" onclick="createManga()"><i class="fa-solid fa-plus"></i> Создать мангу</button>
+</div>
+</div>
+
+<div id="manga-list" class="tab-content">
+<div class="page-header" style="margin-bottom:16px">
+<h3><i class="fa-solid fa-list"></i> Мои манги</h3>
+<button class="btn btn-outline" onclick="loadMangaList()"><i class="fa-solid fa-rotate"></i> Обновить</button>
+</div>
+<div id="mangaListContainer"><div class="loading"><i class="fa-solid fa-spinner"></i><div>Загрузка...</div></div></div>
+</div>
+
+<div id="manga-editor" class="tab-content">
+<div class="page-header">
+<div>
+<h3 id="mangaEditorTitle"><i class="fa-solid fa-pen"></i> Редактор манги</h3>
+</div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-outline" onclick="switchMangaTab('list')"><i class="fa-solid fa-arrow-left"></i> К списку</button>
+<button class="btn btn-danger" onclick="deleteCurrentManga()"><i class="fa-solid fa-trash"></i> Удалить</button>
+</div>
+</div>
+<div class="card">
+<div class="form-group">
+<label>Описание новой сцены</label>
+<textarea id="manga-scene" placeholder="Главный герой входит в тёмный лес, слышит шорох..." style="min-height:80px"></textarea>
+</div>
+<button class="btn" onclick="generateMangaPage()"><i class="fa-solid fa-wand-magic-sparkles"></i> Сгенерировать страницу</button>
+</div>
+<div id="mangaPagesContainer"></div>
+</div>
+</section>
+
+<script>
+let currentBookId = null;
+let currentPageNum = null;
+let currentMeta = null;
+let currentSubTab = 'scenario';
+let generating = false;
+let genAbort = false;
+let pageDirty = false;
+
+function esc(t) {
+if (t === null || t === undefined) return '';
+// Раньше кавычки не экранировались: имя файла/персонажа с `"` ломало
+// разметку и inline-обработчики.
+return String(t).replace(/[&<>"']/g, c => ({
+'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[c]));
+}
+
+function showNotification(msg, type = 'info') {
+const n = document.createElement('div');
+n.className = `notification ${type}`;
+const icons = { success: 'fa-circle-check', error: 'fa-circle-exclamation', info: 'fa-circle-info', warning: 'fa-triangle-exclamation' };
+const colors = { success: 'green', error: 'red', info: 'accent', warning: 'yellow' };
+n.innerHTML = `<i class="fa-solid ${icons[type]||icons.info}" style="color:var(--${colors[type]||colors.info});font-size:18px"></i><span>${esc(msg)}</span>`;
+document.body.appendChild(n);
+setTimeout(() => {
+n.style.opacity = '0';
+n.style.transform = 'translateX(120%)';
+n.style.transition = 'all 0.3s ease';
+setTimeout(() => n.remove(), 300);
+}, 3500);
+}
+
+function log(msg) {
+const el = document.getElementById('logContainer');
+if (!el) return;
+const t = new Date().toLocaleTimeString();
+el.textContent += `[${t}] ${msg}\n`;
+el.scrollTop = el.scrollHeight;
+}
+
+async function api(url, opts = {}) {
+const fetchOpts = {
+method: opts.method || "GET",
+headers: opts.body ? { "Content-Type": "application/json" } : {},
+body: opts.body ? JSON.stringify(opts.body) : undefined,
+};
+if (opts.signal) fetchOpts.signal = opts.signal;
+const r = await fetch(url, fetchOpts);
+const ct = r.headers.get("content-type") || "";
+if (!ct.includes("application/json")) {
+const text = await r.text();
+throw new Error(`Ожидался JSON, получено ${ct||'?'}: ${text.slice(0,150)}`);
+}
+return await r.json();
+}
+
+/* === GENRE CUSTOM === */
+function onGenreChange() {
+const sel = document.getElementById('f-genre');
+const custom = document.getElementById('f-genre-custom');
+if (sel.value === '__custom__') {
+custom.style.display = 'block';
+custom.focus();
+} else {
+custom.style.display = 'none';
+}
+}
+
+function getSelectedGenre() {
+const sel = document.getElementById('f-genre');
+if (sel.value === '__custom__') {
+return (document.getElementById('f-genre-custom').value || 'Художественная проза').trim();
+}
+return sel.value;
+}
+
+/* === MODELS === */
+async function loadModels() {
+const sel = document.getElementById('f-model');
+sel.innerHTML = '<option value="">Загрузка...</option>';
+try {
+const data = await api("/api/bookgen/models");
+sel.innerHTML = "";
+if (!data.models || data.models.length === 0) {
+sel.innerHTML = '<option value="">Нет доступных моделей</option>';
+return;
+}
+data.models.forEach(m => {
+const o = document.createElement("option");
+o.value = m;
+o.textContent = m;
+sel.appendChild(o);
+});
+if (data.active_model && data.models.includes(data.active_model)) {
+sel.value = data.active_model;
+}
+showNotification('Модели загружены: ' + data.models.length, 'success');
+} catch (e) {
+sel.innerHTML = '<option value="">Ошибка загрузки</option>';
+showNotification('Ошибка: ' + e.message, 'error');
+}
+// Also load reference books selector
+loadReferenceBooks();
+}
+
+/* === BOOKS LIST === */
+async function loadBooks() {
+const container = document.getElementById('booksList');
+container.innerHTML = '<div class="loading"><i class="fa-solid fa-spinner"></i><div>Загрузка...</div></div>';
+try {
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 15000);
+const data = await api("/api/bookgen/books", { signal: controller.signal });
+clearTimeout(timeoutId);
+if (!data.books || data.books.length === 0) {
+container.innerHTML = `
+<div class="empty-state">
+<div class="icon">📚</div>
+<h3>Книг пока нет</h3>
+<p>Создайте первую книгу на вкладке "Создать книгу"</p>
+</div>`;
+return;
+}
+let html = '<div class="book-grid">';
+data.books.forEach(b => {
+const pct = Math.round(((b.generated_pages || 0) / Math.max(1, b.page_count)) * 100);
+const done = b.finished;
+html += `
+<div class="book-card" onclick="openBook('${b.id}')">
+${done ? '<span class="status-badge status-done"><i class="fa-solid fa-check"></i> Готово</span>' : '<span class="status-badge status-progress">' + pct + '%</span>'}
+${b.continuation_source ? '<span class="status-badge" style="background:var(--accent);color:#fff;top:auto;bottom:16px"><i class="fa-solid fa-forward"></i> Продолжение</span>' : ''}
+<div class="title">${esc(b.title)}</div>
+<div class="author">${esc(b.author || 'Автор')}</div>
+<div class="meta">
+<span><i class="fa-solid fa-list"></i> ${b.page_count} глав</span>
+<span><i class="fa-solid fa-bookmark"></i> ${b.generated_pages || 0}</span>
+<span><i class="fa-solid fa-calendar"></i> ${new Date(b.created_at).toLocaleDateString('ru')}</span>
+</div>
+<div class="meta" style="margin-top:6px"><span style="color:var(--text3)">${esc(b.genre || '')}</span></div>
+</div>`;
+});
+html += '</div>';
+container.innerHTML = html;
+} catch (e) {
+container.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>${esc(e.message)}</p></div>`;
+}
+}
+
+/* === CREATE BOOK === */
+async function createBook() {
+const data = {
+title: document.getElementById("f-title").value || "Без названия",
+author: document.getElementById("f-author").value || "Автор",
+theme: document.getElementById("f-theme").value,
+genre: getSelectedGenre(),
+notes: [
+document.getElementById("f-notes").value,
+document.getElementById("f-style").value ? `\n[Стиль]: ${document.getElementById("f-style").value}` : '',
+document.getElementById("f-audience").value ? `\n[Аудитория]: ${document.getElementById("f-audience").value}` : '',
+].filter(Boolean).join(''),
+page_count: parseInt(document.getElementById("f-pages").value) || 10,
+model: document.getElementById("f-model").value,
+reference_book_id: document.getElementById("f-reference-book").value,
+};
+if (!data.model) { showNotification("Выберите модель!", "error"); return; }
+try {
+const r = await api("/api/bookgen/start", { method: "POST", body: data });
+if (r.id) {
+const refBookId = document.getElementById("f-reference-book").value;
+if (refBookId) {
+const refMode = document.getElementById("f-reference-mode").value;
+const customPrompt = document.getElementById("f-custom-prompt").value;
+await api("/api/bookgen/custom_prompt", {
+method: "POST",
+body: { id: r.id, reference_mode: refMode, custom_prompt: customPrompt },
+});
+}
+showNotification("Книга создана!", "success");
+openBook(r.id);
+} else {
+throw new Error(r.error || 'Не удалось создать');
+}
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+/* === REFERENCE BOOK === */
+function onReferenceBookChange() {
+const sel = document.getElementById('f-reference-book');
+const opts = document.getElementById('ref-options');
+opts.style.display = sel.value ? 'block' : 'none';
+if (!sel.value) document.getElementById('custom-prompt-group').style.display = 'none';
+}
+
+function onReferenceModeChange() {
+const mode = document.getElementById('f-reference-mode').value;
+document.getElementById('custom-prompt-group').style.display = mode === 'custom' ? 'block' : 'none';
+}
+
+function onEditorReferenceModeChange() {
+const mode = document.getElementById('editor-reference-mode').value;
+document.getElementById('editor-custom-prompt-group').style.display = mode === 'custom' ? 'block' : 'none';
+}
+
+async function loadReferenceBooks() {
+try {
+const sel = document.getElementById('f-reference-book');
+sel.innerHTML = '<option value="">Без образца</option>';
+const genData = await api("/api/bookgen/books").catch(() => ({ books: [] }));
+(genData.books || []).forEach(b => {
+const o = document.createElement('option');
+o.value = b.id;
+o.textContent = `${b.title} (${b.author || '?'}) [ген.]`;
+sel.appendChild(o);
+});
+} catch(e) {}
+}
+
+async function openLibraryRefSearch() {
+const overlay = document.createElement('div');
+overlay.className = 'modal-overlay';
+overlay.innerHTML = `
+<div class="modal">
+<h3><i class="fa-solid fa-search"></i> Поиск книги в библиотеке</h3>
+<div class="form-group">
+<input type="text" id="lib-search-input" placeholder="Введите название или автора..." style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:14px;">
+</div>
+<div id="lib-search-results" style="max-height:300px;overflow-y:auto;margin-bottom:12px">
+<div style="text-align:center;padding:20px;color:var(--text3)">Начните вводить запрос</div>
+</div>
+<div class="modal-actions">
+<button class="btn btn-outline" onclick="this.closest('.modal-overlay').remove()"><i class="fa-solid fa-xmark"></i> Закрыть</button>
+</div>
+</div>`;
+document.body.appendChild(overlay);
+let timeout;
+document.getElementById('lib-search-input').addEventListener('input', function() {
+clearTimeout(timeout);
+const q = this.value.trim();
+if (q.length < 2) {
+document.getElementById('lib-search-results').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3)">Введите минимум 2 символа</div>';
+return;
+}
+timeout = setTimeout(async () => {
+const resultsDiv = document.getElementById('lib-search-results');
+resultsDiv.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3)"><i class="fa-solid fa-spinner"></i> Поиск...</div>';
+try {
+const r = await api(`/api/bookgen/library-books?q=${encodeURIComponent(q)}`);
+const books = r.books || [];
+if (books.length === 0) {
+resultsDiv.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3)">Ничего не найдено</div>';
+return;
+}
+let html = '';
+books.forEach(b => {
+const authors = (b.authors || []).map(a => a?.full_name || '').filter(Boolean).join(', ');
+const bid = 'lib_' + (b.id || b.title);
+html += `<div class="lib-result" data-bg-act="pick-ref" data-id="${esc(bid)}" data-title="${esc(b.title || b.name)}" data-authors="${esc(authors)}" style="padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer;background:var(--bg2);transition:0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+<div style="font-weight:600">${esc(b.title || b.name)}</div>
+<div style="font-size:12px;color:var(--text2)">${esc(authors || '?')} · ${esc(b.genre || '')}</div>
+</div>`;
+});
+resultsDiv.innerHTML = html;
+} catch (e) {
+resultsDiv.innerHTML = `<div style="text-align:center;padding:20px;color:var(--red)">Ошибка: ${esc(e.message)}</div>`;
+}
+}, 400);
+});
+}
+
+/* Делегирование кликов по data-атрибутам: inline onclick с именем файла
+   ломался на кавычках/апострофах и мог выполнить чужой JS. */
+document.addEventListener('click', function(e){
+ const el = e.target && e.target.closest ? e.target.closest('[data-bg-act]') : null;
+ if(!el) return;
+ const act = el.dataset.bgAct;
+ if(act === 'continue-lib') openContinueModal(el.dataset.name || '', '', '');
+ else if(act === 'del-lib') deleteLibraryFile(el.dataset.name || '');
+ else if(act === 'del-char') deleteCharacter(el.dataset.name || '');
+ else if(act === 'del-loc') deleteLocation(el.dataset.name || '');
+ else if(act === 'pick-ref') selectLibraryRef(el.dataset.id || '', el.dataset.title || '', el.dataset.authors || '');
+ else if(act === 'pick-cont') selectContinueLibBook(el.dataset.id || '', el.dataset.title || '', el.dataset.authors || '');
+});
+
+function selectLibraryRef(bid, title, author) {
+const sel = document.getElementById('f-reference-book');
+const existing = Array.from(sel.options).find(o => o.value === bid);
+if (!existing) {
+const o = document.createElement('option');
+o.value = bid;
+o.textContent = `${title} (${author || '?'}) [библ.]`;
+sel.appendChild(o);
+}
+sel.value = bid;
+onReferenceBookChange();
+document.querySelector('.modal-overlay')?.remove();
+showNotification(`Образец "${title}" прикреплён`, "success");
+}
+
+function loadReferenceInfo(meta) {
+const el = document.getElementById('reference-editor-info');
+const refId = meta.reference_book_id;
+if (!refId) {
+el.innerHTML = 'Не прикреплена';
+document.getElementById('editor-reference-mode').value = 'style';
+document.getElementById('editor-custom-prompt-group').style.display = 'none';
+document.getElementById('editor-custom-prompt').value = '';
+return;
+}
+const refMode = meta.reference_mode || 'style';
+const customPrompt = meta.custom_prompt || '';
+document.getElementById('editor-reference-mode').value = refMode;
+document.getElementById('editor-custom-prompt').value = customPrompt;
+document.getElementById('editor-custom-prompt-group').style.display = refMode === 'custom' ? 'block' : 'none';
+el.innerHTML = `<strong>Прикреплена:</strong> книга ID: ${esc(refId)}<br>
+<strong>Режим:</strong> ${({style:'Похожий стиль',continuation:'Продолжение',custom:'Свой промт'})[refMode] || refMode}`;
+}
+
+async function openReferenceSelector() {
+const data = await api("/api/bookgen/books");
+const books = data.books || [];
+if (books.length === 0) {
+showNotification("Нет книг для выбора", "warning");
+return;
+}
+const overlay = document.createElement('div');
+overlay.className = 'modal-overlay';
+let html = '<div class="modal"><h3><i class="fa-solid fa-link"></i> Прикрепить книгу-образец</h3><div class="modal-desc">Выберите книгу для использования как образец стиля/продолжения</div><div class="form-group"><select id="ref-selector">';
+books.forEach(b => {
+const selected = currentMeta?.reference_book_id === b.id ? ' selected' : '';
+html += `<option value="${b.id}"${selected}>${esc(b.title)} (${esc(b.author || '?')})</option>`;
+});
+html += '</select></div><div class="modal-actions"><button class="btn btn-outline" id="ref-cancel"><i class="fa-solid fa-xmark"></i> Отмена</button><button class="btn" id="ref-apply"><i class="fa-solid fa-check"></i> Прикрепить</button></div></div>';
+overlay.innerHTML = html;
+document.body.appendChild(overlay);
+document.getElementById('ref-cancel').onclick = () => overlay.remove();
+document.getElementById('ref-apply').onclick = async () => {
+const refId = document.getElementById('ref-selector').value;
+try {
+const r = await api("/api/bookgen/set_reference", {
+method: "POST", body: { id: currentBookId, reference_book_id: refId },
+});
+if (r.error) throw new Error(r.error);
+showNotification("Книга-образец прикреплена", "success");
+overlay.remove();
+currentMeta.reference_book_id = r.reference_book_id;
+const mode = document.getElementById('editor-reference-mode').value;
+const customPrompt = document.getElementById('editor-custom-prompt').value;
+await api("/api/bookgen/custom_prompt", {
+method: "POST", body: { id: currentBookId, reference_mode: mode, custom_prompt: customPrompt },
+});
+loadReferenceInfo(currentMeta);
+} catch(e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+};
+overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+}
+
+async function removeReference() {
+if (!currentBookId) return;
+if (!confirm("Открепить книгу-образец?")) return;
+try {
+const r = await api("/api/bookgen/set_reference", {
+method: "POST", body: { id: currentBookId, reference_book_id: "" },
+});
+if (r.error) throw new Error(r.error);
+delete currentMeta.reference_book_id;
+delete currentMeta.reference_mode;
+delete currentMeta.custom_prompt;
+loadReferenceInfo(currentMeta);
+showNotification("Книга-образец откреплена", "success");
+} catch(e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+async function saveCustomPrompt() {
+if (!currentBookId) return;
+try {
+const mode = document.getElementById('editor-reference-mode').value;
+const customPrompt = document.getElementById('editor-custom-prompt').value;
+const r = await api("/api/bookgen/custom_prompt", {
+method: "POST", body: { id: currentBookId, reference_mode: mode, custom_prompt: customPrompt },
+});
+if (r.error) throw new Error(r.error);
+currentMeta.reference_mode = mode;
+currentMeta.custom_prompt = customPrompt;
+loadReferenceInfo(currentMeta);
+showNotification("Промт сохранён", "success");
+} catch(e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+/* === OPEN BOOK === */
+async function openBook(id) {
+currentBookId = id;
+currentPageNum = null;
+showSection('editor');
+try {
+const meta = await api(`/api/bookgen/status/${id}`);
+currentMeta = meta;
+document.getElementById('editorTitle').innerHTML = `<i class="fa-solid fa-pen" style="color: var(--accent)"></i> ${esc(meta.title)}`;
+updateProgress(meta);
+loadMetaIntoForm(meta);
+loadReferenceInfo(meta);
+log(`Открыта книга: ${meta.title}`);
+await loadPlan();
+await loadPagesNav();
+} catch (e) {
+log("Ошибка: " + e.message);
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+function loadMetaIntoForm(meta) {
+const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+setVal('m-title', meta.title);
+setVal('m-author', meta.author);
+setVal('m-theme', meta.theme);
+setVal('m-genre', meta.genre);
+setVal('m-notes', meta.notes);
+setVal('totalPagesInput', meta.page_count);
+}
+
+function updateProgress(meta) {
+const pct = Math.round(((meta.generated_pages || 0) / Math.max(1, meta.page_count)) * 100);
+document.getElementById("progressBar").style.width = pct + "%";
+document.getElementById("progressText").textContent = `Глав: ${meta.generated_pages || 0} / ${meta.page_count} (${pct}%)`;
+const cnt = document.getElementById('chapterCount');
+if (cnt) cnt.textContent = `${meta.generated_pages || 0} / ${meta.page_count}`;
+}
+
+/* === PLAN === */
+async function loadPlan() {
+try {
+const d = await api(`/api/bookgen/plan?id=${currentBookId}`);
+document.getElementById("t-scenario").value = d.scenario || "";
+document.getElementById("t-characters").value = d.characters || "";
+document.getElementById("t-outline").value = d.outline || "";
+document.getElementById("t-draft").value = d.draft || "";
+document.getElementById("t-world").value = d.world || "";
+updateCharCount('scenario');
+updateCharCount('characters');
+updateCharCount('outline');
+updateCharCount('draft');
+updateCharCount('world');
+const studyEl = document.getElementById("t-study");
+if (studyEl) studyEl.value = d.study || "";
+updateCharCount('study');
+const studyTab = document.querySelector('[data-subtab="study"]');
+if (studyTab) studyTab.style.display = currentMeta?.continuation_source ? '' : 'none';
+} catch (e) {
+log("Ошибка загрузки плана: " + e.message);
+}
+}
+
+async function saveStudy() {
+try {
+const study = document.getElementById("t-study").value;
+await api("/api/bookgen/study", { method: "POST", body: { id: currentBookId, study } });
+showNotification("Конспект сохранён", "success");
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+async function saveDraft() {
+try {
+const draft = document.getElementById("t-draft").value;
+await api("/api/bookgen/draft", { method: "POST", body: { id: currentBookId, draft } });
+showNotification("Черновик сохранён", "success");
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+async function loadDraft() {
+try {
+const d = await api(`/api/bookgen/draft?id=${currentBookId}`);
+document.getElementById("t-draft").value = d.draft || "";
+updateCharCount('draft');
+showNotification("Черновик обновлён", "success");
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+async function generateWorld() {
+const btn = event?.target?.closest?.('button');
+if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>'; }
+try {
+const model = document.getElementById("f-model").value;
+if (!model) throw new Error('Выберите модель');
+const r = await api("/api/bookgen/world", { method: "POST", body: { id: currentBookId, model, force: true } });
+document.getElementById("t-world").value = r.world || "";
+updateCharCount('world');
+showNotification("Мир сгенерирован!", "success");
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>'; }
+}
+
+async function startProofread() {
+const btn = document.getElementById("btn-proofread");
+btn.disabled = true;
+btn.innerHTML = '<span class="spinner"></span> Проверка...';
+try {
+const model = document.getElementById("f-model").value;
+if (!model) throw new Error('Выберите модель');
+const r = await api("/api/bookgen/proofread", { method: "POST", body: { id: currentBookId, model } });
+const issues = r.issues || [];
+const container = document.getElementById("proofread-list");
+const badge = document.getElementById("proofread-badge");
+if (issues.length === 0) {
+container.innerHTML = '<div class="empty-state"><p>Проблем не найдено. Книга написана логично и последовательно!</p></div>';
+badge.style.display = 'none';
+showNotification("Проверка завершена, проблем не найдено", "success");
+} else {
+let html = `<div style="margin-bottom:12px;color:var(--text2)">Найдено проблем: ${issues.length}</div>`;
+let high = 0, med = 0, low = 0;
+issues.forEach(iss => {
+if (iss.severity === 'высокая' || iss.severity === 'high') high++;
+else if (iss.severity === 'средняя' || iss.severity === 'medium') med++;
+else low++;
+html += `<div class="proofread-item" style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;background:var(--bg2)">
+<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:6px">
+<span style="font-weight:600">Глава ${iss.page}</span>
+<span class="severity-${iss.severity === 'высокая' || iss.severity === 'high' ? 'high' : iss.severity === 'средняя' || iss.severity === 'medium' ? 'med' : 'low'}" style="font-size:12px;padding:2px 8px;border-radius:4px;background:${iss.severity === 'высокая' || iss.severity === 'high' ? 'var(--red)' : iss.severity === 'средняя' || iss.severity === 'medium' ? 'var(--orange)' : 'var(--yellow)'};color:#000">${iss.severity || 'средняя'}</span>
+</div>
+<div style="font-size:13px;color:var(--text2);margin-bottom:6px"><strong>${iss.type || 'несоответствие'}</strong>: ${esc(iss.description || '')}</div>
+${iss.original_text ? `<div style="background:var(--bg3);padding:8px;border-radius:4px;margin-bottom:4px;font-size:12px;border-left:3px solid var(--red)"><strong>Оригинал:</strong> ${esc(iss.original_text)}</div>` : ''}
+${iss.suggested_text ? `<div style="background:var(--bg3);padding:8px;border-radius:4px;margin-bottom:8px;font-size:12px;border-left:3px solid var(--green)"><strong>Исправление:</strong> ${esc(iss.suggested_text)}</div>` : ''}
+<div style="display:flex;gap:8px">
+<button class="mini-btn" onclick="applyProofread('${iss.id}')" style="color:var(--green)"><i class="fa-solid fa-check"></i> Принять</button>
+<button class="mini-btn" onclick="rejectProofread('${iss.id}')" style="color:var(--red)"><i class="fa-solid fa-xmark"></i> Отклонить</button>
+</div>
+</div>`;
+});
+badge.textContent = issues.length;
+badge.style.display = 'inline';
+container.innerHTML = html;
+showNotification(`Проверка завершена, найдено ${issues.length} проблем`, issues.length > 0 ? 'warning' : 'success');
+}
+loadProofreads();
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+btn.disabled = false;
+btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Проверить книгу';
+}
+
+async function loadProofreads() {
+try {
+const r = await api(`/api/bookgen/proofreads?id=${currentBookId}`);
+const issues = r.issues || [];
+const badge = document.getElementById("proofread-badge");
+const pending = issues.filter(i => i.status === 'pending').length;
+if (pending > 0) {
+badge.textContent = pending;
+badge.style.display = 'inline';
+} else {
+badge.style.display = 'none';
+}
+} catch(e) {}
+}
+
+async function applyProofread(issueId) {
+try {
+const r = await api("/api/bookgen/proofreads/apply", { method: "POST", body: { id: currentBookId, issue_id: issueId } });
+if (r.ok) {
+showNotification("Исправление принято", "success");
+await startProofread();
+} else {
+showNotification("Не удалось применить", "error");
+}
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+async function rejectProofread(issueId) {
+try {
+const r = await api("/api/bookgen/proofreads/reject", { method: "POST", body: { id: currentBookId, issue_id: issueId } });
+if (r.ok) {
+showNotification("Исправление отклонено", "info");
+await startProofread();
+} else {
+showNotification("Не удалось отклонить", "error");
+}
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+async function applyAllProofreads() {
+try {
+const r = await api("/api/bookgen/proofreads/apply", { method: "POST", body: { id: currentBookId, all: true } });
+showNotification(`Принято: ${r.applied || 0}`, "success");
+await startProofread();
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+async function rejectAllProofreads() {
+try {
+const r = await api("/api/bookgen/proofreads/reject", { method: "POST", body: { id: currentBookId, all: true } });
+showNotification(`Отклонено: ${r.rejected || 0}`, "info");
+await startProofread();
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+async function generatePlan() {
+const btn = document.getElementById("btn-gen-plan");
+btn.disabled = true;
+btn.innerHTML = '<span class="spinner"></span> Генерация плана...';
+log("Создание плана...");
+try {
+const model = document.getElementById("f-model").value;
+if (!model) throw new Error('Выберите модель');
+await api("/api/bookgen/plan", { method: "POST", body: { id: currentBookId, model } });
+log("План готов");
+showNotification("План создан!", "success");
+await loadPlan();
+} catch (e) {
+log("Ошибка: " + e.message);
+showNotification("Ошибка: " + e.message, "error");
+}
+btn.disabled = false;
+btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Создать план';
+}
+
+async function savePlan() {
+try {
+const body = {
+id: currentBookId,
+scenario: document.getElementById("t-scenario").value,
+characters: document.getElementById("t-characters").value,
+outline: document.getElementById("t-outline").value,
+};
+const r = await api("/api/bookgen/update_plan", { method: "POST", body });
+if (r.error) throw new Error(r.error);
+await api("/api/bookgen/draft", { method: "POST", body: { id: currentBookId, draft: document.getElementById("t-draft").value } }).catch(()=>{});
+await api("/api/bookgen/world", { method: "POST", body: { id: currentBookId, world: document.getElementById("t-world").value } }).catch(()=>{});
+log("План сохранён");
+showNotification("План сохранён!", "success");
+} catch (e) {
+log("Ошибка: " + e.message);
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+async function regenerateCurrentSection() {
+const section = currentSubTab;
+if (!confirm(`Полностью пересоздать раздел "${sectionLabel(section)}"? Текущее содержимое будет заменено.`)) return;
+const model = document.getElementById("f-model").value;
+if (!model) { showNotification("Нет модели", "error"); return; }
+showNotification(`Пересоздание раздела "${sectionLabel(section)}"...`, "info");
+log(`Пересоздание раздела: ${section}`);
+try {
+const r = await api("/api/bookgen/regenerate_section", {
+method: "POST",
+body: { id: currentBookId, section, model },
+});
+if (r.error) throw new Error(r.error);
+document.getElementById('t-' + section).value = r.content;
+updateCharCount(section);
+showNotification("Раздел пересоздан!", "success");
+} catch (e) {
+log("Ошибка: " + e.message);
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+function openAiEditSection() {
+const section = currentSubTab;
+const current = document.getElementById('t-' + section).value;
+if (!current.trim()) {
+showNotification("Раздел пустой, сначала создайте его", "warning");
+return;
+}
+showAiModal({
+title: `ИИ-правка раздела "${sectionLabel(section)}"`,
+desc: 'Опишите как нужно доработать раздел. ИИ перепишет его с учётом ваших указаний.',
+suggestions: [
+'Сделай более детальным',
+'Добавь больше конфликта',
+'Сделай более лаконичным',
+'Усиль драматизм',
+'Добавь юмора',
+'Добавь больше описаний мира',
+],
+onSubmit: async (instructions) => {
+const model = document.getElementById("f-model").value;
+if (!model) throw new Error('Выберите модель');
+log(`ИИ-правка раздела ${section}: ${instructions}`);
+const r = await api("/api/bookgen/ai_edit_section", {
+method: "POST",
+body: { id: currentBookId, section, current, instructions, model },
+});
+if (r.error) throw new Error(r.error);
+document.getElementById('t-' + section).value = r.content;
+updateCharCount(section);
+return 'Раздел обновлён ИИ!';
+},
+});
+}
+
+function sectionLabel(s) {
+return { scenario: 'Сценарий', characters: 'Персонажи', outline: 'План по главам' }[s] || s;
+}
+
+/* === PAGES === */
+let pagePreviews = {}; // num -> { title, chars, words, exists }
+
+async function loadPagesNav() {
+  try {
+    const meta = await api(`/api/bookgen/status/${currentBookId}`);
+    currentMeta = meta;
+    const nav = document.getElementById("pagesList");
+    nav.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text3)"><i class="fa-solid fa-spinner"></i> Загрузка глав...</div>';
+
+    const total = meta.page_count;
+    const generated = meta.generated_pages || 0;
+    pagePreviews = {};
+
+    // Parallel fetch all page previews
+    const promises = [];
+    for (let i = 1; i <= total; i++) {
+      if (i <= generated) {
+        promises.push(api(`/api/bookgen/page/${currentBookId}/${i}`).then(d => {
+          const content = d.content || '';
+          if (!content) {
+            pagePreviews[i] = { title: '(пусто)', chars: 0, words: 0, exists: false };
+          } else {
+            const firstLine = content.split('\n').find(l => l.trim()) || '';
+            const wc = content.trim() ? content.trim().split(/\s+/).length : 0;
+            pagePreviews[i] = {
+              title: firstLine.slice(0, 100) || '(без заголовка)',
+              chars: content.length, words: wc, exists: true,
+            };
+          }
+        }).catch(() => {
+          pagePreviews[i] = { title: '(ошибка)', chars: 0, words: 0, exists: false };
+        }));
+      } else {
+        pagePreviews[i] = { title: '(не создана)', chars: 0, words: 0, exists: false };
+      }
+    }
+    await Promise.all(promises);
+
+    nav.innerHTML = "";
+    // Insert button at the very start
+    nav.appendChild(buildInsertRow(1, true));
+
+    for (let i = 1; i <= total; i++) {
+      nav.appendChild(buildChapterRow(i, pagePreviews[i] || {title:'', chars:0, words:0, exists:false}));
+      if (i < total) {
+        nav.appendChild(buildInsertRow(i + 1, false));
+      }
+    }
+    // Insert button at the very end
+    nav.appendChild(buildInsertRow(total + 1, false, true));
+
+    updateProgress(meta);
+    const inp = document.getElementById('totalPagesInput');
+    if (inp) inp.value = meta.page_count;
+  } catch (e) {
+    log("Ошибка: " + e.message);
+  }
+}
+
+function buildChapterRow(num, preview) {
+  const row = document.createElement('div');
+  const isGen = preview.exists;
+  row.className = 'chapter-row' + (isGen ? ' generated' : ' empty');
+  if (num === currentPageNum) row.classList.add('current');
+  row.dataset.num = String(num);
+  row.draggable = true;
+
+  const total = currentMeta?.page_count || 0;
+  row.innerHTML = `
+    <span class="chapter-drag-handle" title="Перетащите для изменения порядка"><i class="fa-solid fa-grip-vertical"></i></span>
+    <div class="chapter-num">${num}</div>
+    <div class="chapter-info">
+      <div class="chapter-title">${esc(preview.title || '(пусто)')}</div>
+      <div class="chapter-stats">${isGen ? `${preview.chars} зн. · ${preview.words} сл.` : (num <= (currentMeta?.generated_pages||0) ? '⏳ пусто' : '○ не создана')}</div>
+    </div>
+    <div class="chapter-actions">
+      <button class="icon-btn" data-act="up" title="Переместить вверх" ${num===1?'disabled':''}><i class="fa-solid fa-arrow-up"></i></button>
+      <button class="icon-btn" data-act="down" title="Переместить вниз" ${num===total?'disabled':''}><i class="fa-solid fa-arrow-down"></i></button>
+      <button class="icon-btn success" data-act="insert-after" title="Вставить новую главу после ${num}"><i class="fa-solid fa-plus"></i></button>
+      <button class="icon-btn danger" data-act="delete" title="Удалить главу ${num}"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  `;
+  row.onclick = (e) => {
+    if (e.target.closest('.chapter-actions') || e.target.closest('.chapter-drag-handle')) return;
+    loadPage(num);
+  };
+  row.querySelector('[data-act="up"]').onclick = (e) => { e.stopPropagation(); movePage(num, num - 1); };
+  row.querySelector('[data-act="down"]').onclick = (e) => { e.stopPropagation(); movePage(num, num + 1); };
+  row.querySelector('[data-act="insert-after"]').onclick = (e) => { e.stopPropagation(); insertNewPage(num + 1); };
+  row.querySelector('[data-act="delete"]').onclick = (e) => { e.stopPropagation(); deletePage(num); };
+
+  // Drag and drop
+  row.addEventListener('dragstart', (e) => {
+    e.dataTransfer.setData('text/plain', String(num));
+    e.dataTransfer.effectAllowed = 'move';
+    row.classList.add('dragging');
+  });
+  row.addEventListener('dragend', () => {
+    row.classList.remove('dragging');
+    document.querySelectorAll('.chapter-row').forEach(r => {
+      r.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+  });
+  row.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const rect = row.getBoundingClientRect();
+    const isTop = (e.clientY - rect.top) < rect.height / 2;
+    row.classList.toggle('drag-over-top', isTop);
+    row.classList.toggle('drag-over-bottom', !isTop);
+  });
+  row.addEventListener('dragleave', () => {
+    row.classList.remove('drag-over-top', 'drag-over-bottom');
+  });
+  row.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const fromNum = parseInt(e.dataTransfer.getData('text/plain'), 10);
+    const rect = row.getBoundingClientRect();
+    const isTop = (e.clientY - rect.top) < rect.height / 2;
+    row.classList.remove('drag-over-top', 'drag-over-bottom');
+    if (isNaN(fromNum) || fromNum === num) return;
+    let toNum = isTop ? num : num + 1;
+    if (toNum > fromNum) toNum -= 1;
+    if (toNum < 1) toNum = 1;
+    if (toNum > (currentMeta?.page_count || 0)) toNum = currentMeta?.page_count || 0;
+    if (toNum !== fromNum) movePage(fromNum, toNum);
+  });
+
+  return row;
+}
+
+function buildInsertRow(atPos, isFirst, isLast) {
+  const wrap = document.createElement('div');
+  wrap.className = 'insert-row force-show' + (isFirst ? ' first' : '') + (isLast ? ' last' : '');
+  const label = isFirst ? '↑↑' : (isLast ? '↓↓' : '▾');
+  wrap.innerHTML = `
+    <div class="insert-line"></div>
+    <button class="insert-btn" title="Вставить пустую главу на позицию ${atPos}">
+      <i class="fa-solid fa-plus"></i> ${label} ${atPos}
+    </button>
+    <div class="insert-line"></div>
+  `;
+  wrap.querySelector('button').onclick = (e) => {
+    e.stopPropagation();
+    insertNewPage(atPos);
+  };
+  return wrap;
+}
+
+async function deletePage(num) {
+  if (!currentBookId) return;
+  if (!confirm(`Удалить главу ${num}? Все последующие главы будут перенумерованы.`)) return;
+  try {
+    const r = await api('/api/bookgen/delete_page', {
+      method: 'POST', body: { id: currentBookId, page: num },
+    });
+    if (r.error) throw new Error(r.error);
+    log(`Удалена глава ${num}`);
+    showNotification(`Глава ${num} удалена, остальные перенумерованы`, 'success');
+    if (currentPageNum === num) {
+      currentPageNum = null;
+      document.getElementById('pageEditor').value = '';
+      document.getElementById('pageView').textContent = 'Выберите главу для просмотра';
+      document.getElementById('btn-regen-page').disabled = true;
+    } else if (currentPageNum && currentPageNum > num) {
+      currentPageNum -= 1;
+    }
+    await loadPagesNav();
+  } catch (e) {
+    log('Ошибка удаления: ' + e.message);
+    showNotification('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function movePage(fromNum, toNum) {
+  if (!currentBookId) return;
+  if (fromNum === toNum) return;
+  const total = currentMeta?.page_count || 0;
+  if (toNum < 1 || toNum > total) return;
+  try {
+    const r = await api('/api/bookgen/move_page', {
+      method: 'POST', body: { id: currentBookId, from: fromNum, to: toNum },
+    });
+    if (r.error) throw new Error(r.error);
+    log(`Глава ${fromNum} перемещена на позицию ${toNum}`);
+    showNotification(`Глава перемещена: ${fromNum} → ${toNum}`, 'success');
+    // Update current page tracking
+    if (currentPageNum === fromNum) {
+      currentPageNum = toNum;
+      document.getElementById('pageViewNum').textContent = `· Глава ${toNum}`;
+    } else if (currentPageNum) {
+      // Adjust current page if it was between the moved positions
+      if (fromNum < toNum && currentPageNum > fromNum && currentPageNum <= toNum) {
+        currentPageNum -= 1;
+      } else if (fromNum > toNum && currentPageNum >= toNum && currentPageNum < fromNum) {
+        currentPageNum += 1;
+      }
+    }
+    await loadPagesNav();
+  } catch (e) {
+    log('Ошибка перемещения: ' + e.message);
+    showNotification('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function insertNewPage(atPos) {
+  if (!currentBookId) return;
+  try {
+    const r = await api('/api/bookgen/insert_page', {
+      method: 'POST', body: { id: currentBookId, position: atPos, content: '' },
+    });
+    if (r.error) throw new Error(r.error);
+    log(`Вставлена пустая глава на позицию ${atPos}`);
+    showNotification(`Глава ${atPos} добавлена (пустая). Главы перенумерованы.`, 'success');
+    if (currentPageNum && currentPageNum >= atPos) {
+      currentPageNum += 1;
+    }
+    await loadPagesNav();
+    await loadPage(atPos);
+  } catch (e) {
+    log('Ошибка вставки: ' + e.message);
+    showNotification('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function insertNewPageAtEnd() {
+  if (!currentBookId) return;
+  const pos = (currentMeta?.page_count || 0) + 1;
+  await insertNewPage(pos);
+}
+
+async function loadPage(num) {
+  if (pageDirty && !confirm("Текущая глава имеет несохранённые изменения. Загрузить новую главу всё равно?")) return;
+  try {
+    currentPageNum = num;
+    const d = await api(`/api/bookgen/page/${currentBookId}/${num}`);
+    document.getElementById("pageView").textContent = d.content || "(пусто)";
+    document.getElementById("pageEditor").value = d.content || "";
+    document.getElementById('pageViewNum').textContent = `· Глава ${num}`;
+    document.getElementById('btn-regen-page').disabled = false;
+    pageDirty = false;
+    document.getElementById('editorDirty').style.display = 'none';
+    updateEditorStats();
+    // Refresh nav highlight
+    document.querySelectorAll('#pagesList .chapter-row').forEach((b) => {
+      b.classList.toggle('current', parseInt(b.dataset.num, 10) === num);
+    });
+  } catch (e) {
+    log("Ошибка: " + e.message);
+  }
+}
+
+async function refreshCurrentPage() {
+if (currentPageNum) await loadPage(currentPageNum);
+}
+
+async function generateNext() {
+try {
+const meta = await api(`/api/bookgen/status/${currentBookId}`);
+const next = (meta.generated_pages || 0) + 1;
+if (next > meta.page_count) {
+showNotification("Все главы уже созданы! Увеличьте 'Всего глав'.", "info");
+return;
+}
+await generatePage(next);
+} catch (e) {
+log("Ошибка: " + e.message);
+}
+}
+
+async function generatePage(num) {
+log(`Генерация главы ${num}...`);
+try {
+const model = document.getElementById("f-model").value;
+if (!model) throw new Error('Выберите модель');
+const r = await api("/api/bookgen/generate_page", {
+method: "POST",
+body: { id: currentBookId, page: num, model },
+});
+if (r.error) throw new Error(r.error);
+log(`Глава ${num} готова (${r.content.length} символов)`);
+showNotification(`Глава ${num} создана!`, "success");
+await loadPagesNav();
+await loadPage(num);
+} catch (e) {
+log("Ошибка: " + e.message);
+showNotification("Ошибка: " + e.message, "error");
+throw e;
+}
+}
+
+async function generateAll() {
+if (generating) { showNotification("Генерация уже идёт", "warning"); return; }
+
+try {
+const plan = await api(`/api/bookgen/plan?id=${currentBookId}`);
+if (!plan.scenario) { showNotification("Сначала создайте план!", "warning"); return; }
+
+generating = true;
+genAbort = false;
+const meta = await api(`/api/bookgen/status/${currentBookId}`);
+let start = (meta.generated_pages || 0) + 1;
+
+for (let i = start; i <= meta.page_count; i++) {
+if (genAbort) { log("Генерация остановлена"); break; }
+await generatePage(i);
+}
+generating = false;
+log("Генерация завершена");
+if (!genAbort) showNotification("Все главы созданы!", "success");
+} catch (e) {
+generating = false;
+log("Ошибка: " + e.message);
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+function stopGeneration() {
+genAbort = true;
+log("Остановка генерации...");
+}
+
+async function regenerateCurrentPage() {
+if (!currentPageNum) { showNotification("Выберите главу", "warning"); return; }
+if (!confirm(`Полностью пересоздать главу ${currentPageNum}? Текущий текст будет заменён.`)) return;
+log(`Пересоздание главы ${currentPageNum}...`);
+try {
+const model = document.getElementById("f-model").value;
+if (!model) throw new Error('Выберите модель');
+const r = await api("/api/bookgen/regenerate_page", {
+method: "POST",
+body: { id: currentBookId, page: currentPageNum, model },
+});
+if (r.error) throw new Error(r.error);
+document.getElementById("pageView").textContent = r.content || "";
+document.getElementById("pageEditor").value = r.content || "";
+pageDirty = false;
+document.getElementById('editorDirty').style.display = 'none';
+updateEditorStats();
+showNotification(`Глава ${currentPageNum} пересоздана!`, "success");
+} catch (e) {
+log("Ошибка: " + e.message);
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+async function savePageManual() {
+if (!currentPageNum) { showNotification("Выберите главу", "warning"); return; }
+try {
+const content = document.getElementById('pageEditor').value;
+const r = await api("/api/bookgen/save_page", {
+method: "POST",
+body: { id: currentBookId, page: currentPageNum, content },
+});
+if (r.error) throw new Error(r.error);
+pageDirty = false;
+document.getElementById('editorDirty').style.display = 'none';
+document.getElementById('pageView').textContent = content;
+showNotification(`Глава ${currentPageNum} сохранена`, "success");
+log(`Глава ${currentPageNum} сохранена (${content.length} символов)`);
+await loadPagesNav();
+} catch (e) {
+log("Ошибка: " + e.message);
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+function openAiEditPage() {
+if (!currentPageNum) { showNotification("Выберите главу", "warning"); return; }
+const current = document.getElementById('pageEditor').value;
+if (!current.trim()) { showNotification("Сначала сгенерируйте главу", "warning"); return; }
+showAiModal({
+title: `ИИ-правка главы ${currentPageNum}`,
+desc: 'Опишите, как ИИ должен переписать главу. Сюжет и длина будут сохранены.',
+suggestions: [
+'Добавь больше диалогов',
+'Усиль атмосферу',
+'Сделай более динамичным',
+'Добавь описаний обстановки',
+'Углуби психологию героя',
+'Добавь юмора',
+'Сделай более напряжённым',
+'Перепиши с большей детализацией',
+],
+onSubmit: async (instructions) => {
+const model = document.getElementById("f-model").value;
+if (!model) throw new Error('Выберите модель');
+log(`ИИ-правка главы ${currentPageNum}: ${instructions}`);
+const r = await api("/api/bookgen/ai_edit_page", {
+method: "POST",
+body: { id: currentBookId, page: currentPageNum, instructions, model },
+});
+if (r.error) throw new Error(r.error);
+document.getElementById('pageView').textContent = r.content;
+document.getElementById('pageEditor').value = r.content;
+pageDirty = false;
+document.getElementById('editorDirty').style.display = 'none';
+updateEditorStats();
+return 'Глава переработана!';
+},
+});
+}
+
+function openAiEditSelected() {
+if (!currentPageNum) { showNotification("Выберите главу", "warning"); return; }
+const ta = document.getElementById('pageEditor');
+const selected = ta.value.substring(ta.selectionStart, ta.selectionEnd);
+if (!selected.trim()) {
+showNotification("Сначала выделите фрагмент в редакторе", "warning");
+return;
+}
+showAiModal({
+title: `ИИ-правка фрагмента (${selected.length} симв.)`,
+desc: 'Фрагмент: "' + selected.slice(0, 200) + (selected.length > 200 ? '…' : '') + '"',
+suggestions: [
+'Перепиши более литературно',
+'Сделай короче',
+'Сделай детальнее',
+'Добавь диалог',
+'Опиши эмоции',
+'Сделай метафоричнее',
+],
+onSubmit: async (instructions) => {
+const model = document.getElementById("f-model").value;
+if (!model) throw new Error('Выберите модель');
+log(`ИИ-правка фрагмента: ${instructions}`);
+const r = await api("/api/bookgen/ai_edit_page", {
+method: "POST",
+body: { id: currentBookId, page: currentPageNum, instructions, model, selected },
+});
+if (r.error) throw new Error(r.error);
+document.getElementById('pageView').textContent = r.content;
+document.getElementById('pageEditor').value = r.content;
+pageDirty = false;
+document.getElementById('editorDirty').style.display = 'none';
+updateEditorStats();
+return 'Фрагмент переработан!';
+},
+});
+}
+
+/* === PAGE COUNT === */
+async function updateTotalPages() {
+const newCount = parseInt(document.getElementById('totalPagesInput').value);
+if (!newCount || newCount < 1) { showNotification("Некорректное число", "error"); return; }
+if (!confirm(`Изменить количество глав на ${newCount}?`)) return;
+try {
+const r = await api("/api/bookgen/update_pages", {
+method: "POST",
+body: { id: currentBookId, page_count: newCount },
+});
+if (r.error) throw new Error(r.error);
+currentMeta = r.meta;
+showNotification(`Количество глав: ${newCount}`, "success");
+log(`Изменено кол-во глав: ${newCount}`);
+await loadPagesNav();
+} catch (e) {
+log("Ошибка: " + e.message);
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+/* === META === */
+async function updateMeta() {
+try {
+const body = {
+id: currentBookId,
+title: document.getElementById('m-title').value,
+author: document.getElementById('m-author').value,
+theme: document.getElementById('m-theme').value,
+genre: document.getElementById('m-genre').value,
+notes: document.getElementById('m-notes').value,
+};
+const r = await api("/api/bookgen/update_meta", { method: "POST", body });
+if (r.error) throw new Error(r.error);
+showNotification("Метаданные сохранены", "success");
+document.getElementById('editorTitle').innerHTML = `<i class="fa-solid fa-pen" style="color: var(--accent)"></i> ${esc(body.title)}`;
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+/* === EXPORT === */
+function downloadBook(fmt) {
+if (!currentBookId) return;
+window.location.href = `/api/bookgen/download/${currentBookId}/${fmt}`;
+showNotification("Скачивание...", "info");
+}
+
+async function saveToLibrary() {
+if (!currentBookId) return;
+try {
+const r = await api(`/api/bookgen/save_to_library`, {
+method: "POST",
+body: { id: currentBookId },
+});
+if (r.error) throw new Error(r.error);
+showNotification(`Сохранено: ${r.filename}`, "success");
+log(`В библиотеку: ${r.path}`);
+} catch (e) {
+log("Ошибка: " + e.message);
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+/* === DELETE === */
+async function deleteCurrentBook() {
+if (!currentBookId) return;
+if (!confirm("Удалить книгу? Это необратимо!")) return;
+try {
+await api(`/api/bookgen/delete/${currentBookId}`, { method: "POST" });
+showNotification("Книга удалена", "info");
+showSection('books');
+loadBooks();
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+}
+}
+
+/* === NAV === */
+function showSection(id) {
+document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+document.getElementById(id + 'Section').style.display = 'block';
+document.querySelectorAll('.toolbar .btn[data-section]').forEach(b => b.classList.remove('active'));
+const tb = document.querySelector(`.toolbar .btn[data-section="${id}"]`);
+if (tb) tb.classList.add('active');
+if (id === 'books') loadBooks();
+}
+
+function switchTab(tab) {
+document.querySelectorAll('section#editorSection > .tabs > .tab').forEach(t => t.classList.remove('active'));
+document.querySelector(`section#editorSection > .tabs > .tab[data-tab="${tab}"]`)?.classList.add('active');
+document.querySelectorAll('section#editorSection > .tab-content').forEach(c => c.classList.remove('active'));
+document.getElementById('tab-' + tab)?.classList.add('active');
+}
+
+function switchSubTab(subtab) {
+currentSubTab = subtab;
+document.querySelectorAll('[data-subtab]').forEach(t => t.classList.remove('active'));
+document.querySelector(`[data-subtab="${subtab}"]`)?.classList.add('active');
+document.querySelectorAll('[id^="subtab-"]').forEach(c => c.classList.remove('active'));
+document.getElementById('subtab-' + subtab)?.classList.add('active');
+}
+
+/* === EDITOR HELPERS === */
+function markPageDirty() {
+pageDirty = true;
+const dirty = document.getElementById('editorDirty');
+if (dirty) dirty.style.display = 'inline';
+updateEditorStats();
+}
+
+function updateEditorStats() {
+const ta = document.getElementById('pageEditor');
+if (!ta) return;
+const txt = ta.value;
+const words = txt.trim() ? txt.trim().split(/\s+/).length : 0;
+document.getElementById('editorStats').textContent = `${txt.length} символов · ${words} слов`;
+}
+
+function updateCharCount(section) {
+const el = document.getElementById('t-' + section);
+const cnt = document.getElementById('cnt-' + section);
+if (el && cnt) cnt.textContent = `${el.value.length} символов`;
+}
+
+function copyText(id) {
+const el = document.getElementById(id);
+if (!el) return;
+navigator.clipboard.writeText(el.value || el.textContent).then(
+() => showNotification("Скопировано", "success"),
+() => showNotification("Не удалось скопировать", "error")
+);
+}
+
+function clearText(id) {
+if (!confirm("Очистить поле?")) return;
+const el = document.getElementById(id);
+if (el) {
+el.value = '';
+const m = id.match(/^t-(\w+)/);
+if (m) updateCharCount(m[1]);
+}
+}
+
+function fullscreenEditor(id) {
+const el = document.getElementById(id);
+if (!el) return;
+const initialValue = el.value;
+const overlay = document.createElement('div');
+overlay.className = 'fs-overlay';
+overlay.innerHTML = `
+<div class="fs-header">
+<h3 style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-expand" style="color:var(--accent)"></i> Полноэкранный редактор</h3>
+<div style="display:flex;gap:8px">
+<button class="btn btn-success" id="fs-save"><i class="fa-solid fa-save"></i> Применить</button>
+<button class="btn btn-outline" id="fs-cancel"><i class="fa-solid fa-xmark"></i> Закрыть</button>
+</div>
+</div>
+<textarea id="fs-ta"></textarea>
+`;
+document.body.appendChild(overlay);
+const ta = document.getElementById('fs-ta');
+ta.value = initialValue;
+ta.focus();
+document.getElementById('fs-cancel').onclick = () => overlay.remove();
+document.getElementById('fs-save').onclick = () => {
+el.value = ta.value;
+el.dispatchEvent(new Event('input'));
+overlay.remove();
+showNotification('Применено', 'success');
+};
+}
+
+/* === AI MODAL === */
+function showAiModal({title, desc, suggestions = [], onSubmit}) {
+const overlay = document.createElement('div');
+overlay.className = 'modal-overlay';
+const chips = suggestions.map(s => `<span class="prompt-chip" data-prompt="${esc(s)}">${esc(s)}</span>`).join('');
+overlay.innerHTML = `
+<div class="modal">
+<h3><i class="fa-solid fa-robot" style="color:var(--accent)"></i> ${esc(title)}</h3>
+<div class="modal-desc">${esc(desc)}</div>
+${chips ? '<div class="prompt-suggestions">' + chips + '</div>' : ''}
+<div class="form-group">
+<label>Указания для ИИ</label>
+<textarea id="ai-instructions" placeholder="Например: Сделай главу более напряжённой, добавь больше диалогов..." style="min-height:120px"></textarea>
+</div>
+<div class="modal-actions">
+<button class="btn btn-outline" id="ai-cancel"><i class="fa-solid fa-xmark"></i> Отмена</button>
+<button class="btn" id="ai-submit"><i class="fa-solid fa-wand-magic-sparkles"></i> Применить</button>
+</div>
+</div>
+`;
+document.body.appendChild(overlay);
+const ta = document.getElementById('ai-instructions');
+ta.focus();
+overlay.querySelectorAll('.prompt-chip').forEach(chip => {
+chip.onclick = () => {
+ta.value = chip.dataset.prompt;
+ta.focus();
+};
+});
+document.getElementById('ai-cancel').onclick = () => overlay.remove();
+document.getElementById('ai-submit').onclick = async () => {
+const instructions = ta.value.trim();
+if (!instructions) { showNotification("Введите указания", "warning"); return; }
+const submitBtn = document.getElementById('ai-submit');
+submitBtn.disabled = true;
+submitBtn.innerHTML = '<span class="spinner"></span> Применяем...';
+try {
+const msg = await onSubmit(instructions);
+showNotification(msg || 'Готово', "success");
+overlay.remove();
+} catch (e) {
+showNotification("Ошибка: " + e.message, "error");
+submitBtn.disabled = false;
+submitBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Применить';
+}
+};
+overlay.onclick = (e) => {
+if (e.target === overlay) overlay.remove();
+};
+}
+
+/* === HOOKS === */
+document.addEventListener('input', (e) => {
+if (e.target.id === 'pageEditor') updateEditorStats();
+});
+
+window.addEventListener('keydown', (e) => {
+if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+e.preventDefault();
+const editorVisible = document.getElementById('editorSection').style.display !== 'none';
+if (!editorVisible) return;
+const activeTab = document.querySelector('section#editorSection > .tab-content.active');
+if (activeTab && activeTab.id === 'tab-pages' && currentPageNum) {
+savePageManual();
+} else if (activeTab && activeTab.id === 'tab-plan') {
+savePlan();
+}
+}
+});
+
+/* Тема приходит из общей системы (theme.js): локальное следование
+   prefers-color-scheme перебивало выбор пользователя. */
+
+/* ===== LIBRARY (Upload + File Browser) ===== */
+async function uploadBook() {
+const input = document.getElementById('uploadFileInput');
+const file = input.files[0];
+if (!file) { showNotification('Выберите файл', 'warning'); return; }
+const pb = document.getElementById('uploadProgress');
+const pbb = document.getElementById('uploadProgressBar');
+pb.style.display = 'block'; pbb.style.width = '30%';
+try {
+const formData = new FormData();
+formData.append('file', file);
+const r = await fetch('/api/bookgen/upload', { method: 'POST', body: formData });
+const data = await r.json();
+if (data.error) throw new Error(data.error);
+pbb.style.width = '100%';
+showNotification(`Загружено: ${data.filename} (${(data.size/1024).toFixed(1)} KB)`, 'success');
+input.value = '';
+setTimeout(() => { pb.style.display = 'none'; }, 1500);
+await loadLibrary();
+} catch (e) {
+showNotification('Ошибка: ' + e.message, 'error');
+pb.style.display = 'none';
+}
+}
+
+async function loadLibrary() {
+const el = document.getElementById('libraryFilesList');
+el.innerHTML = '<div class="loading"><i class="fa-solid fa-spinner"></i><div>Загрузка...</div></div>';
+try {
+const r = await api('/api/bookgen/library');
+if (!r.files || r.files.length === 0) {
+el.innerHTML = '<div class="empty-state"><div class="icon">📂</div><h3>Библиотека пуста</h3><p>Загрузите книги с ПК или экспортируйте из генератора</p></div>';
+return;
+}
+let html = '<div style="display:grid;gap:8px">';
+r.files.forEach(f => {
+const date = new Date(f.modified * 1000).toLocaleDateString('ru');
+const size = f.size > 1024 ? (f.size/1024).toFixed(1)+' KB' : f.size+' B';
+const icons = {fb2:'fa-book', txt:'fa-file-lines', md:'fa-markdown', epub:'fa-book', jsonl:'fa-file-code'};
+html += `<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;transition:var(--tr)">
+<i class="fa-solid ${icons[f.ext]||'fa-file'}" style="color:var(--accent);font-size:20px;width:24px;text-align:center"></i>
+<div style="flex:1;min-width:0">
+<div style="font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</div>
+<div style="font-size:12px;color:var(--text3)">${size} · ${date}</div>
+</div>
+<button class="btn btn-outline" data-bg-act="continue-lib" data-name="${esc(f.name)}" style="padding:6px 12px;font-size:12px" title="Изучить книгу и написать продолжение"><i class="fa-solid fa-forward"></i> Продолжить</button>
+<a class="btn btn-outline" href="/api/bookgen/library/${encodeURIComponent(f.name)}" style="padding:6px 12px;font-size:12px" download><i class="fa-solid fa-download"></i></a>
+<button class="icon-btn danger" data-bg-act="del-lib" data-name="${esc(f.name)}" title="Удалить"><i class="fa-solid fa-trash"></i></button>
+</div>`;
+});
+html += '</div>';
+el.innerHTML = html;
+} catch (e) {
+el.innerHTML = `<div class="empty-state"><p>${esc(e.message)}</p></div>`;
+}
+}
+
+async function deleteLibraryFile(name) {
+if (!confirm(`Удалить "${name}"?`)) return;
+try {
+const r = await fetch('/api/bookgen/library/' + encodeURIComponent(name), { method: 'DELETE' });
+const data = await r.json();
+if (data.error) throw new Error(data.error);
+showNotification('Файл удалён', 'success');
+await loadLibrary();
+} catch (e) {
+showNotification('Ошибка: ' + e.message, 'error');
+}
+}
+
+/* ===== CONTINUE BOOK ===== */
+function openContinueModal(source, title, author) {
+const overlay = document.createElement('div');
+overlay.className = 'modal-overlay';
+const modelSel = document.getElementById('f-model');
+const currentModel = modelSel ? modelSel.value : '';
+overlay.innerHTML = `
+<div class="modal">
+<h3><i class="fa-solid fa-forward" style="color:var(--accent)"></i> Продолжить книгу</h3>
+<div class="modal-desc">ИИ изучит книгу целиком (окнами по 50 000 символов) и напишет её продолжение. Это может занять несколько минут.</div>
+<div class="form-group">
+<label>Источник</label>
+<input type="text" id="c-source" value="${esc(source)}" readonly style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px">
+<button class="btn btn-outline" onclick="openContinueLibSearch()" style="margin-top:6px;width:100%"><i class="fa-solid fa-book-open"></i> Выбрать из библиотеки Flibusta</button>
+</div>
+<div class="form-group" style="display:flex;gap:10px">
+<div style="flex:1"><label>Название продолжения</label>
+<input type="text" id="c-title" placeholder="Продолжение: ${esc(title || '')}" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px"></div>
+<div style="flex:1"><label>Автор</label>
+<input type="text" id="c-author" placeholder="${esc(author || 'Нейросеть')}" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px"></div>
+</div>
+<div class="form-group" style="display:flex;gap:10px">
+<div style="flex:1"><label>Кол-во глав</label>
+<input type="number" id="c-pages" value="10" min="1" max="500" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px"></div>
+<div style="flex:1"><label>Модель</label>
+<input type="text" id="c-model" value="${esc(currentModel)}" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px"></div>
+</div>
+<div class="form-group">
+<label>Указания для ИИ</label>
+<textarea id="c-notes" placeholder="Что должно быть в продолжении? Куда вести сюжет?..." style="min-height:90px"></textarea>
+</div>
+<div id="c-status" style="display:none;text-align:center;padding:14px;color:var(--text2);font-size:13px"></div>
+<div class="modal-actions">
+<button class="btn btn-outline" id="c-cancel"><i class="fa-solid fa-xmark"></i> Отмена</button>
+<button class="btn" id="c-submit"><i class="fa-solid fa-forward"></i> Продолжить</button>
+</div>
+</div>`;
+document.body.appendChild(overlay);
+document.getElementById('c-cancel').onclick = () => overlay.remove();
+overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+document.getElementById('c-submit').onclick = async () => {
+const submitBtn = document.getElementById('c-submit');
+submitBtn.disabled = true;
+submitBtn.innerHTML = '<span class="spinner"></span> Изучаем...';
+const statusEl = document.getElementById('c-status');
+statusEl.style.display = 'block';
+statusEl.innerHTML = '<i class="fa-solid fa-book-open-reader"></i> Читаем книгу и пишем продолжение... Это может занять несколько минут';
+try {
+const r = await api('/api/bookgen/continue', {
+method: 'POST',
+body: {
+source: source,
+title: document.getElementById('c-title').value.trim(),
+author: document.getElementById('c-author').value.trim(),
+page_count: parseInt(document.getElementById('c-pages').value) || 10,
+model: document.getElementById('c-model').value.trim(),
+notes: document.getElementById('c-notes').value.trim(),
+chunk_chars: 50000,
+},
+});
+if (r.error) throw new Error(r.error);
+showNotification(`Продолжение создано: ${r.title || r.id}${r.chunks ? ` (изучено ${r.chunks} фрагментов)` : ''}`, 'success');
+overlay.remove();
+await openBook(r.id);
+switchSubTab('study');
+} catch (e) {
+showNotification('Ошибка: ' + e.message, 'error');
+statusEl.style.display = 'none';
+submitBtn.disabled = false;
+submitBtn.innerHTML = '<i class="fa-solid fa-forward"></i> Продолжить';
+}
+};
+}
+
+async function openContinueLibSearch() {
+const overlay = document.createElement('div');
+overlay.className = 'modal-overlay';
+overlay.id = 'c-lib-overlay';
+overlay.innerHTML = `
+<div class="modal">
+<h3><i class="fa-solid fa-book-open"></i> Поиск в библиотеке Flibusta</h3>
+<div class="form-group">
+<input type="text" id="c-lib-input" placeholder="Введите название или автора..." style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:14px;">
+</div>
+<div id="c-lib-results" style="max-height:300px;overflow-y:auto;margin-bottom:12px">
+<div style="text-align:center;padding:20px;color:var(--text3)">Начните вводить запрос</div>
+</div>
+<div class="modal-actions">
+<button class="btn btn-outline" onclick="this.closest('.modal-overlay').remove()"><i class="fa-solid fa-xmark"></i> Закрыть</button>
+</div>
+</div>`;
+document.body.appendChild(overlay);
+let timeout;
+document.getElementById('c-lib-input').addEventListener('input', function() {
+clearTimeout(timeout);
+const q = this.value.trim();
+if (q.length < 2) {
+document.getElementById('c-lib-results').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3)">Введите минимум 2 символа</div>';
+return;
+}
+timeout = setTimeout(async () => {
+const resultsDiv = document.getElementById('c-lib-results');
+resultsDiv.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3)"><i class="fa-solid fa-spinner"></i> Поиск...</div>';
+try {
+const r = await api(`/api/bookgen/library-books?q=${encodeURIComponent(q)}`);
+const books = r.books || [];
+if (books.length === 0) {
+resultsDiv.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3)">Ничего не найдено</div>';
+return;
+}
+let html = '';
+books.forEach(b => {
+const authors = (b.authors || []).map(a => a?.full_name || '').filter(Boolean).join(', ');
+const bid = 'lib_' + (b.id || b.title);
+html += `<div style="padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer;background:var(--bg2);transition:0.2s" data-bg-act="pick-cont" data-id="${esc(bid)}" data-title="${esc(b.title || b.name)}" data-authors="${esc(authors)}" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+<div style="font-weight:600">${esc(b.title || b.name)}</div>
+<div style="font-size:12px;color:var(--text2)">${esc(authors || '?')} · ${esc(b.genre || '')}</div>
+</div>`;
+});
+resultsDiv.innerHTML = html;
+} catch (e) {
+resultsDiv.innerHTML = `<div style="text-align:center;padding:20px;color:var(--red)">Ошибка: ${esc(e.message)}</div>`;
+}
+}, 400);
+});
+}
+
+function selectContinueLibBook(bid, title, author) {
+const src = document.getElementById('c-source');
+const titleInput = document.getElementById('c-title');
+if (src) src.value = bid;
+if (titleInput && !titleInput.value.trim()) titleInput.value = title ? 'Продолжение: ' + title : '';
+document.getElementById('c-lib-overlay')?.remove();
+showNotification(`Книга "${title}" выбрана для продолжения`, 'success');
+}
+
+/* ===== IMAGE GENERATION ===== */
+async function checkImageStatus() {
+try {
+const r = await api('/api/image/status');
+const el = document.getElementById('imageStatus');
+if (r.status === 'online') {
+el.innerHTML = '<span style="color:var(--green)"><i class="fa-solid fa-circle"></i> Easy Diffusion онлайн</span>';
+} else {
+el.innerHTML = '<span style="color:var(--orange)"><i class="fa-solid fa-circle"></i> Easy Diffusion офлайн — запустите сервер</span>';
+}
+} catch (e) {
+document.getElementById('imageStatus').textContent = '⚠️ ' + e.message;
+}
+}
+
+async function generateImage() {
+const prompt = document.getElementById('img-prompt').value.trim();
+if (!prompt) { showNotification('Введите промт', 'warning'); return; }
+const btn = document.querySelector('#imagesSection .btn');
+btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Генерация...';
+try {
+const r = await api('/api/image/generate', {
+method: 'POST',
+body: {
+prompt,
+negative_prompt: document.getElementById('img-negative').value,
+width: parseInt(document.getElementById('img-width').value),
+height: parseInt(document.getElementById('img-height').value),
+steps: parseInt(document.getElementById('img-steps').value),
+cfg_scale: parseFloat(document.getElementById('img-cfg').value),
+seed: parseInt(document.getElementById('img-seed').value),
+batch: parseInt(document.getElementById('img-batch').value),
+},
+});
+if (r.error) throw new Error(r.error);
+document.getElementById('imageResults').style.display = 'block';
+const grid = document.getElementById('imageGrid');
+grid.innerHTML = '';
+if (r.images) {
+r.images.forEach((img, i) => {
+const imgDiv = document.createElement('div');
+imgDiv.style.cssText = 'border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--bg2)';
+imgDiv.innerHTML = `<img src="data:image/png;base64,${img}" style="width:100%;display:block;cursor:pointer" onclick="window.open(this.src)" title="Нажмите для увеличения">`;
+grid.appendChild(imgDiv);
+});
+} else {
+grid.innerHTML = '<div style="padding:20px;color:var(--text3)">Изображения сгенерированы, но не получены (проверьте Easy Diffusion)</div>';
+}
+showNotification('Готово!', 'success');
+} catch (e) {
+showNotification('Ошибка: ' + e.message, 'error');
+}
+btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Сгенерировать';
+}
+
+/* ===== CHARACTER SHEETS ===== */
+async function saveCharacter() {
+const name = document.getElementById('ch-name').value.trim();
+if (!name) { showNotification('Введите имя персонажа', 'warning'); return; }
+try {
+const r = await api('/api/character/save', {
+method: 'POST',
+body: {
+name,
+role: document.getElementById('ch-role').value,
+description: document.getElementById('ch-desc').value,
+appearance: document.getElementById('ch-appearance').value,
+personality: document.getElementById('ch-personality').value,
+},
+});
+if (r.error) throw new Error(r.error);
+showNotification('Персонаж сохранён!', 'success');
+document.getElementById('ch-name').value = '';
+document.getElementById('ch-role').value = '';
+document.getElementById('ch-desc').value = '';
+document.getElementById('ch-appearance').value = '';
+document.getElementById('ch-personality').value = '';
+await loadCharacters();
+} catch (e) {
+showNotification('Ошибка: ' + e.message, 'error');
+}
+}
+
+async function loadCharacters() {
+const el = document.getElementById('charactersList');
+el.innerHTML = '<div class="loading"><i class="fa-solid fa-spinner"></i><div>Загрузка...</div></div>';
+try {
+const r = await api('/api/character/list');
+if (!r.characters || r.characters.length === 0) {
+el.innerHTML = '<div class="empty-state"><p>Нет сохранённых персонажей</p></div>';
+return;
+}
+let html = '<div style="display:grid;gap:12px">';
+r.characters.forEach(ch => {
+html += `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<strong style="font-size:16px">${esc(ch.name)}</strong>
+<button class="icon-btn danger" data-bg-act="del-char" data-name="${esc(ch.name)}" title="Удалить"><i class="fa-solid fa-trash"></i></button>
+</div>
+${ch.role ? '<div style="font-size:13px;color:var(--accent);margin-bottom:8px">🎭 '+esc(ch.role)+'</div>' : ''}
+${ch.description ? '<div style="font-size:13px;color:var(--text2);margin-bottom:6px"><strong>Описание:</strong> '+esc(ch.description)+'</div>' : ''}
+${ch.appearance ? '<div style="font-size:13px;color:var(--text2);margin-bottom:6px"><strong>Внешность:</strong> '+esc(ch.appearance)+'</div>' : ''}
+${ch.personality ? '<div style="font-size:13px;color:var(--text2)"><strong>Характер:</strong> '+esc(ch.personality)+'</div>' : ''}
+<div style="font-size:11px;color:var(--text3);margin-top:8px">Seed: ${ch.seed || '—'}</div>
+</div>`;
+});
+html += '</div>';
+el.innerHTML = html;
+} catch (e) {
+el.innerHTML = `<div class="empty-state"><p>${esc(e.message)}</p></div>`;
+}
+}
+
+async function deleteCharacter(name) {
+if (!confirm(`Удалить персонажа "${name}"?`)) return;
+try {
+const r = await api('/api/character/' + encodeURIComponent(name), { method: 'DELETE' });
+if (r.error) throw new Error(r.error);
+showNotification('Персонаж удалён', 'success');
+await loadCharacters();
+} catch (e) {
+showNotification('Ошибка: ' + e.message, 'error');
+}
+}
+
+/* ===== LOCATION SHEETS ===== */
+async function saveLocation() {
+const name = document.getElementById('loc-name').value.trim();
+if (!name) { showNotification('Введите название локации', 'warning'); return; }
+try {
+const r = await api('/api/location/save', {
+method: 'POST',
+body: {
+name,
+description: document.getElementById('loc-desc').value,
+atmosphere: document.getElementById('loc-atmosphere').value,
+architecture: document.getElementById('loc-arch').value,
+},
+});
+if (r.error) throw new Error(r.error);
+showNotification('Локация сохранена!', 'success');
+document.getElementById('loc-name').value = '';
+document.getElementById('loc-atmosphere').value = '';
+document.getElementById('loc-desc').value = '';
+document.getElementById('loc-arch').value = '';
+await loadLocations();
+} catch (e) {
+showNotification('Ошибка: ' + e.message, 'error');
+}
+}
+
+async function loadLocations() {
+const el = document.getElementById('locationsList');
+el.innerHTML = '<div class="loading"><i class="fa-solid fa-spinner"></i><div>Загрузка...</div></div>';
+try {
+const r = await api('/api/location/list');
+if (!r.locations || r.locations.length === 0) {
+el.innerHTML = '<div class="empty-state"><p>Нет сохранённых локаций</p></div>';
+return;
+}
+let html = '<div style="display:grid;gap:12px">';
+r.locations.forEach(l => {
+html += `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<strong style="font-size:16px">${esc(l.name)}</strong>
+<button class="icon-btn danger" data-bg-act="del-loc" data-name="${esc(l.name)}" title="Удалить"><i class="fa-solid fa-trash"></i></button>
+</div>
+${l.atmosphere ? '<div style="font-size:13px;color:var(--text3);margin-bottom:8px">🌤 '+esc(l.atmosphere)+'</div>' : ''}
+${l.description ? '<div style="font-size:13px;color:var(--text2);margin-bottom:6px">'+esc(l.description)+'</div>' : ''}
+${l.architecture ? '<div style="font-size:13px;color:var(--text2)"><strong>Архитектура:</strong> '+esc(l.architecture)+'</div>' : ''}
+<div style="font-size:11px;color:var(--text3);margin-top:8px">Seed: ${l.seed || '—'}</div>
+</div>`;
+});
+html += '</div>';
+el.innerHTML = html;
+} catch (e) {
+el.innerHTML = `<div class="empty-state"><p>${esc(e.message)}</p></div>`;
+}
+}
+
+async function deleteLocation(name) {
+if (!confirm(`Удалить локацию "${name}"?`)) return;
+try {
+const r = await api('/api/location/' + encodeURIComponent(name), { method: 'DELETE' });
+if (r.error) throw new Error(r.error);
+showNotification('Локация удалена', 'success');
+await loadLocations();
+} catch (e) {
+showNotification('Ошибка: ' + e.message, 'error');
+}
+}
+
+/* ===== SHEET TABS ===== */
+let currentMangaId = null;
+
+function switchSheetTab(tab) {
+document.querySelectorAll('#sheetsSection .tabs > .tab').forEach(t => t.classList.remove('active'));
+document.querySelector(`#sheetsSection .tabs > .tab[data-sheet="${tab}"]`).classList.add('active');
+document.querySelectorAll('#sheetsSection .tab-content').forEach(c => c.classList.remove('active'));
+document.getElementById('sheet-' + tab).classList.add('active');
+if (tab === 'characters') loadCharacters();
+else loadLocations();
+}
+
+/* ===== MANGA ===== */
+function switchMangaTab(tab) {
+document.querySelectorAll('#mangaSection .tabs > .tab').forEach(t => t.classList.remove('active'));
+document.querySelector(`#mangaSection .tabs > .tab[data-manga="${tab}"]`).classList.add('active');
+document.querySelectorAll('#mangaSection .tab-content').forEach(c => c.classList.remove('active'));
+document.getElementById('manga-' + tab).classList.add('active');
+}
+
+async function createManga() {
+const title = document.getElementById('manga-title').value.trim() || 'Манга без названия';
+try {
+const r = await api('/api/manga/create', {
+method: 'POST',
+body: {
+title,
+author: document.getElementById('manga-author').value,
+genre: document.getElementById('manga-genre').value,
+description: document.getElementById('manga-desc').value,
+panels_per_page: parseInt(document.getElementById('manga-panels').value),
+},
+});
+if (r.error) throw new Error(r.error);
+showNotification('Манга создана!', 'success');
+currentMangaId = r.id;
+document.getElementById('mangaEditorTitle').textContent = '✏️ ' + title;
+switchMangaTab('editor');
+} catch (e) {
+showNotification('Ошибка: ' + e.message, 'error');
+}
+}
+
+async function loadMangaList() {
+const el = document.getElementById('mangaListContainer');
+el.innerHTML = '<div class="loading"><i class="fa-solid fa-spinner"></i><div>Загрузка...</div></div>';
+try {
+const r = await api('/api/manga/list');
+if (!r.mangas || r.mangas.length === 0) {
+el.innerHTML = '<div class="empty-state"><div class="icon">📖</div><h3>Манг пока нет</h3><p>Создайте первую мангу на вкладке "Создать"</p></div>';
+return;
+}
+let html = '<div class="book-grid">';
+r.mangas.forEach(m => {
+const pageCount = (m.pages || []).length;
+html += `<div class="book-card" onclick="openManga('${m.id}')">
+<div class="title">${esc(m.title)}</div>
+<div class="author">${esc(m.author || 'Автор')}</div>
+<div class="meta">
+<span><i class="fa-solid fa-layer-group"></i> ${pageCount} стр.</span>
+<span><i class="fa-solid fa-calendar"></i> ${new Date(m.created * 1000).toLocaleDateString('ru')}</span>
+</div>
+</div>`;
+});
+html += '</div>';
+el.innerHTML = html;
+} catch (e) {
+el.innerHTML = `<div class="empty-state"><p>${esc(e.message)}</p></div>`;
+}
+}
+
+async function openManga(id) {
+try {
+const r = await api('/api/manga/' + id);
+if (r.error) throw new Error(r.error);
+currentMangaId = id;
+document.getElementById('mangaEditorTitle').textContent = '✏️ ' + r.title;
+switchMangaTab('editor');
+renderMangaPages(r);
+} catch (e) {
+showNotification('Ошибка: ' + e.message, 'error');
+}
+}
+
+function renderMangaPages(meta) {
+const el = document.getElementById('mangaPagesContainer');
+const pages = meta.pages || [];
+if (pages.length === 0) {
+el.innerHTML = '<div class="empty-state"><p>Пока нет страниц. Опишите сцену выше и нажмите "Сгенерировать".</p></div>';
+return;
+}
+let html = '';
+pages.forEach((page, pi) => {
+html += `<div class="card">
+<h3 style="margin-bottom:12px"><i class="fa-solid fa-file-image"></i> Страница ${page.num} ${page.scene ? '— ' + esc(page.scene.slice(0, 80)) : ''}</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px">`;
+(page.panels || []).forEach((panel, pai) => {
+html += `<div style="background:var(--bg3);border-radius:8px;padding:12px;border:1px solid var(--border)">
+<div style="font-size:11px;color:var(--text3);margin-bottom:4px">ПАНЕЛЬ ${panel.num || pai+1}</div>
+<div style="font-size:12px;margin-bottom:4px">${esc(panel.description || panel.text || '')}</div>
+${panel.text ? '<div style="font-size:12px;background:var(--bg2);border-radius:6px;padding:4px 8px;margin-top:4px;border-left:2px solid var(--accent)">💬 '+esc(panel.text)+'</div>' : ''}
+${panel.prompt ? '<details style="margin-top:6px"><summary style="font-size:11px;color:var(--accent);cursor:pointer">Промт</summary><div style="font-size:11px;color:var(--text3);margin-top:4px;padding:6px;background:var(--bg2);border-radius:4px">'+esc(panel.prompt)+'</div></details>' : ''}
+</div>`;
+});
+html += '</div></div>';
+});
+el.innerHTML = html;
+}
+
+async function generateMangaPage() {
+if (!currentMangaId) { showNotification('Сначала выберите или создайте мангу', 'warning'); return; }
+const scene = document.getElementById('manga-scene').value.trim();
+if (!scene) { showNotification('Опишите сцену', 'warning'); return; }
+const btn = document.querySelector('#manga-editor .btn');
+btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Генерация...';
+try {
+const model = document.getElementById('f-model').value;
+const r = await api('/api/manga/' + currentMangaId + '/generate', {
+method: 'POST',
+body: { scene, model },
+});
+if (r.error) throw new Error(r.error);
+const mangaData = await api('/api/manga/' + currentMangaId);
+renderMangaPages(mangaData);
+document.getElementById('manga-scene').value = '';
+showNotification('Страница сгенерирована!', 'success');
+} catch (e) {
+showNotification('Ошибка: ' + e.message, 'error');
+}
+btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Сгенерировать страницу';
+}
+
+async function deleteCurrentManga() {
+if (!currentMangaId) return;
+if (!confirm('Удалить эту мангу?')) return;
+try {
+const r = await api('/api/manga/' + currentMangaId, { method: 'DELETE' });
+if (r.error) throw new Error(r.error);
+showNotification('Манга удалена', 'success');
+currentMangaId = null;
+switchMangaTab('list');
+loadMangaList();
+} catch (e) {
+showNotification('Ошибка: ' + e.message, 'error');
+}
+}
+
+/* ===== SECTION SWITCH HOOKS ===== */
+const origShowSection = showSection;
+showSection = function(id) {
+origShowSection(id);
+if (id === 'library') loadLibrary();
+if (id === 'images') checkImageStatus();
+if (id === 'sheets') { loadCharacters(); loadLocations(); }
+if (id === 'manga') loadMangaList();
+};
+
+/* Init */
+loadModels();
+loadBooks();
+</script>
+
+<!-- Новый слой оформления (только для шаблона-превью; оригинал не изменён) -->
+<link rel="stylesheet" href="/static/css/library_next.css">
+<script src="/static/js/library_next.js" defer></script>
+</body>
+</html>

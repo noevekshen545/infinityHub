@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Погода — Infinity</title>
+<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box }
+:root {
+  --bg: #fafbfc; --bg2: #ffffff; --bg3: #f3f4f6; --bg4: #e5e7eb;
+  --border: rgba(0,0,0,.06); --border2: rgba(0,0,0,.1);
+  --text: #111827; --text2: #4b5563; --text3: #9ca3af;
+  --accent: #4f46e5; --accent2: #4338ca; --accent-light: rgba(79,70,229,.1);
+  --hover: rgba(0,0,0,.03); --red: #dc2626; --green: #059669; --blue: #2563eb;
+  --yellow: #d97706; --shadow: 0 4px 20px rgba(0,0,0,.06);
+  --radius: 16px; --radius-sm: 10px;
+  --tr: all .2s cubic-bezier(.4,0,.2,1);
+  --font: 'Inter', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+body.dark {
+  --bg: #0f1419; --bg2: #151b23; --bg3: #1c242f; --bg4: #232d3a;
+  --border: rgba(255,255,255,.08); --border2: rgba(255,255,255,.12);
+  --text: #e4e8ef; --text2: #a0aec0; --text3: #6b7280;
+  --accent: #6366f1; --accent2: #4f46e5; --accent-light: rgba(99,102,241,.15);
+  --hover: rgba(255,255,255,.05); --red: #ef4444; --green: #10b981; --blue: #3b82f6;
+  --yellow: #f59e0b; --shadow: 0 4px 20px rgba(0,0,0,.3);
+}
+body.sepia {
+  --bg: #f5f0e8; --bg2: #ede5d8; --bg3: #e2d8c9; --bg4: #d4c9b5;
+  --border: rgba(91,70,54,.1); --border2: rgba(91,70,54,.15);
+  --text: #3d2f21; --text2: #5c4a3a; --text3: #8b7560;
+  --accent: #8b5e3c; --accent2: #6d4a2e; --accent-light: rgba(139,94,60,.12);
+  --hover: rgba(91,70,54,.05); --red: #9b2c2c; --green: #276749; --blue: #2c5282;
+  --yellow: #975a16; --shadow: 0 4px 20px rgba(91,70,54,.08);
+}
+body {
+  font-family: var(--font); background: var(--bg); color: var(--text);
+  min-height: 100vh; line-height: 1.5; -webkit-font-smoothing: antialiased;
+  transition: background .3s, color .3s;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 80% 55% at 50% -20%, var(--accent-light), transparent);
+}
+a { color: var(--accent); text-decoration: none }
+button { font-family: inherit; cursor: pointer }
+::-webkit-scrollbar { width: 9px; height: 9px }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 5px }
+
+.topbar {
+  position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px; background: color-mix(in srgb, var(--bg2) 92%, transparent);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);
+}
+.tb-link {
+  display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px;
+  border-radius: var(--radius-sm); color: var(--text2); font-size: 13px; font-weight: 600;
+  transition: var(--tr);
+}
+.tb-link:hover { background: var(--hover); color: var(--text) }
+.spacer { flex: 1 }
+.ico-btn {
+  width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg2);
+  color: var(--text2); font-size: 14px; transition: var(--tr);
+}
+.ico-btn:hover { color: var(--accent); border-color: var(--accent) }
+
+main { position: relative; z-index: 1; max-width: 1160px; margin: 0 auto; padding: 22px 20px 60px }
+.hero {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 18px;
+}
+.hero-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px }
+.hero-head h1 { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px }
+.hero-head h1 i { color: var(--accent) }
+.units-btn {
+  margin-left: auto; height: 34px; padding: 0 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg3); color: var(--text);
+  font-weight: 700; font-size: 13px;
+}
+.searchrow { display: flex; gap: 8px; align-items: stretch }
+.search { position: relative; flex: 1 }
+.search > i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 13px }
+.search input {
+  width: 100%; height: 42px; padding: 0 14px 0 38px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border2); background: var(--bg3); color: var(--text);
+  font-family: inherit; font-size: 14px; outline: none; transition: var(--tr);
+}
+.search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light) }
+.suggest {
+  position: absolute; top: 46px; left: 0; right: 0; z-index: 30; display: none;
+  background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.suggest.open { display: block }
+.suggest-item { padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; gap: 12px; font-size: 13px }
+.suggest-item:hover { background: var(--hover) }
+.suggest-item small { color: var(--text3) }
+.chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--bg3); color: var(--text2);
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: var(--tr);
+}
+.chip:hover { color: var(--text); border-color: var(--border2) }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff }
+.chip .x { opacity: .55; font-size: 11px }
+.chip .x:hover { opacity: 1 }
+.toolbar { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden }
+.seg button {
+  border: none; background: var(--bg3); color: var(--text2); height: 34px; padding: 0 13px;
+  font-size: 12px; font-weight: 600; transition: var(--tr);
+}
+.seg button + button { border-left: 1px solid var(--border) }
+.seg button:hover { color: var(--accent) }
+.seg button.on { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff }
+.note { font-size: 12px; color: var(--text3) }
+
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); margin-top: 18px; overflow: hidden }
+.section-title { display: flex; align-items: center; gap: 8px; padding: 16px 18px 0; font-size: 13px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .04em }
+.section-title i { color: var(--accent) }
+
+.now { display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 20px; padding: 18px }
+.now-left { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px; padding: 12px; border-radius: var(--radius); background: linear-gradient(160deg, var(--accent-light), transparent) }
+.now-icon { font-size: 54px; color: var(--accent); margin-bottom: 4px }
+.now-temp { font-size: 52px; font-weight: 700; line-height: 1 }
+.now-city { font-size: 15px; font-weight: 600 }
+.now-desc { font-size: 13px; color: var(--text2) }
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 10px }
+.meta {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 10px 12px; min-width: 0;
+}
+.meta .lbl { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 6px; margin-bottom: 3px }
+.meta .val { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.meta .sub { font-size: 11px; color: var(--text3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+
+.hourly { display: flex; gap: 8px; overflow-x: auto; padding: 14px 18px 18px }
+.hour {
+  flex: 0 0 76px; text-align: center; padding: 10px 6px; border-radius: var(--radius-sm);
+  background: var(--bg3); border: 1px solid var(--border);
+}
+.hour.now { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light) }
+.hour .h { font-size: 11px; color: var(--text3) }
+.hour .ic { display: block; margin: 5px 0; font-size: 18px; color: var(--accent) }
+.hour .t { font-size: 14px; font-weight: 700 }
+.hour .pop { font-size: 10px; color: var(--blue); min-height: 14px }
+.hour .wd { font-size: 10px; color: var(--text3) }
+
+.days { padding: 8px 12px 16px }
+.day {
+  display: grid; grid-template-columns: 96px 36px 1fr 118px; align-items: center; gap: 12px;
+  padding: 10px 8px; border-bottom: 1px solid var(--border);
+}
+.day:last-child { border-bottom: none }
+.day:hover { background: var(--hover); border-radius: var(--radius-sm) }
+.day.statistical { opacity: .88 }
+.day-name b { display: block; font-size: 13px }
+.day-name span { font-size: 11px; color: var(--text3) }
+.day-ic { text-align: center; font-size: 18px; color: var(--accent) }
+.day-info { min-width: 0; font-size: 11px; color: var(--text2) }
+.day-info .line { display: flex; flex-wrap: wrap; gap: 5px 12px }
+.day-info .line span { white-space: nowrap }
+.day-temps { display: flex; gap: 10px; justify-content: flex-end; font-weight: 700; font-size: 14px }
+.day-temps .mn { color: var(--text3) }
+.bar { height: 4px; border-radius: 2px; background: var(--bg4); position: relative; margin-top: 5px; overflow: hidden }
+.bar > span { position: absolute; top: 0; bottom: 0; border-radius: 2px; background: linear-gradient(90deg, var(--blue), var(--accent), var(--red)) }
+.loading { padding: 26px; text-align: center; color: var(--text3); font-size: 13px }
+.loading i { margin-right: 6px }
+.error { padding: 20px; color: var(--red); font-size: 13px }
+
+.panel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); margin-top: 18px; overflow: hidden }
+.panel-head { display: flex; align-items: center; gap: 12px; padding: 16px 18px; flex-wrap: wrap; border-bottom: 1px solid var(--border) }
+.panel-head h2 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 9px }
+.panel-head h2 i { color: var(--accent) }
+.panel-head .seg { margin-left: auto }
+.panel-head select {
+  height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text); padding: 0 8px; font-family: inherit; font-size: 12px;
+}
+.panel-note { padding: 12px 18px 0; font-size: 12px; color: var(--text3) }
+.chart { padding: 8px 14px 0 }
+.chart svg { width: 100%; height: 190px; display: block }
+.table-wrap { overflow-x: auto; padding: 14px 18px 18px }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap }
+th { color: var(--text3); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .03em }
+tbody tr:hover { background: var(--hover) }
+td.cond { color: var(--text2); max-width: 220px; overflow: hidden; text-overflow: ellipsis }
+
+.settings { padding: 6px 18px 18px; display: grid; gap: 10px }
+.set-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 0; border-bottom: 1px dashed var(--border) }
+.set-row:last-child { border-bottom: none }
+.set-row > label { font-size: 13px; color: var(--text2); min-width: 210px }
+.set-row input[type=number] {
+  width: 90px; height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text); padding: 0 9px; font-family: inherit;
+}
+.set-row select {
+  height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text); padding: 0 9px; font-family: inherit;
+}
+.switch {
+  width: 42px; height: 23px; border-radius: 12px; background: var(--bg4); position: relative;
+  cursor: pointer; transition: var(--tr); flex: 0 0 auto;
+}
+.switch::after {
+  content: ''; position: absolute; top: 3px; left: 3px; width: 17px; height: 17px;
+  border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: var(--tr);
+}
+.switch.on { background: var(--accent) }
+.switch.on::after { left: 22px }
+.btn {
+  height: 36px; padding: 0 16px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text); font-weight: 600; font-size: 13px;
+}
+.btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: transparent; color: #fff }
+.btn:hover { filter: brightness(1.06) }
+.set-actions { display: flex; gap: 10px; align-items: center; padding-top: 12px }
+
+#toast { position: fixed; right: 18px; bottom: 18px; z-index: 99; display: flex; flex-direction: column; gap: 8px }
+.toast {
+  background: var(--bg2); border: 1px solid var(--border2); border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow); padding: 10px 14px;
+  font-size: 13px; max-width: 360px;
+}
+.toast.error { border-left-color: var(--red) }
+.toast.success { border-left-color: var(--green) }
+
+@media (max-width: 820px) {
+  main { padding: 14px 12px 50px }
+  .now { grid-template-columns: 1fr }
+  .now-left { padding: 8px }
+  .now-icon { font-size: 44px }
+  .now-temp { font-size: 42px }
+  .day { grid-template-columns: 76px 28px 1fr 86px; gap: 8px; padding: 9px 4px }
+  .day-info .line { gap: 4px 8px; font-size: 10.5px }
+  .panel-head .seg { margin-left: 0; width: 100%; overflow-x: auto }
+  .set-row > label { min-width: 100% }
+  .topbar { padding: 8px 10px }
+  .tb-link span { display: none }
+  .chart svg { height: 170px }
+}
+</style>
+<link rel="stylesheet" href="/static/fonts/site-fonts.css">
+</head>
+<body>
+<div class="topbar">
+  <a class="tb-link" href="/"><i class="fa-solid fa-arrow-left"></i><span>Домой</span></a>
+  <a class="tb-link" href="/news"><i class="fa-solid fa-newspaper"></i><span>Новости</span></a>
+  <div class="spacer"></div>
+  <a class="tb-link" href="/currency"><i class="fa-solid fa-coins"></i><span>Курсы</span></a>
+  <button class="ico-btn" id="themeBtn" title="Сменить тему"><i class="fa-solid fa-moon"></i></button>
+</div>
+
+<main>
+  <section class="hero">
+    <div class="hero-head">
+      <h1><i class="fa-solid fa-cloud-sun"></i> Погода</h1>
+      <button class="units-btn" id="unitsBtn" title="Единицы измерения">°C</button>
+    </div>
+    <div class="searchrow">
+      <div class="search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="cityInput" placeholder="Город: Санкт-Петербург, Казань, Sochi…" autocomplete="off">
+        <div class="suggest" id="citySuggest"></div>
+      </div>
+      <button class="ico-btn" id="geoBtn" title="Моё местоположение"><i class="fa-solid fa-location-crosshairs"></i></button>
+      <button class="ico-btn" id="refreshBtn" title="Обновить"><i class="fa-solid fa-rotate"></i></button>
+    </div>
+    <div class="chips" id="favChips"></div>
+    <div class="toolbar">
+      <div class="seg" id="daysSeg" role="group" title="Горизонт прогноза">
+        <button type="button" data-days="7">7 дней</button>
+        <button type="button" data-days="16">16 дней</button>
+        <button type="button" data-days="30">30 дней</button>
+      </div>
+      <span class="note" id="daysNote"></span>
+    </div>
+  </section>
+
+  <div id="nowBox"></div>
+  <div id="forecastBox"></div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2><i class="fa-solid fa-clock-rotate-left"></i> История погоды</h2>
+      <div class="seg" id="histSeg">
+        <button type="button" data-days="1">Вчера</button>
+        <button type="button" data-days="7">7 дней</button>
+        <button type="button" data-days="30">30 дней</button>
+        <button type="button" data-days="90">90 дней</button>
+        <button type="button" data-days="365">Год</button>
+      </div>
+      <select id="histGran">
+        <option value="daily" selected>по дням</option>
+        <option value="hourly">по часам</option>
+      </select>
+    </div>
+    <div class="panel-note" id="histNote"></div>
+    <div class="chart" id="histChart"></div>
+    <div class="table-wrap" id="histBody"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2><i class="fa-solid fa-gear"></i> Автопроверка и хранение истории</h2>
+    </div>
+    <div class="settings" id="settingsBox">
+      <div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Загрузка настроек…</div>
+    </div>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+const WX_ICONS = {
+  0: ['fa-sun', 'Ясно'], 1: ['fa-sun', 'Преимущественно ясно'],
+  2: ['fa-cloud-sun', 'Переменная облачность'], 3: ['fa-cloud', 'Пасмурно'],
+  45: ['fa-smog', 'Туман'], 48: ['fa-smog', 'Изморозь'],
+  51: ['fa-cloud-drizzle', 'Слабая морось'], 53: ['fa-cloud-drizzle', 'Морось'],
+  55: ['fa-cloud-drizzle', 'Сильная морось'], 56: ['fa-cloud-drizzle', 'Ледяная морось'],
+  57: ['fa-cloud-drizzle', 'Сильная ледяная морось'],
+  61: ['fa-cloud-rain', 'Слабый дождь'], 63: ['fa-cloud-rain', 'Дождь'],
+  65: ['fa-cloud-showers-heavy', 'Сильный дождь'],
+  66: ['fa-cloud-rain', 'Ледяной дождь'], 67: ['fa-cloud-showers-heavy', 'Сильный ледяной дождь'],
+  71: ['fa-snowflake', 'Слабый снег'], 73: ['fa-snowflake', 'Снег'],
+  75: ['fa-snowflake', 'Сильный снег'], 77: ['fa-snowflake', 'Снежная крупа'],
+  80: ['fa-cloud-showers-heavy', 'Ливень'], 81: ['fa-cloud-showers-heavy', 'Ливни'],
+  82: ['fa-cloud-showers-heavy', 'Сильные ливни'],
+  85: ['fa-snowflake', 'Снежный ливень'], 86: ['fa-snowflake', 'Сильный снежный ливень'],
+  95: ['fa-cloud-bolt', 'Гроза'], 96: ['fa-cloud-bolt', 'Гроза с градом'],
+  99: ['fa-cloud-bolt', 'Сильная гроза с градом']
+};
+const WX_NIGHT_ICON = { 0: 'fa-moon', 1: 'fa-moon', 2: 'fa-cloud-moon', 3: 'fa-cloud' };
+const WX_DOW = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+const WX_DEFAULT_CITY = {
+  name: 'Москва', admin: 'Московская обл.', country: 'Россия',
+  lat: 55.7558, lon: 37.6173, timezone: 'Europe/Moscow'
+};
+const store = {
+  get city() { try { return JSON.parse(localStorage.getItem('news_wx_city') || 'null'); } catch (e) { return null; } },
+  set city(v) { try { localStorage.setItem('news_wx_city', JSON.stringify(v)); } catch (e) {} },
+  get units() { return localStorage.getItem('news_wx_units') === 'imperial' ? 'imperial' : 'metric'; },
+  set units(v) { try { localStorage.setItem('news_wx_units', v); } catch (e) {} },
+  get days() { const n = parseInt(localStorage.getItem('news_wx_days') || '7', 10); return [7, 16, 30].includes(n) ? n : 7; },
+  set days(v) { const n = parseInt(v, 10); try { localStorage.setItem('news_wx_days', String([7, 16, 30].includes(n) ? n : 7)); } catch (e) {} },
+  get favs() { try { return JSON.parse(localStorage.getItem('news_wx_favs') || '[]'); } catch (e) { return []; } },
+  set favs(v) { try { localStorage.setItem('news_wx_favs', JSON.stringify(v)); } catch (e) {} }
+};
+let histDays = 7;
+let histItems = [];
+let searchTimer = null;
+let candidates = [];
+let settings = null;
+
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function toast(msg, type) {
+  const box = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type || '');
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(() => el.remove(), 3600);
+}
+
+// ---- тема (та же настройка, что в «Новостях») ----
+function theme() { return localStorage.getItem('news_theme') || 'light'; }
+function setTheme(t) {
+  document.body.className = t === 'dark' ? 'dark' : (t === 'sepia' ? 'sepia' : '');
+  document.getElementById('themeBtn').innerHTML = t === 'dark'
+    ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+  localStorage.setItem('news_theme', t);
+}
+document.getElementById('themeBtn').addEventListener('click', () => {
+  const list = ['light', 'dark', 'sepia'];
+  setTheme(list[(list.indexOf(theme()) + 1) % list.length]);
+});
+
+// ---- погодные подписи ----
+function label(code) {
+  const c = WX_ICONS[Math.round(Number(code) || 0)];
+  return c ? c[1] : '—';
+}
+function iconFor(code, isDay) {
+  const n = Math.round(Number(code) || 0);
+  if (Number(isDay) === 0 && WX_NIGHT_ICON[n]) return WX_NIGHT_ICON[n];
+  return (WX_ICONS[n] || ['fa-cloud'])[0];
+}
+function windDir(deg) {
+  if (deg == null || isNaN(deg)) return '';
+  const dirs = ['С', 'СВ', 'В', 'ЮВ', 'Ю', 'ЮЗ', 'З', 'СЗ'];
+  return dirs[Math.round((((Number(deg) % 360) + 360) % 360) / 45) % 8];
+}
+function windText(deg, unit) {
+  if (deg == null) return '';
+  return windDir(deg) + ' ' + Math.round(((Number(deg) % 360) + 360) % 360) + '°';
+}
+function uvNote(uv) {
+  if (uv == null) return '';
+  const v = Number(uv);
+  if (v < 3) return 'низкий';
+  if (v < 6) return 'умеренный';
+  if (v < 8) return 'высокий';
+  if (v < 11) return 'очень высокий';
+  return 'экстремальный';
+}
+function hhmm(iso) { return (iso && iso.length >= 16) ? iso.substring(11, 16) : '—'; }
+function dayName(iso) {
+  try {
+    const p = String(iso).split('-').map(Number);
+    return WX_DOW[new Date(Date.UTC(p[0], p[1] - 1, p[2])).getUTCDay()];
+  } catch (e) { return ''; }
+}
+function tzOffset(tz) {
+  try {
+    if (!tz) return null;
+    const d = new Date();
+    const fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz, hour12: false, year: 'numeric', month: '2-digit',
+      day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    const p = {};
+    for (const part of fmt.formatToParts(d)) p[part.type] = part.value;
+    const hh = p.hour === '24' ? '00' : p.hour;
+    const asUTC = Date.UTC(+p.year, +p.month - 1, +p.day, +hh, +p.minute, +p.second);
+    return Math.round((asUTC - (Math.floor(d.getTime() / 1000) * 1000)) / 1000);
+  } catch (e) { return null; }
+}
+
+// ---- город ----
+function sameCity(a, b) {
+  return a && b && Math.abs(Number(a.lat) - Number(b.lat)) < 0.05 &&
+         Math.abs(Number(a.lon) - Number(b.lon)) < 0.05;
+}
+function addFav(c) {
+  if (!c || c.lat == null) return;
+  const favs = store.favs.filter(f => !sameCity(f, c));
+  favs.unshift({ name: c.name, admin: c.admin || '', country: c.country || '',
+                 lat: c.lat, lon: c.lon, timezone: c.timezone || '' });
+  store.favs = favs.slice(0, 8);
+}
+function renderChips() {
+  const box = document.getElementById('favChips');
+  const city = store.city || WX_DEFAULT_CITY;
+  box.innerHTML = store.favs.map((f, i) =>
+    '<span class="chip' + (sameCity(f, city) ? ' active' : '') + '" data-fav="' + i + '">' +
+    esc(f.name) + '<span class="x" data-remove="' + i + '" title="Убрать">✕</span></span>'
+  ).join('');
+}
+document.getElementById('favChips').addEventListener('click', e => {
+  const rm = e.target.closest('[data-remove]');
+  if (rm) {
+    e.stopPropagation();
+    const list = store.favs;
+    list.splice(parseInt(rm.dataset.remove, 10), 1);
+    store.favs = list;
+    renderChips();
+    return;
+  }
+  const chip = e.target.closest('[data-fav]');
+  if (!chip) return;
+  const f = store.favs[parseInt(chip.dataset.fav, 10)];
+  if (!f) return;
+  store.city = f;
+  document.getElementById('cityInput').value = f.name || '';
+  renderChips();
+  loadForecast();
+  loadHistory();
+});
+function hideSuggest() {
+  const box = document.getElementById('citySuggest');
+  box.classList.remove('open');
+  box.innerHTML = '';
+}
+function showSuggest(items) {
+  const box = document.getElementById('citySuggest');
+  candidates = items;
+  if (!items.length) { hideSuggest(); return; }
+  box.innerHTML = items.map((c, i) =>
+    '<div class="suggest-item" data-i="' + i + '"><span>' + esc(c.name) +
+    (c.admin ? ', ' + esc(c.admin) : '') + '</span><small>' + esc(c.country || '') + '</small></div>'
+  ).join('');
+  box.classList.add('open');
+}
+document.getElementById('citySuggest').addEventListener('mousedown', e => {
+  const row = e.target.closest('[data-i]');
+  if (!row) return;
+  e.preventDefault();
+  const c = candidates[parseInt(row.dataset.i, 10)];
+  if (!c) return;
+  hideSuggest();
+  store.city = c;
+  addFav(c);
+  document.getElementById('cityInput').value = c.name || '';
+  renderChips();
+  loadForecast();
+  loadHistory();
+});
+const cityInput = document.getElementById('cityInput');
+cityInput.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  const q = cityInput.value.trim();
+  if (q.length < 2) { hideSuggest(); return; }
+  searchTimer = setTimeout(async () => {
+    try {
+      const r = await fetch('/api/weather/geocode?q=' + encodeURIComponent(q) + '&limit=8');
+      const d = await r.json();
+      if (d.ok) showSuggest(d.results || []);
+    } catch (e) { hideSuggest(); }
+  }, 350);
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search')) hideSuggest();
+});
+document.getElementById('geoBtn').addEventListener('click', () => {
+  if (!navigator.geolocation) { toast('Геолокация не поддерживается', 'error'); return; }
+  toast('Определяю местоположение…');
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude, lon = pos.coords.longitude;
+    let city = { name: 'Моё местоположение', admin: '', country: '', lat: lat, lon: lon, timezone: '' };
+    try {
+      const r = await fetch('/api/weather/reverse?lat=' + lat + '&lon=' + lon);
+      const d = await r.json();
+      if (d.ok && d.result) city = Object.assign(city, d.result);
+    } catch (e) {}
+    store.city = city;
+    addFav(city);
+    document.getElementById('cityInput').value = city.name || '';
+    renderChips();
+    loadForecast();
+    loadHistory();
+  }, err => toast('Не удалось определить местоположение: ' + (err.message || ''), 'error'),
+  { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 });
+});
+document.getElementById('refreshBtn').addEventListener('click', () => {
+  loadForecast(true);
+  loadHistory();
+  toast('Обновляю прогноз…');
+});
+
+// ---- единицы и горизонт ----
+function unitsBtnSync() {
+  document.getElementById('unitsBtn').textContent = store.units === 'metric' ? '°C' : '°F';
+}
+document.getElementById('unitsBtn').addEventListener('click', () => {
+  store.units = store.units === 'metric' ? 'imperial' : 'metric';
+  unitsBtnSync();
+  loadForecast();
+  loadHistory();
+});
+function daysSegSync() {
+  document.querySelectorAll('#daysSeg button').forEach(b => {
+    b.classList.toggle('on', parseInt(b.dataset.days, 10) === store.days);
+  });
+}
+document.getElementById('daysSeg').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-days]');
+  if (!btn) return;
+  const n = parseInt(btn.dataset.days, 10);
+  if (![7, 16, 30].includes(n) || n === store.days) return;
+  store.days = n;
+  daysSegSync();
+  loadForecast();
+});
+
+// ---- текущая погода и прогноз ----
+function metaCard(icon, lbl, val, sub) {
+  const ic = icon.length <= 4 ? '<span>' + icon + '</span>' : '<i class="fa-solid ' + icon + '"></i>';
+  return '<div class="meta"><div class="lbl">' + ic + esc(lbl) + '</div>' +
+    '<div class="val">' + val + '</div>' +
+    (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div>';
+}
+function renderNow(d, city) {
+  const c = d.current || {};
+  const hourly = d.hourly || [];
+  const h0 = hourly[0] || {};
+  const unit = d.temp_unit || '°C';
+  const wu = d.wind_unit || 'м/с';
+  const pu = d.precip_unit || 'мм';
+  const vis = h0.visibility == null ? null
+    : (d.units === 'imperial' ? (h0.visibility / 1609.344).toFixed(1) + ' миль'
+                              : (h0.visibility / 1000).toFixed(1) + ' км');
+  const mmHg = c.pressure == null ? null : Math.round(c.pressure * 0.750062);
+  const html = '<section class="card"><div class="now">' +
+    '<div class="now-left">' +
+      '<div class="now-icon"><i class="fa-solid ' + iconFor(c.code, c.is_day) + '"></i></div>' +
+      '<div class="now-temp">' + (c.temp == null ? '—' : Math.round(c.temp)) + esc(unit) + '</div>' +
+      '<div class="now-city">' + esc(city.name) + (city.country ? ', ' + esc(city.country) : '') + '</div>' +
+      '<div class="now-desc">' + esc(label(c.code)) + '</div>' +
+    '</div><div class="meta-grid">' +
+      metaCard('fa-temperature-half', 'Ощущается', c.feels == null ? '—' : Math.round(c.feels) + esc(unit), '') +
+      metaCard('fa-droplet', 'Влажность', c.humidity == null ? '—' : Math.round(c.humidity) + '%', '') +
+      metaCard('fa-gauge-high', 'Давление', mmHg == null ? '—' : String(mmHg), 'мм рт. ст.') +
+      metaCard('fa-wind', 'Ветер', c.wind == null ? '—' : (Math.round(c.wind * 10) / 10) + ' ' + esc(wu), esc(windText(c.wind_dir, wu))) +
+      metaCard('fa-cloud', 'Облачность', c.cloud == null ? '—' : Math.round(c.cloud) + '%', '') +
+      metaCard('fa-cloud-rain', 'Осадки', c.precip == null ? '—' : c.precip + ' ' + esc(pu),
+               h0.pop != null ? 'шанс ' + Math.round(h0.pop) + '%' : '') +
+      metaCard('fa-sun', 'УФ-индекс', c.uv == null ? '—' : c.uv, esc(uvNote(c.uv))) +
+      metaCard('fa-eye', 'Видимость', vis == null ? '—' : vis, '') +
+      metaCard('fa-arrow-up', 'Восход', esc(hhmm(c.sunrise)), '') +
+      metaCard('fa-arrow-down', 'Закат', esc(hhmm(c.sunset)), '') +
+    '</div></div></section>';
+  document.getElementById('nowBox').innerHTML = html;
+}
+function renderForecast(d) {
+  const hourly = d.hourly || [];
+  const daily = d.daily || [];
+  let html = '';
+  if (hourly.length) {
+    html += '<section class="card"><div class="section-title"><i class="fa-solid fa-clock"></i> Почасовой прогноз · ' + hourly.length + ' ч</div><div class="hourly">';
+    hourly.forEach((h, i) => {
+      const hw = h.wind == null ? null : (Math.round(h.wind * 10) / 10);
+      html += '<div class="hour' + (i === 0 ? ' now' : '') + '">' +
+        '<div class="h">' + (i === 0 ? 'сейчас' : esc(String(h.time || '').substring(11, 16))) + '</div>' +
+        '<span class="ic"><i class="fa-solid ' + iconFor(h.code, h.is_day) + '"></i></span>' +
+        '<div class="t">' + (h.temp == null ? '—' : Math.round(h.temp)) + '°</div>' +
+        '<div class="pop">' + (h.pop != null ? '<i class="fa-solid fa-droplet"></i> ' + Math.round(h.pop) + '%' : '') + '</div>' +
+        '<div class="wd">' + (hw == null ? '' : hw + ' ' + esc(d.wind_unit || '')) + '</div>' +
+      '</div>';
+    });
+    html += '</div></section>';
+  }
+  if (daily.length) {
+    let gmin = Infinity, gmax = -Infinity;
+    daily.forEach(x => {
+      if (x.tmin != null) gmin = Math.min(gmin, x.tmin);
+      if (x.tmax != null) gmax = Math.max(gmax, x.tmax);
+    });
+    if (!isFinite(gmin) || !isFinite(gmax)) { gmin = 0; gmax = 1; }
+    if (gmax - gmin < 1) gmax = gmin + 1;
+    const span = gmax - gmin;
+    html += '<section class="card"><div class="section-title"><i class="fa-solid fa-calendar-days"></i> Прогноз на ' + daily.length + ' дней</div><div class="days">';
+    daily.forEach((x, i) => {
+      const left = x.tmin == null ? 0 : Math.max(0, (x.tmin - gmin) / span * 100);
+      const width = (x.tmin == null || x.tmax == null) ? 100
+        : Math.max(4, Math.min(100 - left, (x.tmax - x.tmin) / span * 100));
+      const dWind = x.wind == null ? null : (Math.round(x.wind * 10) / 10);
+      html += '<div class="day' + (x.statistical ? ' statistical' : '') + '">' +
+        '<div class="day-name"><b>' + (i === 0 ? 'Сегодня' : esc(dayName(x.date))) + '</b>' +
+          '<span>' + esc(String(x.date || '').substring(5).replace('-', '.')) +
+          (x.statistical ? ' · стат.' : '') + '</span></div>' +
+        '<div class="day-ic"><i class="fa-solid ' + iconFor(x.code, 1) + '" title="' + esc(label(x.code)) + '"></i></div>' +
+        '<div class="day-info"><div class="line">' +
+          '<span>' + esc(label(x.code)) + '</span>' +
+          (x.pop != null ? '<span>осадки <b>' + Math.round(x.pop) + '%</b></span>' : '') +
+          (x.precip ? '<span><i class="fa-solid fa-droplet"></i> ' + x.precip + ' ' + esc(x.precip_unit || d.precip_unit || '') + '</span>' : '') +
+          (dWind != null ? '<span><i class="fa-solid fa-wind"></i> ' + dWind + ' ' + esc(d.wind_unit || '') +
+             (x.wind_dir != null ? ' ' + esc(windDir(x.wind_dir)) : '') + '</span>' : '') +
+          (x.sunrise ? '<span><i class="fa-solid fa-arrow-up"></i> ' + esc(hhmm(x.sunrise)) + '</span>' : '') +
+          (x.sunset ? '<span><i class="fa-solid fa-arrow-down"></i> ' + esc(hhmm(x.sunset)) + '</span>' : '') +
+        '</div><div class="bar"><span style="left:' + left.toFixed(1) + '%;width:' + width.toFixed(1) + '%"></span></div></div>' +
+        '<div class="day-temps"><span class="mn">' + (x.tmin == null ? '—' : Math.round(x.tmin)) +
+          '°</span><span class="mx">' + (x.tmax == null ? '—' : Math.round(x.tmax)) + '°</span></div>' +
+      '</div>';
+    });
+    html += '</div></section>';
+  }
+  document.getElementById('forecastBox').innerHTML = html;
+  const noteEl = document.getElementById('daysNote');
+  let note = '';
+  if (d.extended) note = 'дни после 16-го — статистический прогноз (ECMWF SEAS5)';
+  else if (d.requested_days && daily.length < d.requested_days)
+    note = 'доступно ' + daily.length + ' из ' + d.requested_days + ' дней';
+  noteEl.textContent = note;
+}
+async function loadForecast(force) {
+  const city = store.city || WX_DEFAULT_CITY;
+  document.getElementById('nowBox').innerHTML = '<div class="card"><div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Загрузка прогноза для ' + esc(city.name) + '…</div></div>';
+  document.getElementById('forecastBox').innerHTML = '';
+  const inp = document.getElementById('cityInput');
+  if (inp && document.activeElement !== inp) inp.value = city.name || '';
+  let off = tzOffset(city.timezone);
+  if (off == null) {
+    try { off = tzOffset(Intl.DateTimeFormat().resolvedOptions().timeZone); } catch (e) {}
+  }
+  let url = '/api/weather/forecast?lat=' + encodeURIComponent(city.lat) +
+            '&lon=' + encodeURIComponent(city.lon) + '&units=' + store.units +
+            '&days=' + store.days;
+  if (off != null) url += '&tz_offset=' + off;
+  if (force) url += '&_=' + Date.now();
+  try {
+    const r = await fetch(url, { cache: force ? 'no-store' : 'default' });
+    const d = await r.json();
+    if (!r.ok || !d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    renderNow(d, city);
+    renderForecast(d);
+  } catch (e) {
+    document.getElementById('nowBox').innerHTML = '<div class="card"><div class="error"><i class="fa-solid fa-triangle-exclamation"></i> ' + esc(e.message || 'Ошибка загрузки') + '</div></div>';
+    toast('Погода: ' + (e.message || 'ошибка'), 'error');
+  }
+}
+
+// ---- история: вчера/неделя из past_days, длинная — из локальных наблюдений ----
+function histSegSync() {
+  document.querySelectorAll('#histSeg button').forEach(b => {
+    b.classList.toggle('on', parseInt(b.dataset.days, 10) === histDays);
+  });
+}
+document.getElementById('histSeg').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-days]');
+  if (!btn) return;
+  histDays = parseInt(btn.dataset.days, 10);
+  histSegSync();
+  loadHistory();
+});
+document.getElementById('histGran').addEventListener('change', loadHistory);
+function svgChart(items, gran, unit) {
+  const pts = items.filter(x => x.tmax != null || x.temp != null).map(x => ({
+    t: x.date || x.time,
+    hi: x.tmax != null ? x.tmax : x.temp,
+    lo: x.tmin != null ? x.tmin : null
+  }));
+  if (pts.length < 2) return '';
+  const W = 800, H = 190, P = 30;
+  let min = Infinity, max = -Infinity;
+  pts.forEach(p => {
+    if (p.hi != null) { min = Math.min(min, p.hi); max = Math.max(max, p.hi); }
+    if (p.lo != null) { min = Math.min(min, p.lo); max = Math.max(max, p.lo); }
+  });
+  if (!isFinite(min) || !isFinite(max)) return '';
+  if (max - min < 1) max = min + 1;
+  const X = i => P + (W - 2 * P) * (i / (pts.length - 1));
+  const Y = v => H - P - (H - 2 * P) * ((v - min) / (max - min));
+  const path = key => pts.map((p, i) => (p[key] == null ? '' : (i ? 'L' : 'M') +
+    X(i).toFixed(1) + ' ' + Y(p[key]).toFixed(1))).join(' ');
+  let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img">';
+  for (let g = 0; g <= 2; g++) {
+    const v = min + (max - min) * g / 2;
+    svg += '<line x1="' + P + '" x2="' + (W - P) + '" y1="' + Y(v).toFixed(1) +
+           '" y2="' + Y(v).toFixed(1) + '" stroke="var(--border)" stroke-width="1"/>' +
+           '<text x="' + (P - 5) + '" y="' + (Y(v) + 3).toFixed(1) +
+           '" fill="var(--text3)" font-size="10" text-anchor="end">' + Math.round(v) + '°</text>';
+  }
+  if (pts.some(p => p.lo != null)) {
+    svg += '<path d="' + path('lo') + '" fill="none" stroke="var(--blue)" stroke-width="1.6"/>';
+  }
+  svg += '<path d="' + path('hi') + '" fill="none" stroke="var(--red)" stroke-width="1.8"/>';
+  const step = Math.max(1, Math.ceil(pts.length / 7));
+  for (let i = 0; i < pts.length; i += step) {
+    const raw = String(pts[i].t || '');
+    const lbl = gran === 'hourly' ? raw.slice(11, 16) : raw.slice(5);
+    svg += '<text x="' + X(i).toFixed(1) + '" y="' + (H - 8) +
+           '" fill="var(--text3)" font-size="10" text-anchor="middle">' +
+           esc(lbl) + '</text>';
+  }
+  return svg + '</svg>';
+}
+function renderHistory(items, gran, sourceNote) {
+  const noteEl = document.getElementById('histNote');
+  const chartEl = document.getElementById('histChart');
+  const body = document.getElementById('histBody');
+  histItems = items;
+  if (!items.length) {
+    chartEl.innerHTML = '';
+    body.innerHTML = '<div class="loading">Нет данных за этот период. Включите автопроверку — наблюдения накопятся.</div>';
+    noteEl.textContent = sourceNote || '';
+    return;
+  }
+  noteEl.textContent = sourceNote || '';
+  const unit = store.units === 'imperial' ? '°F' : '°C';
+  chartEl.innerHTML = svgChart(items, gran, unit);
+  const hourly = gran === 'hourly';
+  const rows = items.slice().reverse().map(x => {
+    const t = String(x.date || x.time || '').replace('T', ' ');
+    const cond = x.code != null ? label(x.code) : (x.cond || '—');
+    const temps = hourly
+      ? '<td>' + (x.temp != null ? Math.round(x.temp) + '°' : '—') + '</td>'
+      : '<td>' + (x.tmax != null ? Math.round(x.tmax) + '°' : '—') + '</td><td>' +
+        (x.tmin != null ? Math.round(x.tmin) + '°' : '—') + '</td>';
+    return '<tr><td>' + esc(t) + '</td><td class="cond">' + esc(cond) + '</td>' + temps +
+      '<td>' + (x.precip != null ? x.precip : '—') + '</td><td>' +
+      (x.wind != null ? Math.round(x.wind * 10) / 10 : '—') + '</td><td>' +
+      (x.pop != null ? Math.round(x.pop) + '%' : '—') + '</td></tr>';
+  }).join('');
+  body.innerHTML = '<table><thead><tr><th>Дата/время</th><th>Погода</th>' +
+    (hourly ? '<th>Темп</th>' : '<th>Макс</th><th>Мин</th>') +
+    '<th>Осадки</th><th>Ветер</th><th>Шанс</th></tr></thead><tbody>' +
+    rows + '</tbody></table>';
+}
+async function loadHistory() {
+  const city = store.city || WX_DEFAULT_CITY;
+  const gran = document.getElementById('histGran').value;
+  document.getElementById('histBody').innerHTML = '<div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Загрузка истории…</div>';
+  document.getElementById('histChart').innerHTML = '';
+  document.getElementById('histNote').textContent = '';
+  try {
+    if (gran === 'hourly' || histDays === 365) {
+      // У почасовки окно в эндпоинте считается в записях, а не в сутках.
+      const apiDays = gran === 'hourly' ? Math.min(3650, histDays * 24) : histDays;
+      const r = await fetch('/api/weather/history?lat=' + encodeURIComponent(city.lat) +
+        '&lon=' + encodeURIComponent(city.lon) + '&days=' + apiDays + '&granularity=' + gran);
+      const d = await r.json();
+      if (!r.ok || !d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+      renderHistory(d.items || [], gran, histDays === 365
+        ? 'Локальные наблюдения (хранятся по настройкам ниже)'
+        : 'Локальные почасовые наблюдения');
+      return;
+    }
+    const need = Math.min(92, histDays + 1);
+    const r = await fetch('/api/weather/past?lat=' + encodeURIComponent(city.lat) +
+      '&lon=' + encodeURIComponent(city.lon) + '&units=' + store.units + '&days=' + need);
+    const d = await r.json();
+    if (!r.ok || !d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    // past_days отдаёт и сегодняшний день последним; для «вчера» он лишний.
+    let items = (d.items || []).slice(0, -1);
+    items = items.slice(-histDays);
+    renderHistory(items, 'daily', 'Прошедшие дни (Open-Meteo past_days) — без ожидания архива');
+  } catch (e) {
+    document.getElementById('histBody').innerHTML = '<div class="error"><i class="fa-solid fa-triangle-exclamation"></i> ' + esc(e.message) + '</div>';
+  }
+}
+
+// ---- настройки ----
+function switchHtml(id, on) {
+  return '<div class="switch' + (on ? ' on' : '') + '" id="' + id + '"></div>';
+}
+function renderSettings() {
+  const s = settings || {};
+  const watch = s.watch || null;
+  document.getElementById('settingsBox').innerHTML =
+    '<div class="set-row"><label>Проверять погоду автоматически</label>' + switchHtml('setAuto', s.auto_check_enabled) + '</div>' +
+    '<div class="set-row"><label>Интервал проверки, минут</label>' +
+      '<input type="number" id="setInterval" min="5" max="1440" value="' + (s.check_interval_minutes || 60) + '"></div>' +
+    '<div class="set-row"><label>Город для автопроверки</label><b>' + (watch ? esc(watch.name || 'задан') : 'не задан') + '</b>' +
+      '<button class="btn" id="setWatchBtn"><i class="fa-solid fa-location-crosshairs"></i> Взять город из прогноза</button></div>' +
+    '<div class="set-row"><label>Резкая смена погоды — уведомлять</label>' + switchHtml('setNotifySharp', s.notify_sharp) + '</div>' +
+    '<div class="set-row"><label>Порог температуры, °</label>' +
+      '<input type="number" id="setTempSwing" min="1" max="40" value="' + (s.temp_swing_c != null ? s.temp_swing_c : 10) + '"></div>' +
+    '<div class="set-row"><label>Резкий курс — уведомлять</label>' + switchHtml('setNotifyCur', s.notify_currency) + '</div>' +
+    '<div class="set-row"><label>Порог курса, %</label>' +
+      '<input type="number" id="setCurPct" min="0.1" max="50" step="0.1" value="' + (s.currency_pct_threshold != null ? s.currency_pct_threshold : 1.5) + '"></div>' +
+    '<div class="set-row"><label>Хранение истории</label>' +
+      '<select id="setRetMode">' +
+        '<option value="keep"' + (s.retention_mode !== 'purge' ? ' selected' : '') + '>не удалять</option>' +
+        '<option value="purge"' + (s.retention_mode === 'purge' ? ' selected' : '') + '>удалять старше</option>' +
+      '</select><input type="number" id="setRetDays" min="1" max="36500" value="' + (s.retention_days || 365) + '"> дней</div>' +
+    '<div class="set-actions">' +
+      '<button class="btn primary" id="setSaveBtn"><i class="fa-solid fa-floppy-disk"></i> Сохранить</button>' +
+      '<button class="btn" id="setPurgeBtn"><i class="fa-solid fa-trash-can"></i> Очистить старую историю</button>' +
+      '<span class="note" id="setStatus"></span>' +
+    '</div>';
+  document.querySelectorAll('#settingsBox .switch').forEach(el => {
+    el.addEventListener('click', () => el.classList.toggle('on'));
+  });
+  document.getElementById('setWatchBtn').addEventListener('click', setWatchCity);
+  document.getElementById('setSaveBtn').addEventListener('click', saveSettings);
+  document.getElementById('setPurgeBtn').addEventListener('click', purgeHistory);
+}
+async function loadSettings() {
+  try {
+    const r = await fetch('/api/weather/settings');
+    const d = await r.json();
+    if (!r.ok || !d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    settings = d.settings || {};
+    renderSettings();
+  } catch (e) {
+    document.getElementById('settingsBox').innerHTML = '<div class="error"><i class="fa-solid fa-triangle-exclamation"></i> ' + esc(e.message) + '</div>';
+  }
+}
+function numVal(id, def) {
+  const el = document.getElementById(id);
+  const v = parseFloat(el && el.value);
+  return isNaN(v) ? def : v;
+}
+async function setWatchCity() {
+  const city = store.city || WX_DEFAULT_CITY;
+  try {
+    const r = await fetch('/api/weather/watch', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(city)
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    if (settings) settings.watch = d.watch;
+    renderSettings();
+    toast('Город для автопроверки: ' + (d.watch && d.watch.name || ''), 'success');
+  } catch (e) { toast('Не удалось задать город: ' + e.message, 'error'); }
+}
+async function saveSettings() {
+  const isOn = id => { const el = document.getElementById(id); return !!(el && el.classList.contains('on')); };
+  const body = {
+    auto_check_enabled: isOn('setAuto'),
+    check_interval_minutes: Math.round(numVal('setInterval', 60)),
+    notify_sharp: isOn('setNotifySharp'),
+    notify_currency: isOn('setNotifyCur'),
+    temp_swing_c: numVal('setTempSwing', 10),
+    currency_pct_threshold: numVal('setCurPct', 1.5),
+    retention_mode: (document.getElementById('setRetMode') || {}).value || 'keep',
+    retention_days: Math.round(numVal('setRetDays', 365)),
+    units: store.units
+  };
+  try {
+    const r = await fetch('/api/weather/settings', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (!r.ok || !d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    settings = d.settings || settings;
+    document.getElementById('setStatus').textContent = 'Сохранено';
+    setTimeout(() => {
+      const el = document.getElementById('setStatus');
+      if (el) el.textContent = '';
+    }, 2500);
+    toast('Настройки сохранены', 'success');
+    if (body.auto_check_enabled) {
+      const w = (settings && settings.watch) || null;
+      if (!w) await setWatchCity();
+      else if (!sameCity(w, store.city || WX_DEFAULT_CITY)) await setWatchCity();
+    }
+    loadHistory();
+  } catch (e) { toast('Не удалось сохранить: ' + e.message, 'error'); }
+}
+async function purgeHistory() {
+  if (!confirm('Удалить историю старше срока хранения из настроек?')) return;
+  const city = store.city || WX_DEFAULT_CITY;
+  try {
+    const r = await fetch('/api/weather/history/purge', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ watch: city })
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    toast('Удалено записей: ' + (d.removed || 0), 'success');
+    loadHistory();
+  } catch (e) { toast('Ошибка: ' + e.message, 'error'); }
+}
+
+// ---- старт ----
+setTheme(theme());
+unitsBtnSync();
+daysSegSync();
+histSegSync();
+if (!store.city) {
+  store.city = WX_DEFAULT_CITY;
+  addFav(WX_DEFAULT_CITY);
+}
+renderChips();
+document.getElementById('cityInput').value = (store.city || WX_DEFAULT_CITY).name || '';
+loadForecast();
+loadHistory();
+loadSettings();
+</script>
+</body>
+</html>

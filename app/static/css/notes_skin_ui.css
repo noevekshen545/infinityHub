@@ -1,0 +1,394 @@
+/* Общий слой превью-шаблонов заметок (Aurora / Studio / Focus).
+   Здесь только то, что не относится к конкретному скину: плавающий
+   переключатель шаблонов и его состояния. Остальное — в notes_skin_*.css.
+   Цвета берутся из переменных страницы заметок (--bg2, --text, --accent),
+   поэтому переключатель автоматически следует светлой, тёмной и сепия-теме. */
+
+/* Страницы задают body { transition: background .3s }: при смене темы фон
+   «доезжает» до нового цвета, а в некоторых случаях переход застревает на
+   стартовом значении и тёмная тема остаётся со светлым фоном. В шаблонах
+   тема применяется мгновенно. */
+html[data-notes-skin] body { transition: none }
+
+.skin-switch {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  font-family: var(--font-main, system-ui, sans-serif);
+}
+
+.skin-switch-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border2, rgba(0, 0, 0, 0.12));
+  background: var(--bg2, #fff);
+  color: var(--text, #111827);
+  box-shadow: var(--shadow-lg, 0 8px 40px rgba(0, 0, 0, 0.12));
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: var(--tr, all 0.25s ease);
+}
+
+.skin-switch-toggle:hover {
+  border-color: var(--accent, #4f46e5);
+  color: var(--accent, #4f46e5);
+  transform: translateY(-1px);
+}
+
+.skin-switch-toggle i {
+  transition: transform 0.2s ease;
+}
+
+.skin-switch.open .skin-switch-toggle i { transform: rotate(180deg) }
+
+.skin-switch-toggle .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent, #4f46e5), var(--purple, #7c3aed));
+  box-shadow: 0 0 0 3px var(--accent-light, rgba(79, 70, 229, 0.12));
+}
+
+.skin-switch-panel {
+  display: none;
+  min-width: 232px;
+  max-width: min(300px, calc(100vw - 32px));
+  padding: 8px;
+  background: var(--bg2, #fff);
+  color: var(--text, #111827);
+  border: 1px solid var(--border2, rgba(0, 0, 0, 0.12));
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg, 0 8px 40px rgba(0, 0, 0, 0.16));
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.skin-switch.open .skin-switch-panel {
+  display: block;
+  animation: skinSwitchIn 0.16s ease;
+}
+
+@keyframes skinSwitchIn {
+  from { opacity: 0; transform: translateY(4px) scale(0.98) }
+  to { opacity: 1; transform: none }
+}
+
+.skin-switch-panel .skin-cap {
+  padding: 6px 10px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3, #9ca3af);
+}
+
+.skin-switch-panel a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  color: var(--text, #111827);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--tr, all 0.2s ease);
+}
+
+.skin-switch-panel a:hover {
+  background: var(--hover, rgba(0, 0, 0, 0.04));
+  color: var(--accent, #4f46e5);
+}
+
+.skin-switch-panel a.on {
+  background: var(--accent-light, rgba(79, 70, 229, 0.1));
+  color: var(--accent, #4f46e5);
+  font-weight: 600;
+}
+
+.skin-switch-panel a i {
+  width: 16px;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.skin-switch-panel .skin-sep {
+  height: 1px;
+  margin: 5px 8px;
+  background: var(--border, rgba(0, 0, 0, 0.08));
+}
+
+.skin-switch-panel .skin-hint {
+  padding: 7px 10px 4px;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--text3, #9ca3af);
+}
+
+.skin-switch-panel kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 5px;
+  border: 1px solid var(--border2, rgba(0, 0, 0, 0.12));
+  background: var(--bg3, #f3f4f6);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+}
+
+/* Ряд «Новая заметка / Новая папка / Быстрые»: в одну строку три кнопки
+   не влезают в сайдбар и текст обрезался. Основная кнопка — на всю ширину,
+   две вспомогательные — встают в пару под ней. */
+html[data-notes-skin] .sidebar .ne-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 10px 10px 2px;
+}
+
+html[data-notes-skin] .sidebar .ne-actions .btn {
+  min-width: 0;
+  padding: 8px 4px;
+  font-size: 11px;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html[data-notes-skin] .sidebar .ne-actions .btn span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-notes-skin] .sidebar .ne-actions .btn .icon {
+  flex: 0 0 auto;
+  font-size: 11px;
+}
+
+html[data-notes-skin] .sidebar .ne-actions .btn.primary {
+  grid-column: 1 / -1;
+  padding: 9px 10px;
+}
+
+/* Кнопка «Дзен»/«Плотность» живёт в верхней панели и наследует её вид;
+   отдельно стилизуем только состояние «включено» для скинов, где
+   .top-bar .btn-icon.on не объявлен. */
+html[data-notes-skin] .top-bar .btn-icon.skin-toggle-btn.on {
+  background: var(--accent, #4f46e5);
+  border-color: transparent;
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  /* В промежутке 769–900 px колонка заметок узкая, и подписи кнопок
+     верхней панели рвут её на три строки. Оставляем иконки (title-подсказки
+     у кнопок уже есть) — так панель остаётся инструментом, а не блоком. */
+  html[data-notes-skin] .top-bar { gap: 6px }
+  html[data-notes-skin] .top-bar .btn { padding: 8px 10px }
+  html[data-notes-skin] .top-bar .btn span:not(.icon) { display: none }
+}
+
+@media (max-width: 768px) {
+  .skin-switch { right: 10px; bottom: 10px; gap: 6px }
+  .skin-switch-toggle { padding: 8px 12px; font-size: 12px }
+}
+
+/* ── Папки в одну полосу ────────────────────────────────────────────────
+   Дерево папок занимало половину боковой колонки. Теперь оно живёт под
+   одной строкой «Папки · текущая папка · счётчик»: нажатие раскрывает
+   весь блок (кнопки, перетаскивание в корень, дерево). Состояние
+   запоминается в localStorage, по умолчанию строка свёрнута. */
+.folders-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 6px;
+  padding: 9px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.folders-strip:hover { background: color-mix(in srgb, var(--text) 6%, transparent) }
+.folders-strip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.folders-strip .fs-lead { color: var(--accent); width: 18px; font-size: 13px }
+.folders-strip .fs-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.folders-strip .fs-current {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.folders-strip .fs-count {
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text2);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  border-radius: 999px;
+  padding: 1px 7px;
+  min-width: 20px;
+  text-align: center;
+}
+.folders-strip .fs-count:empty { display: none }
+.folders-strip .fs-caret {
+  font-size: 9px;
+  color: var(--text3);
+  transition: transform 0.2s ease;
+}
+.folders-strip[aria-expanded="true"] .fs-caret { transform: rotate(180deg) }
+
+.folders-body { display: none }
+.folders-body.open {
+  display: block;
+  animation: foldersBodyIn 0.18s ease;
+}
+
+@keyframes foldersBodyIn {
+  from { opacity: 0; transform: translateY(-4px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+
+@media (max-width: 460px) {
+  .folders-strip .fs-label { display: none }
+}
+
+/* === УВЕДОМЛЕНИЯ (TOASTS) ===
+   Общий слой для списка и редактора заметок: карточка снизу по центру,
+   значок в тонированном квадрате, мягкая тень и пружинное появление.
+   Раньше тосты висели в правом верхнем углу, а в окне Electron там стоят
+   кнопки управления окном — уведомление уходило под них. */
+.toast-container {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  top: auto;
+  right: auto;
+  transform: translateX(-50%);
+  align-items: center;
+  gap: 8px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  --t-accent: var(--blue, #4c8dff);
+  position: relative;
+  min-width: 280px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 11px 15px 11px 13px;
+  border: 1px solid color-mix(in srgb, var(--t-accent) 26%, var(--border, #d9deea));
+  border-left: 0;
+  border-radius: 14px;
+  background: var(--bg2, #fff);
+  background: color-mix(in srgb, var(--bg2, #fff) 90%, var(--t-accent) 10%);
+  color: var(--text, #1f2430);
+  box-shadow: 0 14px 34px rgba(12, 16, 28, .18), 0 2px 6px rgba(12, 16, 28, .07);
+  backdrop-filter: blur(16px) saturate(1.15);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+  overflow: hidden;
+  pointer-events: auto;
+  animation: toastIn .3s cubic-bezier(.22, 1, .36, 1);
+  transition: box-shadow .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.toast:hover {
+  border-color: color-mix(in srgb, var(--t-accent) 44%, var(--border, #d9deea));
+  box-shadow: 0 18px 38px rgba(12, 16, 28, .22), 0 2px 8px rgba(12, 16, 28, .08);
+  transform: translateY(-1px);
+}
+
+.toast.success { --t-accent: var(--green, #22c55e); border-left: 0 }
+.toast.error   { --t-accent: var(--red, #ef4444); border-left: 0 }
+.toast.info    { --t-accent: var(--blue, #4c8dff); border-left: 0 }
+.toast.warning { --t-accent: var(--yellow, #f59e0b); border-left: 0 }
+
+.toast::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--t-accent);
+  opacity: .9;
+}
+
+.toast > i {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  font-size: 13px !important;
+  background: color-mix(in srgb, var(--t-accent) 16%, transparent);
+  color: var(--t-accent) !important;
+}
+
+.toast > span { flex: 1; min-width: 0 }
+
+.toast.hiding { animation: toastOut .24s ease forwards }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px) scale(.97) }
+  to   { opacity: 1; transform: translateY(0) scale(1) }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateY(0) scale(1) }
+  to   { opacity: 0; transform: translateY(10px) scale(.98) }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none }
+  .toast.hiding { animation: none; opacity: 0 }
+}
+
+@media (max-width: 640px) {
+  .toast-container {
+    left: 12px;
+    right: 12px;
+    bottom: 14px;
+    transform: none;
+    align-items: stretch;
+  }
+  .toast { min-width: 0; max-width: none; width: 100% }
+}

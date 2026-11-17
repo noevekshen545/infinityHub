@@ -1,0 +1,120 @@
+/* GenLab — MIDI-клавиатура. */
+
+.gl-midi {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: var(--gl-bg);
+  color: var(--gl-text);
+}
+.gl-midi[hidden] { display: none; }
+
+.gl-midi-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--gl-text-2);
+}
+.gl-midi-inline select,
+.gl-midi-inline input[type="range"] { font: inherit; }
+.gl-midi-inline select {
+  padding: 5px 7px;
+  border: 1px solid var(--gl-border);
+  border-radius: var(--gl-radius-sm);
+  background: var(--gl-surface-2);
+  color: var(--gl-text);
+}
+
+.gl-midi-main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px 20px 24px;
+  box-sizing: border-box;
+}
+
+.gl-midi-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.gl-midi-toolbar .gl-spacer { flex: 1 1 auto; }
+.gl-midi-oct { font-weight: 650; font-variant-numeric: tabular-nums; min-width: 30px; text-align: center; }
+.gl-midi-count { font-size: 12.5px; color: var(--gl-muted); margin: 0 6px; }
+#mdRec.is-recording { background: var(--gl-danger, #e5484d); color: #fff; border-color: transparent; }
+
+.gl-midi-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+.gl-midi-row input[type="number"] {
+  padding: 5px 7px;
+  border: 1px solid var(--gl-border);
+  border-radius: var(--gl-radius-sm);
+  background: var(--gl-surface-2);
+  color: var(--gl-text);
+  font: inherit;
+}
+.gl-midi-import { position: relative; cursor: pointer; }
+#mdMetro.is-on { background: var(--gl-accent); color: #fff; border-color: transparent; }
+
+.gl-midi-roll {
+  position: relative;
+  height: 150px;
+  min-height: 150px;
+  border: 1px solid var(--gl-border);
+  border-radius: var(--gl-radius);
+  overflow: hidden;
+  background: var(--gl-surface-2);
+}
+.gl-midi-roll canvas { display: block; cursor: pointer; }
+
+.gl-midi-keys {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 220px;
+  max-height: 420px;
+  border: 1px solid var(--gl-border);
+  border-radius: var(--gl-radius);
+  overflow: hidden;
+  background: #fafbfc;
+  user-select: none;
+  touch-action: none;
+}
+.gl-midi-white {
+  flex: 1 1 0;
+  border-right: 1px solid var(--gl-border);
+  background: linear-gradient(#fff, #eef1f5);
+  cursor: pointer;
+}
+.gl-midi-white:last-child { border-right: 0; }
+.gl-midi-black {
+  position: absolute;
+  top: 0;
+  height: 62%;
+  background: linear-gradient(#3a3f47, #14171c);
+  border-radius: 0 0 4px 4px;
+  cursor: pointer;
+  z-index: 2;
+}
+.gl-midi-key { border: 0; padding: 0; }
+.gl-midi-key.is-on {
+  background: linear-gradient(#5b8cff, #2f5fd6);
+}
+.gl-midi-black.is-on { background: linear-gradient(#4d7fff, #274fb5); }
+.gl-midi-hint { margin-top: 12px; }
+
+@media (max-width: 980px) {
+  .gl-midi-main { padding: 12px; }
+  .gl-midi-keys { min-height: 160px; }
+}

@@ -1,0 +1,638 @@
+/* Общий левый рейл для модульных страниц «next»: тот же каркас, что у
+   библиотеки (library_next.css, «КАРКАС 2.0»), но гейт по скину своего
+   модуля — страница книг этот файл не подключает и не затрагивается.
+
+   Гейты перечислены парами через :is(): apps и settings разделены одной
+   переменной, поэтому правило остаётся ровно одним, а не дублируется.
+   Специфичность :is() равна максимальному из аргументов, то есть
+   специфичность одного селектора с атрибутом — каскад не сдвигается.
+
+   Назначение: меню лежит в `.toolbar` как плавающая таблетка сверху
+   (базовый слой страницы). Здесь она уезжает в постоянный левый рейл,
+   группы получают подписи, середина прокручивается, низ — отдельные
+   действия. На узких экранах рейл становится выдвижной панелью с FAB.
+
+   Подключается ПОСЛЕ стилей страницы и ПОСЛЕ design.css: перекрывает
+   только раскладку, палитра приходит из темы приложения. */
+
+html[data-news-skin="next"],
+html[data-education-skin="next"],
+html[data-zim-skin="next"],
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) {
+  --rail-w: 250px;
+  --rail-pad: 16px;
+  /* Свёрнутый рейл — полоса иконок (та же ширина, что у книг). */
+  --rail-collapsed-w: 76px;
+}
+
+/* Свёрнутое состояние: ширина — единственная переменная, от которой зависят
+   и контент (`margin-left: calc(var(--rail-w) …)` в skin-слоях), и смещения
+   внутри рейла. Поэтому класс на <html> сдвигает всё сразу. */
+html[data-news-skin="next"].rail-collapsed,
+html[data-education-skin="next"].rail-collapsed,
+html[data-zim-skin="next"].rail-collapsed,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed {
+  --rail-w: var(--rail-collapsed-w);
+}
+
+/* ── Рейл ───────────────────────────────────────────────────────────── */
+html[data-news-skin="next"] .toolbar,
+html[data-education-skin="next"] .toolbar,
+html[data-zim-skin="next"] .toolbar,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar {
+  position: fixed;
+  top: var(--rail-pad);
+  bottom: var(--rail-pad);
+  left: var(--rail-pad);
+  right: auto;
+  width: var(--rail-w);
+  transform: none;
+  display: flex;
+  flex-direction: column;
+  /* Страницы несут `.toolbar{flex-wrap:wrap}` от своей плавающей шапки.
+     Для колонки-рейла перенос означает новые колонки вбок: при шести
+     группах пункты уезжали за правую кромку панели. */
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  box-shadow: var(--shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  /* visible, а не hidden: кнопка сворачивания стоит на правой кромке и
+     наполовину выступает за рейл; прокрутку середины держит .rail-scroll. */
+  overflow: visible;
+  z-index: 1000;
+  max-width: var(--rail-w);
+}
+
+html[data-news-skin="next"] .toolbar .rail-head,
+html[data-education-skin="next"] .toolbar .rail-head,
+html[data-zim-skin="next"] .toolbar .rail-head,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-head {
+  flex: 0 0 auto;
+}
+
+/* Бренд: обе страницы рисуют одну форму — .rail-brand > .rail-logo + .rail-name. */
+html[data-news-skin="next"] .toolbar .rail-brand,
+html[data-education-skin="next"] .toolbar .rail-brand,
+html[data-zim-skin="next"] .toolbar .rail-brand,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: auto;
+  padding: 6px 6px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  text-decoration: none;
+  justify-content: flex-start;
+}
+
+html[data-news-skin="next"] .toolbar .rail-brand:hover,
+html[data-education-skin="next"] .toolbar .rail-brand:hover,
+html[data-zim-skin="next"] .toolbar .rail-brand:hover,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-brand:hover {
+  background: var(--bg3);
+}
+
+html[data-news-skin="next"] .rail-logo,
+html[data-education-skin="next"] .rail-logo,
+html[data-zim-skin="next"] .rail-logo,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .rail-logo {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg3));
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent);
+  color: var(--accent);
+  font-size: 15px;
+}
+
+html[data-news-skin="next"] .rail-logo i,
+html[data-education-skin="next"] .rail-logo i,
+html[data-zim-skin="next"] .rail-logo i,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .rail-logo i {
+  width: auto;
+  color: var(--accent);
+  font-size: 15px;
+}
+
+html[data-news-skin="next"] .rail-name,
+html[data-education-skin="next"] .rail-name,
+html[data-zim-skin="next"] .rail-name,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .rail-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+html[data-news-skin="next"] .rail-name b,
+html[data-education-skin="next"] .rail-name b,
+html[data-zim-skin="next"] .rail-name b,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .rail-name b {
+  font-size: 14px;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html[data-news-skin="next"] .rail-name small,
+html[data-education-skin="next"] .rail-name small,
+html[data-zim-skin="next"] .rail-name small,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .rail-name small {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--text3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Прокручиваемая середина: меню не уезжает под нижние действия. */
+html[data-news-skin="next"] .toolbar .rail-scroll,
+html[data-education-skin="next"] .toolbar .rail-scroll,
+html[data-zim-skin="next"] .toolbar .rail-scroll,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 -4px;
+  padding: 0 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  overscroll-behavior: contain;
+}
+
+html[data-news-skin="next"] .toolbar .rail-scroll::-webkit-scrollbar,
+html[data-education-skin="next"] .toolbar .rail-scroll::-webkit-scrollbar,
+html[data-zim-skin="next"] .toolbar .rail-scroll::-webkit-scrollbar,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+html[data-news-skin="next"] .toolbar .rail-scroll::-webkit-scrollbar-thumb,
+html[data-education-skin="next"] .toolbar .rail-scroll::-webkit-scrollbar-thumb,
+html[data-zim-skin="next"] .toolbar .rail-scroll::-webkit-scrollbar-thumb,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--border);
+}
+
+/* Группы и подписи */
+html[data-news-skin="next"] .toolbar .rail-group,
+html[data-education-skin="next"] .toolbar .rail-group,
+html[data-zim-skin="next"] .toolbar .rail-group,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0;
+  flex: 0 0 auto;
+}
+
+html[data-news-skin="next"] .toolbar .rail-group + .rail-group,
+html[data-education-skin="next"] .toolbar .rail-group + .rail-group,
+html[data-zim-skin="next"] .toolbar .rail-group + .rail-group,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-group + .rail-group {
+  margin-top: 3px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+html[data-news-skin="next"] .toolbar .rail-cap,
+html[data-education-skin="next"] .toolbar .rail-cap,
+html[data-zim-skin="next"] .toolbar .rail-cap,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-cap {
+  padding: 2px 10px 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+/* Пункты меню */
+html[data-news-skin="next"] .toolbar .btn,
+html[data-news-skin="next"] .toolbar .btn-icon,
+html[data-education-skin="next"] .toolbar .btn,
+html[data-zim-skin="next"] .toolbar .btn,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn,
+html[data-education-skin="next"] .toolbar .btn-icon,
+html[data-zim-skin="next"] .toolbar .btn-icon,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  height: 33px;
+  min-height: 33px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 12.5px;
+  font-weight: 500;
+  box-shadow: none;
+  transform: none;
+}
+
+html[data-news-skin="next"] .toolbar .btn > span,
+html[data-news-skin="next"] .toolbar .btn-icon > span,
+html[data-education-skin="next"] .toolbar .btn > span,
+html[data-zim-skin="next"] .toolbar .btn > span,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn > span,
+html[data-education-skin="next"] .toolbar .btn-icon > span,
+html[data-zim-skin="next"] .toolbar .btn-icon > span,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn-icon > span {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html[data-news-skin="next"] .toolbar .btn i,
+html[data-news-skin="next"] .toolbar .btn-icon i,
+html[data-news-skin="next"] .toolbar .btn .icon,
+html[data-education-skin="next"] .toolbar .btn i,
+html[data-zim-skin="next"] .toolbar .btn i,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn i,
+html[data-education-skin="next"] .toolbar .btn-icon i,
+html[data-zim-skin="next"] .toolbar .btn-icon i,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn-icon i,
+html[data-education-skin="next"] .toolbar .btn .icon,
+html[data-zim-skin="next"] .toolbar .btn .icon,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn .icon {
+  width: 16px;
+  flex: 0 0 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text3);
+  transition: color 140ms ease;
+}
+
+html[data-news-skin="next"] .toolbar .btn:hover,
+html[data-news-skin="next"] .toolbar .btn-icon:hover,
+html[data-education-skin="next"] .toolbar .btn:hover,
+html[data-zim-skin="next"] .toolbar .btn:hover,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn:hover,
+html[data-education-skin="next"] .toolbar .btn-icon:hover,
+html[data-zim-skin="next"] .toolbar .btn-icon:hover,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn-icon:hover {
+  background: var(--bg3);
+  border-color: transparent;
+  color: var(--text);
+  transform: none;
+}
+
+html[data-news-skin="next"] .toolbar .btn:hover i,
+html[data-news-skin="next"] .toolbar .btn-icon:hover i,
+html[data-education-skin="next"] .toolbar .btn:hover i,
+html[data-zim-skin="next"] .toolbar .btn:hover i,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn:hover i,
+html[data-education-skin="next"] .toolbar .btn-icon:hover i,
+html[data-zim-skin="next"] .toolbar .btn-icon:hover i,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn-icon:hover i {
+  color: var(--accent);
+}
+
+html[data-news-skin="next"] .toolbar .btn.active,
+html[data-education-skin="next"] .toolbar .btn.active,
+html[data-zim-skin="next"] .toolbar .btn.active,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn.active {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+html[data-news-skin="next"] .toolbar .btn.active i,
+html[data-education-skin="next"] .toolbar .btn.active i,
+html[data-zim-skin="next"] .toolbar .btn.active i,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn.active i {
+  color: var(--accent);
+}
+
+/* Основное действие внизу рейла */
+html[data-news-skin="next"] .toolbar .rail-foot,
+html[data-education-skin="next"] .toolbar .rail-foot,
+html[data-zim-skin="next"] .toolbar .rail-foot,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-foot {
+  flex: 0 0 auto;
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+}
+
+html[data-news-skin="next"] .toolbar .btn.primary,
+html[data-education-skin="next"] .toolbar .btn.primary,
+html[data-zim-skin="next"] .toolbar .btn.primary,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .btn.primary {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 34%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Разделители базового слоя в рейле не нужны: группы уже разделены рамкой. */
+html[data-news-skin="next"] .toolbar .sep,
+html[data-education-skin="next"] .toolbar .sep,
+html[data-zim-skin="next"] .toolbar .sep,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .sep {
+  display: none;
+}
+
+html[data-news-skin="next"] .toolbar select,
+html[data-education-skin="next"] .toolbar select,
+html[data-zim-skin="next"] .toolbar select,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar select {
+  width: 100%;
+}
+
+/* ── Сворачивание рейла (десктоп) ──────────────────────────────────────
+   Кнопка на правой кромке, как в книгах и в меню поиска: при сворачивании
+   подписи и заголовки групп исчезают, пункты становятся иконками, а
+   подсказка остаётся в title (его проставляет module_rail.js). */
+html[data-news-skin="next"] .toolbar .rail-collapse,
+html[data-education-skin="next"] .toolbar .rail-collapse,
+html[data-zim-skin="next"] .toolbar .rail-collapse,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-collapse {
+  position: absolute;
+  top: 18px;
+  right: -13px;
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg2);
+  color: var(--text3);
+  font-size: 9px;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 2px 6px rgba(17, 24, 39, 0.10), 0 8px 18px -10px rgba(17, 24, 39, 0.30);
+  transition: color 140ms ease, border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+html[data-news-skin="next"] .toolbar .rail-collapse:hover,
+html[data-education-skin="next"] .toolbar .rail-collapse:hover,
+html[data-zim-skin="next"] .toolbar .rail-collapse:hover,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-collapse:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(17, 24, 39, 0.10), 0 10px 20px -10px var(--accent-glow);
+}
+
+html[data-news-skin="next"] .toolbar .rail-collapse i,
+html[data-education-skin="next"] .toolbar .rail-collapse i,
+html[data-zim-skin="next"] .toolbar .rail-collapse i,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-collapse i {
+  width: auto;
+  color: inherit;
+  font-size: 9px;
+  transition: transform 200ms ease;
+}
+
+html[data-news-skin="next"].rail-collapsed .toolbar .rail-collapse i,
+html[data-education-skin="next"].rail-collapsed .toolbar .rail-collapse i,
+html[data-zim-skin="next"].rail-collapsed .toolbar .rail-collapse i,
+:is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .rail-collapse i {
+  transform: rotate(180deg);
+}
+
+@media (min-width: 981px) {
+  html[data-news-skin="next"].rail-collapsed .toolbar,
+  html[data-education-skin="next"].rail-collapsed .toolbar,
+  html[data-zim-skin="next"].rail-collapsed .toolbar,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar {
+    align-items: center;
+    padding: 10px 8px;
+  }
+
+  html[data-news-skin="next"].rail-collapsed .toolbar .rail-brand,
+  html[data-education-skin="next"].rail-collapsed .toolbar .rail-brand,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .rail-brand,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .rail-brand {
+    justify-content: center;
+    padding: 4px 0 10px;
+  }
+
+  /* Логотип — span, его не трогаем: скрывается только подпись бренда. */
+  html[data-news-skin="next"].rail-collapsed .rail-name,
+  html[data-education-skin="next"].rail-collapsed .rail-name,
+  html[data-zim-skin="next"].rail-collapsed .rail-name,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .rail-name,
+  html[data-news-skin="next"].rail-collapsed .toolbar .rail-cap,
+  html[data-education-skin="next"].rail-collapsed .toolbar .rail-cap,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .rail-cap,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .rail-cap,
+  html[data-news-skin="next"].rail-collapsed .toolbar .btn > span,
+  html[data-news-skin="next"].rail-collapsed .toolbar .btn-icon > span,
+  html[data-education-skin="next"].rail-collapsed .toolbar .btn > span,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .btn > span,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .btn > span,
+  html[data-education-skin="next"].rail-collapsed .toolbar .btn-icon > span,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .btn-icon > span,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .btn-icon > span {
+    display: none;
+  }
+
+  html[data-news-skin="next"].rail-collapsed .toolbar .rail-head,
+  html[data-education-skin="next"].rail-collapsed .toolbar .rail-head,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .rail-head,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .rail-head {
+    width: 100%;
+  }
+
+  html[data-news-skin="next"].rail-collapsed .toolbar .rail-scroll,
+  html[data-education-skin="next"].rail-collapsed .toolbar .rail-scroll,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .rail-scroll,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .rail-scroll {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    overflow-x: visible;
+  }
+
+  html[data-news-skin="next"].rail-collapsed .toolbar .rail-group,
+  html[data-education-skin="next"].rail-collapsed .toolbar .rail-group,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .rail-group,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .rail-group {
+    width: 100%;
+    align-items: center;
+    gap: 3px;
+  }
+
+  html[data-news-skin="next"].rail-collapsed .toolbar .rail-group + .rail-group,
+  html[data-education-skin="next"].rail-collapsed .toolbar .rail-group + .rail-group,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .rail-group + .rail-group,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .rail-group + .rail-group {
+    padding-top: 7px;
+    margin-top: 4px;
+  }
+
+  html[data-news-skin="next"].rail-collapsed .toolbar .btn,
+  html[data-news-skin="next"].rail-collapsed .toolbar .btn-icon,
+  html[data-education-skin="next"].rail-collapsed .toolbar .btn,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .btn,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .btn,
+  html[data-education-skin="next"].rail-collapsed .toolbar .btn-icon,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .btn-icon,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .btn-icon {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    justify-content: center;
+    margin: 0 auto;
+    border-radius: 11px;
+  }
+
+  html[data-news-skin="next"].rail-collapsed .toolbar .btn i,
+  html[data-news-skin="next"].rail-collapsed .toolbar .btn-icon i,
+  html[data-education-skin="next"].rail-collapsed .toolbar .btn i,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .btn i,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .btn i,
+  html[data-education-skin="next"].rail-collapsed .toolbar .btn-icon i,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .btn-icon i,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .btn-icon i {
+    width: auto;
+    flex: 0 0 auto;
+    font-size: 14px;
+  }
+
+  html[data-news-skin="next"].rail-collapsed .toolbar .rail-foot,
+  html[data-education-skin="next"].rail-collapsed .toolbar .rail-foot,
+  html[data-zim-skin="next"].rail-collapsed .toolbar .rail-foot,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed .toolbar .rail-foot {
+    justify-content: center;
+    gap: 3px;
+    padding-top: 9px;
+  }
+}
+
+/* ── FAB и выдвижной режим (узкие экраны) ───────────────────────────── */
+.rail-fab,
+.rail-scrim {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  /* На выдвижном режиме кнопка не нужна: там рейл и так прячется FAB-ом.
+     Селектор с skin-гейтом и .toolbar: просто `.rail-collapse` перебивается
+     более специфичным правилом развёрнутого состояния. */
+  html[data-news-skin="next"] .toolbar .rail-collapse,
+  html[data-education-skin="next"] .toolbar .rail-collapse,
+  html[data-zim-skin="next"] .toolbar .rail-collapse,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar .rail-collapse {
+    display: none;
+  }
+
+  /* Свёрнутое состояние работает только на десктопе: ключ живёт в
+     localStorage и остаётся, когда окно сузилось, а `max-width: var(--rail-w)`
+     сжал бы выдвижную панель в полосу иконок без подписей. Возвращаем
+     полную ширину. */
+  html[data-news-skin="next"].rail-collapsed,
+  html[data-education-skin="next"].rail-collapsed,
+  html[data-zim-skin="next"].rail-collapsed,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]).rail-collapsed {
+    --rail-w: 250px;
+  }
+
+  .rail-fab {
+    display: flex;
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 1002;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: var(--bg2);
+    color: var(--text);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+  }
+
+  .rail-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.42);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+
+  body.rail-open .rail-scrim {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  html[data-news-skin="next"] .toolbar,
+  html[data-education-skin="next"] .toolbar,
+  html[data-zim-skin="next"] .toolbar,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar {
+    width: min(290px, 86vw);
+    transform: translateX(calc(-100% - 28px));
+    transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  body.rail-open .toolbar {
+    transform: none;
+  }
+
+  /* Кнопка-таблетка живёт в левом верхнем углу экрана поверх открытого рейла,
+     а шапка рейла начинается оттуда же — бренд залезал под FAB. Смещаем её
+     на ширину кнопки с зазором; на десктопе FAB спрятан, и сдвига нет. */
+  body.rail-open .toolbar .rail-head {
+    padding-left: 58px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-news-skin="next"] .toolbar,
+  html[data-education-skin="next"] .toolbar,
+  html[data-zim-skin="next"] .toolbar,
+  :is(html[data-apps-skin="next"], html[data-settings-skin="next"]) .toolbar {
+    transition-duration: 0.01ms !important;
+  }
+}

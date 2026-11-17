@@ -1,0 +1,3 @@
+[build]
+# Сборка вне C: — там 20 ГБ свободно, target-каталог Rust занимает гигабайты.
+target-dir = "E:/compilinfinity/cargo_target/avi"
